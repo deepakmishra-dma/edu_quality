@@ -199,3 +199,9 @@ app_license = "MIT"
 # auth_hooks = [
 #	"edu_quality.auth.validate"
 # ]
+
+fixtures = [
+    {"dt": "Server Script", "filters": [
+        ["module","=","Edu Quality"]
+    ]}
+]
