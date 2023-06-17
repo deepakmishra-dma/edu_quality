@@ -1,0 +1,19 @@
+{
+ "content": null,
+ "creation": "2023-06-19 11:42:24.949904",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2023-06-19 11:42:24.949904",
+ "modified_by": "Administrator",
+ "module": "Fees",
+ "name": "fees-category",
+ "owner": "Administrator",
+ "page_name": "fees-category",
+ "roles": [],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 1,
+ "title": "Fee Category"
+}
