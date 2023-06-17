@@ -18,9 +18,6 @@ async function fee_type_form(wrapper){
 	  <td><label for="textinput">Financial Year : <span style="font-weight:bold; color:#F00;"> *</span></label></td>
 	  <td><label class="select">
 		<select id="head_type_academic_year" name="head_type_academic_year" style="width:300px">
-		  <option>Select Year</option>
-		  <option>2023-2024</option>
-		  <option>2024-2025</option>
 		</select><i></i></label>
 	  </td>
 	</tr>
@@ -32,12 +29,6 @@ async function fee_type_form(wrapper){
 	  <td width="200px">
 		<label class="select">
 		  <select id="fee_headtype_id" name="fee_headtype_id" class="validate[required] field" autofocus="">
-			<option value="">Select Fee Head Type</option>
-			 <option value="4">Fee</option>
-			 <option value="5">CAUTION MONEY DEPOSI</option>
-			 <option value="7">OTHER FEE</option>
-			 <option value="8">Curriclum Material Fee</option>
-			 <option value="15">Walnut School Registration Fees</option>
 									</select><i></i>
 		</label>
 	  </td>
@@ -51,12 +42,6 @@ async function fee_type_form(wrapper){
 	  <td width="200px">
 		<label class="select">
 		  <select id="head_flag" name="head_flag" class="validate[required] field">
-			<option value="">Select Flag</option>
-			<option value="FEES">FEES</option>
-			<option value="DEPO">DEPOSIT</option>
-			<option value="BUS">BUS FEE</option>
-			<option value="OTHER">OTHER FEE</option>
-			<option value="EXAM">EXAM FEE</option>
 		  </select><i></i>
 		</label>
 	  </td>
@@ -104,12 +89,14 @@ async function fee_type_form(wrapper){
 
 	<tr>
 	  <td>
-								<input type="submit" style="" class="button" value="Save" name="add_fee_head" id="add_fee_head" onclick="return validateform()">
+								<input type="submit" style="" class="button" value="Save" name="add_fee_head" id="add_fee_head" onclick="return submit_form()">
 						  </td>
 	</tr>
   </tbody></table>`
 	container.append(form)
 	get_fin_yr()
+	get_fee_type()
+	get_fee_flag()
 	table = `
 	<div style='height:50px'></div>
 	<style>
@@ -142,10 +129,10 @@ async function fee_type_form(wrapper){
 
 function delete_item(item){
 	frappe.call({
-		method: 'delete_fee_type',
+		method: 'delete_fee_category',
 		type: "POST",
 		args: {
-			'fee_type': item
+			'fee_category': item
 		},
 	callback: function(r){
 		row = document.getElementById("row-"+item).remove()
@@ -154,7 +141,7 @@ function delete_item(item){
 }
 
 async function get_table(){
-	frappe.db.get_list('Fee Type',{fields:['type','description','financial_year']}).then(
+	frappe.db.get_list('Fee Category',{fields:['category_name','fee_flag','financial_year','fee_type']}).then(
 		res =>{
 			var table = document.getElementById('table3')
 			table.innerHTML = ''
@@ -164,14 +151,14 @@ async function get_table(){
 			<th>Head Type</th>
 			<th>Financial Year</th>
 			<th style="">Del</th>
-		  </tr>
-		  <tr><td>Curriculum Material Fee</td><td>FEES</td><td>Fee</td><td>2023-2024</td><td style=""><a href="feesetup/removeFeeHeads.php?tab=tab2&amp;id=69"><img width="18" height="18" src="/files/remove.png" title="Remove this"></a></td></tr>`
-			// res.forEach(ft =>{
-			// 	html = html + `<tr id="row-`+ ft.type + `"><td>`+ ft.type + "</td>"
-			// 	html = html +  "<td>"+ ft.description + "</td>"
-			// 	html = html +  "<td>"+ ft.financial_year + "</td>"
-			// 	html = html + `<td><img id='`+ ft.type + `' width="18" height="18" src="/files/remove.png" title="Remove this" onclick=delete_item(this.id)></td></tr>`
-			// })
+		  	</tr>`
+		  	res.forEach(fc =>{
+				html = html + `<tr id="row-`+ fc.category_name+ `"><td>`+ fc.category_name + "</td>"
+				html = html +  "<td>"+ fc.fee_flag + "</td>"
+				html = html + "<td>" + fc.fee_type + "</td>"
+				html = html +  "<td>"+ fc.financial_year + "</td>"
+				html = html + `<td><img id='`+ fc.category_name + `' width="18" height="18" src="/files/remove.png" title="Remove this" onclick=delete_item(this.id)></td></tr>`
+			})
 			html = html + '</tbody>'
 			table.innerHTML = html
 		}
@@ -192,28 +179,71 @@ function get_fin_yr(){
 	)
 }
 
+function get_fee_type(){
+	frappe.db.get_list('Fee Type').then(
+		res =>{
+			let select = document.getElementById('fee_headtype_id')
+			res.forEach(ft =>{
+				let option = document.createElement('option')
+				option.value = ft.name
+				option.innerHTML = ft.name
+				select.appendChild(option)
+			})
+		}
+	)
+}
+
+function get_fee_flag(){
+	frappe.db.get_list('Fee Flag').then(
+		res =>{
+			let select = document.getElementById('head_flag')
+			res.forEach(fl =>{
+				let option = document.createElement('option')
+				option.value = fl.name
+				option.innerHTML = fl.name
+				select.appendChild(option)
+			})
+		}
+	)
+}
+
 async function submit_form(){
 	var fin_yr = document.getElementById('head_type_academic_year').value 
-	if(fin_yr == 'Select Year'){
+	if(fin_yr == ''){
 		frappe.throw('Please Select Financial Year!')
 	}
-	var fee_type = document.getElementById('fee_head_type_name').value 
-	var description = document.getElementById('fee_head_type_dsc').value 
-	if(fee_type == ''){
-		frappe.throw('Please Enter a Fee Type!')
+	var ft = document.getElementById('fee_headtype_id').value 
+	if(ft == ''){
+		frappe.throw('Please Select Fee Head Type!')
 	}
-	frappe.db.exists("Fee Type",fee_type).then(
+	var flag = document.getElementById('head_flag').value 
+	if(flag == ''){
+		frappe.throw('Please Select Flag!')
+	}
+	var fq = document.getElementById('fee_head_frequency').value 
+	if(fq == ''){
+		frappe.throw('Please Select Frequency!')
+	}
+	var email = document.getElementById('fee_head_emails').value 
+	var fee_head = document.getElementById('fee_head_name').value 
+	if(fee_head == ''){
+		frappe.throw('Please Enter a FEE HEAD!')
+	}
+	frappe.db.exists("Fee Category",fee_head).then(
 		res => {if(res){
-			frappe.throw('Fee Type Already Exists!')
+			frappe.throw('Fee Category Already Exists!')
 		} }
 	)
 	frappe.call({
-		method: 'insert_fee_type',
+		method: 'insert_fee_category',
 		type: "POST",
 		args: {
 			'fin_yr': fin_yr,
-			'desc': description,
-			'fee_type': fee_type
+			'fee_type': ft,
+			'flag':flag,
+			'fq': fq,
+			'email': email,
+			'fee_head': fee_head
 		},
 	callback: function(r){
 		get_table()
