@@ -12,6 +12,7 @@
  ],
  "fields": [
   {
+   "allow_in_quick_entry": 1,
    "fieldname": "flag",
    "fieldtype": "Data",
    "in_list_view": 1,
@@ -22,7 +23,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-06-21 16:44:56.482050",
+ "modified": "2023-06-27 09:10:35.610652",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Fee Flag",
@@ -42,6 +43,7 @@
    "write": 1
   }
  ],
+ "quick_entry": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []

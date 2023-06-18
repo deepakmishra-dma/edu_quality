@@ -17,6 +17,7 @@ async function fee_type_form(wrapper){
 	<td><label  for="textinput">Financial Year : <span style="font-weight:bold; color:#F00;"> *</span></label></td>
 	<td><label class="select">
 	  <select id="ins_rel_head_type_academic_year" name="ins_rel_head_type_academic_year" style="width:300px">
+	  <select id="ins_rel_head_type_academic_year" name="ins_rel_head_type_academic_year" style="width:300px">
 	  </select><i></i></label></td>
 	</tr>
 	<tr>
@@ -74,6 +75,7 @@ async function fee_type_form(wrapper){
 	form2 = `<table class="table1" style="margin:10px 10px 0;" id="dataTable" name="dataTable">
 	<tbody><tr>
 	  <td><input type="checkbox" name="chk" style="display:none"></td>
+	  <td><input type="checkbox" name="chk" style="display:none"></td>
 	  <td>
 		<label>Fee Head Name : <span style="font-weight:bold; color:#F00;">*</span></label>
 	  </td>
@@ -103,6 +105,7 @@ async function fee_type_form(wrapper){
 	container.append(form2)
 	form3 = `<table class="table1" style="margin:5px 5px 0;">
 	<tbody><tr style="display:none;">
+	<tbody><tr style="display:none;">
 	  <td>
 							  <input value="Add Heads" onclick="addRow('dataTable')" class="button_new" type="button" title="Add More Fee Heads under this...">
 						  </td>
@@ -122,16 +125,19 @@ async function fee_type_form(wrapper){
 		<div id="inst">
 		  <label class="select">
 			<select id="inst_name" name="inst_name[]" class="validate[required]" style="min-width: 190px;">
+			<select id="inst_name" name="inst_name[]" class="validate[required]" style="min-width: 190px;">
 			   </select><i></i>
 		  </label>
 		</div><div id="school" style="display: none;">
 		  <label class="select">
+			<select id="school_name" name="school_name[]" class="validate[required]" style="min-width: 190px;">
 			<select id="school_name" name="school_name[]" class="validate[required]" style="min-width: 190px;">
 			   </select><i></i>
 		  </label>
 		</div>
 	  </td>
 	  <td>
+							  <input type="submit" style="" class="button_new" value="Save" name="add_relation" id="add_relation" onclick="submit_form()">
 							  <input type="submit" style="" class="button_new" value="Save" name="add_relation" id="add_relation" onclick="submit_form()">
 						  </td>
 	  <td>
@@ -142,6 +148,10 @@ async function fee_type_form(wrapper){
   	</tbody></table>`
 	container.append(form3)
 	get_fin_yr()
+	get_class()
+	get_fee_category()
+	get_institution()
+	get_school()
 	get_class()
 	get_fee_category()
 	get_institution()
@@ -177,14 +187,20 @@ async function fee_type_form(wrapper){
 	radioButtons.forEach(radio => {
 		radio.addEventListener('click', handleRadioClick);
 	});
+	const radioButtons = document.querySelectorAll('input[name="fee_refer"]');
+	radioButtons.forEach(radio => {
+		radio.addEventListener('click', handleRadioClick);
+	});
 }
 
 
 function delete_item(item){
 	frappe.call({
 		method: 'delete_fee_structure',
+		method: 'delete_fee_structure',
 		type: "POST",
 		args: {
+			'fee_structure': item
 			'fee_structure': item
 		},
 	callback: function(r){
@@ -219,15 +235,83 @@ async function get_table(){
 					html = html +  "<td>"+ fs.fin_yr + "</td>"
 					html = html + `<td><img id='`+ fs.name + `' width="18" height="18" src="/files/remove.png" title="Remove this" onclick=delete_item(this.id)></td></tr>`
 				})
+	frappe.call({
+		method: 'get_fee_structure',
+		type: "GET",
+	callback: function(r){
+		var table = document.getElementById('table3')
+		table.innerHTML = ''
+		var html = `<tbody><tr>
+		<th>Class Name</th>
+		<th>Fee Head Name</th>
+		<th>Fee Head Type</th>
+		<th>Fee Head Amount</th>
+		<th>Institute/School Name</th>
+		<th>Financial Year</th>
+		<th style="">Del</th>
+		</tr>
+		<tr>`
+		r.message.forEach(fs =>{
+					html = html + `<tr id="row-`+ fs.name + `"><td>`+ fs.program + "</td>"
+					html = html +  "<td>"+ fs.category + "</td>"
+					html = html +  "<td>"+ fs.type + "</td>"
+					html = html +  "<td>"+ fs.amount + "</td>"
+					html = html +  "<td>"+ fs.school + "</td>"
+					html = html +  "<td>"+ fs.fin_yr + "</td>"
+					html = html + `<td><img id='`+ fs.name + `' width="18" height="18" src="/files/remove.png" title="Remove this" onclick=delete_item(this.id)></td></tr>`
+				})
 			html = html + '</tbody>'
 			table.innerHTML = html
 		}
+	})
 	})
 }
 
 function get_fin_yr(){
 	frappe.db.get_list('Financial Year').then(
 		res =>{
+			let select = document.getElementById('ins_rel_head_type_academic_year')
+			res.forEach(yr =>{
+				let option = document.createElement('option')
+				option.value = yr.name
+				option.innerHTML = yr.name
+				select.appendChild(option)
+			})
+		}
+	)
+}
+
+function get_class(){
+	frappe.db.get_list('Program').then(
+		res =>{
+			let select = document.getElementById('class_name')
+			res.forEach(yr =>{
+				let option = document.createElement('option')
+				option.value = yr.name
+				option.innerHTML = yr.name
+				select.appendChild(option)
+			})
+		}
+	)
+}
+function get_school(){
+	frappe.db.get_list('School').then(
+		res =>{
+			let select = document.getElementById('school_name')
+			res.forEach(yr =>{
+				let option = document.createElement('option')
+				option.value = yr.name
+				option.innerHTML = yr.name
+				select.appendChild(option)
+			})
+		}
+	)
+}
+
+function get_institution(){
+	frappe.db.get_list('Institution').then(
+		res =>{
+			let select = document.getElementById('inst_name')
 			let select = document.getElementById('ins_rel_head_type_academic_year')
 			res.forEach(yr =>{
 				let option = document.createElement('option')
@@ -294,11 +378,31 @@ function get_fee_category(){
 	)
 }
 
+function get_fee_category(){
+	frappe.db.get_list('Fee Category').then(
+		res =>{
+			let select = document.getElementById('fee_head_name1')
+			res.forEach(ft =>{
+				let option = document.createElement('option')
+				option.value = ft.name
+				option.innerHTML = ft.name
+				select.appendChild(option)
+			})
+		}
+	)
+}
+
 async function submit_form(){
+	var fin_yr = document.getElementById('ins_rel_head_type_academic_year').value 
 	var fin_yr = document.getElementById('ins_rel_head_type_academic_year').value 
 	if(fin_yr == 'Select Year'){
 		frappe.throw('Please Select Financial Year!')
 	}
+	var class_name = document.getElementById('class_name').value 
+	if(class_name==''){
+		frappe.throw('Please Select the Class!')
+	}
+	var fee_type = document.getElementById('fee_head_name1').value  
 	var class_name = document.getElementById('class_name').value 
 	if(class_name==''){
 		frappe.throw('Please Select the Class!')
@@ -316,12 +420,29 @@ async function submit_form(){
 	var ins_name = document.getElementById('inst_name').value}
 	else{
 		var ins_name = document.getElementById('school_name').value
+		frappe.throw('Please Select a Fee Head!')
+	}
+	var amount = document.getElementById('fee_head_amt').value 
+	if(amount == ''){
+		frappe.throw('Please Enter an Amount!')
+	}
+	var institution = document.getElementById('yes').value 
+	if(institution){
+	var ins_name = document.getElementById('inst_name').value}
+	else{
+		var ins_name = document.getElementById('school_name').value
 	}
 	frappe.call({
+		method: 'insert_fee_structure',
 		method: 'insert_fee_structure',
 		type: "POST",
 		args: {
 			'fin_yr': fin_yr,
+			'class_name': class_name,
+			'fee_type': fee_type,
+			'amount':amount,
+			'is_ins':institution,
+			'ins_name': ins_name
 			'class_name': class_name,
 			'fee_type': fee_type,
 			'amount':amount,
