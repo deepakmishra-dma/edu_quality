@@ -203,5 +203,9 @@ app_license = "MIT"
 fixtures = [
     {"dt": "Server Script", "filters": [
         ["module","=","Edu Quality"]
+    ]},
+    {"dt": "Property Setter", "filters": [
+        ["module","=","Edu Quality"]
     ]}
+
 ]
