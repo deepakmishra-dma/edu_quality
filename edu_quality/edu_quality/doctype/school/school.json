@@ -34,7 +34,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-06-16 14:16:57.380207",
+ "modified": "2023-06-27 09:12:07.044349",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "School",
@@ -54,6 +54,7 @@
    "write": 1
   }
  ],
+ "quick_entry": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []
