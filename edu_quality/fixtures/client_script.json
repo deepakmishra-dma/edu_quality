@@ -1,0 +1,24 @@
+[
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Fee Structure",
+  "enabled": 1,
+  "modified": "2023-06-27 15:14:07.950359",
+  "module": "Edu Quality",
+  "name": "Fee Structure - Deposits",
+  "script": "frappe.ui.form.on('Fee Component', {\n    amount: function(frm) {\n    var total_amount = 0;\n    for (var i=0;i<frm.doc.components.length;i++) {\n    \ttotal_amount += frm.doc.components[i].amount;\n    }\n    for (i=0;i<frm.doc.deposits.length;i++) {\n    \ttotal_amount += frm.doc.deposits[i].amount;\n    }\n    frm.set_value('total_amount', total_amount);\n    }\n});\n\nfrappe.ui.form.on('Deposits', {\n    amount: function(frm) {\n    var total_amount = 0;\n    for (var i=0;i<frm.doc.components.length;i++) {\n    \ttotal_amount += frm.doc.components[i].amount;\n    }\n    for (i=0;i<frm.doc.deposits.length;i++) {\n    \ttotal_amount += frm.doc.deposits[i].amount;\n    }\n    frm.set_value('total_amount', total_amount);\n    }\n});\n",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Fee Schedule",
+  "enabled": 1,
+  "modified": "2023-06-27 15:27:40.749034",
+  "module": "Edu Quality",
+  "name": "Fee Schedule Deposits",
+  "script": "frappe.ui.form.on('Fee Component', {\n    amount: function(frm) {\n    var total_amount = 0;\n    for (var i=0;i<frm.doc.components.length;i++) {\n    \ttotal_amount += frm.doc.components[i].amount;\n    }\n    for (i=0;i<frm.doc.deposits.length;i++) {\n    \ttotal_amount += frm.doc.deposits[i].amount;\n    }\n    frm.set_value('total_amount', total_amount);\n    }\n});\n\nfrappe.ui.form.on('Deposits', {\n    amount: function(frm) {\n    var total_amount = 0;\n    for (var i=0;i<frm.doc.components.length;i++) {\n    \ttotal_amount += frm.doc.components[i].amount;\n    }\n    for (i=0;i<frm.doc.deposits.length;i++) {\n    \ttotal_amount += frm.doc.deposits[i].amount;\n    }\n    frm.set_value('total_amount', total_amount);\n    }\n});\n",
+  "view": "Form"
+ }
+]

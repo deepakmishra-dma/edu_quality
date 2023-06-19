@@ -206,6 +206,9 @@ fixtures = [
     ]},
     {"dt": "Property Setter", "filters": [
         ["module","=","Edu Quality"]
+    ]},
+    {"dt": "Client Script", "filters": [
+        ["module","=","Edu Quality"]
     ]}
 
 ]
