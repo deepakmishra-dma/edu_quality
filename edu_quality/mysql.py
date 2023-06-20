@@ -35,7 +35,7 @@ def sync_data(host, user, password, database, mysql_table, doctype):
         mysql_rows = mysql_cursor.fetchall()
 
         # Iterate over the rows and create Frappe records
-        for row in mysql_rows[:5]:
+        for row in mysql_rows:
             frappe_data = {}
             for i, value in enumerate(row):
                 frappe_data[column_names[i]] = value
@@ -71,10 +71,21 @@ def sync_data(host, user, password, database, mysql_table, doctype):
                 if frappe_data.get("country") not in countries
                 else frappe_data.get("country")
             )
-            # date_of_leaving = frappe_data.get("leaving_date")
+
+            date_of_leaving = frappe_data.get("leaving_date")
+            joining_date = frappe_data.get("joining_date")
+            if date_of_leaving is not None:
+                joining_date = date_of_leaving - frappe.utils.datetime.timedelta(
+                    days=365
+                )
+                pass
+            else:
+                joining_date = ""
+
             student_name = (
                 f"{first_name} {'' if middle_name==None else middle_name} {last_name}"
             )
+            student_email_id = f"{str(first_name).lower().replace(' ', '')}{student_mobile_number[:5] if student_mobile_number else ''}@walnut.edu"
             try:
                 if not frappe.db.exists(doctype, {"form_code": form_code}):
                     new_doc = frappe.get_doc(
@@ -94,12 +105,15 @@ def sync_data(host, user, password, database, mysql_table, doctype):
                             "city": city,
                             "state": state,
                             "country": country,
-                            # "date_of_leaving": date_of_leaving,
+                            "student_email_id": student_email_id,
+                            "joining_date": joining_date,
+                            "date_of_leaving": date_of_leaving,
                             "student_name": student_name,
                             "doctype": doctype,
                         }
                     )
                     new_doc.insert(ignore_permissions=True)
+                    frappe.db.commit()
 
                 else:
                     doc = frappe.get_doc({"doctype": doctype, "form_code": form_code})
@@ -119,11 +133,14 @@ def sync_data(host, user, password, database, mysql_table, doctype):
                             "city": city,
                             "state": state,
                             "country": country,
-                            # "date_of_leaving": date_of_leaving,
+                            "joining_date": joining_date,
+                            "date_of_leaving": date_of_leaving,
                             "student_name": student_name,
                         }
                     )
                     doc.save(ignore_permissions=True)
+                    frappe.db.commit()
+
 
                 print(f"Frappe document created: {new_doc.name}")
             except Exception as ex:
