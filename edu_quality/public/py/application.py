@@ -42,5 +42,3 @@ def get_deposits(doc):
             'amount': deposit.amount
         })
     
-
-    
