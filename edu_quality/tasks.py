@@ -2,5 +2,14 @@ import frappe
 
 
 def cron():
-    frappe.msgprint("Scheduler for MySQL is running")
-    frappe.enqueue("edu_quality.mysql.migrate_mysql", is_async=True)
+    config = frappe.get_site_config()
+    databases = config.get("databases")
+    for database in databases:
+        frappe.enqueue(
+            "edu_quality.mysql.migrate_mysql",
+            database=database,
+            is_async=True,
+            queue="long",
+            enqueue_after_commit=True,
+            at_front=True,
+        )

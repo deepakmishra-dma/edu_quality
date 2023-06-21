@@ -2,21 +2,16 @@ import frappe
 import mysql.connector
 
 
-def migrate_mysql():
+def migrate_mysql(database):
+    frappe.flags.in_import = True
     frappe.msgprint("Migrating....")
     config = frappe.get_site_config()
     mysql_host = config.get("mysql_host")
     mysql_user = config.get("mysql_user")
     mysql_password = config.get("mysql_password")
-    databases = config.get("databases")
     table_name = config.get("table_name")
     doctype = config.get("doctype")
-
-    for database in databases:
-        data = sync_data(
-            mysql_host, mysql_user, mysql_password, database, table_name, doctype
-        )
-    return data
+    sync_data(mysql_host, mysql_user, mysql_password, database, table_name, doctype)
 
 
 def sync_data(host, user, password, database, mysql_table, doctype):
@@ -78,7 +73,6 @@ def sync_data(host, user, password, database, mysql_table, doctype):
                 joining_date = date_of_leaving - frappe.utils.datetime.timedelta(
                     days=365
                 )
-                pass
             else:
                 joining_date = ""
 
@@ -91,6 +85,7 @@ def sync_data(host, user, password, database, mysql_table, doctype):
                     new_doc = frappe.get_doc(
                         {
                             "form_code": form_code,
+                            "enabled": 1,
                             "first_name": first_name,
                             "middle_name": middle_name,
                             "last_name": last_name,
@@ -113,12 +108,12 @@ def sync_data(host, user, password, database, mysql_table, doctype):
                         }
                     )
                     new_doc.insert(ignore_permissions=True)
-                    frappe.db.commit()
 
                 else:
                     doc = frappe.get_doc({"doctype": doctype, "form_code": form_code})
                     doc.update(
                         {
+                            "enabled": 1,
                             "first_name": first_name,
                             "middle_name": middle_name,
                             "last_name": last_name,
@@ -139,12 +134,11 @@ def sync_data(host, user, password, database, mysql_table, doctype):
                         }
                     )
                     doc.save(ignore_permissions=True)
-                    frappe.db.commit()
-
 
                 print(f"Frappe document created: {new_doc.name}")
             except Exception as ex:
                 print(f"Error Occured: {repr(ex)}")
+            frappe.db.commit()
         return "Success"
     except Exception as ex:
         return f"Error Occured: {repr(ex)}"

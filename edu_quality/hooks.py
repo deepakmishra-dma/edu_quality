@@ -114,7 +114,7 @@ app_license = "MIT"
 # ---------------
 scheduler_events = {
     "cron": {
-        "*/5 * * * *": [
+        "0 * * * *": [
             "edu_quality.tasks.cron"
         ]
     }
