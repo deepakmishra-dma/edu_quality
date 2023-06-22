@@ -15,13 +15,15 @@ def before_save(doc,method=None):
     doc.fee_schedule = fee_schedule.name 
     doc.fee_structure = fee_schedule.fee_structure
     doc.fee_components = []
-    for component in fee_schedule.components:
-        doc.append('fee_components',{
-            'fees_category':component.fees_category,
-            'amount':component.amount,
-            'description': component.description
-            })
-    get_deposits(doc)
+    if frappe.db.get_single_value("Fees Settings",'apply_fees'):
+        for component in fee_schedule.components:
+            doc.append('fee_components',{
+                'fees_category':component.fees_category,
+                'amount':component.amount,
+                'description': component.description
+                })
+    if frappe.db.get_single_value("Fees Settings",'apply_deposits'):
+        get_deposits(doc)
     calculate_total(doc)
 
 def calculate_total(doc):
