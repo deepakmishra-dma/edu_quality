@@ -105,6 +105,9 @@ doctype_js = {"Student Applicant" : "public/js/application.js"}
 doc_events = {
 	"Student Applicant" :{
         "before_save":"edu_quality.public.py.application.before_save"
+    },
+    "Program Enrollment":{
+        "after_insert":"edu_quality.public.py.fee.create_fees"
     }
 }
 
