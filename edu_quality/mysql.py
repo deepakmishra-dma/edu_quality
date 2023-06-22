@@ -3,7 +3,7 @@ import mysql.connector
 
 
 def migrate_mysql(database):
-    frappe.flags.in_import = True
+    frappe.flags.in_import = False
     frappe.msgprint("Migrating....")
     config = frappe.get_site_config()
     mysql_host = config.get("mysql_host")
