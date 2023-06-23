@@ -94,9 +94,9 @@ doctype_js = {"Student Applicant" : "public/js/application.js"}
 # ---------------
 # Override standard doctype classes
 
-# override_doctype_class = {
-#	"ToDo": "custom_app.overrides.CustomToDo"
-# }
+override_doctype_class = {
+	"Payment Request": "edu_quality.public.py.fee.CustomPaymentRequest"
+}
 
 # Document Events
 # ---------------
@@ -111,6 +111,9 @@ doc_events = {
     },
     "Fees":{
         "after_insert":"edu_quality.public.py.fee.fees_after_insert"
+    },
+    "Student":{
+        'autoname': "edu_quality.public.py.student.autoname"
     }
 }
 
