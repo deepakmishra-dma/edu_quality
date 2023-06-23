@@ -14,7 +14,6 @@ def create_fees(doc,method=None):
                 "company": student_applicant.institution,
                 "due_date": frappe.db.get_value("Fee Schedule",student_applicant.fee_schedule,'due_date')
             })
-            total = 0
             if student_applicant.application_fees:
                 fees.append("components",{
                     'fees_category':"Application Fees",
@@ -28,13 +27,21 @@ def create_fees(doc,method=None):
                     'description': component.description
                 })
             for deposit in student_applicant.deposits:
-                total += deposit.amount
-                fees.append("deposits",{
-                    'safety_deposit': deposit.safety_deposit,
+                fees.append("components",{
+                    'fees_category': deposit.safety_deposit,
                     'amount': deposit.amount
                 })
-            fees.total_amount = total
             fees.insert()
             fees.submit()
     except Exception as e:
         frappe.throw(str(e))
+
+
+def fees_after_insert(doc,method=None):
+    for fee in doc.components:
+        if frappe.db.exists("Security Deposit",fee.fees_category):
+            log = frappe.new_doc("Security Deposit Entry")
+            log.security_deposit = fee.fees_category 
+            log.amount_paid = fee.amount 
+            log.fees = doc.name 
+            log.insert()

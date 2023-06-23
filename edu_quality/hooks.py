@@ -108,6 +108,9 @@ doc_events = {
     },
     "Program Enrollment":{
         "after_insert":"edu_quality.public.py.fee.create_fees"
+    },
+    "Fees":{
+        "after_insert":"edu_quality.public.py.fee.fees_after_insert"
     }
 }
 

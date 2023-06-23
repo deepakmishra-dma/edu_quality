@@ -1,0 +1,59 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-07-05 09:16:36.943695",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "academic_year",
+  "reference_numbers",
+  "prefixes"
+ ],
+ "fields": [
+  {
+   "fieldname": "academic_year",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Academic year",
+   "options": "Academic Year",
+   "reqd": 1
+  },
+  {
+   "fieldname": "reference_numbers",
+   "fieldtype": "Table",
+   "label": "Reference Numbers",
+   "options": "Reference Number Table"
+  },
+  {
+   "fieldname": "prefixes",
+   "fieldtype": "Table",
+   "label": "Prefixes",
+   "options": "Prefix Table"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2023-07-05 09:18:47.910477",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "Reference Number Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
