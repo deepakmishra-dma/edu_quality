@@ -30,5 +30,37 @@
   "reference_doctype": "Fee Schedule",
   "script": "doc.total_amount = 0\r\nfor d in doc.components:\r\n\tdoc.total_amount = doc.total_amount +  d.amount\r\nfor d in doc.deposits:\r\n    doc.total_amount = doc.total_amount + d.amount ",
   "script_type": "DocType Event"
+ },
+ {
+  "allow_guest": 0,
+  "api_method": null,
+  "cron_format": null,
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Server Script",
+  "doctype_event": "After Submit",
+  "event_frequency": "All",
+  "modified": "2023-07-13 16:40:20.944472",
+  "module": "Fees",
+  "name": "Payment Link",
+  "reference_doctype": "Payment Request",
+  "script": "doc.payment_url = frappe.utils.get_url() + \"/app/payment-redirect?payment_request=\" + doc.name ",
+  "script_type": "DocType Event"
+ },
+ {
+  "allow_guest": 0,
+  "api_method": "generate_payment_url",
+  "cron_format": null,
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Server Script",
+  "doctype_event": "Before Insert",
+  "event_frequency": "All",
+  "modified": "2023-07-13 16:50:34.471016",
+  "module": "Fees",
+  "name": "Generate Payment URL",
+  "reference_doctype": null,
+  "script": "doc = frappe.get_doc(\"Payment Request\",frappe.form_dict.doc)\nfrappe.response['message'] = doc.get_payment_url()",
+  "script_type": "API"
  }
 ]

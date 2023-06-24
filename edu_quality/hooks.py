@@ -208,13 +208,13 @@ scheduler_events = {
 
 fixtures = [
     {"dt": "Server Script", "filters": [
-        ["module","=","Edu Quality"]
+        ["module","in",["Edu Quality","Fees"]]
     ]},
     {"dt": "Property Setter", "filters": [
-        ["module","=","Edu Quality"]
+        ["module","in",["Edu Quality","Fees"]]
     ]},
     {"dt": "Client Script", "filters": [
-        ["module","=","Edu Quality"]
+        ["module","in",["Edu Quality","Fees"]]
     ]}
 
 ]
