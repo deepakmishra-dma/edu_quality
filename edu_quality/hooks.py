@@ -98,7 +98,7 @@ doctype_js = {
 # Override standard doctype classes
 
 override_doctype_class = {
-	"Payment Request": "edu_quality.public.py.fee.CustomPaymentRequest"
+	"Payment Request": "edu_quality.overrides.CustomPaymentRequest"
 }
 
 # Document Events
@@ -122,7 +122,13 @@ doc_events = {
 
 # Scheduled Tasks
 # ---------------
-
+scheduler_events = {
+    "cron": {
+        "0 * * * *": [
+            "edu_quality.tasks.cron"
+        ]
+    }
+}
 # scheduler_events = {
 #	"all": [
 #		"edu_quality.tasks.all"
@@ -212,13 +218,13 @@ doc_events = {
 
 fixtures = [
     {"dt": "Server Script", "filters": [
-        ["module","=","Edu Quality"]
+        ["module","in",["Edu Quality","Fees"]]
     ]},
     {"dt": "Property Setter", "filters": [
-        ["module","=","Edu Quality"]
+        ["module","in",["Edu Quality","Fees"]]
     ]},
     {"dt": "Client Script", "filters": [
-        ["module","=","Edu Quality"]
+        ["module","in",["Edu Quality","Fees"]]
     ]}
 
 ]
