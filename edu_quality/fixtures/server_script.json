@@ -40,11 +40,11 @@
   "doctype": "Server Script",
   "doctype_event": "After Submit",
   "event_frequency": "All",
-  "modified": "2023-07-13 16:40:20.944472",
+  "modified": "2023-07-17 14:19:01.887765",
   "module": "Fees",
   "name": "Payment Link",
   "reference_doctype": "Payment Request",
-  "script": "doc.payment_url = frappe.utils.get_url() + \"/app/payment-redirect?payment_request=\" + doc.name ",
+  "script": "doc.payment_url = frappe.utils.get_url() + \"/app/payment-redirect?payment_request=\" + frappe.utils.generate_hash(doc.name,length=20)",
   "script_type": "DocType Event"
  },
  {

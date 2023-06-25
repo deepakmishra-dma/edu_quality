@@ -46,12 +46,29 @@ function get_student_data() {
 				</div>
             <div class="d-flex flex-row justify-content-center align-items-center mt-3"> 
 				<span class="number">`+ r.message.due_amount + ` <span class="follow">INR</span></span> </div>
-				<span class="number">Breakup</span>`
-	var breakup = r.message.breakup
+				<span class="number">Breakup</span>
+				<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Fee Category</th>
+      <th scope="col">Amount</th>
+    </tr>
+  </thead>
+  <tbody>
+  `
+  	var breakup = r.message.breakup
+	var i = 1;
 	breakup.forEach(element => {
-		html = html + `<span class="follow">` + element.fees_category + " --- " + element.amount +`</span>`
+		html = html + `<tr>
+		<th scope="row">`+ String(i) +`</th>
+		<td>`+ element.fees_category +`</td>
+		<td>`+ element.amount + `</td>
+	  </tr>`
+	  i = i+1
 	});
-	html = html + `<div class=" d-flex mt-2"> <a href="`+ r.message.payment_url + `"><button class="btn1 btn-dark">Proceed To Pay</button></a> </div>
+	html = html + `</tbody>
+	</table><div class=" d-flex mt-2"> <a href="`+ r.message.payment_url + `"><button class="btn1 btn-dark">Proceed To Pay</button></a> </div>
             <div class="text mt-3"> <span>Note : If the receipt is not generated, but the amount is deducted from your account then please send an email with transaction details to 'feedback@walnutedu.in'. </span> </div>
         	</div>
 		</div>
