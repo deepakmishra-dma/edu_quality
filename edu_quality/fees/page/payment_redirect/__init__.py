@@ -16,7 +16,7 @@ def cache_data(ttl):
         return check_cache_exists
     return cache_processor
 
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=True)
 def get_payment_details(**kwargs):
     payment_request = frappe.get_value("Payment Request",{'payment_hash': kwargs.get('doc')})
     payment_request = frappe.get_doc("Payment Request",payment_request)

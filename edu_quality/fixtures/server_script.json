@@ -40,11 +40,11 @@
   "doctype": "Server Script",
   "doctype_event": "After Submit",
   "event_frequency": "All",
-  "modified": "2023-07-17 16:07:58.602322",
+  "modified": "2023-07-18 08:34:11.314200",
   "module": "Fees",
   "name": "Payment Link",
   "reference_doctype": "Payment Request",
-  "script": "try: \n    hash = frappe.utils.generate_hash(doc.name,length=20) \n    frappe.db.set_value(\"Payment Request\",doc.name,'payment_hash',hash) \n    url = frappe.utils.get_url() + \"/app/payment-redirect?payment_request=\" + hash \n    frappe.db.set_value(\"Payment Request\",doc.name,'payment_url',url) \nexcept Exception as e: \n    frappe.logger('hash').exception(e)",
+  "script": "try: \n    hash = frappe.utils.generate_hash(doc.name,length=20) \n    frappe.db.set_value(\"Payment Request\",doc.name,'payment_hash',hash) \n    url = frappe.utils.get_url() + \"/payment?payment_request=\" + hash \n    frappe.db.set_value(\"Payment Request\",doc.name,'payment_url',url) \nexcept Exception as e: \n    frappe.logger('hash').exception(e)",
   "script_type": "DocType Event"
  },
  {
@@ -72,11 +72,11 @@
   "doctype": "Server Script",
   "doctype_event": "Before Insert",
   "event_frequency": "All",
-  "modified": "2023-07-17 17:28:15.179682",
+  "modified": "2023-07-17 18:36:15.856310",
   "module": "Fees",
   "name": "Payment Charge",
   "reference_doctype": null,
-  "script": "charge = 0\nif frappe.db.exists(\"Payment Methods\",{'method':frappe.form_dict.pm}):\n    charge = frappe.db.get_value(\"Payment Methods\",{'method':frappe.form_dict.pm},'charge')\npayment_request = frappe.get_value(\"Payment Request\",{'payment_hash':frappe.form_dict.pr},'name')\npayment_request = frappe.get_doc(\"Payment Request\",payment_request)\nfrappe.response['message'] = {'charge':charge,'url':payment_request.get_payment_url(payment_method=frappe.form_dict.pm)}",
+  "script": "charge = 0\nif frappe.db.exists(\"Payment Methods\",{'method':frappe.form_dict.pm}):\n    charge = frappe.db.get_value(\"Payment Methods\",{'method':frappe.form_dict.pm},'charge')\npayment_request = frappe.db.get_value(\"Payment Request\",{'payment_hash':frappe.form_dict.pr},'name')\npayment_request = frappe.get_doc(\"Payment Request\",payment_request)\nfrappe.response['message'] = {'charge':charge,'url':\"url1\"}#payment_request.get_payment_url(payment_method=frappe.form_dict.pm)}",
   "script_type": "API"
  }
 ]

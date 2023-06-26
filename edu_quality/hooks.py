@@ -225,6 +225,7 @@ fixtures = [
     ]},
     {"dt": "Client Script", "filters": [
         ["module","in",["Edu Quality","Fees"]]
-    ]}
+    ]},
+    {"dt": "Web Page"}
 
 ]
