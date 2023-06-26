@@ -34,13 +34,14 @@ def get_payment_details(**kwargs):
         'class': fees.program,
         'student_id': fees.student,
         'due_amount': fees.get_formatted('outstanding_amount'),
-        'payment_url': payment_request.get_payment_url(),
+        'payment_url': payment_url(payment_request,payment_method="UPI"),
         "breakup": breakup
     }
 
 
 @cache_data(ttl=900)
-def payment_url(payment_request):
-    return payment_request.get_payment_url()
+@frappe.whitelist(allow_guest=True)
+def payment_url(payment_request,payment_method="UPI"):
+    return payment_request.get_payment_url(payment_method=payment_method)
 
 

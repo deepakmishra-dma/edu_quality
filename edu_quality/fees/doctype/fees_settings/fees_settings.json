@@ -9,7 +9,9 @@
  "field_order": [
   "student_applicant_section",
   "apply_deposits",
-  "apply_fees"
+  "apply_fees",
+  "payment_methods_section",
+  "payment_method"
  ],
  "fields": [
   {
@@ -28,12 +30,23 @@
    "fieldname": "apply_fees",
    "fieldtype": "Check",
    "label": "Apply Fees"
+  },
+  {
+   "fieldname": "payment_methods_section",
+   "fieldtype": "Section Break",
+   "label": "Payment Methods"
+  },
+  {
+   "fieldname": "payment_method",
+   "fieldtype": "Table",
+   "label": "payment method",
+   "options": "Payment Methods"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-07-09 21:10:58.575569",
+ "modified": "2023-07-17 16:19:51.314279",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Fees Settings",

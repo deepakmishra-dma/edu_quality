@@ -1,0 +1,43 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-07-17 16:18:34.066748",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "method",
+  "charge"
+ ],
+ "fields": [
+  {
+   "fieldname": "method",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Method",
+   "options": "Net Banking\nCredit Card\nDebit card\nMobile Wallet\nUPI\nOla Money\nEMI\nPay Later\nE - CHALLAN\nIMPS / NEFT / RTGS",
+   "reqd": 1,
+   "sort_options": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "charge",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Charge",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2023-07-17 16:21:08.204445",
+ "modified_by": "Administrator",
+ "module": "Fees",
+ "name": "Payment Methods",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

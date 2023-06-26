@@ -47,7 +47,7 @@ function get_student_data() {
             <div class="d-flex flex-row justify-content-center align-items-center mt-3"> 
 				<span class="number">`+ r.message.due_amount + ` <span class="follow">INR</span></span> </div>
 				<span class="number">Breakup</span>
-				<table class="table">
+				<table class="table" id='table'>
   <thead>
     <tr>
       <th scope="col">#</th>
@@ -68,10 +68,19 @@ function get_student_data() {
 	  i = i+1
 	});
 	html = html + `</tbody>
-	</table><div class=" d-flex mt-2"> <a href="`+ r.message.payment_url + `"><button class="btn1 btn-dark">Proceed To Pay</button></a> </div>
-            <div class="text mt-3"> <span>Note : If the receipt is not generated, but the amount is deducted from your account then please send an email with transaction details to 'feedback@walnutedu.in'. </span> </div>
-        	</div>
-		</div>
+	</table>
+	<span class ="follow">Payment Method:</span>
+	<span><select class="form-control" id="payment_method" onchange="change_payment()">
+	<option value="UPI">UPI</option>
+	<option value="Net Banking">NET Banking</option>
+	<option value="Credit Card">Credit Card</option>
+	<option value="Debit card">Debit card</option>
+	<option value="Mobile Wallet">Mobile Wallet</option>
+	</select></span>
+	<div class=" d-flex mt-2"> <a id="url" href="`+ r.message.payment_url + `"><button class="btn1 btn-dark">Proceed To Pay</button></a> </div>
+	<div class="text mt-3"> <span>Note : If the receipt is not generated, but the amount is deducted from your account then please send an email with transaction details to 'feedback@walnutedu.in'. </span> </div>
+	</div>
+</div>
 	</div>
 	<style>
 	* {
@@ -167,6 +176,44 @@ function get_student_data() {
 
 	})
 }
+
+var charge = 0;
+function change_payment(){
+	var method = document.getElementById("payment_method").value
+	const queryString = window.location.search;
+	const urlParams = new URLSearchParams(queryString);
+	const payment_request = urlParams.get('payment_request');
+	frappe.call({
+		method: "payment_charge",
+		type: "GET",
+		args: {
+			pm: method,
+			pr: payment_request
+		},
+		callback: function (r) {
+			var charge = r.message.charge;
+			row = document.getElementById("payment_charge_row");
+			if(row){
+				row.remove();
+
+			}
+			if(charge>0){
+				var table = document.getElementById("table");
+				table.innerHTML = table.innerHTML + `<tr id="payment_charge_row">
+				<th scope="row">`+ String(table.rows.length) +`</th>
+				<td>`+ "Payment Charges" +`</td>
+				<td>`+ String(charge) + `%</td>
+			  </tr>`
+			}
+			if(r.message.url){
+				url = document.getElementById("url");
+				url.href = r.message.url;
+			}
+		}
+
+	})
+}
+
 function redirectToPayment() {
 	const queryString = window.location.search;
 	const urlParams = new URLSearchParams(queryString);

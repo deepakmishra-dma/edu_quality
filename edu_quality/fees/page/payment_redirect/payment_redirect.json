@@ -4,13 +4,17 @@
  "docstatus": 0,
  "doctype": "Page",
  "idx": 0,
- "modified": "2023-07-13 16:26:38.356690",
+ "modified": "2023-07-17 17:20:00.827492",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "payment-redirect",
  "owner": "Administrator",
  "page_name": "payment-redirect",
- "roles": [],
+ "roles": [
+  {
+   "role": "Guest"
+  }
+ ],
  "script": null,
  "standard": "Yes",
  "style": null,
