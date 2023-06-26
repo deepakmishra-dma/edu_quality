@@ -184,7 +184,7 @@ function change_payment(){
 	const urlParams = new URLSearchParams(queryString);
 	const payment_request = urlParams.get('payment_request');
 	frappe.call({
-		method: "payment_charge",
+		method: "edu_quality.fees.page.payment_redirect.payment_charge",
 		type: "GET",
 		args: {
 			pm: method,

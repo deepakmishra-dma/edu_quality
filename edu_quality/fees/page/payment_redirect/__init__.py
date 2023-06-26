@@ -44,4 +44,11 @@ def get_payment_details(**kwargs):
 def payment_url(payment_request,payment_method="UPI"):
     return payment_request.get_payment_url(payment_method=payment_method)
 
-
+@frappe.whitelist(allow_guest=True)
+def payment_charge(**kwargs):
+    charge = 0
+    if frappe.db.exists("Payment Methods",{'method':kwargs.get('pm')}):
+        charge = frappe.db.get_value("Payment Methods",{'method':kwargs.get('pm')},'charge')
+    payment_request = frappe.get_value("Payment Request",{'payment_hash':kwargs.get('pr')},'name')
+    payment_request = frappe.get_doc("Payment Request",payment_request)
+    frappe.response['message'] = {'charge':charge,'url':payment_request.get_payment_url(payment_method=kwargs.get('pm'))}
