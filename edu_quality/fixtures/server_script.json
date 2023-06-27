@@ -72,11 +72,11 @@
   "doctype": "Server Script",
   "doctype_event": "Before Insert",
   "event_frequency": "All",
-  "modified": "2023-07-17 18:36:15.856310",
+  "modified": "2023-07-18 09:03:05.395481",
   "module": "Fees",
   "name": "Payment Charge",
   "reference_doctype": null,
-  "script": "charge = 0\nif frappe.db.exists(\"Payment Methods\",{'method':frappe.form_dict.pm}):\n    charge = frappe.db.get_value(\"Payment Methods\",{'method':frappe.form_dict.pm},'charge')\npayment_request = frappe.db.get_value(\"Payment Request\",{'payment_hash':frappe.form_dict.pr},'name')\npayment_request = frappe.get_doc(\"Payment Request\",payment_request)\nfrappe.response['message'] = {'charge':charge,'url':\"url1\"}#payment_request.get_payment_url(payment_method=frappe.form_dict.pm)}",
+  "script": "charge = 0\nif frappe.db.exists(\"Payment Methods\",{'method':frappe.form_dict.pm}):\n    charge = frappe.db.get_value(\"Payment Methods\",{'method':frappe.form_dict.pm},'charge')\npayment_request = frappe.db.get_value(\"Payment Request\",{'payment_hash':frappe.form_dict.pr},'name')\npayment_request = frappe.get_doc(\"Payment Request\",payment_request)\nfrappe.response['message'] = {'charge':charge,'url':payment_request.get_payment_url(payment_method=frappe.form_dict.pm)}",
   "script_type": "API"
  }
 ]

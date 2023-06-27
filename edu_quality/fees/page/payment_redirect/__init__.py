@@ -1,5 +1,6 @@
 import frappe 
 import pickle
+from frappe.utils.print_format import download_pdf
 
 def cache_data(ttl):
     def cache_processor(func):
@@ -35,6 +36,8 @@ def get_payment_details(**kwargs):
         'student_id': fees.student,
         'due_amount': fees.get_formatted('outstanding_amount'),
         'payment_url': payment_url(payment_request,payment_method="UPI"),
+        'status': payment_request.status,
+        'receipt_url': frappe.utils.get_url() + "/api/method/edu_quality.fees.page.payment_redirect.payment_receipt?hash="+kwargs.get('doc'),
         "breakup": breakup
     }
 
@@ -52,3 +55,19 @@ def payment_charge(**kwargs):
     payment_request = frappe.get_value("Payment Request",{'payment_hash':kwargs.get('pr')},'name')
     payment_request = frappe.get_doc("Payment Request",payment_request)
     frappe.response['message'] = {'charge':charge,'url':payment_request.get_payment_url(payment_method=kwargs.get('pm'))}
+
+@frappe.whitelist(allow_guest=True)
+def payment_receipt(hash):
+    try:
+        doc = frappe.db.get_value("Payment Request",{'payment_hash':hash},'reference_name')
+        frappe.logger("download").exception(frappe.session.user)
+        if frappe.session.user == "Guest":
+            frappe.local.login_manager.login_as("Administrator")
+            pdf = download_pdf("Fees", doc)
+            frappe.local.login_manager.login_as("Guest")
+        else:
+            pdf = download_pdf("Fees", doc)
+        return pdf
+    except Exception as e:
+        frappe.logger("download").exception(e)
+        return e
