@@ -65,6 +65,7 @@ class CustomPaymentRequest(PaymentRequest):
             )
 
         frappe.db.set_value(fees.doctype, fees.name, "outstanding_amount", 0)
+        self.db_set("status", "Paid")
 
     def get_payment_url(self, **kwargs):
         if self.reference_doctype != "Fees":
