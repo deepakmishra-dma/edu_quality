@@ -11,7 +11,9 @@
   "apply_deposits",
   "apply_fees",
   "payment_methods_section",
-  "payment_method"
+  "payment_method",
+  "surcharge_section",
+  "surcharge"
  ],
  "fields": [
   {
@@ -41,12 +43,23 @@
    "fieldtype": "Table",
    "label": "payment method",
    "options": "Payment Methods"
+  },
+  {
+   "fieldname": "surcharge_section",
+   "fieldtype": "Section Break",
+   "label": "Surcharge"
+  },
+  {
+   "default": "0",
+   "fieldname": "surcharge",
+   "fieldtype": "Check",
+   "label": "Surcharge"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-07-17 16:19:51.314279",
+ "modified": "2023-07-18 13:12:05.696674",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Fees Settings",
