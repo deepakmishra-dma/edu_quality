@@ -34,7 +34,7 @@ def get_payment_details(**kwargs):
         'due_date': fees.due_date,
         'class': fees.program,
         'student_id': fees.student,
-        'due_amount': fees.get_formatted('outstanding_amount'),
+        'due_amount': fees.get_formatted('grand_total'),
         'payment_url': payment_url(payment_request,payment_method="UPI"),
         'status': payment_request.status,
         'receipt_url': frappe.utils.get_url() + "/api/method/edu_quality.fees.page.payment_redirect.payment_receipt?hash="+kwargs.get('doc'),
