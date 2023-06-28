@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "format:{fees}-{fee_category}",
  "creation": "2023-07-19 16:03:39.219497",
  "default_view": "List",
  "doctype": "DocType",
@@ -54,10 +55,11 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-07-19 16:03:39.219497",
+ "modified": "2023-07-19 16:10:23.419102",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Fee Receipt",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {

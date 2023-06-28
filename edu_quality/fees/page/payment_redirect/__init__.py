@@ -37,7 +37,7 @@ def get_payment_details(**kwargs):
         'due_amount': fees.get_formatted('grand_total'),
         'payment_url': payment_url(payment_request,payment_method="UPI"),
         'status': payment_request.status,
-        'receipt_url': frappe.utils.get_url() + "/api/method/edu_quality.fees.page.payment_redirect.payment_receipt?hash="+kwargs.get('doc'),
+        'receipt_url': frappe.utils.get_url() + "/api/method/edu_quality.fees.page.payment_redirect.payment_receipt?fees="+payment_request.reference_name,
         "breakup": breakup
     }
 
@@ -57,16 +57,15 @@ def payment_charge(**kwargs):
     frappe.response['message'] = {'charge':charge,'url':payment_request.get_payment_url(payment_method=kwargs.get('pm'))}
 
 @frappe.whitelist(allow_guest=True)
-def payment_receipt(hash):
+def payment_receipt(fees,category):
     try:
-        doc = frappe.db.get_value("Payment Request",{'payment_hash':hash},'reference_name')
-        frappe.logger("download").exception(frappe.session.user)
+        doc = frappe.db.get_value("Fee Receipt",{'fees':fees,"fee_category":category},'name')
         if frappe.session.user == "Guest":
             frappe.local.login_manager.login_as("Administrator")
-            pdf = download_pdf("Fees", doc)
+            pdf = download_pdf("Fee Receipt", doc)
             frappe.local.login_manager.login_as("Guest")
         else:
-            pdf = download_pdf("Fees", doc)
+            pdf = download_pdf("Fee Receipt", doc)
         return pdf
     except Exception as e:
         frappe.logger("download").exception(e)
