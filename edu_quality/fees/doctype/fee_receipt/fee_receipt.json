@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "format:{fees}-{fee_category}",
+ "autoname": "format:{fees}-{company}",
  "creation": "2023-07-19 16:03:39.219497",
  "default_view": "List",
  "doctype": "DocType",
@@ -25,10 +25,9 @@
   },
   {
    "fieldname": "fee_category",
-   "fieldtype": "Link",
-   "in_list_view": 1,
+   "fieldtype": "Table MultiSelect",
    "label": "Fee Category",
-   "options": "Fee Category",
+   "options": "Fees Categories",
    "reqd": 1
   },
   {
@@ -55,7 +54,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-07-19 16:10:23.419102",
+ "modified": "2023-07-20 12:43:45.953230",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Fee Receipt",
