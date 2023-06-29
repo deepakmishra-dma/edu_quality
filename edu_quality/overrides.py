@@ -18,15 +18,12 @@ class CustomPaymentRequest(PaymentRequest):
         fee_docname = self.reference_name
         fees = frappe.get_doc(fee_doctype, fee_docname)
         company = frappe.get_doc("Company", fees.company)
-        sp = frappe.get_single("Split Payment")
-        accounts = {i.fee_category: i.label.split()[0] for i in sp.easebuzz_accounts}
-        labels = {i.label.split()[0]: i.account_name for i in sp.easebuzz_accounts}
 
         for component in fees.components:
             fee_name = component.fees_category
-            label = accounts.get(fee_name)
-            paid_to = labels.get(label) if labels.get(label) else sp.default_account
-            company = frappe.get_value("Account", paid_to, ["company"])
+            doc = frappe.get_doc("Split Payment", fee_name)
+            paid_to = doc.account
+            company = doc.company
             paid_from = frappe.get_value(
                 "Account", {"company": company, "account_type": "Receivable"}, ["name"]
             )
@@ -63,9 +60,10 @@ class CustomPaymentRequest(PaymentRequest):
                 fees.company,
                 cost_center,
             )
-
+        
         frappe.db.set_value(fees.doctype, fees.name, "outstanding_amount", 0)
         self.db_set("status", "Paid")
+        create_fee_receipt(fees)
 
     def get_payment_url(self, **kwargs):
         if self.reference_doctype != "Fees":
@@ -101,7 +99,6 @@ class CustomPaymentRequest(PaymentRequest):
 
 
 def payment_entry(doc, ref_doc, party_amount, paid_from, paid_to, company, cost_center):
-    print(doc, ref_doc, party_amount, paid_from, paid_to, company, cost_center)
     frappe.set_user("Administrator")
 
     payment_entry = frappe.get_doc(
@@ -162,3 +159,16 @@ def payment_entry(doc, ref_doc, party_amount, paid_from, paid_to, company, cost_
     payment_entry.insert(ignore_permissions=True)
     payment_entry.submit()
     return payment_entry
+
+
+def create_fee_receipt(fees):
+    for component in fees.components:
+        if component.amount > 0:
+            company = frappe.get_value("Split Payment", {"fee_category":component.fees_category}, "company")
+            fee_receipt = frappe.new_doc("Fee Receipt")
+            fee_receipt.fees = fees.name
+            fee_receipt.fee_category = component.fees_category
+            fee_receipt.company = company
+            fee_receipt.paid_on = nowdate()
+            fee_receipt.amount = component.amount
+            fee_receipt.insert(ignore_permissions=True)
