@@ -13,7 +13,8 @@
   "payment_methods_section",
   "payment_method",
   "surcharge_section",
-  "surcharge"
+  "surcharge",
+  "default_account"
  ],
  "fields": [
   {
@@ -54,12 +55,20 @@
    "fieldname": "surcharge",
    "fieldtype": "Check",
    "label": "Surcharge"
+  },
+  {
+   "fieldname": "default_account",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Default Account For Split Payments",
+   "options": "Bank Account",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-07-18 13:12:05.696674",
+ "modified": "2023-07-20 09:00:21.703706",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Fees Settings",
