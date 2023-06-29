@@ -162,13 +162,30 @@ def payment_entry(doc, ref_doc, party_amount, paid_from, paid_to, company, cost_
 
 
 def create_fee_receipt(fees):
-    for component in fees.components:
-        if component.amount > 0:
-            company = frappe.get_value("Split Payment", {"fee_category":component.fees_category}, "company")
+    try:
+        fee_categories = {}
+        amounts = {}
+        for component in fees.components:
+            fee_category = component.fees_category
+            company = frappe.get_value("Split Payment", {"fee_category":fee_category}, "company")
+            if fee_categories.get(company) is not None:
+                fee_categories[company].append(fee_category)
+                amounts[company] += component.amount
+            else:
+                fee_categories[company] = [fee_category]
+                amounts[company] = component.amount
+
+        for company, fee_categories in fee_categories.items():
             fee_receipt = frappe.new_doc("Fee Receipt")
             fee_receipt.fees = fees.name
-            fee_receipt.fee_category = component.fees_category
             fee_receipt.company = company
             fee_receipt.paid_on = nowdate()
-            fee_receipt.amount = component.amount
+            fee_receipt.amount = amounts[company]
+
+            for fee_category in fee_categories:
+                fee_receipt.append("fee_category", {
+                    "fee_category": fee_category,
+                })
             fee_receipt.insert(ignore_permissions=True)
+    except Exception as e:
+        frappe.logger("edu_quality").exception(e)
