@@ -1,0 +1,47 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-07-20 20:08:05.221500",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "discount_name",
+  "discount_percentage",
+  "discount_amount"
+ ],
+ "fields": [
+  {
+   "fieldname": "discount_name",
+   "fieldtype": "Link",
+   "label": "Discount Name",
+   "options": "Discount Configuration"
+  },
+  {
+   "fetch_from": "discount_name.discount",
+   "fieldname": "discount_percentage",
+   "fieldtype": "Data",
+   "label": "Discount Percentage"
+  },
+  {
+   "default": "0",
+   "fetch_from": "discount_name.discount_amount",
+   "fieldname": "discount_amount",
+   "fieldtype": "Currency",
+   "label": "Discount Amount",
+   "precision": "2"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2023-07-20 20:56:59.685452",
+ "modified_by": "Administrator",
+ "module": "Fees",
+ "name": "Discounts",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
