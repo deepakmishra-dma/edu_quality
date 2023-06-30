@@ -59,7 +59,10 @@ def payment_charge(**kwargs):
 @frappe.whitelist(allow_guest=True)
 def payment_receipt(fees,category):
     try:
-        doc = frappe.db.get_value("Fee Receipt",{'fees':fees,"fee_category":category},'name')
+        company = frappe.db.get_value("Split Payment",category,"company")
+        if not company:
+            company = "Unique Educational and Sports Foundation"
+        doc = frappe.db.get_value("Fee Receipt",{'fees':fees,"company":company},'name')
         if frappe.session.user == "Guest":
             frappe.local.login_manager.login_as("Administrator")
             pdf = download_pdf("Fee Receipt", doc)
