@@ -33,33 +33,33 @@ class CustomPaymentRequest(PaymentRequest):
             payment_entry(
                 self,
                 fees,
-                component.amount,
+                component.custom_amount_after_discount,
                 paid_from,
                 paid_to,
                 company,
                 cost_center,
             )
-        for deposit in fees.deposits:
-            paid_to = frappe.get_value(
-                "Account", {"company": fees.company, "account_type": "Bank"}, ["name"]
-            )
-            paid_from = frappe.get_value(
-                "Account",
-                {"company": fees.company, "account_type": "Payable"},
-                ["name"],
-            )
-            cost_center = frappe.get_value(
-                "Cost Center", {"company": fees.company}, ["name"]
-            )
-            payment_entry(
-                self,
-                fees,
-                deposit.amount,
-                paid_from,
-                paid_to,
-                fees.company,
-                cost_center,
-            )
+        # for deposit in fees.deposits:
+        #     paid_to = frappe.get_value(
+        #         "Account", {"company": fees.company, "account_type": "Bank"}, ["name"]
+        #     )
+        #     paid_from = frappe.get_value(
+        #         "Account",
+        #         {"company": fees.company, "account_type": "Payable"},
+        #         ["name"],
+        #     )
+        #     cost_center = frappe.get_value(
+        #         "Cost Center", {"company": fees.company}, ["name"]
+        #     )
+        #     payment_entry(
+        #         self,
+        #         fees,
+        #         deposit.amount,
+        #         paid_from,
+        #         paid_to,
+        #         fees.company,
+        #         cost_center,
+        #     )
         
         frappe.db.set_value(fees.doctype, fees.name, "outstanding_amount", 0)
         self.db_set("status", "Paid")
@@ -170,10 +170,10 @@ def create_fee_receipt(fees):
             company = frappe.get_value("Split Payment", {"fee_category":fee_category}, "company")
             if fee_categories.get(company) is not None:
                 fee_categories[company].append(fee_category)
-                amounts[company] += component.amount
+                amounts[company] += float(component.custom_amount_after_discount)
             else:
                 fee_categories[company] = [fee_category]
-                amounts[company] = component.amount
+                amounts[company] = float(component.custom_amount_after_discount)
 
         for company, fee_categories in fee_categories.items():
             fee_receipt = frappe.new_doc("Fee Receipt")

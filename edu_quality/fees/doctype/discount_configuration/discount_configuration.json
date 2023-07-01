@@ -11,6 +11,8 @@
   "discount_name",
   "type",
   "program",
+  "fee_structure",
+  "fee_category",
   "column_break_g8xm6",
   "academic_year",
   "discount",
@@ -63,11 +65,27 @@
    "fieldname": "enabled",
    "fieldtype": "Check",
    "label": "Enabled"
+  },
+  {
+   "fieldname": "fee_structure",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Fee Structure",
+   "options": "Fee Structure",
+   "reqd": 1
+  },
+  {
+   "fieldname": "fee_category",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Fee Category",
+   "options": "Fee Category",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-07-20 22:06:33.992932",
+ "modified": "2023-07-21 12:36:00.508219",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Discount Configuration",

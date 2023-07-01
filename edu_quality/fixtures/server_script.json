@@ -80,22 +80,22 @@
   "script_type": "API"
  },
  {
-    "allow_guest": 0,
-    "api_method": null,
-    "cron_format": null,
-    "disabled": 0,
-    "docstatus": 0,
-    "doctype": "Server Script",
-    "doctype_event": "Before Save",
-    "enable_rate_limit": 0,
-    "event_frequency": "All",
-    "modified": "2023-07-20 21:51:15.878281",
-    "module": "Fees",
-    "name": "Discount",
-    "rate_limit_count": 5,
-    "rate_limit_seconds": 86400,
-    "reference_doctype": "Fees",
-    "script": "total_amount = 0\nfor component in doc.components:\n    total_amount = total_amount + component.amount\ndoc.custom_total_amount = total_amount\n\nfor d in doc.custom_discounts:\n    discount_doc = frappe.get_doc(\"Discount Configuration\", d.discount_name)\n    if discount_doc.type == \"One Time\":\n        discount = discount_doc.discount\n        discount_amount = discount_doc.discount_amount\n        if discount_amount == 0:\n            discounted_amount = (total_amount * float(discount)) / 100\n    \n            doc.custom_discounted_amount  = discounted_amount\n            doc.grand_total = total_amount - discounted_amount\n            doc.grand_total_in_words = str(frappe.utils.in_words(doc.grand_total)).title()\n            doc.outstanding_amount = doc.grand_total\n        else:\n            doc.custom_discounted_amount  = discount_amount\n            doc.grand_total = total_amount - discount_amount\n            doc.grand_total_in_words = str(frappe.utils.in_words(doc.grand_total)).title()\n            doc.outstanding_amount = doc.grand_total",
-    "script_type": "DocType Event"
-   }
+   "allow_guest": 0,
+   "api_method": null,
+   "cron_format": null,
+   "disabled": 0,
+   "docstatus": 0,
+   "doctype": "Server Script",
+   "doctype_event": "Before Save",
+   "enable_rate_limit": 0,
+   "event_frequency": "All",
+   "modified": "2023-07-21 13:46:24.330195",
+   "module": "Fees",
+   "name": "Discount",
+   "rate_limit_count": 5,
+   "rate_limit_seconds": 86400,
+   "reference_doctype": "Fees",
+   "script": "total_amount = 0\ntotal_discount = 0\nfor i, component in enumerate(doc.components):\n    total_amount = total_amount + component.amount\n    if frappe.db.exists(\"Discount Configuration\", {\"fee_structure\": doc.fee_structure, \"fee_category\": component.fees_category, \"enabled\": 1}):\n        dis = frappe.get_doc(\"Discount Configuration\", {\"fee_structure\": doc.fee_structure, \"fee_category\": component.fees_category, \"enabled\": 1})\n        doc.components[i].custom_discount_percentage = dis.discount\n        discounted_amount = (component.amount * float(dis.discount)) / 100\n        doc.components[i].custom_discount_amount = discounted_amount\n        doc.components[i].custom_amount_after_discount = component.amount - discounted_amount\n        total_discount = total_discount + discounted_amount\n    else:\n        doc.components[i].custom_amount_after_discount = component.amount\n        \ndoc.grand_total = total_amount - total_discount\ndoc.grand_total_in_words = str(frappe.utils.in_words(doc.grand_total)).title()\ndoc.outstanding_amount = doc.grand_total",
+   "script_type": "DocType Event"
+  }
 ]
