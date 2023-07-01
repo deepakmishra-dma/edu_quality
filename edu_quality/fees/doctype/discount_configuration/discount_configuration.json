@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "field:discount_name",
+ "autoname": "format:{type}-{discount_name}",
  "creation": "2023-07-20 22:05:00.864955",
  "default_view": "List",
  "doctype": "DocType",
@@ -14,6 +14,7 @@
   "fee_structure",
   "fee_category",
   "column_break_g8xm6",
+  "company",
   "academic_year",
   "discount",
   "discount_amount",
@@ -81,15 +82,21 @@
    "label": "Fee Category",
    "options": "Fee Category",
    "reqd": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-07-21 12:36:00.508219",
+ "modified": "2023-07-21 15:14:06.294720",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Discount Configuration",
- "naming_rule": "By fieldname",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {
