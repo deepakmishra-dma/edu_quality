@@ -10,6 +10,22 @@ from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
 )
 from frappe.utils import flt, get_url, nowdate
 
+def before_save(doc,method=None):
+    try:
+        if doc.payment_plan:
+            pp = frappe.get_doc("Payment Plan",doc.payment_plan)
+            for schedule in pp.payment_schedule:
+                doc.append("payment_schedule",{
+                    'payment_term': schedule.payment_term,
+                    'description': schedule.description,
+                    'due_date': schedule.due_date,
+                    'invoice_portion': schedule.invoice_portion,
+                    'payment_amount': schedule.payment_amount,
+                    'outstanding': schedule.payment_amount,
+                })
+    except Exception as e:
+        frappe.logger("fee").exception(e)
+
 def create_fees(doc,method=None):
     try:
         doc = frappe.get_doc("Student",doc.student)

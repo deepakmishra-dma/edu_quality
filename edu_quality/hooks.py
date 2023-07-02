@@ -98,7 +98,8 @@ doctype_js = {
 # Override standard doctype classes
 
 override_doctype_class = {
-	"Payment Request": "edu_quality.overrides.CustomPaymentRequest"
+	"Payment Request": "edu_quality.overrides.CustomPaymentRequest",
+    "Fee Schedule": "edu_quality.public.py.fee_schedule.CustomFeeSchedule",
 }
 
 # Document Events
@@ -113,7 +114,11 @@ doc_events = {
         "after_insert":"edu_quality.public.py.fee.create_fees"
     },
     "Fees":{
-        "after_insert":"edu_quality.public.py.fee.fees_after_insert"
+        "after_insert":"edu_quality.public.py.fee.fees_after_insert",
+        "before_save":"edu_quality.public.py.fee.before_save"
+    },
+    "Payment Request": {
+        "before_save":"edu_quality.public.py.payment_request.before_save",
     },
     "Student":{
         'autoname': "edu_quality.public.py.student.autoname"

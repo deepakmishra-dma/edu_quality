@@ -11,6 +11,7 @@
   "program",
   "academic_year",
   "fee_structure",
+  "total_amount",
   "payment_schedule"
  ],
  "fields": [
@@ -52,11 +53,17 @@
    "label": "Payment Schedule",
    "options": "Payment Schedule",
    "reqd": 1
+  },
+  {
+   "fetch_from": "fee_structure.total_amount",
+   "fieldname": "total_amount",
+   "fieldtype": "Currency",
+   "label": "Total Amount"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-07-12 17:44:05.134703",
+ "modified": "2023-07-21 13:30:59.780098",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Payment Plan",
