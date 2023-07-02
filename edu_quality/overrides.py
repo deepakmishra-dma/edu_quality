@@ -18,7 +18,6 @@ class CustomPaymentRequest(PaymentRequest):
         fee_docname = self.reference_name
         fees = frappe.get_doc(fee_doctype, fee_docname)
         company = frappe.get_doc("Company", fees.company)
-
         for component in fees.components:
             fee_name = component.fees_category
             doc = frappe.get_doc("Split Payment", fee_name)
@@ -30,40 +29,45 @@ class CustomPaymentRequest(PaymentRequest):
             cost_center = frappe.get_value(
                 "Cost Center", {"company": company}, ["name"]
             )
+            amount = component.custom_amount_after_discount
+            if self.payment_term:
+                for schedule in fees.payment_schedule:
+                    if schedule.payment_term == doc.payment_term:
+                        amount = flt((schedule.invoice_portion/100) * amount,2)
             payment_entry(
                 self,
                 fees,
-                component.custom_amount_after_discount,
+                amount,
                 paid_from,
                 paid_to,
                 company,
                 cost_center,
             )
-        # for deposit in fees.deposits:
-        #     paid_to = frappe.get_value(
-        #         "Account", {"company": fees.company, "account_type": "Bank"}, ["name"]
-        #     )
-        #     paid_from = frappe.get_value(
-        #         "Account",
-        #         {"company": fees.company, "account_type": "Payable"},
-        #         ["name"],
-        #     )
-        #     cost_center = frappe.get_value(
-        #         "Cost Center", {"company": fees.company}, ["name"]
-        #     )
-        #     payment_entry(
-        #         self,
-        #         fees,
-        #         deposit.amount,
-        #         paid_from,
-        #         paid_to,
-        #         fees.company,
-        #         cost_center,
-        #     )
+        for deposit in fees.deposits:
+            paid_to = frappe.get_value(
+                "Account", {"company": fees.company, "account_type": "Bank"}, ["name"]
+            )
+            paid_from = frappe.get_value(
+                "Account",
+                {"company": fees.company, "account_type": "Payable"},
+                ["name"],
+            )
+            cost_center = frappe.get_value(
+                "Cost Center", {"company": fees.company}, ["name"]
+            )
+            payment_entry(
+                self,
+                fees,
+                deposit.amount,
+                paid_from,
+                paid_to,
+                fees.company,
+                cost_center,
+            )
         
         frappe.db.set_value(fees.doctype, fees.name, "outstanding_amount", 0)
         self.db_set("status", "Paid")
-        create_fee_receipt(fees)
+        create_fee_receipt(fees,self.payment_term)
 
     def get_payment_url(self, **kwargs):
         if self.reference_doctype != "Fees":
@@ -161,19 +165,24 @@ def payment_entry(doc, ref_doc, party_amount, paid_from, paid_to, company, cost_
     return payment_entry
 
 
-def create_fee_receipt(fees):
+def create_fee_receipt(fees,payment_term=None):
     try:
         fee_categories = {}
         amounts = {}
         for component in fees.components:
+            amount = component.custom_amount_after_discount
+            if payment_term:
+                for schedule in fees.payment_schedule:
+                    if schedule.payment_term == payment_term:
+                        amount = flt((schedule.invoice_portion/100) * amount,2)
             fee_category = component.fees_category
             company = frappe.get_value("Split Payment", {"fee_category":fee_category}, "company")
             if fee_categories.get(company) is not None:
                 fee_categories[company].append(fee_category)
-                amounts[company] += float(component.custom_amount_after_discount)
+                amounts[company] += amount
             else:
                 fee_categories[company] = [fee_category]
-                amounts[company] = float(component.custom_amount_after_discount)
+                amounts[company] = amount
 
         for company, fee_categories in fee_categories.items():
             fee_receipt = frappe.new_doc("Fee Receipt")
