@@ -132,7 +132,10 @@ scheduler_events = {
         "0 * * * *": [
             "edu_quality.tasks.cron"
         ]
-    }
+    },
+    "daily": [
+		"edu_quality.tasks.time_based"
+	],
 }
 # scheduler_events = {
 #	"all": [

@@ -10,6 +10,8 @@
  "field_order": [
   "discount_name",
   "type",
+  "start_date",
+  "end_date",
   "program",
   "fee_structure",
   "fee_category",
@@ -88,11 +90,23 @@
    "fieldtype": "Link",
    "label": "Company",
    "options": "Company"
+  },
+  {
+   "depends_on": "eval:doc.type == \"Time Based\"",
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "label": "Start Date"
+  },
+  {
+   "depends_on": "eval:doc.type == \"Time Based\"",
+   "fieldname": "end_date",
+   "fieldtype": "Date",
+   "label": "End Date"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-07-21 15:14:06.294720",
+ "modified": "2023-07-21 15:27:31.424987",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Discount Configuration",
