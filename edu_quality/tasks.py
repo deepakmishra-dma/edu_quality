@@ -13,3 +13,9 @@ def cron():
             enqueue_after_commit=True,
             at_front=True,
         )
+
+
+def time_based():
+    frappe.enqueue(
+            "edu_quality.discount.time_based_discount"
+        )
