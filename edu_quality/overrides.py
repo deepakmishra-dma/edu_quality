@@ -32,7 +32,7 @@ class CustomPaymentRequest(PaymentRequest):
             amount = component.custom_amount_after_discount
             if self.payment_term:
                 for schedule in fees.payment_schedule:
-                    if schedule.payment_term == doc.payment_term:
+                    if schedule.payment_term == self.payment_term:
                         amount = flt((schedule.invoice_portion/100) * amount,2)
             payment_entry(
                 self,
