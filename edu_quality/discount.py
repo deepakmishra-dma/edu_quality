@@ -57,8 +57,6 @@ def apply_discount(doc):
             frappe.db.set_value("Fee Component", component.name, "custom_amount_after_discount", (component.amount - discounted_amount))
             grand_total = doc.grand_total - discounted_amount
             frappe.db.set_value("Fees", doc.name, "grand_total", grand_total)
-        else:
-            frappe.db.set_value("Fee Component", component.name, "custom_amount_after_discount", component.amount)
 
     grand_total_in_words = str(frappe.utils.in_words(grand_total)).title()
     frappe.db.set_value("Fees", doc.name, "grand_total_in_words", grand_total_in_words)
