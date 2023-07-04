@@ -23,10 +23,16 @@ def get_payment_details(**kwargs):
     payment_request = frappe.get_doc("Payment Request",payment_request)
     fees = frappe.get_doc("Fees",payment_request.reference_name)
     breakup = []
+    portion = 100
+    if payment_request.payment_term:
+        for schedule in fees.payment_schedule:
+            if schedule.payment_term == payment_request.payment_term:
+                portion = schedule.invoice_portion 
+
     for fee in fees.components:
         breakup.append({
             'fees_category': fee.fees_category,
-            'amount': fee.get_formatted('amount')
+            'amount':  frappe.utils.fmt_money(fee.amount *(portion/100), currency="INR")
             })
     return {
         'student_name': fees.student_name,
@@ -34,7 +40,7 @@ def get_payment_details(**kwargs):
         'due_date': fees.due_date,
         'class': fees.program,
         'student_id': fees.student,
-        'due_amount': fees.get_formatted('grand_total'),
+        'due_amount': frappe.utils.fmt_money(fees.grand_total*(portion/100),currency="INR"),
         'payment_url': payment_url(payment_request,payment_method="UPI"),
         'status': payment_request.status,
         'receipt_url': frappe.utils.get_url() + "/api/method/edu_quality.fees.page.payment_redirect.payment_receipt?fees="+payment_request.reference_name,
