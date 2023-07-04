@@ -14,6 +14,7 @@ def before_save(doc,method=None):
     try:
         if doc.payment_plan:
             pp = frappe.get_doc("Payment Plan",doc.payment_plan)
+            doc.payment_schedule = []
             for schedule in pp.payment_schedule:
                 doc.append("payment_schedule",{
                     'payment_term': schedule.payment_term,
