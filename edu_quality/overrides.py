@@ -17,7 +17,9 @@ class CustomPaymentRequest(PaymentRequest):
         fee_doctype = self.reference_doctype
         fee_docname = self.reference_name
         fees = frappe.get_doc(fee_doctype, fee_docname)
-        company = frappe.get_doc("Company", fees.company)
+        paid_from_dict = {}
+        paid_to_dict = {}
+        companies = {}
         for component in fees.components:
             fee_name = component.fees_category
             doc = frappe.get_doc("Split Payment", fee_name)
@@ -26,23 +28,34 @@ class CustomPaymentRequest(PaymentRequest):
             paid_from = frappe.get_value(
                 "Account", {"company": company, "account_type": "Receivable"}, ["name"]
             )
-            cost_center = frappe.get_value(
-                "Cost Center", {"company": company}, ["name"]
-            )
+            
             amount = component.custom_amount_after_discount
             if self.payment_term:
                 for schedule in fees.payment_schedule:
                     if schedule.payment_term == self.payment_term:
                         amount = flt((schedule.invoice_portion/100) * amount,2)
+
+            if paid_from_dict.get(paid_from) is not None:
+                paid_from_dict[paid_from] += amount
+            else:
+                paid_from_dict[paid_from] = amount
+            paid_to_dict[paid_from] = paid_to
+            companies[paid_from] = company
+
+        for paid_from, amount in paid_from_dict.items():
+            cost_center = frappe.get_value(
+                "Cost Center", {"company": companies[paid_from]}, ["name"]
+            )
             payment_entry(
                 self,
                 fees,
                 amount,
                 paid_from,
-                paid_to,
-                company,
+                paid_to_dict[paid_from],
+                companies[paid_from],
                 cost_center,
             )
+
         for deposit in fees.deposits:
             paid_to = frappe.get_value(
                 "Account", {"company": fees.company, "account_type": "Bank"}, ["name"]
@@ -169,6 +182,7 @@ def create_fee_receipt(fees,payment_term=None):
     try:
         fee_categories = {}
         amounts = {}
+        fee_amounts = {}
         for component in fees.components:
             amount = component.custom_amount_after_discount
             if payment_term:
@@ -176,6 +190,7 @@ def create_fee_receipt(fees,payment_term=None):
                     if schedule.payment_term == payment_term:
                         amount = flt((schedule.invoice_portion/100) * amount,2)
             fee_category = component.fees_category
+            fee_amounts[fee_category] = amount
             company = frappe.get_value("Split Payment", {"fee_category":fee_category}, "company")
             if fee_categories.get(company) is not None:
                 fee_categories[company].append(fee_category)
@@ -194,6 +209,7 @@ def create_fee_receipt(fees,payment_term=None):
             for fee_category in fee_categories:
                 fee_receipt.append("fee_category", {
                     "fee_category": fee_category,
+                    "amount": fee_amounts[fee_category]
                 })
             fee_receipt.insert(ignore_permissions=True)
     except Exception as e:
