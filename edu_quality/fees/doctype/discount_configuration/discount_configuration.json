@@ -21,7 +21,9 @@
   "academic_year",
   "discount",
   "discount_amount",
-  "enabled"
+  "enabled",
+  "needs_admin_approval",
+  "can_be_applied_with_other_discounts"
  ],
  "fields": [
   {
@@ -110,11 +112,23 @@
    "fieldtype": "Select",
    "label": "Payment Plan",
    "options": "Term 1\nTerm 2\nTerm 3"
+  },
+  {
+   "default": "0",
+   "fieldname": "needs_admin_approval",
+   "fieldtype": "Check",
+   "label": "Needs Admin Approval"
+  },
+  {
+   "default": "0",
+   "fieldname": "can_be_applied_with_other_discounts",
+   "fieldtype": "Check",
+   "label": "Can be applied with Other Discounts"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-07-24 16:12:45.174837",
+ "modified": "2023-07-24 17:39:41.785561",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Discount Configuration",
