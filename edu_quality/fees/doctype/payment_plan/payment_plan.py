@@ -6,11 +6,10 @@ from frappe.model.document import Document
 
 class PaymentPlan(Document):
 	def before_validate(self):
-		self.payment_schedule = []
 		invoice_portion = 0
 		for schedule in self.payment_schedule:
 			if schedule.invoice_portion:
-				invoice_portion += schedule.invoice_portion
+				invoice_portion += float(schedule.invoice_portion)
 		if invoice_portion != 100:
 			frappe.throw("Invoice Portion should be equal to 100")
 		else:
