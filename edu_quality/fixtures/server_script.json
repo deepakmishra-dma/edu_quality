@@ -148,5 +148,24 @@
       "reference_doctype": "Fees",
       "script": "pe = frappe.get_doc(\"Program Enrollment\", doc.program_enrollment)\nif pe.custom_payment_plan is not None:\n    doc.payment_plan = pe.custom_payment_plan",
       "script_type": "DocType Event"
+     },
+     {
+      "allow_guest": 0,
+      "api_method": null,
+      "cron_format": null,
+      "disabled": 0,
+      "docstatus": 0,
+      "doctype": "Server Script",
+      "doctype_event": "Before Save",
+      "enable_rate_limit": 0,
+      "event_frequency": "All",
+      "modified": "2023-07-27 22:50:00.191597",
+      "module": "Fees",
+      "name": "Payment Request",
+      "rate_limit_count": 5,
+      "rate_limit_seconds": 86400,
+      "reference_doctype": "Payment Request",
+      "script": "if frappe.db.exists(\"Payment Request\", {\"reference_name\":doc.reference_name, \"docstatus\": 1}):\n    pr = frappe.get_doc(\"Payment Request\", {\"reference_name\":doc.reference_name, \"docstatus\": 1})\n    if not pr.docstatus.is_cancelled():\n        pr.cancel()\n        \n    fees = frappe.get_doc(\"Fees\", doc.reference_name)\n    amount = 0\n    for schedule in fees.payment_schedule:\n        if schedule.due_date < frappe.utils.getdate(frappe.utils.today()):\n            amount = amount + frappe.utils.flt(schedule.payment_amount)\n            frappe.db.set_value(\"Payment Schedule\", schedule.name, \"payment_amount\", 0)\n        if schedule.payment_term == doc.payment_term:\n            amount = amount + frappe.utils.flt(schedule.payment_amount)\n            frappe.db.set_value(\"Payment Schedule\", schedule.name, \"payment_amount\", amount)\n            \n    doc.amount = amount",
+      "script_type": "DocType Event"
      }
 ]
