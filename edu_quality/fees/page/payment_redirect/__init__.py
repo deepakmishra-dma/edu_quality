@@ -30,9 +30,14 @@ def get_payment_details(**kwargs):
                 portion = schedule.invoice_portion 
 
     for fee in fees.components:
+        if frappe.db.exists("Split Payment",fee.fees_category):
+            company = frappe.db.get_value("Split Payment",fee.fees_category,"company")
+        else:
+            company = fees.company
         breakup.append({
             'fees_category': fee.fees_category,
-            'amount':  frappe.utils.fmt_money(fee.amount *(portion/100), currency="INR")
+            'amount':  frappe.utils.fmt_money(fee.amount *(portion/100), currency="INR"),
+            'company': company
             })
     return {
         'student_name': fees.student_name,
