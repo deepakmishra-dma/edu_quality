@@ -22,25 +22,48 @@ class CustomPaymentRequest(PaymentRequest):
         companies = {}
         for component in fees.components:
             fee_name = component.fees_category
-            doc = frappe.get_doc("Split Payment", fee_name)
-            paid_to = doc.account
-            company = doc.company
-            paid_from = frappe.get_value(
-                "Account", {"company": company, "account_type": "Receivable"}, ["name"]
-            )
-            
-            amount = component.custom_amount_after_discount
-            if self.payment_term:
-                for schedule in fees.payment_schedule:
-                    if schedule.payment_term == self.payment_term:
-                        amount = flt((schedule.invoice_portion/100) * amount,2)
-
-            if paid_from_dict.get(paid_from) is not None:
-                paid_from_dict[paid_from] += amount
+            if frappe.db.exists("Security Deposit", fee_name):
+                paid_to = frappe.get_value(
+                    "Account", {"company": fees.company, "account_type": "Bank"}, ["name"]
+                )
+                paid_from = frappe.get_value(
+                    "Account",
+                    {"company": fees.company, "account_type": "Payable"},
+                    ["name"],
+                )
+                cost_center = frappe.get_value(
+                    "Cost Center", {"company": fees.company}, ["name"]
+                )
+                if self.payment_term == "Term 1":
+                    payment_entry(
+                        self,
+                        fees,
+                        component.amount,
+                        paid_from,
+                        paid_to,
+                        fees.company,
+                        cost_center,
+                    )
             else:
-                paid_from_dict[paid_from] = amount
-            paid_to_dict[paid_from] = paid_to
-            companies[paid_from] = company
+                doc = frappe.get_doc("Split Payment", fee_name)
+                paid_to = doc.account
+                company = doc.company
+                paid_from = frappe.get_value(
+                    "Account", {"company": company, "account_type": "Receivable"}, ["name"]
+                )
+                
+                amount = component.custom_amount_after_discount
+                if self.payment_term:
+                    for schedule in fees.payment_schedule:
+                        if schedule.payment_term == self.payment_term:
+                            amount = flt((schedule.invoice_portion/100) * amount,2)
+
+                if paid_from_dict.get(paid_from) is not None:
+                    paid_from_dict[paid_from] += amount
+                else:
+                    paid_from_dict[paid_from] = amount
+                paid_to_dict[paid_from] = paid_to
+                companies[paid_from] = company
 
         for paid_from, amount in paid_from_dict.items():
             cost_center = frappe.get_value(
@@ -53,28 +76,6 @@ class CustomPaymentRequest(PaymentRequest):
                 paid_from,
                 paid_to_dict[paid_from],
                 companies[paid_from],
-                cost_center,
-            )
-
-        for deposit in fees.deposits:
-            paid_to = frappe.get_value(
-                "Account", {"company": fees.company, "account_type": "Bank"}, ["name"]
-            )
-            paid_from = frappe.get_value(
-                "Account",
-                {"company": fees.company, "account_type": "Payable"},
-                ["name"],
-            )
-            cost_center = frappe.get_value(
-                "Cost Center", {"company": fees.company}, ["name"]
-            )
-            payment_entry(
-                self,
-                fees,
-                deposit.amount,
-                paid_from,
-                paid_to,
-                fees.company,
                 cost_center,
             )
         
