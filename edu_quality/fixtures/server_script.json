@@ -167,5 +167,24 @@
       "reference_doctype": "Payment Request",
       "script": "if frappe.db.exists(\"Payment Request\", {\"reference_name\":doc.reference_name, \"docstatus\": 1}):\n    pr = frappe.get_doc(\"Payment Request\", {\"reference_name\":doc.reference_name, \"docstatus\": 1})\n    if not pr.docstatus.is_cancelled():\n        pr.cancel()\n        \n    fees = frappe.get_doc(\"Fees\", doc.reference_name)\n    amount = 0\n    for schedule in fees.payment_schedule:\n        if schedule.due_date < frappe.utils.getdate(frappe.utils.today()):\n            amount = amount + frappe.utils.flt(schedule.payment_amount)\n            frappe.db.set_value(\"Payment Schedule\", schedule.name, \"payment_amount\", 0)\n        if schedule.payment_term == doc.payment_term:\n            amount = amount + frappe.utils.flt(schedule.payment_amount)\n            frappe.db.set_value(\"Payment Schedule\", schedule.name, \"payment_amount\", amount)\n            \n    doc.amount = amount",
       "script_type": "DocType Event"
-     }
+     },
+     {
+        "allow_guest": 0,
+        "api_method": null,
+        "cron_format": null,
+        "disabled": 0,
+        "docstatus": 0,
+        "doctype": "Server Script",
+        "doctype_event": "Before Validate",
+        "enable_rate_limit": 0,
+        "event_frequency": "All",
+        "modified": "2023-07-31 10:43:51.968883",
+        "module": "Fees",
+        "name": "Validate Fee Schedule",
+        "rate_limit_count": 5,
+        "rate_limit_seconds": 86400,
+        "reference_doctype": "Fee Schedule",
+        "script": "student_groups = []\n\nfor sg in doc.student_groups:\n    student_groups.append(sg.student_group_name)\nfor sg in doc.student_groups:\n    if student_groups.count(sg.student_group_name)>1:\n      frappe.throw(_(\"Student Group cannot be added multiple times\"))",
+        "script_type": "DocType Event"
+       }
 ]
