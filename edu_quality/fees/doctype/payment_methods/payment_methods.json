@@ -7,7 +7,7 @@
  "engine": "InnoDB",
  "field_order": [
   "method",
-  "charge"
+  "easebuzz_account"
  ],
  "fields": [
   {
@@ -21,17 +21,18 @@
   },
   {
    "default": "0",
-   "fieldname": "charge",
-   "fieldtype": "Float",
+   "fieldname": "easebuzz_account",
+   "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Charge",
+   "label": "Easebuzz Account",
+   "options": "Easebuzz Settings",
    "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2023-07-17 16:21:08.204445",
+ "modified": "2023-07-27 15:12:48.461892",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Payment Methods",
