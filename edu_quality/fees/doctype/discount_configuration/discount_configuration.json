@@ -49,6 +49,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "fetch_from": "fee_structure.academic_year",
    "fieldname": "academic_year",
    "fieldtype": "Link",
    "label": " Academic Year",
@@ -89,6 +90,7 @@
    "reqd": 1
   },
   {
+   "fetch_from": "fee_structure.company",
    "fieldname": "company",
    "fieldtype": "Link",
    "label": "Company",
@@ -128,7 +130,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-07-24 17:39:41.785561",
+ "modified": "2023-07-31 12:41:43.966297",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Discount Configuration",

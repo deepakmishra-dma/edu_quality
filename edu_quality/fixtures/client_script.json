@@ -20,5 +20,49 @@
   "name": "Fee Schedule Deposits",
   "script": "frappe.ui.form.on('Fee Component', {\n    amount: function(frm) {\n    var total_amount = 0;\n    for (var i=0;i<frm.doc.components.length;i++) {\n    \ttotal_amount += frm.doc.components[i].amount;\n    }\n    for (i=0;i<frm.doc.deposits.length;i++) {\n    \ttotal_amount += frm.doc.deposits[i].amount;\n    }\n    frm.set_value('total_amount', total_amount);\n    }\n});\n\nfrappe.ui.form.on('Deposits', {\n    amount: function(frm) {\n    var total_amount = 0;\n    for (var i=0;i<frm.doc.components.length;i++) {\n    \ttotal_amount += frm.doc.components[i].amount;\n    }\n    for (i=0;i<frm.doc.deposits.length;i++) {\n    \ttotal_amount += frm.doc.deposits[i].amount;\n    }\n    frm.set_value('total_amount', total_amount);\n    }\n});\n",
   "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Fees",
+  "enabled": 1,
+  "modified": "2023-07-31 16:17:03.169033",
+  "module": "Edu Quality",
+  "name": "Add Discount",
+  "script": "frappe.ui.form.on('Fees', {\n    refresh: function(frm) {\n        frm.add_custom_button(__('Add Discount'), function(){\n        let d = new frappe.ui.Dialog({\n        title: 'Add Discount',\n        fields: [\n            {\n                label: 'Discount Name',\n                fieldname: 'discount_name',\n                fieldtype: 'Link',\n                options: \"Discount Configuration\",\n                get_query: function () {\n    \t\t\t\t\treturn {\n    \t\t\t\t\t\tdoctype: 'Discount Configuration',\n    \t\t\t\t\t\tfilters: {\n    \t\t\t\t\t\t\tfee_structure: frm.doc.fee_structure,\n    \t\t\t\t\t\t},\n    \t\t\t\t\t};\n\t\t\t\t    }\n            }\n        ],\n        size: 'large',\n        primary_action_label: 'Submit',\n        primary_action(values) {\n            console.log(values);\n            d.hide();\n        }\n    });\n    \n    d.show();\n\n    }, __(\"Discount\"));\n    frm.add_custom_button(__('Remove Discount'), function(){\n        frappe.msgprint(frm.doc.student_name);\n    }, __(\"Discount\"));\n  }\n});",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Fees",
+  "enabled": 1,
+  "modified": "2023-07-31 16:16:32.535315",
+  "module": "Edu Quality",
+  "name": "Fees Authorize",
+  "script": "frappe.ui.form.on('Fees', {\n    refresh: function(frm) {\n        if (frappe.session.user == \"Administrator\"){\n             if (frm.doc.custom_authorized === 0){\n                frm.remove_custom_button('Payment Request', 'Create')\n                frm.add_custom_button(__('Authorize'), function(){\n                    frappe.db.set_value(\"Fees\", frm.doc.name, \"custom_authorized\", 1)\n                    frappe.db.commit()\n                    frm.remove_custom_button(__('Authorize'))\n                    frm.add_custom_button('Payment Request', 'Create')\n              });\n            }\n        }\n    }\n});",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Program Enrollment",
+  "enabled": 1,
+  "modified": "2023-07-31 16:16:42.413955",
+  "module": "Edu Quality",
+  "name": "Payment Plan filtering",
+  "script": "frappe.ui.form.on('Program Enrollment', {\n\trefresh(frm) {\n\t\tfrm.set_query(\"custom_payment_plan\", function() {\n        return {\n            \"filters\": {\n                \"program\": frm.doc.program\n            }\n        };\n    });\n\t}\n});",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Payment Plan",
+  "enabled": 1,
+  "modified": "2023-07-31 16:16:53.198802",
+  "module": "Edu Quality",
+  "name": "Fee Structure Filtering in Payment plan",
+  "script": "frappe.ui.form.on('Payment Plan', {\n\trefresh(frm) {\n\t\tfrm.set_query(\"fee_structure\", function() {\n        return {\n            \"filters\": {\n                \"program\": frm.doc.program\n                }\n            };\n        });\n\t}\n})",
+  "view": "Form"
  }
 ]

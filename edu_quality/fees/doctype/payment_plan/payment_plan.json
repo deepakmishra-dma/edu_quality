@@ -24,6 +24,7 @@
    "unique": 1
   },
   {
+   "fetch_from": "fee_structure.program",
    "fieldname": "program",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -32,6 +33,7 @@
    "reqd": 1
   },
   {
+   "fetch_from": "fee_structure.academic_year",
    "fieldname": "academic_year",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -63,7 +65,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-07-21 13:30:59.780098",
+ "modified": "2023-07-31 12:59:42.879627",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Payment Plan",
