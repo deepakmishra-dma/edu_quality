@@ -13,13 +13,39 @@ from erpnext.accounts.doctype.payment_request.payment_request import (
 class RefundRequest(Document):
     def before_save(self):
         amount = 0
-        for deposit in self.security_deposit:
-            amount += deposit.amount
-        self.amount = amount
-        if frappe.db.exists("Fees", {"student": self.student_id, "status": "Unpaid"}):
+        if frappe.db.exists(
+            "Fees", {"student": self.student_id, "outstanding_amount": "0"}
+        ):
             fee = frappe.get_doc(
-                "Fees", {"student": self.student_id, "status": "Unpaid"}
+                "Fees", {"student": self.student_id, "outstanding_amount": "0"}
             )
+            self.security_deposit = []
+            for component in fee.components:
+                fee_name = component.fees_category
+                if frappe.db.exists("Security Deposit", fee_name):
+                    self.append(
+                        "security_deposit",
+                        {
+                            "safety_deposit": fee_name,
+                            "amount": component.amount,
+                        },
+                    )
+
+                    amount += component.amount
+
+        self.amount = amount
+        if frappe.db.exists("Fees", {"student": self.student_id}):
+            fee_list = frappe.get_list("Fees", {"student": self.student_id})
+            for f in fee_list:
+                fee = frappe.get_doc("Fees", f.name)
+                if fee.outstanding_amount > 0:
+                    self.append(
+                        "pending_fees",
+                        {
+                            "fees": fee.name,
+                        },
+                    )
+
             if fee.outstanding_amount < self.amount:
                 self.adjusted_amount = self.amount - fee.outstanding_amount
                 frappe.db.set_value("Fees", fee.name, "outstanding_amount", 0)
@@ -34,15 +60,13 @@ class RefundRequest(Document):
             ):
                 transaction_id = frappe.db.get_value(
                     "Payment Request",
-                    {"reference_name": "EDU-FEE-2023-00036", "status": "Paid"},
+                    {"reference_name": self.student_id, "status": "Paid"},
                     "transaction_id",
                 )
                 phone = frappe.db.get_value(
                     "Student", fee.student, "student_mobile_number"
                 )
-                email = frappe.db.get_value(
-                    "Student", fee.student, "student_email_id"
-                )
+                email = frappe.db.get_value("Student", fee.student, "student_email_id")
                 create_payment_request(
                     dt=fee.doctype,
                     dn=fee.name,
