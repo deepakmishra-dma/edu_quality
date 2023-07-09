@@ -190,6 +190,7 @@ def create_fee_receipt(fees,payment_term=None):
                 for schedule in fees.payment_schedule:
                     if schedule.payment_term == payment_term:
                         amount = flt((schedule.invoice_portion/100) * amount,2)
+                        due_date = schedule.due_date
             fee_category = component.fees_category
             fee_amounts[fee_category] = amount
             company = frappe.get_value("Split Payment", {"fee_category":fee_category}, "company")
@@ -203,6 +204,7 @@ def create_fee_receipt(fees,payment_term=None):
         for company, fee_categories in fee_categories.items():
             fee_receipt = frappe.new_doc("Fee Receipt")
             fee_receipt.fees = fees.name
+            fee_receipt.due_date = due_date
             fee_receipt.company = company
             fee_receipt.paid_on = nowdate()
             fee_receipt.amount = amounts[company]
