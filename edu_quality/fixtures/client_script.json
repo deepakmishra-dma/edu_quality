@@ -2,6 +2,17 @@
  {
   "docstatus": 0,
   "doctype": "Client Script",
+  "dt": "Fees",
+  "enabled": 1,
+  "modified": "2023-08-04 15:10:27.376180",
+  "module": "Fees",
+  "name": "Create Bulk Payment Request",
+  "script": "frappe.listview_settings.Fees = {\n    onload: function (listview) {\n        // Add your custom button here\n        listview.page.add_inner_button('Create Payment Request', function () {\n            // Perform the action when the button is clicked\n            data = listview.data;\n\n            for (let i = 0; i < data.length; i++) {\n                fees = data[i];\n                if(fees.docstatus===1) {\n                    createPaymentRequest(fees);\n                }\n            }\n        }).addClass('btn-primary');\n    },\n};\n\nfunction createPaymentRequest(fees) {\n    frappe.db.get_value('Fees', fees.name, \"outstanding_amount\")\n    .then(r => {\n        let outstanding_amount = r.message.outstanding_amount;\n        if (outstanding_amount > 0){\n            frappe.db.get_value('Fees', fees.name, \"student\")\n            .then(r => {\n                let student = r.message.student;\n                frappe.db.get_value('Student', student, \"student_email_id\")\n                .then(r => {\n                    let student_email_id = r.message.student_email_id;\n                    make_payment_request(fees.name, student, student_email_id);\n                });\n            });\n            frappe.msgprint(__(\"Payment Request Created\"));\n        }\n    });\n}\n\n function make_payment_request(fee, student, student_email){\n\tif (!student_email) {\n\t\tfrappe.msgprint(__(\"Please set the Email ID for the Student to send the Payment Request\"));\n\t} else {\n\t\tfrappe.call({\n\t\t\tmethod:\"erpnext.accounts.doctype.payment_request.payment_request.make_payment_request\",\n\t\t\targs: {\n\t\t\t\t\"dt\": \"Fees\",\n\t\t\t\t\"dn\": fee,\n\t\t\t\t\"party_type\": \"Student\",\n\t\t\t\t\"party\":student,\n\t\t\t\t\"recipient_id\": student_email\n\t\t\t},\n\t\t\tcallback: function(r) {\n\t\t\t    console.log(r);\n\t\t\t}\n\t\t});\n\t}\n}",
+  "view": "List"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
   "dt": "Fee Structure",
   "enabled": 1,
   "modified": "2023-06-27 15:14:07.950359",
