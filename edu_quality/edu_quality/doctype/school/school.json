@@ -10,7 +10,8 @@
  "field_order": [
   "school",
   "description",
-  "location"
+  "location",
+  "institution"
  ],
  "fields": [
   {
@@ -30,11 +31,17 @@
    "fieldname": "location",
    "fieldtype": "Data",
    "label": "Location"
+  },
+  {
+   "fieldname": "institution",
+   "fieldtype": "Link",
+   "label": "Institution",
+   "options": "Company"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-06-27 09:12:07.044349",
+ "modified": "2023-08-07 13:45:41.764549",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "School",
