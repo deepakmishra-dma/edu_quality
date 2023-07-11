@@ -20,7 +20,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Academic Year",
-   "options": "Academic Year",
+   "options": "Fiscal Year",
    "reqd": 1
   },
   {
@@ -28,7 +28,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Institution",
-   "options": "Institution",
+   "options": "Company",
    "reqd": 1
   },
   {
@@ -58,7 +58,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-06-27 14:41:12.859607",
+ "modified": "2023-08-07 12:23:20.222066",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Security Deposit",
