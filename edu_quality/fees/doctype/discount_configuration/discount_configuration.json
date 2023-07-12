@@ -18,6 +18,7 @@
   "fee_category",
   "column_break_g8xm6",
   "company",
+  "school",
   "academic_year",
   "discount",
   "discount_amount",
@@ -126,11 +127,17 @@
    "fieldname": "can_be_applied_with_other_discounts",
    "fieldtype": "Check",
    "label": "Can be applied with Other Discounts"
+  },
+  {
+   "fieldname": "school",
+   "fieldtype": "Link",
+   "label": "School",
+   "options": "School"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-08-07 12:18:42.102882",
+ "modified": "2023-08-10 16:05:27.037822",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Discount Configuration",
