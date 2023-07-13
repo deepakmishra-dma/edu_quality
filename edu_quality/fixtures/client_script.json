@@ -108,5 +108,16 @@
   "name": "Query Filtering Fee Advance",
   "script": "frappe.ui.form.on('Fee Advance', {\n\tschool: function(frm) {\n\t   frm.set_query(\"fee_structure\", function() {\n\t   return {\n            \"filters\": {\n                \"school\": frm.doc.school\n                }\n            };\n        });\n       frm.set_query(\"payment_plan\", function() {\n\t   return {\n            \"filters\": {\n                \"school\": frm.doc.school\n                }\n            };\n        });\n\t}\n})",
   "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Student Applicant",
+  "enabled": 1,
+  "modified": "2023-08-10 22:51:57.329306",
+  "module": "Fees",
+  "name": "Query filtering in Student Applicant",
+  "script": "frappe.ui.form.on('Student Applicant', {\n\tschool: function(frm) {\n\t   frm.set_query(\"program\", function() {\n\t   return {\n            \"filters\": {\n                \"custom_school\": frm.doc.school\n                }\n            };\n        });\n       frm.set_query(\"fee_structure\", function() {\n\t   return {\n            \"filters\": {\n                \"school\": frm.doc.school\n                }\n            };\n        });\n       frm.set_query(\"fee_schedule\", function() {\n\t   return {\n            \"filters\": {\n                \"fee_structure\": frm.doc.fee_structure\n                }\n            };\n        });\n\t},\n\t\n\t//Auto fetch fee component from fee structure\n\tfee_structure: function(frm) {\n\t\tfrm.set_value(\"fee_components\" ,\"\");\n\t\tif (frm.doc.fee_structure) {\n\t\t\tfrappe.call({\n\t\t\t\tmethod: \"education.education.api.get_fee_components\",\n\t\t\t\targs: {\n\t\t\t\t\t\"fee_structure\": frm.doc.fee_structure\n\t\t\t\t},\n\t\t\t\tcallback: function(r) {\n\t\t\t\t\tif (r.message) {\n\t\t\t\t\t\t$.each(r.message, function(i, d) {\n\t\t\t\t\t\t\tvar row = frappe.model.add_child(frm.doc, \"Fee Component\", \"fee_components\");\n\t\t\t\t\t\t\trow.fees_category = d.fees_category;\n\t\t\t\t\t\t\trow.description = d.description;\n\t\t\t\t\t\t\trow.amount = d.amount;\n\t\t\t\t\t\t});\n\t\t\t\t\t}\n\t\t\t\t\trefresh_field(\"fee_components\");\n\t\t\t\t}\n\t\t\t});\n\t\t}\n\t},\n});",
+  "view": "Form"
  }
 ]
