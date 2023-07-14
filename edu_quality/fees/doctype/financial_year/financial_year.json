@@ -8,7 +8,8 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "financial_year"
+  "financial_year",
+  "school"
  ],
  "fields": [
   {
@@ -16,11 +17,17 @@
    "fieldtype": "Data",
    "label": "Financial Year",
    "unique": 1
+  },
+  {
+   "fieldname": "school",
+   "fieldtype": "Link",
+   "label": "School",
+   "options": "School"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-06-16 14:14:25.054792",
+ "modified": "2023-08-10 16:02:32.475529",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Financial Year",

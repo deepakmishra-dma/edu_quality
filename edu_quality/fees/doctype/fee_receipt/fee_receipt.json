@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "format:{fees}-{company}",
+ "autoname": "format:Receipt-{student_name}-{company}-{#####}",
  "creation": "2023-07-19 16:03:39.219497",
  "default_view": "List",
  "doctype": "DocType",
@@ -10,6 +10,7 @@
  "field_order": [
   "fees",
   "fee_category",
+  "school",
   "company",
   "paid_on",
   "due_date",
@@ -107,11 +108,17 @@
    "fieldname": "student_id",
    "fieldtype": "Data",
    "label": "Student ID"
+  },
+  {
+   "fieldname": "school",
+   "fieldtype": "Link",
+   "label": "School",
+   "options": "School"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-08-08 16:43:36.511129",
+ "modified": "2023-08-11 00:38:59.686366",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Fee Receipt",

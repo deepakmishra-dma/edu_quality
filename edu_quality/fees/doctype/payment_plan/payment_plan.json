@@ -9,6 +9,7 @@
  "field_order": [
   "plan_name",
   "program",
+  "school",
   "academic_year",
   "fee_structure",
   "total_amount",
@@ -61,11 +62,17 @@
    "fieldname": "total_amount",
    "fieldtype": "Currency",
    "label": "Total Amount"
+  },
+  {
+   "fieldname": "school",
+   "fieldtype": "Link",
+   "label": "School",
+   "options": "School"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-08-07 12:19:02.977000",
+ "modified": "2023-08-10 16:06:11.161276",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Payment Plan",

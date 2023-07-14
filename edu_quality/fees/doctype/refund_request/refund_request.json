@@ -1,13 +1,14 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "format:Refund-{####}",
+ "autoname": "format:Refund-{student_id}-{####}",
  "creation": "2023-08-01 15:55:51.732483",
  "default_view": "List",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "school",
   "student_id",
   "column_break_vh8b",
   "refundable_after",
@@ -65,11 +66,17 @@
    "fieldtype": "Table MultiSelect",
    "label": "Pending Fees",
    "options": "Pending Fees"
+  },
+  {
+   "fieldname": "school",
+   "fieldtype": "Link",
+   "label": "School",
+   "options": "School"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-08-02 17:01:34.078544",
+ "modified": "2023-08-11 00:30:30.983099",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Refund Request",
