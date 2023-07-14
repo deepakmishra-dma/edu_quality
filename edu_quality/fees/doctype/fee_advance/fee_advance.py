@@ -71,12 +71,13 @@ def generate_fee(fee_advance):
 		print(students)
 		for student in students:
 			try:
+				if frappe.db.exists("Fees",[['student','=',student.student],['outstanding_amount','>',0]]):
+					frappe.throw("Pending Fee for Student - " + student.student)
 				fees_doc = get_mapped_doc(
 					"Fee Advance",
 					fee_advance,
 					{"Fee Advance": {"doctype": "Fees", "field_map": {"name": "Fee Advance"}}},
 				)
-				print(fees_doc)
 				fees_doc.posting_date = doc.posting_date
 				fees_doc.student = student.student
 				fees_doc.student_name = student.student_name
