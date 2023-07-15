@@ -1,0 +1,58 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:REF-{student_id}-{#####}",
+ "creation": "2023-08-14 13:38:51.127339",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "student_id",
+  "number_of_referral",
+  "referral_amount"
+ ],
+ "fields": [
+  {
+   "fieldname": "student_id",
+   "fieldtype": "Link",
+   "label": "Student ID",
+   "options": "Student"
+  },
+  {
+   "fieldname": "number_of_referral",
+   "fieldtype": "Data",
+   "label": "Number of Referral"
+  },
+  {
+   "fieldname": "referral_amount",
+   "fieldtype": "Data",
+   "label": "Referral Amount"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-08-14 13:40:34.050344",
+ "modified_by": "Administrator",
+ "module": "Fees",
+ "name": "Referral Log",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
