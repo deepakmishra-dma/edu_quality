@@ -1,0 +1,23 @@
+#quotation-wizard{
+    min-height:750px;
+}
+
+.quotationOverride{
+    overflow-x: scroll;
+}
+.quotationOverride .list-group-item.list-group-header {
+width:100%;
+}
+
+.quotationOverride .list-group-item{
+    width:100%;
+}
+
+@media only screen and (max-width: 600px) {
+    .quotationOverride .list-group-item.list-group-header {
+        width:fit-content;
+    }
+    .quotationOverride .list-group-item{
+        width:fit-content;
+    }
+}

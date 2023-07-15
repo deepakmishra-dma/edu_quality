@@ -442,7 +442,7 @@ async function submit_form(){
 			'fee_type': fee_type,
 			'amount':amount,
 			'is_ins':institution,
-			'ins_name': ins_name
+			'ins_name': ins_name,
 			'class_name': class_name,
 			'fee_type': fee_type,
 			'amount':amount,
