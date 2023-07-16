@@ -1,4 +1,23 @@
 [
+    {
+        "allow_guest": 0,
+        "api_method": "add_discount",
+        "cron_format": null,
+        "disabled": 0,
+        "docstatus": 0,
+        "doctype": "Server Script",
+        "doctype_event": "Before Insert",
+        "enable_rate_limit": 0,
+        "event_frequency": "All",
+        "modified": "2023-08-17 17:29:15.906752",
+        "module": "Fees",
+        "name": "Add Discount",
+        "rate_limit_count": 5,
+        "rate_limit_seconds": 86400,
+        "reference_doctype": null,
+        "script": "def calculate_final_discount(discount1, discount2):\n    final_percentage = 100 - (100 - discount1) * (100 - discount2) / 100\n    return final_percentage\n\nfee_name = frappe.form_dict.fee_name\ndiscount = frappe.form_dict.discount\n\nfees = frappe.get_doc(\"Fees\", fee_name)\ndis = frappe.get_doc(\"Discount Configuration\", discount)\n\ntotal_discount = 0\ntotal_amount = 0\nfor component in fees.components:\n    total_amount = total_amount + component.amount\n    if component.fees_category == dis.fee_category and component.custom_discounts != discount:\n        discount_name = component.custom_discounts\n        if discount_name is not None and dis.can_be_applied_with_other_discounts == 1:\n            # if the discount is already present and the new discount could be applied with other discounts\n            discount_name = f\"{discount_name}, {dis.name}\" if discount_name is not None else discount_name\n            final_discount = calculate_final_discount(dis.discount, component.custom_discount_percentage)\n            discounted_amount = (component.amount * float(final_discount)) / 100\n            amount = component.amount - discounted_amount\n        else:\n            # if the discount is not already present\n            discount_name = dis.name\n            discounted_amount = (component.amount * float(dis.discount)) / 100\n            amount = component.amount - discounted_amount\n            \n        # updating the data in the database\n        frappe.db.set_value(\"Fee Component\", component.name, \"custom_discounts\", discount_name)\n        frappe.db.set_value(\"Fee Component\", component.name, \"custom_discount_percentage\", dis.discount)\n        frappe.db.set_value(\"Fee Component\", component.name, \"custom_discount_amount\", discounted_amount)\n        frappe.db.set_value(\"Fee Component\", component.name, \"custom_amount_after_discount\", amount)\n        grand_total = fees.grand_total - discounted_amount\n        frappe.response['message'] = {\"fees\": fees, \"dis\":dis, \"discount\": discount_name}\n\ngrand_total_in_words = str(frappe.utils.in_words(grand_total)).title()\nfrappe.db.set_value(\"Fees\", fees.name, \"grand_total\", grand_total)\nfrappe.db.set_value(\"Fees\", fees.name, \"grand_total_in_words\", grand_total_in_words)\nfrappe.db.set_value(\"Fees\", fees.name, \"outstanding_amount\", grand_total)",
+        "script_type": "API"
+       },
  {
   "allow_guest": 0,
   "api_method": null,
@@ -243,5 +262,24 @@
          "reference_doctype": "Fees",
          "script": "total_amount = 0\nfilters = {\"type\": \"Referral\", \"enabled\": 1}\nif frappe.db.exists(\"Referral Log\", {\"student_id\": doc.student}):\n    ref = frappe.get_doc(\"Referral Log\", {\"student_id\": doc.student})\n    total_discount = discount = float(ref.referral_amount)\n    for i, component in enumerate(doc.components):\n        total_amount = total_amount + component.amount\n        if component.amount > discount and discount != 0:\n            if frappe.db.exists(\"Discount Configuration\", filters):\n                dis = frappe.get_doc(\"Discount Configuration\", filters)\n                discount_name = doc.components[i].custom_discounts\n                doc.components[i].custom_discounts = f\"{discount_name}, {dis.name}\" if discount_name is not None else dis.name\n                doc.components[i].custom_discount_percentage = 0\n                doc.components[i].custom_discount_amount = discount\n                doc.components[i].custom_amount_after_discount = component.amount - discount\n            discount = 0\n        else:\n            doc.components[i].custom_amount_after_discount = component.amount\n    \n    doc.grand_total = total_amount - total_discount\n    doc.grand_total_in_words = str(frappe.utils.in_words(doc.grand_total)).title()\n    doc.outstanding_amount = doc.grand_total",
          "script_type": "DocType Event"
-        }
+        },
+         {
+          "allow_guest": 0,
+          "api_method": "remove_discount",
+          "cron_format": null,
+          "disabled": 0,
+          "docstatus": 0,
+          "doctype": "Server Script",
+          "doctype_event": "Before Insert",
+          "enable_rate_limit": 0,
+          "event_frequency": "All",
+          "modified": "2023-08-17 17:28:34.891761",
+          "module": "Fees",
+          "name": "Remove Discount",
+          "rate_limit_count": 5,
+          "rate_limit_seconds": 86400,
+          "reference_doctype": null,
+          "script": "fee_name = frappe.form_dict.fee_name\ndiscount = frappe.form_dict.discount\n\nfees = frappe.get_doc(\"Fees\", fee_name)\ndis = frappe.get_doc(\"Discount Configuration\", discount)\n\ntotal_discount = 0\ntotal_amount = 0\nfor component in fees.components:\n    total_amount = total_amount + component.amount\n    if component.fees_category == dis.fee_category and component.custom_discounts == discount:\n        discounted_amount = (component.amount * float(dis.discount)) / 100\n            \n        # updating the data in the database\n        frappe.db.set_value(\"Fee Component\", component.name, \"custom_discounts\", None)\n        frappe.db.set_value(\"Fee Component\", component.name, \"custom_discount_percentage\", 0)\n        frappe.db.set_value(\"Fee Component\", component.name, \"custom_discount_amount\", 0)\n        frappe.db.set_value(\"Fee Component\", component.name, \"custom_amount_after_discount\", component.amount)\n        grand_total = fees.grand_total + discounted_amount\n        frappe.response['message'] = {\"fees\": fees, \"dis\":dis, \"discount\": discount}\n\ngrand_total_in_words = str(frappe.utils.in_words(grand_total)).title()\nfrappe.db.set_value(\"Fees\", fees.name, \"grand_total\", grand_total)\nfrappe.db.set_value(\"Fees\", fees.name, \"grand_total_in_words\", grand_total_in_words)\nfrappe.db.set_value(\"Fees\", fees.name, \"outstanding_amount\", grand_total)",
+          "script_type": "API"
+         }
 ]

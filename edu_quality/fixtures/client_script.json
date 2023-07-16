@@ -37,21 +37,10 @@
   "doctype": "Client Script",
   "dt": "Fees",
   "enabled": 1,
-  "modified": "2023-07-31 16:17:03.169033",
-  "module": "Edu Quality",
-  "name": "Add Discount",
-  "script": "frappe.ui.form.on('Fees', {\n    refresh: function(frm) {\n        frm.add_custom_button(__('Add Discount'), function(){\n        let d = new frappe.ui.Dialog({\n        title: 'Add Discount',\n        fields: [\n            {\n                label: 'Discount Name',\n                fieldname: 'discount_name',\n                fieldtype: 'Link',\n                options: \"Discount Configuration\",\n                get_query: function () {\n    \t\t\t\t\treturn {\n    \t\t\t\t\t\tdoctype: 'Discount Configuration',\n    \t\t\t\t\t\tfilters: {\n    \t\t\t\t\t\t\tfee_structure: frm.doc.fee_structure,\n    \t\t\t\t\t\t},\n    \t\t\t\t\t};\n\t\t\t\t    }\n            }\n        ],\n        size: 'large',\n        primary_action_label: 'Submit',\n        primary_action(values) {\n            console.log(values);\n            d.hide();\n        }\n    });\n    \n    d.show();\n\n    }, __(\"Discount\"));\n    frm.add_custom_button(__('Remove Discount'), function(){\n        frappe.msgprint(frm.doc.student_name);\n    }, __(\"Discount\"));\n  }\n});",
-  "view": "Form"
- },
- {
-  "docstatus": 0,
-  "doctype": "Client Script",
-  "dt": "Fees",
-  "enabled": 1,
-  "modified": "2023-07-31 16:16:32.535315",
+  "modified": "2023-08-17 12:53:02.101903",
   "module": "Edu Quality",
   "name": "Fees Authorize",
-  "script": "frappe.ui.form.on('Fees', {\n    refresh: function(frm) {\n        if (frappe.session.user == \"Administrator\"){\n             if (frm.doc.custom_authorized === 0){\n                frm.remove_custom_button('Payment Request', 'Create')\n                frm.add_custom_button(__('Authorize'), function(){\n                    frappe.db.set_value(\"Fees\", frm.doc.name, \"custom_authorized\", 1)\n                    frappe.db.commit()\n                    frm.remove_custom_button(__('Authorize'))\n                    frm.add_custom_button('Payment Request', 'Create')\n              });\n            }\n        }\n    }\n});",
+  "script": "frappe.ui.form.on('Fees', {\n    refresh: function(frm) {\n        if (frappe.session.user == \"Administrator\"){\n             if (frm.doc.custom_authorized === 0){\n                frm.remove_custom_button('Payment Request', 'Create')\n                frm.add_custom_button(__('Authorize'), function(){\n                    frappe.db.set_value(\"Fees\", frm.doc.name, \"custom_authorized\", 1)\n                    frm.remove_custom_button(__('Authorize'))\n                    frm.add_custom_button('Payment Request', 'Create')\n              });\n            }\n        }\n    }\n});",
   "view": "Form"
  },
  {
@@ -129,6 +118,17 @@
   "module": "Fees",
   "name": "Query Filtering in Student Group",
   "script": "frappe.ui.form.on('Student Group', {\n\tcustom_school: function(frm) {\n\t   frm.set_query(\"program\", function() {\n\t   return {\n            \"filters\": {\n                \"custom_school\": frm.doc.custom_school\n                }\n            };\n        });\n\t}\n});",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Fees",
+  "enabled": 1,
+  "modified": "2023-08-17 17:35:21.625386",
+  "module": "Fees",
+  "name": "Discount Button in Fees",
+  "script": "frappe.ui.form.on('Fees', {\n    refresh: function(frm) {\n        frm.add_custom_button(__('Add Discount'), function(){\n        let d = new frappe.ui.Dialog({\n        title: 'Add Discount',\n        fields: [\n            {\n                label: 'Discount Name',\n                fieldname: 'discount_name',\n                fieldtype: 'Link',\n                options: \"Discount Configuration\",\n                get_query: function () {\n    \t\t\t\t\treturn {\n    \t\t\t\t\t\tdoctype: 'Discount Configuration',\n    \t\t\t\t\t\tfilters: {\n    \t\t\t\t\t\t\tfee_structure: frm.doc.fee_structure,\n    \t\t\t\t\t\t},\n    \t\t\t\t\t};\n\t\t\t\t    }\n            }\n        ],\n        size: 'large',\n        primary_action_label: 'Submit',\n        primary_action(values) {\n            frappe.call({\n                method: \"add_discount\",\n                type: \"POST\",\n                args: {\n                    discount: values.discount_name,\n                    fee_name: frm.doc.name\n                },\n                callback: function(response) {\n                    console.log(response);\n                }\n            });\n            d.hide();\n            frm.doc.refresh();\n        }\n    });\n    \n    d.show();\n\n    }, __(\"Discount\"));\n    frm.add_custom_button(__('Remove Discount'), function(){\n        let d = new frappe.ui.Dialog({\n        title: 'Add Discount',\n        fields: [\n            {\n                label: 'Discount Name',\n                fieldname: 'discount_name',\n                fieldtype: 'Link',\n                options: \"Discount Configuration\",\n                get_query: function () {\n    \t\t\t\t\treturn {\n    \t\t\t\t\t\tdoctype: 'Discount Configuration',\n    \t\t\t\t\t\tfilters: {\n    \t\t\t\t\t\t\tfee_structure: frm.doc.fee_structure,\n    \t\t\t\t\t\t},\n    \t\t\t\t\t};\n\t\t\t\t    }\n            }\n        ],\n        size: 'large',\n        primary_action_label: 'Submit',\n        primary_action(values) {\n            frappe.call({\n                method: \"remove_discount\",\n                type: \"POST\",\n                args: {\n                    discount: values.discount_name,\n                    fee_name: frm.doc.name\n                },\n                callback: function(response) {\n                    console.log(response);\n                }\n            });\n            d.hide();\n            frm.doc.refresh();\n        }\n    });\n    \n    d.show();\n    }, __(\"Discount\"));\n  }\n});",
   "view": "Form"
  }
 ]
