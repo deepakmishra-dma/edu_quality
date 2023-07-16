@@ -45,9 +45,9 @@ class CustomPaymentRequest(PaymentRequest):
                         cost_center,
                     )
             else:
-                doc = frappe.get_doc("Split Payment", fee_name)
-                paid_to = doc.account
-                company = doc.company
+                doc = frappe.get_doc("Fee Category", fee_name)
+                paid_to = doc.custom_account
+                company = doc.custom_company
                 paid_from = frappe.get_value(
                     "Account", {"company": company, "account_type": "Receivable"}, ["name"]
                 )
@@ -193,7 +193,7 @@ def create_fee_receipt(fees,payment_term=None):
                         due_date = schedule.due_date
             fee_category = component.fees_category
             fee_amounts[fee_category] = amount
-            company = frappe.get_value("Split Payment", {"fee_category":fee_category}, "company")
+            company = frappe.get_value("Fee Category", {"name":fee_category}, "custom_company")
             if fee_categories.get(company) is not None:
                 fee_categories[company].append(fee_category)
                 amounts[company] += amount

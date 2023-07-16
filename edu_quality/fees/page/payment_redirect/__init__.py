@@ -30,13 +30,15 @@ def get_payment_details(**kwargs):
                 portion = schedule.invoice_portion 
 
     for fee in fees.components:
-        if frappe.db.exists("Split Payment",fee.fees_category):
-            company = frappe.db.get_value("Split Payment",fee.fees_category,"company")
+        discounted_amount = fee.custom_amount_after_discount
+        amount = discounted_amount if discounted_amount else fee.amount
+        if frappe.db.exists("Fee Category",fee.fees_category):
+            company = frappe.db.get_value("Fee Category",fee.fees_category,"custom_company")
         else:
             company = fees.company
         breakup.append({
             'fees_category': fee.fees_category,
-            'amount':  frappe.utils.fmt_money(fee.amount *(portion/100), currency="INR"),
+            'amount':  frappe.utils.fmt_money(amount *(portion/100), currency="INR"),
             'company': company
             })
     return {
@@ -70,7 +72,7 @@ def payment_charge(**kwargs):
 @frappe.whitelist(allow_guest=True)
 def payment_receipt(fees,category):
     try:
-        company = frappe.db.get_value("Split Payment",category,"company")
+        company = frappe.db.get_value("Fee Category",category,"custom_company")
         if not company:
             company = "Unique Educational and Sports Foundation"
         doc = frappe.db.get_value("Fee Receipt",{'fees':fees,"company":company},'name')
