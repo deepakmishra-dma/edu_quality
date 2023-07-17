@@ -129,6 +129,7 @@
    "label": "Can be applied with Other Discounts"
   },
   {
+   "fetch_from": "fee_structure.school",
    "fieldname": "school",
    "fieldtype": "Link",
    "label": "School",
@@ -137,7 +138,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-08-10 16:05:27.037822",
+ "modified": "2023-08-17 12:45:13.358527",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Discount Configuration",
