@@ -1,6 +1,25 @@
 [
  {
   "allow_guest": 0,
+  "api_method": null,
+  "cron_format": null,
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Server Script",
+  "doctype_event": "Before Save",
+  "enable_rate_limit": 0,
+  "event_frequency": "All",
+  "modified": "2023-08-18 20:00:38.479587",
+  "module": "Fees",
+  "name": "Deposit Validation",
+  "rate_limit_count": 5,
+  "rate_limit_seconds": 86400,
+  "reference_doctype": "Fee Structure",
+  "script": "deposit = []\nfor component in doc.components:\n    fee_name = component.fees_category\n    if frappe.db.exists(\"Security Deposit\", fee_name):\n        sd = frappe.get_doc(\"Security Deposit\", fee_name)\n        if fee_name not in deposit and doc.academic_year == sd.academic_year:\n            deposit.append(fee_name)\n        else:\n            frappe.throw(f\"Duplicate Deposite: {fee_name}\")",
+  "script_type": "DocType Event"
+ },
+ {
+  "allow_guest": 0,
   "api_method": "add_discount",
   "cron_format": null,
   "disabled": 0,
