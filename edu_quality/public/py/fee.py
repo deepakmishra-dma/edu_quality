@@ -46,18 +46,21 @@ def create_fees(doc,method=None):
                     'fees_category':"Application Fees",
                     'amount':student_applicant.application_fees
                 })
-            for component in student_applicant.fee_components:
-                total += component.amount
-                fees.append("components",{
-                    'fees_category':component.fees_category,
-                    'amount':component.amount,
-                    'description': component.description
-                })
-            for deposit in student_applicant.deposits:
-                fees.append("components",{
-                    'fees_category': deposit.safety_deposit,
-                    'amount': deposit.amount
-                })
+            if len(student_applicant.fee_components) > 0:
+                for component in student_applicant.fee_components:
+                    fees.append("components",{
+                        'fees_category':component.fees_category,
+                        'amount':component.amount,
+                        'description': component.description
+                    })
+            else:
+                fee_structure = frappe.get_doc("Fee Structure",student_applicant.fee_structure) 
+                for component in fee_structure.components:
+                    fees.append("components",{
+                        'fees_category':component.fees_category,
+                        'amount':component.amount,
+                        'description': component.description
+                    })
             fees.insert()
             fees.submit()
     except Exception as e:
