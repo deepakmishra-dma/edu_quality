@@ -185,12 +185,15 @@ def create_fee_receipt(fees,payment_term=None):
         amounts = {}
         fee_amounts = {}
         for component in fees.components:
-            amount = component.custom_amount_after_discount
+            discounted_amount = component.custom_amount_after_discount
+            amount = discounted_amount if discounted_amount else component.amount
             if payment_term:
                 for schedule in fees.payment_schedule:
                     if schedule.payment_term == payment_term:
                         amount = flt((schedule.invoice_portion/100) * amount,2)
                         due_date = schedule.due_date
+            else:
+                due_date = fees.due_date.strftime("%Y-%m-%d")
             fee_category = component.fees_category
             fee_amounts[fee_category] = amount
             company = frappe.get_value("Fee Category", {"name":fee_category}, "custom_company")
