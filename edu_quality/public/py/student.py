@@ -18,3 +18,37 @@ def autoname(doc,method=None):
             prefix = "EDU-STU-2023-"
         prefix += ".##"
         doc.name = make_autoname(prefix)
+
+def update_student_group(p_e_doc,fee_structure=None):
+    try:
+        student_group = frappe.get_value("Program Enrollment",{"name":p_e_doc,"docstatus":1},'student_group')
+        st = get_students_group(student_group)
+        if st:
+            program_e_d = frappe.get_doc("Student Group",student_group)
+            program_e_d.students = []
+            for item in st:
+                program_e_d.append("students",item)
+            program_e_d.save()
+            if fee_structure:
+                fee_structure = frappe.get_value("Fee Schedule",{"fee_structure":fee_structure})
+                doc = frappe.get_doc("Fee Schedule Student Group", {"parent":fee_structure,"student_group":student_group})
+                doc.total_students = len(st)
+                doc.save()
+        return
+    except Exception as e:
+        frappe.throw(str(e))
+
+
+def get_students_group(student_group):
+    enrolled_students = frappe.get_all("Program Enrollment",{"student_group":student_group,"docstatus":1},['student','student_name'])
+    if enrolled_students:
+        student_list = []
+        for s in enrolled_students:
+            if frappe.db.get_value("Student", s.student, "enabled"):
+                s.update({"active": 1})
+            else:
+                s.update({"active": 0})
+            student_list.append(s)
+        return student_list
+    else:
+        return []
