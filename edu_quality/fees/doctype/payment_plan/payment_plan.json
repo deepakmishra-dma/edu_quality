@@ -1,6 +1,6 @@
 {
  "actions": [],
- "autoname": "field:plan_name",
+ "autoname": "format:{plan_name}-{program}-{academic_year}-{school}",
  "creation": "2023-07-12 17:44:05.134703",
  "default_view": "List",
  "doctype": "DocType",
@@ -25,7 +25,6 @@
    "unique": 1
   },
   {
-   "fetch_from": "fee_structure.program",
    "fieldname": "program",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -34,12 +33,11 @@
    "reqd": 1
   },
   {
-   "fetch_from": "fee_structure.academic_year",
    "fieldname": "academic_year",
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Academic Year",
-   "options": "Fiscal Year",
+   "options": "Academic Year",
    "reqd": 1
   },
   {
@@ -67,16 +65,17 @@
    "fieldname": "school",
    "fieldtype": "Link",
    "label": "School",
-   "options": "School"
+   "options": "School",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-08-10 16:06:11.161276",
+ "modified": "2023-08-18 09:40:38.971326",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Payment Plan",
- "naming_rule": "By fieldname",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {
