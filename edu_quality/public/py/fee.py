@@ -159,3 +159,15 @@ def payment_entry(doc,ref_doc,bank_amount,party_amount,paid_to):
     payment_entry.insert(ignore_permissions=True)
     payment_entry.submit()
     return payment_entry
+
+
+@frappe.whitelist()
+def get_due_date(fee):
+    fee = frappe.get_doc("Fees",fee)
+    due_date = ""
+    for term in fee.payment_schedule:
+        if not due_date:
+            due_date = term.due_date
+        if frappe.db.exists("Payment Request",{'payment_term':term.payment_term,"reference_name":fee.name}):
+            due_date = term.due_date
+    return due_date

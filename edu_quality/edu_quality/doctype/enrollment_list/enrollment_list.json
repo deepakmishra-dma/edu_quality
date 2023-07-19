@@ -29,6 +29,7 @@
    "reqd": 1
   },
   {
+   "fetch_from": "program_enrollment.custom_payment_plan",
    "fieldname": "payment_plan",
    "fieldtype": "Link",
    "label": "Payment Plan",
@@ -46,7 +47,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2023-08-18 10:07:08.289961",
+ "modified": "2023-08-21 08:26:20.277655",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Enrollment List",
