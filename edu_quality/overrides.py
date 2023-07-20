@@ -78,8 +78,8 @@ class CustomPaymentRequest(PaymentRequest):
                 companies[paid_from],
                 cost_center,
             )
-        
-        frappe.db.set_value(fees.doctype, fees.name, "outstanding_amount", 0)
+        paid_amount = fees.outstanding_amount - self.grand_total
+        frappe.db.set_value(fees.doctype, fees.name, "outstanding_amount", paid_amount)
         self.db_set("status", "Paid")
         create_fee_receipt(fees,self.payment_term)
 
