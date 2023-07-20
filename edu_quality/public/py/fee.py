@@ -63,6 +63,8 @@ def create_fees(doc,method=None):
                     })
             fees.insert()
             fees.submit()
+            from edu_quality.public.py.student import update_student_group
+            update_student_group(fees.program_enrollment,fee_structure=fee_structure.name)
     except Exception as e:
         frappe.throw(str(e))
 
