@@ -2,7 +2,13 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('Security Deposit', {
-	// refresh: function(frm) {
-
-	// }
+	school: function(frm) {
+		frm.set_query("program", function() {
+		return {
+			 "filters": {
+				 "custom_school": frm.doc.school
+				 }
+			 };
+		 });
+	 }
 });

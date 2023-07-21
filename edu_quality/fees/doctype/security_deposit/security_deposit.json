@@ -10,8 +10,8 @@
   "deposit_name",
   "description",
   "academic_year",
-  "program",
   "school",
+  "program",
   "institution",
   "amount"
  ],
@@ -65,7 +65,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-08-10 16:04:50.955204",
+ "modified": "2023-08-20 21:59:26.633927",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Security Deposit",
