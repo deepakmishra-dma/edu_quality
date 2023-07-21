@@ -8,7 +8,14 @@ from frappe.model.document import Document
 class FeeReceipt(Document):
 	def before_save(self):
 		if self.due_date and self.paid_on:
-			difference = (datetime.strptime(self.due_date, "%Y-%m-%d")- datetime.strptime(self.paid_on, "%Y-%m-%d")).days 
+			due_date = self.due_date
+			paid_on = self.paid_on
+			if type(self.due_date) != str:
+				due_date = self.due_date.strftime("%Y-%m-%d")
+			if type(self.paid_on) != str:
+				paid_on = self.paid_on.strftime("%Y-%m-%d")
+			
+			difference = (datetime.strptime(due_date, "%Y-%m-%d") - datetime.strptime(paid_on, "%Y-%m-%d")).days 
 			color = "Green"
 			if difference == 0:
 				color = "Yellow"
