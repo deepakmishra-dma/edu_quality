@@ -78,6 +78,8 @@ class CustomPaymentRequest(PaymentRequest):
                 companies[paid_from],
                 cost_center,
             )
+        if self.payment_term:
+            mark_payment_term_paid(fees, self.payment_term, self.grand_total)
         paid_amount = fees.outstanding_amount - self.grand_total
         frappe.db.set_value(fees.doctype, fees.name, "outstanding_amount", paid_amount)
         self.db_set("status", "Paid")
@@ -220,3 +222,10 @@ def create_fee_receipt(fees,payment_term=None):
             fee_receipt.insert(ignore_permissions=True)
     except Exception as e:
         frappe.logger("edu_quality").exception(e)
+
+
+def mark_payment_term_paid(fees, term, paid_amount):
+    for schedule in fees.payment_schedule:
+        if schedule.payment_term == term:
+            if schedule.outstanding == paid_amount:
+                frappe.db.set_value("Payment Schedule", schedule.name, "outstanding", 0)
