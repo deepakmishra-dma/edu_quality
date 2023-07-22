@@ -38,8 +38,7 @@ def create_fees(doc,method=None):
                 "program_enrollment": frappe.db.get_value("Program Enrollment",{'student': doc.name},'name'),
                 "fee_structure": student_applicant.fee_structure,
                 "fee_schedule": student_applicant.fee_schedule,
-                "company": student_applicant.institution,
-                "due_date": frappe.db.get_value("Fee Schedule",student_applicant.fee_schedule,'due_date')
+                "company": student_applicant.institution
             })
             if student_applicant.application_fees:
                 fees.append("components",{
