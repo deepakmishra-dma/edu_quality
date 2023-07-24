@@ -53,6 +53,7 @@ class CustomPaymentRequest(PaymentRequest):
                 )
                 
                 amount = component.custom_amount_after_discount
+                amount = amount if amount else component.amount
                 if self.payment_term:
                     for schedule in fees.payment_schedule:
                         if schedule.payment_term == self.payment_term:
