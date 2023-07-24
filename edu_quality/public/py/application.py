@@ -2,6 +2,7 @@ import frappe
 
 
 def before_save(doc,method=None):
+    doc.fee_components = []
     if doc.student_admission:
         doc.application_fees = frappe.get_value("Student Admission Program",{'parent':doc.student_admission,'program':doc.program},'application_fee')
         doc.append('fee_components',{
@@ -12,7 +13,6 @@ def before_save(doc,method=None):
         get_deposits(doc)
     if doc.fee_structure:
         fee_structure = frappe.get_doc("Fee Structure", doc.fee_structure)
-        doc.fee_components = []
         if frappe.db.get_single_value("Fees Settings",'apply_fees'):
             for component in fee_structure.components:
                 doc.append('fee_components',{
