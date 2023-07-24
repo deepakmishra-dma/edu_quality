@@ -26,32 +26,32 @@ def before_save(doc, method=None):
                 amount = pr.grand_total
                 pr.cancel()
 
-            for schedule in fees.payment_schedule:
-                if schedule.payment_term == pr.payment_term:
-                    frappe.db.set_value(
-                        "Payment Schedule", schedule.name, "payment_amount", 0
-                    )
-                    frappe.db.set_value(
-                        "Payment Schedule", schedule.name, "outstanding", 0
-                    )
-                if schedule.payment_term == doc.payment_term:
-                    amount = amount + frappe.utils.flt(schedule.payment_amount)
-                    discount = get_discounted_amount(doc.payment_term, fees.outstanding_amount)
-                    payment_amount = amount - discount
-                    frappe.db.set_value(
-                        "Payment Schedule",
-                        schedule.name,
-                        "payment_amount",
-                        payment_amount,
-                    )
-                    frappe.db.set_value(
-                        "Payment Schedule", schedule.name, "outstanding", payment_amount
-                    )
-                    frappe.db.set_value(
-                        "Payment Schedule", schedule.name, "discounted_amount", discount
-                    )
-            frappe.db.set_value("Fees", fees.name, "outstanding_amount", fees.outstanding_amount - discount)
-            doc.grand_total = payment_amount
+                for schedule in fees.payment_schedule:
+                    if schedule.payment_term == pr.payment_term:
+                        frappe.db.set_value(
+                            "Payment Schedule", schedule.name, "payment_amount", 0
+                        )
+                        frappe.db.set_value(
+                            "Payment Schedule", schedule.name, "outstanding", 0
+                        )
+                    if schedule.payment_term == doc.payment_term:
+                        amount = amount + frappe.utils.flt(schedule.payment_amount)
+                        discount = get_discounted_amount(doc.payment_term, fees.outstanding_amount)
+                        payment_amount = amount - discount
+                        frappe.db.set_value(
+                            "Payment Schedule",
+                            schedule.name,
+                            "payment_amount",
+                            payment_amount,
+                        )
+                        frappe.db.set_value(
+                            "Payment Schedule", schedule.name, "outstanding", payment_amount
+                        )
+                        frappe.db.set_value(
+                            "Payment Schedule", schedule.name, "discounted_amount", discount
+                        )
+                frappe.db.set_value("Fees", fees.name, "outstanding_amount", fees.outstanding_amount - discount)
+                doc.grand_total = payment_amount
 
         # if payment request is paid
         elif frappe.db.exists("Payment Request", paid_filter):
@@ -136,7 +136,7 @@ def create_pr_new_term(doc, fees):
     amount = 0
     discount = 0
     for schedule in fees.payment_schedule:
-        if schedule.due_date < frappe.utils.getdate(frappe.utils.today()):
+        if schedule.due_date < frappe.utils.getdate(frappe.utils.today()) and schedule.payment_term != doc.payment_term:
             amount = amount + frappe.utils.flt(schedule.payment_amount)
             frappe.db.set_value("Payment Schedule", schedule.name, "payment_amount", 0)
             frappe.db.set_value("Payment Schedule", schedule.name, "outstanding", 0)
