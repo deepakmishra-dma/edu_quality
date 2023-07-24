@@ -15,7 +15,16 @@ def before_save(doc,method=None):
         if doc.payment_plan:
             pp = frappe.get_doc("Payment Plan",doc.payment_plan)
             doc.payment_schedule = []
+            initial_payment = 0
+            for component in doc.components:
+                if component.fees_category in ["Deposit", "Application Fee"]:
+                    initial_payment += component.amount
+            i=0
             for schedule in pp.payment_schedule:
+                payment_amount = schedule.payment_amount
+                if i==0:
+                    payment_amount += initial_payment
+                    i=1
                 doc.append("payment_schedule",{
                     'payment_term': schedule.payment_term,
                     'description': schedule.description,
@@ -40,11 +49,11 @@ def create_fees(doc,method=None):
                 "fee_schedule": student_applicant.fee_schedule,
                 "company": student_applicant.institution
             })
-            if student_applicant.application_fees:
-                fees.append("components",{
-                    'fees_category':"Application Fees",
-                    'amount':student_applicant.application_fees
-                })
+            # if student_applicant.application_fees:
+            #     fees.append("components",{
+            #         'fees_category':"Application Fees",
+            #         'amount':student_applicant.application_fees
+            #     })
             if len(student_applicant.fee_components) > 0:
                 for component in student_applicant.fee_components:
                     fees.append("components",{

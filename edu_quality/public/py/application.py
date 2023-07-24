@@ -4,6 +4,12 @@ import frappe
 def before_save(doc,method=None):
     if doc.student_admission:
         doc.application_fees = frappe.get_value("Student Admission Program",{'parent':doc.student_admission,'program':doc.program},'application_fee')
+        doc.append('fee_components',{
+            'fees_category': "Application fee",
+            'amount': doc.application_fees
+        })
+    if frappe.db.get_single_value("Fees Settings",'apply_deposits'):
+        get_deposits(doc)
     if doc.fee_structure:
         fee_structure = frappe.get_doc("Fee Structure", doc.fee_structure)
         doc.fee_components = []
@@ -16,8 +22,6 @@ def before_save(doc,method=None):
                     })
     else:
         frappe.throw("Fee Structure is Mandatory")
-    if frappe.db.get_single_value("Fees Settings",'apply_deposits'):
-        get_deposits(doc)
     calculate_total(doc)
 
 def calculate_total(doc):
@@ -31,7 +35,7 @@ def get_deposits(doc):
     deposits = frappe.get_list('Security Deposit',{'program':doc.program,'academic_year':doc.academic_year},['name','amount'])
     for deposit in deposits:
         doc.append('fee_components',{
-            'fees_category': deposit.name,
+            'fees_category': "Deposit",
             'amount': deposit.amount
         })
     
