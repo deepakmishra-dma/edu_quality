@@ -117,7 +117,7 @@
   "modified": "2023-08-08 16:10:37.380869",
   "module": "Fees",
   "name": "Query Filtering Fee Structure",
-  "script": "frappe.ui.form.on('Fee Structure', {\n\tschool: function(frm) {\n\t   frm.set_query(\"program\", function() {\n\t   return {\n            \"filters\": {\n                \"custom_school\": frm.doc.school\n                }\n            };\n        });\n\t}\n});\n",
+  "script": "frappe.ui.form.on('Fee Structure', {\n\tschool: function(frm) {\n\t   frm.set_query(\"program\", function() {\n\t   return {\n            \"filters\": {\n                \"school\": frm.doc.school\n                }\n            };\n        });\n\t}\n});\n",
   "view": "Form"
  },
  {
@@ -136,10 +136,10 @@
   "doctype": "Client Script",
   "dt": "Student Applicant",
   "enabled": 1,
-  "modified": "2023-08-10 22:51:57.329306",
+  "modified": "2023-08-22 18:50:21.867026",
   "module": "Fees",
   "name": "Query filtering in Student Applicant",
-  "script": "frappe.ui.form.on('Student Applicant', {\n\tschool: function(frm) {\n\t   frm.set_query(\"program\", function() {\n\t   return {\n            \"filters\": {\n                \"custom_school\": frm.doc.school\n                }\n            };\n        });\n       frm.set_query(\"fee_structure\", function() {\n\t   return {\n            \"filters\": {\n                \"school\": frm.doc.school\n                }\n            };\n        });\n       frm.set_query(\"fee_schedule\", function() {\n\t   return {\n            \"filters\": {\n                \"fee_structure\": frm.doc.fee_structure\n                }\n            };\n        });\n\t},\n\t\n\t//Auto fetch fee component from fee structure\n\tfee_structure: function(frm) {\n\t\tfrm.set_value(\"fee_components\" ,\"\");\n\t\tif (frm.doc.fee_structure) {\n\t\t\tfrappe.call({\n\t\t\t\tmethod: \"education.education.api.get_fee_components\",\n\t\t\t\targs: {\n\t\t\t\t\t\"fee_structure\": frm.doc.fee_structure\n\t\t\t\t},\n\t\t\t\tcallback: function(r) {\n\t\t\t\t\tif (r.message) {\n\t\t\t\t\t\t$.each(r.message, function(i, d) {\n\t\t\t\t\t\t\tvar row = frappe.model.add_child(frm.doc, \"Fee Component\", \"fee_components\");\n\t\t\t\t\t\t\trow.fees_category = d.fees_category;\n\t\t\t\t\t\t\trow.description = d.description;\n\t\t\t\t\t\t\trow.amount = d.amount;\n\t\t\t\t\t\t});\n\t\t\t\t\t}\n\t\t\t\t\trefresh_field(\"fee_components\");\n\t\t\t\t}\n\t\t\t});\n\t\t}\n\t},\n});",
+  "script": "frappe.ui.form.on('Student Applicant', {\n\tschool: function(frm) {\n\t   frm.set_query(\"program\", function() {\n\t   return {\n            \"filters\": {\n                \"school\": frm.doc.school\n                }\n            };\n        });\n       frm.set_query(\"fee_structure\", function() {\n\t   return {\n            \"filters\": {\n                \"school\": frm.doc.school\n                }\n            };\n        });\n       frm.set_query(\"fee_schedule\", function() {\n\t   return {\n            \"filters\": {\n                \"fee_structure\": frm.doc.fee_structure\n                }\n            };\n        });\n        set_fee_structure(frm)\n\t},\n\t\n\t//Auto fetch fee component from fee structure\n\tfee_structure: function(frm) {\n\t\tfrm.set_value(\"fee_components\" ,\"\");\n\t\tif (frm.doc.fee_structure) {\n\t\t\tfrappe.call({\n\t\t\t\tmethod: \"education.education.api.get_fee_components\",\n\t\t\t\targs: {\n\t\t\t\t\t\"fee_structure\": frm.doc.fee_structure\n\t\t\t\t},\n\t\t\t\tcallback: function(r) {\n\t\t\t\t\tif (r.message) {\n\t\t\t\t\t\t$.each(r.message, function(i, d) {\n\t\t\t\t\t\t\tvar row = frappe.model.add_child(frm.doc, \"Fee Component\", \"fee_components\");\n\t\t\t\t\t\t\trow.fees_category = d.fees_category;\n\t\t\t\t\t\t\trow.description = d.description;\n\t\t\t\t\t\t\trow.amount = d.amount;\n\t\t\t\t\t\t});\n\t\t\t\t\t}\n\t\t\t\t\trefresh_field(\"fee_components\");\n\t\t\t\t}\n\t\t\t});\n\t\t}\n\t},\n\tprogram: function (frm) {\n\t\tset_fee_structure(frm)\n\t},\n\tacademic_year: function (frm) {\n\t\tset_fee_structure(frm)\n\t},\n\t\n});\n\nfunction set_fee_structure(frm) {\n\tfrappe.call({\n\t\tmethod: 'frappe.client.get_list',\n\t\targs: {\n\t\t\tdoctype: 'Fee Structure',\n\t\t\tfilters: [\n\t\t\t\t['program', '=', frm.doc.program],\n\t\t\t\t['academic_year', '=', frm.doc.academic_year],\n\t\t\t\t['school', '=', frm.doc.school]\n\t\t\t]\n\t\t},\n\t\tcallback: function (response) {\n\t\t\tvar feeStructures = response.message;\n\t\t\tif (feeStructures) {\n\t\t\t\tfrm.set_value(\"fee_structure\", feeStructures[0].name)\n\t\t\t\tfrm.refresh_field(\"fee_structure\")\n\t\t\t}\n\t\t}\n\t});\n}",
   "view": "Form"
  },
  {
@@ -150,7 +150,7 @@
   "modified": "2023-08-11 08:06:00.048157",
   "module": "Fees",
   "name": "Query Filtering in Program Enrollment",
-  "script": "frappe.ui.form.on('Program Enrollment', {\n    custom_school: function(frm) {\n\t\tfrm.set_query(\"program\", function() {\n        return {\n            \"filters\": {\n                \"custom_school\": frm.doc.custom_school\n            }\n        };\n    });\n    },\n\tprogram: function(frm) {\n\t\tfrm.set_query(\"custom_payment_plan\", function() {\n        return {\n            \"filters\": {\n                \"program\": frm.doc.program\n            }\n        };\n    });\n        frm.set_query(\"fee_structure\",\"fees\", function() {\n            return {\n                filters: [\n                    ['Fee Structure','academic_term', '=', frm.doc.academic_term],\n                    ['Fee Structure','program', '=', frm.doc.program]\n                ]\n            };\n        });\n    }\n});",
+  "script": "frappe.ui.form.on('Program Enrollment', {\n    school: function(frm) {\n\t\tfrm.set_query(\"program\", function() {\n        return {\n            \"filters\": {\n                \"school\": frm.doc.custom_school\n            }\n        };\n    });\n    },\n\tprogram: function(frm) {\n\t\tfrm.set_query(\"custom_payment_plan\", function() {\n        return {\n            \"filters\": {\n                \"program\": frm.doc.program\n            }\n        };\n    });\n        frm.set_query(\"fee_structure\",\"fees\", function() {\n            return {\n                filters: [\n                    ['Fee Structure','academic_term', '=', frm.doc.academic_term],\n                    ['Fee Structure','program', '=', frm.doc.program]\n                ]\n            };\n        });\n    }\n});",
   "view": "Form"
  },
  {
@@ -161,7 +161,7 @@
   "modified": "2023-08-11 08:07:33.686446",
   "module": "Fees",
   "name": "Query Filtering in Student Group",
-  "script": "frappe.ui.form.on('Student Group', {\n\tcustom_school: function(frm) {\n\t   frm.set_query(\"program\", function() {\n\t   return {\n            \"filters\": {\n                \"custom_school\": frm.doc.custom_school\n                }\n            };\n        });\n\t}\n});",
+  "script": "frappe.ui.form.on('Student Group', {\n\tschool: function(frm) {\n\t   frm.set_query(\"program\", function() {\n\t   return {\n            \"filters\": {\n                \"school\": frm.doc.school\n                }\n            };\n        });\n\t}\n});",
   "view": "Form"
  },
  {

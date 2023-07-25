@@ -15,7 +15,16 @@ def before_save(doc,method=None):
         if doc.payment_plan:
             pp = frappe.get_doc("Payment Plan",doc.payment_plan)
             doc.payment_schedule = []
+            initial_payment = 0
+            for component in doc.components:
+                if component.fees_category in ["Deposit", "Application Fee"]:
+                    initial_payment += component.amount
+            i=0
             for schedule in pp.payment_schedule:
+                payment_amount = schedule.payment_amount
+                if i==0:
+                    payment_amount += initial_payment
+                    i=1
                 doc.append("payment_schedule",{
                     'payment_term': schedule.payment_term,
                     'description': schedule.description,
@@ -38,14 +47,13 @@ def create_fees(doc,method=None):
                 "program_enrollment": frappe.db.get_value("Program Enrollment",{'student': doc.name},'name'),
                 "fee_structure": student_applicant.fee_structure,
                 "fee_schedule": student_applicant.fee_schedule,
-                "company": student_applicant.institution,
-                "due_date": frappe.db.get_value("Fee Schedule",student_applicant.fee_schedule,'due_date')
+                "company": student_applicant.institution
             })
-            if student_applicant.application_fees:
-                fees.append("components",{
-                    'fees_category':"Application Fees",
-                    'amount':student_applicant.application_fees
-                })
+            # if student_applicant.application_fees:
+            #     fees.append("components",{
+            #         'fees_category':"Application Fees",
+            #         'amount':student_applicant.application_fees
+            #     })
             if len(student_applicant.fee_components) > 0:
                 for component in student_applicant.fee_components:
                     fees.append("components",{
@@ -63,11 +71,15 @@ def create_fees(doc,method=None):
                     })
             fees.insert()
             fees.submit()
+            from edu_quality.public.py.student import update_student_group
+            update_student_group(fees.program_enrollment,fee_structure=student_applicant.fee_structure)
     except Exception as e:
         frappe.throw(str(e))
 
 
 def fees_after_insert(doc,method=None):
+    if doc.send_payment_request == 0:
+        doc.send_payment_request = 1
     for fee in doc.components:
         if frappe.db.exists("Security Deposit",fee.fees_category):
             log = frappe.new_doc("Security Deposit Entry")

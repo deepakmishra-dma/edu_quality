@@ -9,12 +9,46 @@ def autoname(doc,method=None):
             prefix = frappe.get_value("Prefix Table",{'school':applicant.school},'prefix')
         if frappe.db.exists("Reference Number Table",{'program':applicant.program}):
             series = frappe.get_value("Reference Number Table",{'program':applicant.program},'series')
-            prefix += "-" + series + "-"
+            prefix += series
         if frappe.db.count("Student",[["name","Like","%prefix%"]])>=99:
-            prefix = prefix[:-2] + chr(ord(prefix[-2]) + 1) + "-"
+            prefix = prefix[:-2] + chr(ord(prefix[-2]) + 1)
             series = series[0] + chr(ord(series[1])+1)
             frappe.db.set_value("Reference Number Table",{'program':applicant.program},'series',series)
         if not prefix:
             prefix = "EDU-STU-2023-"
         prefix += ".##"
         doc.name = make_autoname(prefix)
+
+def update_student_group(p_e_doc,fee_structure=None):
+    try:
+        student_group = frappe.get_value("Program Enrollment",{"name":p_e_doc,"docstatus":1},'student_group')
+        st = get_students_group(student_group)
+        if st:
+            program_e_d = frappe.get_doc("Student Group",student_group)
+            program_e_d.students = []
+            for item in st:
+                program_e_d.append("students",item)
+            program_e_d.save()
+            if fee_structure:
+                fee_structure = frappe.get_value("Fee Schedule",{"fee_structure":fee_structure})
+                doc = frappe.get_doc("Fee Schedule Student Group", {"parent":fee_structure,"student_group":student_group})
+                doc.total_students = len(st)
+                doc.save()
+        return
+    except Exception as e:
+        frappe.throw(str(e))
+
+
+def get_students_group(student_group):
+    enrolled_students = frappe.get_all("Program Enrollment",{"student_group":student_group,"docstatus":1},['student','student_name'])
+    if enrolled_students:
+        student_list = []
+        for s in enrolled_students:
+            if frappe.db.get_value("Student", s.student, "enabled"):
+                s.update({"active": 1})
+            else:
+                s.update({"active": 0})
+            student_list.append(s)
+        return student_list
+    else:
+        return []

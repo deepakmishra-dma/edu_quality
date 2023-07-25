@@ -111,7 +111,7 @@ doc_events = {
         "before_save":"edu_quality.public.py.application.before_save"
     },
     "Program Enrollment":{
-        "after_insert":"edu_quality.public.py.fee.create_fees"
+        "on_submit":"edu_quality.public.py.fee.create_fees"
     },
     "Fees":{
         "after_insert":"edu_quality.public.py.fee.fees_after_insert",
