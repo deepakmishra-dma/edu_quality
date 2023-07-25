@@ -1,4 +1,5 @@
 import frappe
+from frappe.model.mapper import get_mapped_doc
 
 
 def before_save(doc,method=None):
@@ -39,3 +40,47 @@ def get_deposits(doc):
             'amount': deposit.amount
         })
     
+
+@frappe.whitelist()
+def enroll_student(source_name):
+    """Creates a Student Record and returns a Program Enrollment.
+
+    :param source_name: Student Applicant.
+    """
+    frappe.publish_realtime(
+        "enroll_student_progress", {"progress": [1, 4]}, user=frappe.session.user
+    )
+    student = get_mapped_doc(
+        "Student Applicant",
+        source_name,
+        {
+            "Student Applicant": {
+                "doctype": "Student",
+                "field_map": {"name": "student_applicant"},
+            }
+        },
+        ignore_permissions=True,
+    )
+    student.save()
+
+    student_applicant = frappe.get_doc("Student Applicant", source_name)
+
+    program_enrollment = frappe.new_doc("Program Enrollment")
+    program_enrollment.student = student.name
+    program_enrollment.student_category = student_applicant.student_category
+    program_enrollment.student_name = student.student_name
+    program_enrollment.school = student_applicant.program
+    program_enrollment.program = student_applicant.program
+    program_enrollment.academic_year = student_applicant.academic_year
+    program_enrollment.academic_term = student_applicant.academic_term
+    program_enrollment.student_group = get_student_group(student_applicant)
+    program_enrollment.save()
+    program_enrollment.submit()
+    frappe.publish_realtime(
+    	"enroll_student_progress", {"progress": [2, 4]}, user=frappe.session.user
+    )
+    return program_enrollment
+
+def get_student_group(doc):
+    filters = {"academic_year": doc.academic_year, "program": doc.program}
+    return frappe.db.get_value("Student Group", filters, "name")
