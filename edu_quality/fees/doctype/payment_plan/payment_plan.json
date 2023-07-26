@@ -1,6 +1,6 @@
 {
  "actions": [],
- "autoname": "format:{plan_name}-{program}-{academic_year}-{school}",
+ "autoname": "format:{plan_name}-{program}",
  "creation": "2023-07-12 17:44:05.134703",
  "default_view": "List",
  "doctype": "DocType",
@@ -70,7 +70,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-08-22 07:53:49.446189",
+ "modified": "2023-08-25 15:32:32.438311",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Payment Plan",
