@@ -17,5 +17,8 @@ def cron():
 
 def time_based():
     frappe.enqueue(
-            "edu_quality.discount.time_based_discount"
+            "edu_quality.discount.time_based_discount",
+            is_async=True,
+            queue="long",
+            timeout=1800
         )

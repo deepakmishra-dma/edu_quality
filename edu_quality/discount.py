@@ -1,6 +1,6 @@
 import frappe
 from frappe.utils import today, getdate
-
+from edu_quality.public.py import discount as d
 
 def time_based_discount():
     try:
@@ -50,17 +50,7 @@ def apply_discount(doc):
                     "enabled": 1,
                 },
             )
-            frappe.db.set_value("Fee Component", component.name, "custom_discount", dis.name)
-            frappe.db.set_value("Fee Component", component.name, "custom_discount_percentage", dis.discount)
-            discounted_amount = (component.amount * float(dis.discount)) / 100
-            frappe.db.set_value("Fee Component", component.name, "custom_discount_amount", discounted_amount)
-            frappe.db.set_value("Fee Component", component.name, "custom_amount_after_discount", (component.amount - discounted_amount))
-            grand_total = doc.grand_total - discounted_amount
-            frappe.db.set_value("Fees", doc.name, "grand_total", grand_total)
-
-    grand_total_in_words = str(frappe.utils.in_words(grand_total)).title()
-    frappe.db.set_value("Fees", doc.name, "grand_total_in_words", grand_total_in_words)
-    frappe.db.set_value("Fees", doc.name, "outstanding_amount", grand_total)
+            d.add_discount(doc.name, dis.name)
 
 
 def remove_discount(doc):
@@ -76,14 +66,13 @@ def remove_discount(doc):
                 "enabled": 1,
             },
         ):
-            frappe.db.set_value("Fee Component", component.name, "custom_discount", None)
-            frappe.db.set_value("Fee Component", component.name, "custom_discount_percentage", 0)
-            discounted_amount = component.custom_discount_amount
-            frappe.db.set_value("Fee Component", component.name, "custom_discount_amount", 0)
-            frappe.db.set_value("Fee Component", component.name, "custom_amount_after_discount", component.amount)
-            grand_total = doc.grand_total + discounted_amount
-            frappe.db.set_value("Fees", doc.name, "grand_total", grand_total)
-
-    grand_total_in_words = str(frappe.utils.in_words(grand_total)).title()
-    frappe.db.set_value("Fees", doc.name, "grand_total_in_words", grand_total_in_words)
-    frappe.db.set_value("Fees", doc.name, "outstanding_amount", grand_total)
+            dis = frappe.get_doc(
+                "Discount Configuration",
+                {
+                    "fee_structure": doc.fee_structure,
+                    "fee_category": component.fees_category,
+                    "type": "Time Based",
+                    "enabled": 1,
+                },
+            )
+            d.remove_discount(doc.name, dis.name)
