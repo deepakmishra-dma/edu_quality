@@ -1,7 +1,9 @@
 import frappe
+
 import json
 import requests
 import datetime
+import time
 
 CONFIG ={
 "WALSH_API_BASE":'https://testwalsh.walnutedu.in/indexCI.php',
@@ -11,7 +13,7 @@ CONFIG ={
 @frappe.whitelist()
 def create_student_application(**args):
     if not args:
-        return frappe.build_response(400)
+        raise frappe.exceptions.MandatoryError("Arguments are required")
     
     lead_doc_name = args.get('name')
     lead_application = frappe.get_doc('Lead',{"name":lead_doc_name})
@@ -20,23 +22,26 @@ def create_student_application(**args):
         return None
     student_application = frappe.get_doc(serialize_lead_to_application(lead_application)
     )
-    upload_to_mgr(student_application)
+    created_mgr_lead=upload_to_mgr(student_application)
+    student_application.lms_id = created_mgr_lead.get('ID')
+    
     student_application.insert()
+    frappe.msgprint(('Upload to MGR successful'))
     return student_application
 
 @frappe.whitelist(allow_guest=True)
 def update_stud_data(**data):
     data = data.get("Student").get("StudentInfoChange")
     
-    existing_student_doc = frappe.get_list("Student Applicant",{"first_name":data.get('stud_f_name'),"last_name":data.get('stud_l_name')},ignore_permissions=True)
-    
+    existing_student_doc = frappe.get_list("Student Applicant",{'lms_id':data.get('lms_id'),'school':data.get('school_name')},ignore_permissions=True)
+  
     if not existing_student_doc or len(existing_student_doc)==0:
         raise Exception("Student Doesnt exist")
     name = existing_student_doc[0].get('name')
 
     existing_student_doc = frappe.get_doc('Student Applicant',{'name':name})
     existing_student_doc.lms_status = data.get('lms_status')
-    existing_student_doc.program = "STD. 1-Walnut School at Fursungi"
+
     existing_student_doc.first_name = data.get('stud_f_name')
     existing_student_doc.last_name = data.get('stud_l_name')
     existing_student_doc.father_f_name = data.get('father_f_name')
@@ -56,14 +61,21 @@ def update_stud_data(**data):
     existing_student_doc.admission_to = data.get('admission_to')
     existing_student_doc.academic_year = data.get('academic_year')
     existing_student_doc.stud_rte = data.get('stud_rte')
+    existing_student_doc.caste = data.get('other_caste') or data.get('caste')
+    existing_student_doc.religion =data.get('other_religion') or data.get('religion')
+    existing_student_doc.subcaste = data.get('other_subcaste') or data.get('subcaste')
+    existing_student_doc.student_mobile_number = data.get('student_sms_no')
+    existing_student_doc.student_is_existingstudent = int(data.get('student_isexistingstudent'))
+    existing_student_doc.student_existing_ref_number = data.get('student_existing_ref_number')
+    existing_student_doc.is_sibling_in_school = int(data.get('student_bro_sis_inschoo'))
     existing_student_doc.school = data.get('school_name')
     existing_student_doc.blood_group =data.get('blood_group')
     existing_student_doc.catering = data.get('catering')
-    existing_student_doc.aadhaar_card_no= data.get('adhar_card_no')
+    existing_student_doc.aadhaar_card_number= data.get('adhar_card_no')
     existing_student_doc.parent_status = data.get('parent_status')
     existing_student_doc.single_parent_reason = data.get('single_parent_reason')
     existing_student_doc.nationality = data.get('nationality')
-
+    existing_student_doc.allergies = data.get('other_allergies') or data.get('allergies')
     existing_student_doc.guardian_f_name = data.get('guardian_f_name')
     existing_student_doc.guardian_m_name= data.get('guardian_m_name')
     existing_student_doc.guardian_l_name= data.get('guardian_s_name')
@@ -135,9 +147,12 @@ def upload_to_mgr(doc):
         url=f'{CONFIG.get("MGR_API_BASE")}/student_lms/post_student_lms_data',
         json= json.loads(json.dumps(JSON,default=default)) 
     )
+
     if("OK" not in response.text):
-        raise Exception(response.text)
-    data = response.text
+        frappe.msgprint((response.text))
+        raise frappe.exceptions.DuplicateEntryError(response.text)
+   
+    data = json.loads(response.text)
     return data
 
 
@@ -145,11 +160,15 @@ def upload_to_mgr(doc):
 def serialize_lead_to_application(doc: dict):
     if not doc:
         return {}
+    
+    fees_structure = frappe.db.get_value("Fee Structure",{'program':doc.get('class'),'school':doc.get('center'),'academic_year':doc.get('academic_year')},"name")
     return {
         'doctype':"Student Applicant",
         'first_name':doc.get('first_name'),
         'school':doc.get('center'),
         'academic_year':doc.get('academic_year'),
+        'fee_structure':fees_structure,
+        'student_email_id':f'test_only{str(time.time())}@yopmail.com',
         'program':doc.get('class'),
             'father_f_name':doc.get('fathers_name'),
             'preferred_batch_time':doc.get('preferred_batch_time'),

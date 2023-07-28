@@ -69,8 +69,22 @@
     "parenttype": "DocType Layout"
    },
    {
+    "fieldname": "address2",
+    "label": "Address2",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
     "fieldname": "pincode",
     "label": "Pincode",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "lead_how_did_you_hear_about_walnut_school",
+    "label": "Lead How did you hear about Walnut School",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
@@ -97,20 +111,6 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "how_did_you_hear_about_walnut_school",
-    "label": "How did you hear about Walnut School",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
-    "fieldname": "is_sibling_already_at_walnut",
-    "label": "Is Sibling Already at Walnut",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
     "fieldname": "lead_status",
     "label": "Lead Status",
     "parent": "Lead",
@@ -118,8 +118,8 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "sub_status",
-    "label": "Sub Status",
+    "fieldname": "lead_sub_status",
+    "label": "Lead Sub Status",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
@@ -127,20 +127,6 @@
    {
     "fieldname": "referred_to",
     "label": "Referred To",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
-    "fieldname": "walk_in_1",
-    "label": "Walk in 1",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
-    "fieldname": "walk_in_3",
-    "label": "Walk in 3",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
@@ -209,13 +195,6 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "address2",
-    "label": "Address2",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
     "fieldname": "date_of_birth",
     "label": "Date of Birth",
     "parent": "Lead",
@@ -230,15 +209,15 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "if_yes_reference_number_of_child",
-    "label": "If Yes reference number of child",
+    "fieldname": "is_sibling_already_at_walnut",
+    "label": "Is Sibling Already at Walnut",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "do_you_want_to_add_or_update_your_existing_follow_up",
-    "label": "Do you want to add or update your existing follow up",
+    "fieldname": "if_yes_reference_number_of_child",
+    "label": "If Yes reference number of child",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
@@ -251,6 +230,13 @@
     "parenttype": "DocType Layout"
    },
    {
+    "fieldname": "walk_in_1",
+    "label": "Walk in 1",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
     "fieldname": "walk_in_2",
     "label": "Walk in 2",
     "parent": "Lead",
@@ -258,8 +244,22 @@
     "parenttype": "DocType Layout"
    },
    {
+    "fieldname": "walk_in_3",
+    "label": "Walk in 3",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
     "fieldname": "action_time",
     "label": "action time",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "do_you_want_to_add_or_update_your_existing_follow_up",
+    "label": "Do you want to add or update your existing follow up",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
@@ -825,7 +825,7 @@
     "parenttype": "DocType Layout"
    }
   ],
-  "modified": "2023-08-28 15:56:31.583226",
+  "modified": "2023-08-29 01:06:33.669676",
   "name": "Lead",
   "route": "/app/lead"
  }
