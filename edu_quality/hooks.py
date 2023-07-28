@@ -235,6 +235,7 @@ fixtures = [
     {"dt": "Client Script", "filters": [
         ["module","in",["Edu Quality","Fees"]]
     ]},    
+    {"doctype":"DocType Layout"},
     { "doctype": "Custom Field", "filters": [["Custom Field","module","=","Edu Quality"],]},   
     {"dt": "Web Page"}
 
