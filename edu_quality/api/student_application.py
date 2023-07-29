@@ -17,7 +17,6 @@ def create_student_application(**args):
     
     lead_doc_name = args.get('name')
     lead_application = frappe.get_doc('Lead',{"name":lead_doc_name})
-    
     if not lead_application:
         return None
     student_application = frappe.get_doc(serialize_lead_to_application(lead_application)
@@ -142,7 +141,7 @@ def upload_to_mgr(doc):
     "bus_service_required":doc.get("bus_service_required"),
     "class":doc.get("program"),
     "RTE_student":doc.get("rte_student"),
-    "preferred_batch_time":doc.get("preferred_batch_time"),
+    "preferred_batch_time":doc.get("batch_time"),
     "academic_year":doc.get("academic_year")
         }
     
@@ -175,6 +174,7 @@ def serialize_lead_to_application(doc: dict):
         'program':doc.get('class'),
             'father_f_name':doc.get('fathers_name'),
             'preferred_batch_time':doc.get('preferred_batch_time'),
+             'batch_time':doc.get('preferred_batch_time'),
             'gender':doc.get('gender'),
             'address_line_2':doc.get('address2'),
             'address_line_1':doc.get('address'),
