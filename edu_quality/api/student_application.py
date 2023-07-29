@@ -88,6 +88,9 @@ def update_stud_data(**data):
     existing_student_doc.guardian_address2= data.get('guardian_sub_area')
     existing_student_doc.guardian_city= data.get('guardian_city')
     existing_student_doc.guardian_pin= data.get('guardian_pin')
+    existing_student_doc.aadhaar_card_cert = data.get('adhar_card_cert')
+    existing_student_doc.birth_cert = data.get('birth_cert')
+    existing_student_doc.image = data.get('student_photo')
 
     existing_student_doc.father_m_name = data.get('father_m_name')
     existing_student_doc.father_s_name = data.get('father_s_name')
