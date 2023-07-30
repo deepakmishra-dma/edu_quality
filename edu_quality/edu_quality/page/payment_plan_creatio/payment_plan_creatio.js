@@ -207,7 +207,7 @@ const formJson = {
 									"tableView": true,
 									"dataSrc": "url",
 									"data": {
-										"url": `/api/resource/Program?filters=[["custom_school","=","{{data.school}}"]]`,
+										"url": `/api/resource/Program?filters=[["school","=","{{data.school}}"]]`,
 										"headers": [
 											{
 												"key": "",
