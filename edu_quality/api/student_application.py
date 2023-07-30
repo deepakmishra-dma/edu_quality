@@ -1,9 +1,10 @@
 import frappe
-
+from frappe.utils.file_manager import save_file
 import json
 import requests
 import datetime
 import time
+import uuid
 
 CONFIG ={
 "WALSH_API_BASE":'https://testwalsh.walnutedu.in/indexCI.php',
@@ -38,15 +39,24 @@ def update_stud_data(**data):
         raise Exception("Student Doesnt exist")
     name = existing_student_doc[0].get('name')
 
+    current_user = frappe.session.user
+
+    # father = frappe.get_doc("Student Guardian")
+    frappe.set_user("Administrator")
+
+    adhar_card_cert = save_file(str(uuid.uuid4()) ,data.get('adhar_card_cert'),'Student Applicant',name,decode=True)
+    image = save_file( str(uuid.uuid4()) ,data.get('student_photo'),'Student Applicant',name,decode=True)
+    birth_cert = save_file( str(uuid.uuid4()) ,data.get('birth_cert'),'Student Applicant',name,decode=True)
+    frappe.set_user(current_user)
+
     existing_student_doc = frappe.get_doc('Student Applicant',{'name':name})
+    
     existing_student_doc.lms_status = data.get('lms_status')
 
     existing_student_doc.first_name = data.get('stud_f_name')
     existing_student_doc.last_name = data.get('stud_l_name')
-    existing_student_doc.father_f_name = data.get('father_f_name')
-    existing_student_doc.mother_f_name = data.get('mother_f_name')
-    existing_student_doc.father_mobile_no = '+91'+data.get('father_mobile_no')
-    existing_student_doc.father_email_address = data.get('father_email')
+
+
     existing_student_doc.gender = data.get('gender')
     existing_student_doc.date_of_birth = data.get('b_date')
     existing_student_doc.address_line_1 = data.get('bld_house')
@@ -66,49 +76,52 @@ def update_stud_data(**data):
     existing_student_doc.student_mobile_number = data.get('student_sms_no')
     existing_student_doc.student_is_existingstudent = int(data.get('student_isexistingstudent'))
     existing_student_doc.student_existing_ref_number = data.get('student_existing_ref_number')
-    existing_student_doc.is_sibling_in_school = int(data.get('student_bro_sis_inschoo'))
+    existing_student_doc.is_sibling_in_school = int(data.get('student_bro_sis_inschool'))
     existing_student_doc.school = data.get('school_name')
     existing_student_doc.blood_group =data.get('blood_group')
     existing_student_doc.catering = data.get('catering')
     existing_student_doc.aadhaar_card_number= data.get('adhar_card_no')
-    existing_student_doc.parent_status = data.get('parent_status')
-    existing_student_doc.single_parent_reason = data.get('single_parent_reason')
+
     existing_student_doc.nationality = data.get('nationality')
     existing_student_doc.allergies = data.get('other_allergies') or data.get('allergies')
-    existing_student_doc.guardian_f_name = data.get('guardian_f_name')
-    existing_student_doc.guardian_m_name= data.get('guardian_m_name')
-    existing_student_doc.guardian_l_name= data.get('guardian_s_name')
-    existing_student_doc.guardian_email_id= data.get('guardian_email_id')
-    existing_student_doc.guardian_mobile_no= data.get('guardian_mobile_no')
-    existing_student_doc.day_care_contact= data.get('day_care_contact')
-    existing_student_doc.guardian_profession_other= data.get('guardian_profession_other')
-    existing_student_doc.guardian_profession= data.get('guardian_profession')
-    existing_student_doc.guardian_address1= data.get('guardian_bld_house')
-    existing_student_doc.guardian_address2= data.get('guardian_sub_area')
-    existing_student_doc.guardian_city= data.get('guardian_city')
-    existing_student_doc.guardian_pin= data.get('guardian_pin')
-    existing_student_doc.aadhaar_card_cert = data.get('adhar_card_cert')
-    existing_student_doc.birth_cert = data.get('birth_cert')
-    existing_student_doc.image = data.get('student_photo')
 
-    existing_student_doc.father_m_name = data.get('father_m_name')
-    existing_student_doc.father_s_name = data.get('father_s_name')
-    existing_student_doc.father_education = data.get('father_education')
-    existing_student_doc.father_profession = data.get('father_profession')
-    existing_student_doc.father_annual_income = data.get('father_annual_income')
-    existing_student_doc.father_company_name = data.get('father_company_name')
-    existing_student_doc.father_designation = data.get('father_designation')
-    existing_student_doc.father_office_address =data.get('father_office_address')
+    existing_student_doc.aadhaar_card_cert =adhar_card_cert.file_url
+    existing_student_doc.birth_cert = birth_cert.file_url
+    existing_student_doc.image = image.file_url
+#     existing_student_doc.guardians = [{
+#             "first_name":data.get('mother_f_name'),
+#            "middle_name":  data.get('mother_m_name'),
+#   "last_name": data.get('mother_s_name'),
+#     "education": data.get('mother_education'),
+#  "mobile_no" : '+91'+data.get('mother_mobile_no'),
+#     "email": data.get('mother_email_id'),
+#   "profession" : data.get('mother_profession'),
+#    "annual_income" : data.get('mother_annual_income'),
+#     "company_name" : data.get('mother_company_name'),
+#     "designation" : data.get('mother_designation'),
+#     "office_address" :data.get('mother_office_address'),    'parent_status': data.get('parent_status'),
+#     'single_parent_reason': data.get('single_parent_reason'),
+#         },
+#          {
+#             "first_name":data.get('guardian_f_name'),
+#            "middle_name":  data.get('guardian_m_name'),
+#   "last_name": data.get('guardian_s_name'),
+#     "education": data.get('guardian_education'),
+#  "mobile_no" : '+91'+(data.get('guardian_mobile_no')or ""),
+#     "email": data.get('guardian_email_id'),
+# #   "contact" : data.get('guardian_contact'),
+# "address_line_1": data.get('guardian_bld_house'),
+#    "address_line_2": data.get('guardian_sub_area'),
+#    "city": data.get('guardian_city'),
+#     "pincode": data.get('guardian_pin'),
+#   "day_care_contact":data.get('day_care_contact'),    'parent_status': data.get('parent_status'),
+#     'single_parent_reason': data.get('single_parent_reason'),
+ 
 
-    existing_student_doc.mother_l_name = data.get('mother_l_name')
-    existing_student_doc.mother_mobile_number = '+91'+data.get('mother_mobile_no')
-    existing_student_doc.mother_email_id = data.get('mother_email_id')
-    existing_student_doc.mother_education = data.get('mother_education')
-    existing_student_doc.mother_profession = data.get('mother_profession')
-    existing_student_doc.mother_annual_income = data.get('mother_annual_income')
-    existing_student_doc.mother_company_name = data.get('mother_company_name')
-    existing_student_doc.mother_designation = data.get('mother_designation')
-    existing_student_doc.mother_office_address = data.get('mother_office_address')
+    
+#         },
+#     ]
+
 
     existing_student_doc.save(ignore_permissions=True)
 
