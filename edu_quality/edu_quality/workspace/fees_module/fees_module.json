@@ -5,8 +5,9 @@
    "label": "Received"
   }
  ],
- "content": "[{\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Fees Module</span>\",\"col\":12}},{\"type\":\"chart\",\"data\":{\"chart_name\":\"Received\",\"col\":12}},{\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Pending\",\"col\":6}},{\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Collected\",\"col\":6}},{\"type\":\"spacer\",\"data\":{\"col\":12}},{\"type\":\"card\",\"data\":{\"card_name\":\"Global Setup\",\"col\":4}},{\"type\":\"card\",\"data\":{\"card_name\":\"Fee Master Setup\",\"col\":4}},{\"type\":\"card\",\"data\":{\"card_name\":\"Fees\",\"col\":4}},{\"type\":\"spacer\",\"data\":{\"col\":12}},{\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Fee Workflow Wizard\",\"col\":3}}]",
+ "content": "[{\"id\":\"hpCyZ5U_ee\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Fees Module</span>\",\"col\":12}},{\"id\":\"QNhpSy4erL\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Received\",\"col\":12}},{\"id\":\"i7NZXDPy6J\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Pending\",\"col\":6}},{\"id\":\"jGUAV3cjEP\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Collected\",\"col\":6}},{\"id\":\"8k2I5FBYUd\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"P9AjfilPgN\",\"type\":\"card\",\"data\":{\"card_name\":\"Global Setup\",\"col\":4}},{\"id\":\"z49sbSPOvk\",\"type\":\"card\",\"data\":{\"card_name\":\"Fee Master Setup\",\"col\":4}},{\"id\":\"RZF3MLoCIh\",\"type\":\"card\",\"data\":{\"card_name\":\"Fees\",\"col\":4}},{\"id\":\"Fslu78v8xw\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"EMPzk7tPzt\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Fee Workflow Wizard\",\"col\":3}},{\"id\":\"g_erVhWlZU\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Payment Plan Creation Tool\",\"col\":3}}]",
  "creation": "2023-06-27 14:21:08.891023",
+ "custom_blocks": [],
  "docstatus": 0,
  "doctype": "Workspace",
  "for_user": "",
@@ -154,7 +155,7 @@
    "type": "Link"
   }
  ],
- "modified": "2023-08-16 10:45:30.048923",
+ "modified": "2023-08-29 16:51:02.331446",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Fees Module",
@@ -180,6 +181,13 @@
    "doc_view": "List",
    "label": "Fee Workflow Wizard",
    "link_to": "fee-workflow",
+   "type": "Page"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Payment Plan Creation Tool",
+   "link_to": "payment-plan-creatio",
    "type": "Page"
   }
  ],
