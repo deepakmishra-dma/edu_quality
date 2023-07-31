@@ -1,9 +1,10 @@
 import frappe
-
+from frappe.utils.file_manager import save_file
 import json
 import requests
 import datetime
 import time
+import uuid
 
 CONFIG ={
 "WALSH_API_BASE":'https://testwalsh.walnutedu.in/indexCI.php',
@@ -38,15 +39,94 @@ def update_stud_data(**data):
         raise Exception("Student Doesnt exist")
     name = existing_student_doc[0].get('name')
 
+    current_user = frappe.session.user
+
+   
+    frappe.set_user("Administrator")
+
+    adhar_card_cert = save_file(str(uuid.uuid4()) ,data.get('adhar_card_cert'),'Student Applicant',name,decode=True)
+    image = save_file( str(uuid.uuid4()) ,data.get('student_photo'),'Student Applicant',name,decode=True)
+    birth_cert = save_file( str(uuid.uuid4()) ,data.get('birth_cert'),'Student Applicant',name,decode=True)
+    frappe.set_user(current_user)
+
     existing_student_doc = frappe.get_doc('Student Applicant',{'name':name})
+    
+    father_in_doc = next((item for item in existing_student_doc.get('guardians') if item.get("relation") == "Father"), {}) 
+    mother_in_doc = next((item for item in existing_student_doc.get('guardians') if item.get("relation") == "Mother"), {}) 
+    other_in_doc = next((item for item in existing_student_doc.get('guardians') if item.get("relation") == "Others"), {}) 
+   
+
+    father =frappe.get_doc({"doctype":'Guardian',"name":father_in_doc.get('guardian')})
+    father.first_name = data.get('father_f_name'),
+    father.guardian_name = data.get('father_f_name')
+    father.middle_name = data.get('father_m_name')
+    father.last_name = data.get('father_l_name')
+    father.education = data.get('father_education')
+    father.mobile_number ='+91'+data.get('father_mobile_no')
+    father.annual_income = data.get('father_annual_income')
+    father.email_address = data.get('father_email_id')
+    father.company_name = data.get('father_company_name')
+    father.designation = data.get('father_designation')
+    father.work_address = data.get('father_office_address')
+    father_in_doc=bool(father_in_doc)
+   
+
+    if(not father_in_doc):
+       father =  father.insert(ignore_permissions=True)
+
+    mother =frappe.get_doc({"doctype":'Guardian',"name":mother_in_doc.get('guardian')})
+    mother.first_name = data.get('mother_f_name')
+    mother.middle_name = data.get('mother_m_name')
+    mother.guardian_name = data.get('mother_f_name')
+    mother.last_name = data.get('mother_l_name')
+    mother.education = data.get('mother_education')
+    mother.email_address = data.get('mother_email_id')
+    mother.mobile_number ='+91'+data.get('mother_mobile_no')
+    mother.annual_income = data.get('mother_annual_income')
+    mother.company_name = data.get('mother_company_name')
+    mother.designation = data.get('mother_designation')
+    mother.work_address = data.get('mother_office_address')
+  
+    mother_in_doc=bool(mother_in_doc)
+
+    if(not mother_in_doc):
+       mother =  mother.insert(ignore_permissions=True)
+
+    other = frappe.get_doc({"doctype":'Guardian',"name":other_in_doc.get('guardian')})
+    other.first_name = data.get('guardian_f_name')
+    other.guardian_name = data.get('guardian_f_name') or 'not picked'
+    other.middle_name = data.get('guardian_m_name')
+    other.last_name = data.get('guardian_l_name')
+    other.education = data.get('guardian_education')
+    other.mobile_number ='+91'+(data.get('guardian_mobile_no')or "")
+    other.address_line_1 = data.get('guardian_bld_house'),
+    other.address_line_2= data.get('guardian_sub_area'),
+    other.city= data.get('guardian_city'),
+    other.pincode= data.get('guardian_pin'),
+    other.day_care_contact=data.get('day_care_contact')
+    other_in_doc=bool(other_in_doc)
+    
+    if(not other_in_doc):
+       other =  other.insert(ignore_permissions=True)
+
+     
+
+    if(not mother_in_doc):
+        existing_student_doc.append('guardians',{"guardian":mother.get('name'),"guardian_name":mother.get('guardian_name'),"relation":"Mother"})
+    
+    if(not father_in_doc):
+        existing_student_doc.append('guardians',{"guardian":father.get('name'),"guardian_name":father.get('guardian_name'),"relation":"Father"})
+    
+    if(not other_in_doc):
+         existing_student_doc.append('guardians',{"guardian":other.get('name'),"guardian_name":other.get('guardian_name'),"relation":"Others"})
+    
+
     existing_student_doc.lms_status = data.get('lms_status')
 
     existing_student_doc.first_name = data.get('stud_f_name')
     existing_student_doc.last_name = data.get('stud_l_name')
-    existing_student_doc.father_f_name = data.get('father_f_name')
-    existing_student_doc.mother_f_name = data.get('mother_f_name')
-    existing_student_doc.father_mobile_no = '+91'+data.get('father_mobile_no')
-    existing_student_doc.father_email_address = data.get('father_email')
+
+
     existing_student_doc.gender = data.get('gender')
     existing_student_doc.date_of_birth = data.get('b_date')
     existing_student_doc.address_line_1 = data.get('bld_house')
@@ -66,51 +146,29 @@ def update_stud_data(**data):
     existing_student_doc.student_mobile_number = data.get('student_sms_no')
     existing_student_doc.student_is_existingstudent = int(data.get('student_isexistingstudent'))
     existing_student_doc.student_existing_ref_number = data.get('student_existing_ref_number')
-    existing_student_doc.is_sibling_in_school = int(data.get('student_bro_sis_inschoo'))
+    existing_student_doc.is_sibling_in_school = int(data.get('student_bro_sis_inschool'))
     existing_student_doc.school = data.get('school_name')
     existing_student_doc.blood_group =data.get('blood_group')
     existing_student_doc.catering = data.get('catering')
     existing_student_doc.aadhaar_card_number= data.get('adhar_card_no')
-    existing_student_doc.parent_status = data.get('parent_status')
-    existing_student_doc.single_parent_reason = data.get('single_parent_reason')
+
     existing_student_doc.nationality = data.get('nationality')
     existing_student_doc.allergies = data.get('other_allergies') or data.get('allergies')
-    existing_student_doc.guardian_f_name = data.get('guardian_f_name')
-    existing_student_doc.guardian_m_name= data.get('guardian_m_name')
-    existing_student_doc.guardian_l_name= data.get('guardian_s_name')
-    existing_student_doc.guardian_email_id= data.get('guardian_email_id')
-    existing_student_doc.guardian_mobile_no= data.get('guardian_mobile_no')
-    existing_student_doc.day_care_contact= data.get('day_care_contact')
-    existing_student_doc.guardian_profession_other= data.get('guardian_profession_other')
-    existing_student_doc.guardian_profession= data.get('guardian_profession')
-    existing_student_doc.guardian_address1= data.get('guardian_bld_house')
-    existing_student_doc.guardian_address2= data.get('guardian_sub_area')
-    existing_student_doc.guardian_city= data.get('guardian_city')
-    existing_student_doc.guardian_pin= data.get('guardian_pin')
-    existing_student_doc.aadhaar_card_cert = data.get('adhar_card_cert')
-    existing_student_doc.birth_cert = data.get('birth_cert')
-    existing_student_doc.image = data.get('student_photo')
 
-    existing_student_doc.father_m_name = data.get('father_m_name')
-    existing_student_doc.father_s_name = data.get('father_s_name')
-    existing_student_doc.father_education = data.get('father_education')
-    existing_student_doc.father_profession = data.get('father_profession')
-    existing_student_doc.father_annual_income = data.get('father_annual_income')
-    existing_student_doc.father_company_name = data.get('father_company_name')
-    existing_student_doc.father_designation = data.get('father_designation')
-    existing_student_doc.father_office_address =data.get('father_office_address')
-
-    existing_student_doc.mother_l_name = data.get('mother_l_name')
-    existing_student_doc.mother_mobile_number = '+91'+data.get('mother_mobile_no')
-    existing_student_doc.mother_email_id = data.get('mother_email_id')
-    existing_student_doc.mother_education = data.get('mother_education')
-    existing_student_doc.mother_profession = data.get('mother_profession')
-    existing_student_doc.mother_annual_income = data.get('mother_annual_income')
-    existing_student_doc.mother_company_name = data.get('mother_company_name')
-    existing_student_doc.mother_designation = data.get('mother_designation')
-    existing_student_doc.mother_office_address = data.get('mother_office_address')
+    existing_student_doc.aadhaar_card_cert =adhar_card_cert.file_url
+    existing_student_doc.birth_cert = birth_cert.file_url
+    existing_student_doc.image = image.file_url
+    
 
     existing_student_doc.save(ignore_permissions=True)
+    # if(mother_in_doc):
+    #     mother.save(ignore_permissions=True)
+    # if(father_in_doc):
+    #     father.save(ignore_permissions=True)
+    # if(other_in_doc):
+    #     other.save(ignore_permissions=True)
+
+    return existing_student_doc
 
     
 def default(obj):
@@ -162,8 +220,14 @@ def upload_to_mgr(doc):
 def serialize_lead_to_application(doc: dict):
     if not doc:
         return {}
-    
+
     fees_structure = frappe.db.get_value("Fee Structure",{'program':doc.get('class'),'school':doc.get('center'),'academic_year':doc.get('academic_year')},"name")
+
+    father = frappe.get_doc({"doctype":"Guardian",'guardian_name':doc.get('fathers_name'),'first_name':doc.get('fathers_name'),'mobile_number':doc.get('fathers_phone'),'email_address':doc.get('fathers_email')}).insert(ignore_permissions=True)
+    mother = frappe.get_doc({"doctype":"Guardian",'guardian_name':doc.get('mothers_name'),'first_name':doc.get('mothers_name'),'mobile_number':doc.get('mothers_phone'),'email_address':doc.get('mothers_email')}).insert(ignore_permissions=True)
+    
+
+
     return {
         'doctype':"Student Applicant",
         'first_name':doc.get('first_name'),
@@ -171,6 +235,10 @@ def serialize_lead_to_application(doc: dict):
         'academic_year':doc.get('academic_year'),
         'fee_structure':fees_structure,
         'student_email_id':f'test_only{str(time.time())}@yopmail.com',
+       'guardians':[
+           {'guardian':father.get('name'),'relation':"Father","guardian_name":father.get('guardian_name')},
+           {'guardian':mother.get('name'),'relation':"Mother","guardian_name":mother.get('guardian_name')}
+       ],
         'program':doc.get('class'),
             'father_f_name':doc.get('fathers_name'),
             'preferred_batch_time':doc.get('preferred_batch_time'),

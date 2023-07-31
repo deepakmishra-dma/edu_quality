@@ -13,6 +13,13 @@
     "parenttype": "DocType Layout"
    },
    {
+    "fieldname": "lead_status",
+    "label": "Lead Status",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
     "fieldname": "naming_series",
     "label": "Series",
     "parent": "Lead",
@@ -106,13 +113,6 @@
    {
     "fieldname": "country",
     "label": "Country",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
-    "fieldname": "lead_status",
-    "label": "Lead Status",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
@@ -825,7 +825,7 @@
     "parenttype": "DocType Layout"
    }
   ],
-  "modified": "2023-08-29 12:54:37.270766",
+  "modified": "2023-08-29 20:59:42.127628",
   "name": "Lead",
   "route": "/app/lead"
  }
