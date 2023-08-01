@@ -62,7 +62,7 @@ def update_stud_data(**data):
     father.middle_name = data.get('father_m_name')
     father.last_name = data.get('father_l_name')
     father.education = data.get('father_education')
-    father.mobile_number ='+91'+data.get('father_mobile_no')
+    father.mobile_number =data.get('father_mobile_no')
     father.annual_income = data.get('father_annual_income')
     father.email_address = data.get('father_email_id')
     father.company_name = data.get('father_company_name')
@@ -81,7 +81,7 @@ def update_stud_data(**data):
     mother.last_name = data.get('mother_l_name')
     mother.education = data.get('mother_education')
     mother.email_address = data.get('mother_email_id')
-    mother.mobile_number ='+91'+data.get('mother_mobile_no')
+    mother.mobile_number =data.get('mother_mobile_no')
     mother.annual_income = data.get('mother_annual_income')
     mother.company_name = data.get('mother_company_name')
     mother.designation = data.get('mother_designation')
@@ -98,7 +98,7 @@ def update_stud_data(**data):
     other.middle_name = data.get('guardian_m_name')
     other.last_name = data.get('guardian_l_name')
     other.education = data.get('guardian_education')
-    other.mobile_number ='+91'+(data.get('guardian_mobile_no')or "")
+    other.mobile_number =data.get('guardian_mobile_no') or ""
     other.address_line_1 = data.get('guardian_bld_house'),
     other.address_line_2= data.get('guardian_sub_area'),
     other.city= data.get('guardian_city'),
