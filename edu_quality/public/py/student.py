@@ -2,6 +2,17 @@ import frappe
 from frappe.model.naming import make_autoname
 
 def autoname(doc,method=None):
+    if doc.custom_imported and doc.custom_reference_number:
+        prefix = ''
+        if doc.school == "Walnut School at Fursungi":
+            prefix = "FU"
+        elif doc.school == "Walnut School Shivane":
+            prefix = "SH"
+        elif doc.school == "Walnut School at Wakad":
+            prefix = "WA" 
+        doc_name = prefix + doc.custom_reference_number
+        doc.name = doc_name
+
     if doc.student_applicant:
         applicant = frappe.get_doc("Student Applicant",doc.student_applicant)
         prefix = ''
