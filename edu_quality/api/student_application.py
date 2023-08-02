@@ -54,9 +54,10 @@ def update_stud_data(**data):
     father_in_doc = next((item for item in existing_student_doc.get('guardians') if item.get("relation") == "Father"), {}) 
     mother_in_doc = next((item for item in existing_student_doc.get('guardians') if item.get("relation") == "Mother"), {}) 
     other_in_doc = next((item for item in existing_student_doc.get('guardians') if item.get("relation") == "Others"), {}) 
-   
-
-    father =frappe.get_doc({"doctype":'Guardian',"name":father_in_doc.get('guardian')})
+    father = frappe.get_doc({"doctype":"Guardian"})
+    if(father_in_doc):
+        father = frappe.get_doc('Guardian',father_in_doc.get('guardian'))
+    # father =frappe.get_doc({"doctype":'Guardian',"name":father_in_doc.get('guardian')})
     father.first_name = data.get('father_f_name'),
     father.guardian_name = data.get('father_f_name')
     father.middle_name = data.get('father_m_name')
@@ -73,8 +74,13 @@ def update_stud_data(**data):
 
     if(not father_in_doc):
        father =  father.insert(ignore_permissions=True)
+    else:
+        father.save(ignore_permissions=True)
 
-    mother =frappe.get_doc({"doctype":'Guardian',"name":mother_in_doc.get('guardian')})
+    # mother =frappe.get_doc({"doctype":'Guardian',"name":mother_in_doc.get('guardian')})
+    mother = frappe.get_doc({"doctype":"Guardian"})
+    if(mother_in_doc):
+        mother = frappe.get_doc('Guardian',mother_in_doc.get('guardian'))
     mother.first_name = data.get('mother_f_name')
     mother.middle_name = data.get('mother_m_name')
     mother.guardian_name = data.get('mother_f_name')
@@ -91,8 +97,13 @@ def update_stud_data(**data):
 
     if(not mother_in_doc):
        mother =  mother.insert(ignore_permissions=True)
+    else:
+        mother.save(ignore_permissions=True)
 
-    other = frappe.get_doc({"doctype":'Guardian',"name":other_in_doc.get('guardian')})
+    # other = frappe.get_doc({"doctype":'Guardian',"name":other_in_doc.get('guardian')})
+    other = frappe.get_doc({"doctype":"Guardian"})
+    if(other_in_doc):
+        other = frappe.get_doc('Guardian',other_in_doc.get('guardian'))
     other.first_name = data.get('guardian_f_name')
     other.guardian_name = data.get('guardian_f_name') or 'not picked'
     other.middle_name = data.get('guardian_m_name')
@@ -109,7 +120,8 @@ def update_stud_data(**data):
     if(not other_in_doc):
        other =  other.insert(ignore_permissions=True)
 
-     
+    else:
+        other.save(ignore_permissions=True)
 
     if(not mother_in_doc):
         existing_student_doc.append('guardians',{"guardian":mother.get('name'),"guardian_name":mother.get('guardian_name'),"relation":"Mother"})
@@ -257,4 +269,3 @@ def serialize_lead_to_application(doc: dict):
             'father_mobile_no':doc.get('fathers_phone'),
             'bus_service_required':doc.get('bus_service_required')
             }
-    
