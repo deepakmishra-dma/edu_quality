@@ -232,12 +232,20 @@ def upload_to_mgr(doc):
 def serialize_lead_to_application(doc: dict):
     if not doc:
         return {}
-
+    
+    if not doc.get('fathers_name') or not doc.get('fathers_phone'):
+        frappe.msgprint(('Fathers name/phone is required'))
+        raise frappe.exceptions.MandatoryError('Fathers name/phone is required')
+    
+    
     fees_structure = frappe.db.get_value("Fee Structure",{'program':doc.get('class'),'school':doc.get('center'),'academic_year':doc.get('academic_year')},"name")
 
     father = frappe.get_doc({"doctype":"Guardian",'guardian_name':doc.get('fathers_name'),'first_name':doc.get('fathers_name'),'mobile_number':doc.get('fathers_phone'),'email_address':doc.get('fathers_email')}).insert(ignore_permissions=True)
-    mother = frappe.get_doc({"doctype":"Guardian",'guardian_name':doc.get('mothers_name'),'first_name':doc.get('mothers_name'),'mobile_number':doc.get('mothers_phone'),'email_address':doc.get('mothers_email')}).insert(ignore_permissions=True)
+    guardians =[ {'guardian':father.get('name'),'relation':"Father","guardian_name":father.get('guardian_name')}]
     
+    if(doc.get('mothers_name') or doc.get('mothers_phone')):
+        mother = frappe.get_doc({"doctype":"Guardian",'guardian_name':doc.get('mothers_name') or ' ','first_name':doc.get('mothers_name') or " ",'mobile_number':doc.get('mothers_phone') or " ",'email_address':doc.get('mothers_email')}).insert(ignore_permissions=True)
+        guardians.append({'guardian':mother.get('name'),'relation':"Mother","guardian_name":mother.get('guardian_name')})
 
 
     return {
@@ -247,10 +255,7 @@ def serialize_lead_to_application(doc: dict):
         'academic_year':doc.get('academic_year'),
         'fee_structure':fees_structure,
         'student_email_id':f'test_only{str(time.time())}@yopmail.com',
-       'guardians':[
-           {'guardian':father.get('name'),'relation':"Father","guardian_name":father.get('guardian_name')},
-           {'guardian':mother.get('name'),'relation':"Mother","guardian_name":mother.get('guardian_name')}
-       ],
+       'guardians':guardians,
         'program':doc.get('class'),
             'father_f_name':doc.get('fathers_name'),
             'preferred_batch_time':doc.get('preferred_batch_time'),
@@ -267,5 +272,13 @@ def serialize_lead_to_application(doc: dict):
             'father_email':doc.get('fathers_email'),
             'mother_mobile_number':doc.get('mothers_phone'),
             'father_mobile_no':doc.get('fathers_phone'),
-            'bus_service_required':doc.get('bus_service_required')
+            'bus_service_required':doc.get('bus_service_required'),
+            'rte_student':doc.get('rte_student')
             }
+
+@frappe.whitelist(allow_guest=True)
+def create_student_lead(**kwargs):
+    lead_doc = frappe.get_doc({'doctype':"Lead","first_name":kwargs.get('first_name'),"last_name":" ","fathers_name":kwargs.get('fathers_name'),"fathers_email_id":kwargs.get('father_email_id'),'fathers_phone':kwargs.get('fathers_phone'),'mothers_name':" ","academic_year":kwargs.get('academic_year'),"center":kwargs.get('school'),"class":kwargs.get('class')})
+
+    lead_doc = lead_doc.insert(ignore_permissions=True)
+    return lead_doc
