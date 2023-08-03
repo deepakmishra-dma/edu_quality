@@ -70,7 +70,7 @@ function validateInvoicePortions(submission) {
     // Check if any class has invoicePortion total exceeding 100
     for (const className in classes) {
         if (classes[className] !=100) {
-            frappe.throw(`Total invoicePortion value for each class must not exceed 100.for ${className}`)
+            frappe.throw(`Total Invoice Portion value for each class must be 100.for ${className}`)
             // return false; // Validation failed
         }
     }
@@ -136,6 +136,7 @@ const formJson = {
                             },
                             "key": "academicYear",
                             "type": "select",
+                            "limit": 10000,
                             "input": true,
                             "selectValues": "data",
                             "disableLimit": false,
@@ -179,6 +180,7 @@ const formJson = {
 			"lazyLoad": false,
             "key": "school",
             "type": "select",
+            "limit": 10000,
             "input": true,
             "selectValues": "data",
             "disableLimit": false,
@@ -222,9 +224,10 @@ const formJson = {
 									},
 									"key": "class",
 									"type": "select",
+                                    "limit": 10000,
 									"lazyLoad": true,
 									"selectValues": "data",
-									"disableLimit": true,
+									"disableLimit": false,
 									"noRefreshOnScroll": false,
 									"input": true
 								},
@@ -296,13 +299,14 @@ const formJson = {
                                     },
                                     "key": "paymentTerm",
                                     "type": "select",
+                                    "limit": 10000,
                                     "input": true,
                                     "selectValues": "data",
                                     "disableLimit": false,
                                     "noRefreshOnScroll": false
                                 },
                                 {
-                                    "label": "Invoice Portion",
+                                    "label": "Invoice Portion(%)",
                                     "applyMaskOn": "change",
                                     "mask": false,
                                     "tableView": false,
