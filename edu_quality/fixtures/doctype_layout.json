@@ -41,6 +41,13 @@
     "parenttype": "DocType Layout"
    },
    {
+    "fieldname": "center",
+    "label": "School",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
     "fieldname": "class",
     "label": "Class",
     "parent": "Lead",
@@ -155,13 +162,6 @@
    {
     "fieldname": "last_name",
     "label": "Last Name",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
-    "fieldname": "center",
-    "label": "Center",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
@@ -825,7 +825,7 @@
     "parenttype": "DocType Layout"
    }
   ],
-  "modified": "2023-08-30 11:40:22.655912",
+  "modified": "2023-08-30 18:20:00.066046",
   "name": "Lead",
   "route": "/app/lead"
  }
