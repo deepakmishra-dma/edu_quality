@@ -16,7 +16,25 @@ frappe.ui.form.on("Student Applicant", {
             }
         });
     },
+    validate:function(frm){
+        
+        if(!frm.doc.date_of_birth || frm.doc.date_of_birth.trim()==='') return
 
+        var birthDate = new Date( frm.doc.date_of_birth)
+        if(birthDate ==="Invalid Date") return
+        var year = birthDate.getFullYear()
+        var month = birthDate.getMonth()
+        var day = birthDate.getDay()
+ 
+        if(new Date(year+6,month,day)>new Date()){
+            frappe.msgprint({
+                title: __('Error'),
+                message: __('Date of Birth must be of atleast 6 years old'),
+                indicator: 'red'
+            });
+            frappe.validated = false;
+        }
+    },
     enroll: function(frm) {
         frappe.call({
             method: "edu_quality.public.py.application.enroll_student",

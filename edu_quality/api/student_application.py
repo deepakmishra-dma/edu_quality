@@ -196,23 +196,23 @@ def upload_to_mgr(doc):
         ),
     "school_name":doc.get('school'),
     "first_name":doc.get('first_name'),
-    "last_name":doc.get('last_name'),
-    "mother_name":doc.get('mother_f_name'),
-    "father_name":doc.get('father_f_name'),
+    "last_name":doc.get('last_name') or ' ',
+    "mother_name":doc.get('mother_f_name') or ' ',
+    "father_name":doc.get('father_f_name') ,
     "father_mobile_number": doc.get("father_mobile_no"),
     "father_email_address":doc.get("father_email"),
-    "gender":doc.get("gender"),
-    "date_of_birth":doc.get("date_of_birth"),
-    "address1":doc.get("address_line_1"),
-    "address2":doc.get("address_line_2"),
-    "pin":doc.get("pincode"),
-    "city":doc.get("city"),
-    "state":doc.get('state'),
-    "bus_service_required":doc.get("bus_service_required"),
-    "class":doc.get("program"),
-    "RTE_student":doc.get("rte_student"),
-    "preferred_batch_time":doc.get("batch_time"),
-    "academic_year":doc.get("academic_year")
+    "gender":doc.get("gender") or ' ',
+    "date_of_birth":doc.get("date_of_birth") or ' ',
+    "address1":doc.get("address_line_1") or ' ',
+    "address2":doc.get("address_line_2") or ' ',
+    "pin":doc.get("pincode") or ' ',
+    "city":doc.get("city") or ' ',
+    "state":doc.get('state') or ' ',
+    "bus_service_required":"yes" if doc.get("bus_service_required") else "no",
+    "class":doc.get("program") or ' ',
+    "RTE_student":"yes" if  doc.get("rte_student") else "no" ,
+    "preferred_batch_time":doc.get("batch_time") or ' ',
+    "academic_year":doc.get("academic_year") or ' '
         }
     
     response = requests.post(
@@ -221,7 +221,8 @@ def upload_to_mgr(doc):
     )
 
     if("OK" not in response.text):
-        frappe.msgprint((response.text))
+        message = json.loads(response.text)
+        frappe.msgprint(msg= message.get('message'),title="Error",indicator="red")
         raise frappe.exceptions.DuplicateEntryError(response.text)
    
     data = json.loads(response.text)
@@ -234,7 +235,7 @@ def serialize_lead_to_application(doc: dict):
         return {}
     
     if not doc.get('fathers_name') or not doc.get('fathers_phone'):
-        frappe.msgprint(('Fathers name/phone is required'))
+        frappe.msgprint(msg='Fathers name/phone is required',title="Error",indicator="red")
         raise frappe.exceptions.MandatoryError('Fathers name/phone is required')
     
     
@@ -278,7 +279,10 @@ def serialize_lead_to_application(doc: dict):
 
 @frappe.whitelist(allow_guest=True)
 def create_student_lead(**kwargs):
-    lead_doc = frappe.get_doc({'doctype':"Lead","first_name":kwargs.get('first_name'),"last_name":" ","fathers_name":kwargs.get('fathers_name'),"fathers_email_id":kwargs.get('father_email_id'),'fathers_phone':kwargs.get('fathers_phone'),'mothers_name':" ","academic_year":kwargs.get('academic_year'),"center":kwargs.get('school'),"class":kwargs.get('class')})
+    if(not kwargs.get('first_name') or not kwargs.get('fathers_name') or not kwargs.get('fathers_phone')):
+        raise frappe.exceptions.MandatoryError('First Name , Fathers Name or Fathers phone is required')
+    
+    lead_doc = frappe.get_doc({'doctype':"Lead","first_name":kwargs.get('first_name'),"last_name":" ","fathers_name":kwargs.get('fathers_name'),"fathers_email_id":kwargs.get('father_email_id'),'fathers_phone':kwargs.get('fathers_phone'),'mothers_name':" ","academic_year":kwargs.get('academic_year'),"center":kwargs.get('school_from_lead_source'),"class":kwargs.get('class_from_lead_source')})
 
     lead_doc = lead_doc.insert(ignore_permissions=True)
     return lead_doc
