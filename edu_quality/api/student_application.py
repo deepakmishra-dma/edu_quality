@@ -63,6 +63,7 @@ def update_stud_data(**data):
     father.middle_name = data.get('father_m_name')
     father.last_name = data.get('father_l_name')
     father.education = data.get('father_education')
+    father.occupation =  data.get('father_profession') or data.get('father_profession_other') or ''
     father.mobile_number =data.get('father_mobile_no')
     father.annual_income = data.get('father_annual_income')
     father.email_address = data.get('father_email_id')
@@ -85,7 +86,8 @@ def update_stud_data(**data):
     mother.middle_name = data.get('mother_m_name')
     mother.guardian_name = data.get('mother_f_name')
     mother.last_name = data.get('mother_l_name')
-    mother.education = data.get('mother_education')
+    mother.education = data.get('mother_education'),
+    mother.occupation = data.get('mother_profession') or data.get('mother_profession_other') or ''
     mother.email_address = data.get('mother_email_id')
     mother.mobile_number =data.get('mother_mobile_no')
     mother.annual_income = data.get('mother_annual_income')
@@ -109,6 +111,7 @@ def update_stud_data(**data):
     other.middle_name = data.get('guardian_m_name')
     other.last_name = data.get('guardian_l_name')
     other.education = data.get('guardian_education')
+    other.occupation =  data.get('other_profession') or data.get('other_profession_other') or ''
     other.mobile_number =data.get('guardian_mobile_no') or ""
     other.address_line_1 = data.get('guardian_bld_house'),
     other.address_line_2= data.get('guardian_sub_area'),
@@ -117,7 +120,7 @@ def update_stud_data(**data):
     other.day_care_contact=data.get('day_care_contact')
     other_in_doc=bool(other_in_doc)
     
-    if(not other_in_doc):
+    if(not other_in_doc and data.get("guardian_f_name")):
        other =  other.insert(ignore_permissions=True)
 
     else:
@@ -129,7 +132,7 @@ def update_stud_data(**data):
     if(not father_in_doc):
         existing_student_doc.append('guardians',{"guardian":father.get('name'),"guardian_name":father.get('guardian_name'),"relation":"Father"})
     
-    if(not other_in_doc):
+    if(not other_in_doc and data.get("guardian_f_name")):
          existing_student_doc.append('guardians',{"guardian":other.get('name'),"guardian_name":other.get('guardian_name'),"relation":"Others"})
     
 
@@ -244,7 +247,7 @@ def serialize_lead_to_application(doc: dict):
     father = frappe.get_doc({"doctype":"Guardian",'guardian_name':doc.get('fathers_name'),'first_name':doc.get('fathers_name'),'mobile_number':doc.get('fathers_phone'),'email_address':doc.get('fathers_email')}).insert(ignore_permissions=True)
     guardians =[ {'guardian':father.get('name'),'relation':"Father","guardian_name":father.get('guardian_name')}]
     
-    if(doc.get('mothers_name') or doc.get('mothers_phone')):
+    if(doc.get('mothers_name').strip()):
         mother = frappe.get_doc({"doctype":"Guardian",'guardian_name':doc.get('mothers_name') or ' ','first_name':doc.get('mothers_name') or " ",'mobile_number':doc.get('mothers_phone') or " ",'email_address':doc.get('mothers_email')}).insert(ignore_permissions=True)
         guardians.append({'guardian':mother.get('name'),'relation':"Mother","guardian_name":mother.get('guardian_name')})
 
@@ -282,7 +285,7 @@ def create_student_lead(**kwargs):
     if(not kwargs.get('first_name') or not kwargs.get('fathers_name') or not kwargs.get('fathers_phone')):
         raise frappe.exceptions.MandatoryError('First Name , Fathers Name or Fathers phone is required')
     
-    lead_doc = frappe.get_doc({'doctype':"Lead","first_name":kwargs.get('first_name'),"last_name":" ","fathers_name":kwargs.get('fathers_name'),"fathers_email_id":kwargs.get('father_email_id'),'fathers_phone':kwargs.get('fathers_phone'),'mothers_name':" ","academic_year":kwargs.get('academic_year'),"center":kwargs.get('school_from_lead_source'),"class":kwargs.get('class_from_lead_source')})
+    lead_doc = frappe.get_doc({'doctype':"Lead","first_name":kwargs.get('first_name'),"last_name":" ","fathers_name":kwargs.get('fathers_name'),"fathers_email":kwargs.get('father_email_id'),'fathers_phone':kwargs.get('fathers_phone'),'mothers_name':" ","academic_year":kwargs.get('academic_year'),"center":kwargs.get('school_from_lead_source'),"class":kwargs.get('class_from_lead_source')})
 
     lead_doc = lead_doc.insert(ignore_permissions=True)
     return lead_doc
