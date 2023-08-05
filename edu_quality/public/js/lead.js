@@ -5,7 +5,8 @@ var error_msg = {
     "fathers_phone":"Father's phone number is required before pushing to MGR",
     "class":"Class is required before pushing to MGR",
     "fathers_email":"father's email id is required before pushing to MGR",
-    "gender":"Gender is required before pushing to MGR"
+    "gender":"Gender is required before pushing to MGR",
+    "date_of_birth":"Date of Birth is required before pushing to MGR",
 }
 
 frappe.ui.form.on("Lead", {
