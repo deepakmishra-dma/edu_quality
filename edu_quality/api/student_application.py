@@ -285,7 +285,7 @@ def create_student_lead(**kwargs):
     if(not kwargs.get('first_name') or not kwargs.get('fathers_name') or not kwargs.get('fathers_phone')):
         raise frappe.exceptions.MandatoryError('First Name , Fathers Name or Fathers phone is required')
     
-    lead_doc = frappe.get_doc({'doctype':"Lead","first_name":kwargs.get('first_name'),"last_name":" ","fathers_name":kwargs.get('fathers_name'),"fathers_email":kwargs.get('father_email_id'),'fathers_phone':kwargs.get('fathers_phone'),'mothers_name':" ","academic_year":kwargs.get('academic_year'),"center":kwargs.get('school_from_lead_source'),"class":kwargs.get('class_from_lead_source')})
+    lead_doc = frappe.get_doc({'doctype':"Lead","first_name":kwargs.get('first_name'),"last_name":" ","fathers_name":kwargs.get('fathers_name'),"fathers_email":kwargs.get('father_email_id'),'fathers_phone':kwargs.get('fathers_phone'),'mothers_name':" ","academic_year":kwargs.get('academic_year'),"school_from_lead_source":kwargs.get('school'),"class_from_lead_source":kwargs.get('class')})
 
     lead_doc = lead_doc.insert(ignore_permissions=True)
     return lead_doc
