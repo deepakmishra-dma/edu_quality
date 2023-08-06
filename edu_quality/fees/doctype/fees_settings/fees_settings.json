@@ -10,6 +10,8 @@
   "student_applicant_section",
   "apply_deposits",
   "apply_fees",
+  "column_break_c6e9",
+  "before_days",
   "payment_methods_section",
   "payment_method",
   "surcharge_section",
@@ -63,12 +65,21 @@
    "label": "Default Account For Split Payments",
    "options": "Bank Account",
    "reqd": 1
+  },
+  {
+   "fieldname": "column_break_c6e9",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "before_days",
+   "fieldtype": "Int",
+   "label": "Create Payment Request Before Days"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-07-20 09:00:21.703706",
+ "modified": "2023-08-31 18:04:09.177391",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Fees Settings",
