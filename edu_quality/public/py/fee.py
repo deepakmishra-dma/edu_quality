@@ -22,12 +22,14 @@ def before_save(doc,method=None):
             i=0
             for schedule in pp.payment_schedule:
                 payment_amount = schedule.payment_amount
-                if i==0:
+                description = "Installment - " + str(i+1)
+                if i==0 and initial_payment>0:
                     payment_amount += initial_payment
-                    i=1
+                    description += " and deposit/application fee"
+                i+=1
                 doc.append("payment_schedule",{
                     'payment_term': schedule.payment_term,
-                    'description': schedule.description,
+                    'description': description,
                     'due_date': schedule.due_date,
                     'invoice_portion': schedule.invoice_portion,
                     'payment_amount': schedule.payment_amount,

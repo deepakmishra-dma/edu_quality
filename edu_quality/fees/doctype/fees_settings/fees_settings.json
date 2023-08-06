@@ -14,7 +14,8 @@
   "payment_method",
   "surcharge_section",
   "surcharge",
-  "default_account"
+  "default_account",
+  "application_fees"
  ],
  "fields": [
   {
@@ -63,12 +64,18 @@
    "label": "Default Account For Split Payments",
    "options": "Bank Account",
    "reqd": 1
+  },
+  {
+   "fieldname": "application_fees",
+   "fieldtype": "Table",
+   "label": "Application Fees",
+   "options": "Application Fees List"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-07-20 09:00:21.703706",
+ "modified": "2023-08-31 15:34:08.450831",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Fees Settings",
