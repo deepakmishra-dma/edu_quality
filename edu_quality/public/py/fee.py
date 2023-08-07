@@ -78,8 +78,6 @@ def create_fees(doc,method=None):
 
 
 def fees_after_insert(doc,method=None):
-    if doc.send_payment_request == 0:
-        doc.send_payment_request = 1
     for fee in doc.components:
         if frappe.db.exists("Security Deposit",fee.fees_category):
             log = frappe.new_doc("Security Deposit Entry")

@@ -1,5 +1,8 @@
 import frappe 
 from frappe.model.naming import make_autoname
+from erpnext.accounts.doctype.payment_request.payment_request import (
+    make_payment_request,
+)
 
 def autoname(doc,method=None):
     if doc.custom_imported and doc.custom_reference_number:
@@ -63,3 +66,24 @@ def get_students_group(student_group):
         return student_list
     else:
         return []
+
+
+def create_payment_request(fees):
+    try:
+        for f in fees:
+            fee = frappe.get_doc("Fees", f.name)
+            if not frappe.db.exists(
+                "Payment Request",
+                {"reference_doctype": "Fees", "reference_docname": fee.name},
+            ):
+                make_payment_request(
+                    party_type="Student",
+                    party=fee.student,
+                    dt="Fees",
+                    dn=fee.name,
+                    recipient_id=fee.student_email,
+                    submit_doc=True,
+                    use_dummy_message=True,
+                )
+    except Exception as e:
+        frappe.logger("edu_quality").exception(e)

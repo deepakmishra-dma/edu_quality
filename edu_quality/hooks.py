@@ -136,7 +136,8 @@ scheduler_events = {
         ]
     },
     "daily": [
-		"edu_quality.tasks.time_based"
+		"edu_quality.tasks.time_based",
+        "edu_quality.tasks.create_payment_request_before_due_date"
 	],
 }
 # scheduler_events = {
