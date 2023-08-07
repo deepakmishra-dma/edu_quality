@@ -4,12 +4,11 @@ from frappe.model.mapper import get_mapped_doc
 
 def before_save(doc,method=None):
     doc.fee_components = []
-    if doc.student_admission:
-        doc.application_fees = frappe.get_value("Student Admission Program",{'parent':doc.student_admission,'program':doc.program},'application_fee')
-        doc.append('fee_components',{
-            'fees_category': "Application fee",
-            'amount': doc.application_fees
-        })
+    doc.application_fees = frappe.get_value("Application Fees List",{'class':doc.program},'application_fees')
+    doc.append('fee_components',{
+        'fees_category': "Application fee",
+        'amount': doc.application_fees
+    })
     if frappe.db.get_single_value("Fees Settings",'apply_deposits'):
         get_deposits(doc)
     if doc.fee_structure:
@@ -27,8 +26,6 @@ def before_save(doc,method=None):
 
 def calculate_total(doc):
     doc.total_amount = 0
-    if doc.application_fees:
-        doc.total_amount+= float(doc.application_fees)
     for component in doc.fee_components:
         doc.total_amount += float(component.amount)
 
