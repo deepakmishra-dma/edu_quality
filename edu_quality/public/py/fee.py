@@ -32,8 +32,8 @@ def before_save(doc,method=None):
                     'description': description,
                     'due_date': schedule.due_date,
                     'invoice_portion': schedule.invoice_portion,
-                    'payment_amount': schedule.payment_amount,
-                    'outstanding': schedule.payment_amount,
+                    'payment_amount': payment_amount,
+                    'outstanding': payment_amount,
                 })
     except Exception as e:
         frappe.logger("fee").exception(e)
