@@ -1,0 +1,73 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:type",
+ "creation": "2023-06-16 14:13:44.573492",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "type",
+  "description",
+  "financial_year",
+  "school"
+ ],
+ "fields": [
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "type",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Type",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text",
+   "label": "Description"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "financial_year",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Financial Year",
+   "options": "Financial Year",
+   "reqd": 1
+  },
+  {
+   "fieldname": "school",
+   "fieldtype": "Link",
+   "label": "School",
+   "options": "School"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-08-10 16:10:53.748135",
+ "modified_by": "Administrator",
+ "module": "Fees",
+ "name": "Fee Type",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

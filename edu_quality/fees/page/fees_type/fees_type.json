@@ -1,0 +1,19 @@
+{
+ "content": null,
+ "creation": "2023-06-16 15:31:57.432301",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2023-06-16 15:31:57.432301",
+ "modified_by": "Administrator",
+ "module": "Fees",
+ "name": "fees-type",
+ "owner": "Administrator",
+ "page_name": "fees-type",
+ "roles": [],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 1,
+ "title": "Fee Type"
+}

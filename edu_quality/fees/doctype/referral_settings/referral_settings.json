@@ -1,0 +1,43 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-08-14 13:45:23.916410",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "referral"
+ ],
+ "fields": [
+  {
+   "fieldname": "referral",
+   "fieldtype": "Table",
+   "label": "Referral",
+   "options": "Referral"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2023-08-14 13:45:46.837278",
+ "modified_by": "Administrator",
+ "module": "Fees",
+ "name": "Referral Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

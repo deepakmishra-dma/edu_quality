@@ -1,0 +1,176 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:{school}-{program}-{academic_year}",
+ "creation": "2023-08-08 21:46:49.686542",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "institution",
+  "school",
+  "academic_year",
+  "fee_structure",
+  "posting_date",
+  "column_break_lnjyf",
+  "program",
+  "next_program",
+  "payment_plan",
+  "payment_term",
+  "due_date",
+  "section_break_q6c2a",
+  "students",
+  "components",
+  "amount",
+  "amended_from",
+  "fee_creation_status",
+  "error_log"
+ ],
+ "fields": [
+  {
+   "fieldname": "fee_structure",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Fee Structure",
+   "options": "Fee Structure",
+   "reqd": 1
+  },
+  {
+   "fieldname": "payment_plan",
+   "fieldtype": "Link",
+   "label": "Payment Plan",
+   "options": "Payment Plan",
+   "reqd": 1
+  },
+  {
+   "fieldname": "payment_term",
+   "fieldtype": "Link",
+   "label": "Payment Term",
+   "options": "Payment Term",
+   "reqd": 1
+  },
+  {
+   "fieldname": "students",
+   "fieldtype": "Table",
+   "label": "Students",
+   "options": "Fee Schedule Student Group",
+   "reqd": 1
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "label": "Amount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "institution",
+   "fieldtype": "Link",
+   "label": "Institution",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "school",
+   "fieldtype": "Link",
+   "label": "School",
+   "options": "School",
+   "reqd": 1
+  },
+  {
+   "fieldname": "academic_year",
+   "fieldtype": "Link",
+   "label": "Academic Year",
+   "options": "Fiscal Year",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_lnjyf",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_q6c2a",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "program",
+   "fieldtype": "Link",
+   "label": "Current Program",
+   "options": "Program",
+   "reqd": 1
+  },
+  {
+   "fieldname": "next_program",
+   "fieldtype": "Link",
+   "label": "Next Program",
+   "options": "Program",
+   "reqd": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Fee Advance",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "fee_creation_status",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Fee Creation Status",
+   "options": "\nFailed\nIn Process\nSuccessful"
+  },
+  {
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "label": "Posting Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "error_log",
+   "fieldtype": "Text",
+   "label": "Error Log"
+  },
+  {
+   "fieldname": "due_date",
+   "fieldtype": "Date",
+   "label": "Due Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "components",
+   "fieldtype": "Table",
+   "label": "Components",
+   "options": "Fee Component",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2023-08-09 08:35:06.309012",
+ "modified_by": "Administrator",
+ "module": "Fees",
+ "name": "Fee Advance",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1,0 +1,91 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-07-05 09:01:44.177744",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "student_applicant_section",
+  "apply_deposits",
+  "apply_fees",
+  "payment_methods_section",
+  "payment_method",
+  "surcharge_section",
+  "surcharge",
+  "default_account"
+ ],
+ "fields": [
+  {
+   "fieldname": "student_applicant_section",
+   "fieldtype": "Section Break",
+   "label": "Student Applicant"
+  },
+  {
+   "default": "0",
+   "fieldname": "apply_deposits",
+   "fieldtype": "Check",
+   "label": "Apply Deposits"
+  },
+  {
+   "default": "0",
+   "fieldname": "apply_fees",
+   "fieldtype": "Check",
+   "label": "Apply Fees"
+  },
+  {
+   "fieldname": "payment_methods_section",
+   "fieldtype": "Section Break",
+   "label": "Payment Methods"
+  },
+  {
+   "fieldname": "payment_method",
+   "fieldtype": "Table",
+   "label": "payment method",
+   "options": "Payment Methods"
+  },
+  {
+   "fieldname": "surcharge_section",
+   "fieldtype": "Section Break",
+   "label": "Surcharge"
+  },
+  {
+   "default": "0",
+   "fieldname": "surcharge",
+   "fieldtype": "Check",
+   "label": "Surcharge"
+  },
+  {
+   "fieldname": "default_account",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Default Account For Split Payments",
+   "options": "Bank Account",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2023-07-20 09:00:21.703706",
+ "modified_by": "Administrator",
+ "module": "Fees",
+ "name": "Fees Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

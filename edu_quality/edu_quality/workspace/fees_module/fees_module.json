@@ -1,0 +1,195 @@
+{
+ "charts": [
+  {
+   "chart_name": "Fees Expected",
+   "label": "Received"
+  }
+ ],
+ "content": "[{\"id\":\"hpCyZ5U_ee\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Fees Module</span>\",\"col\":12}},{\"id\":\"QNhpSy4erL\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Received\",\"col\":12}},{\"id\":\"i7NZXDPy6J\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Pending\",\"col\":6}},{\"id\":\"jGUAV3cjEP\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Collected\",\"col\":6}},{\"id\":\"8k2I5FBYUd\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"P9AjfilPgN\",\"type\":\"card\",\"data\":{\"card_name\":\"Global Setup\",\"col\":4}},{\"id\":\"z49sbSPOvk\",\"type\":\"card\",\"data\":{\"card_name\":\"Fee Master Setup\",\"col\":4}},{\"id\":\"RZF3MLoCIh\",\"type\":\"card\",\"data\":{\"card_name\":\"Fees\",\"col\":4}},{\"id\":\"Fslu78v8xw\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"EMPzk7tPzt\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Fee Workflow Wizard\",\"col\":3}},{\"id\":\"g_erVhWlZU\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Payment Plan Creation Tool\",\"col\":3}}]",
+ "creation": "2023-06-27 14:21:08.891023",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "money-coins-1",
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "Fees Module",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Fee Master Setup",
+   "link_count": 4,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Fee Type",
+   "link_count": 0,
+   "link_to": "Fee Type",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Fee Category",
+   "link_count": 0,
+   "link_to": "Fee Category",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Fee Structure",
+   "link_count": 0,
+   "link_to": "Fee Structure",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Program Fee",
+   "link_count": 0,
+   "link_to": "Program Fee",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Fees",
+   "link_count": 0,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Fee Schedule",
+   "link_count": 0,
+   "link_to": "Fee Schedule",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Fee",
+   "link_count": 0,
+   "link_to": "Fees",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Program Enrollment Fee",
+   "link_count": 0,
+   "link_to": "Program Enrollment Fee",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Global Setup",
+   "link_count": 0,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Academic Year",
+   "link_count": 0,
+   "link_to": "Academic Year",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Institution",
+   "link_count": 0,
+   "link_to": "Company",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "School",
+   "link_count": 0,
+   "link_to": "School",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Program",
+   "link_count": 0,
+   "link_to": "Program",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2023-08-29 16:51:02.331446",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "Fees Module",
+ "number_cards": [
+  {
+   "label": "Collected",
+   "number_card_name": "Fees Collected"
+  },
+  {
+   "label": "Pending",
+   "number_card_name": "Fees to be collected"
+  }
+ ],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [],
+ "sequence_id": 22.0,
+ "shortcuts": [
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Fee Workflow Wizard",
+   "link_to": "fee-workflow",
+   "type": "Page"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Payment Plan Creation Tool",
+   "link_to": "payment-plan-creatio",
+   "type": "Page"
+  }
+ ],
+ "title": "Fees Module"
+}

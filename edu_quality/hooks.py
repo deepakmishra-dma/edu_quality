@@ -29,7 +29,12 @@ app_license = "MIT"
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-# doctype_js = {"doctype" : "public/js/doctype.js"}
+doctype_js = {
+    "Student Applicant" : "public/js/application.js",
+    "Reference Number Settings": "public/js/reference_number.js",
+    "Fees": "public/js/fees.js",
+    "Lead":"public/js/lead.js"
+              }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -94,25 +99,46 @@ app_license = "MIT"
 # ---------------
 # Override standard doctype classes
 
-# override_doctype_class = {
-#	"ToDo": "custom_app.overrides.CustomToDo"
-# }
+override_doctype_class = {
+	"Payment Request": "edu_quality.overrides.CustomPaymentRequest",
+    "Fee Schedule": "edu_quality.public.py.fee_schedule.CustomFeeSchedule",
+}
 
 # Document Events
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-#	"*": {
-#		"on_update": "method",
-#		"on_cancel": "method",
-#		"on_trash": "method"
-#	}
-# }
+doc_events = {
+	"Student Applicant" :{
+        "before_save":"edu_quality.public.py.application.before_save"
+    },
+    "Program Enrollment":{
+        "on_submit":"edu_quality.public.py.fee.create_fees"
+    },
+    "Fees":{
+        "after_insert":"edu_quality.public.py.fee.fees_after_insert",
+        "before_save":"edu_quality.public.py.fee.before_save"
+    },
+    "Payment Request": {
+        "before_save":"edu_quality.public.py.payment_request.before_save",
+    },
+    "Student":{
+        'autoname': "edu_quality.public.py.student.autoname"
+    }
+}
 
 # Scheduled Tasks
 # ---------------
-
+scheduler_events = {
+    "cron": {
+        "0 * * * *": [
+            "edu_quality.tasks.cron"
+        ]
+    },
+    "daily": [
+		"edu_quality.tasks.time_based"
+	],
+}
 # scheduler_events = {
 #	"all": [
 #		"edu_quality.tasks.all"
@@ -199,3 +225,19 @@ app_license = "MIT"
 # auth_hooks = [
 #	"edu_quality.auth.validate"
 # ]
+
+fixtures = [
+    {"dt": "Server Script", "filters": [
+        ["module","in",["Edu Quality","Fees"]]
+    ]},
+    {"dt": "Property Setter", "filters": [
+        ["module","in",["Edu Quality","Fees"]]
+    ]},
+    {"dt": "Client Script", "filters": [
+        ["module","in",["Edu Quality","Fees"]]
+    ]},    
+    {"doctype":"DocType Layout"},
+    { "doctype": "Custom Field", "filters": [["Custom Field","module","=","Edu Quality"],]},   
+    {"dt": "Web Page"}
+
+]

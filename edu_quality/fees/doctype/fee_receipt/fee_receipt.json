@@ -1,0 +1,144 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:Receipt-{student_name}-{company}-{#####}",
+ "creation": "2023-07-19 16:03:39.219497",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "fees",
+  "fee_category",
+  "school",
+  "company",
+  "paid_on",
+  "due_date",
+  "amount",
+  "payment_grade",
+  "student_name",
+  "student_id",
+  "student_email",
+  "student_mobile_number",
+  "student_address",
+  "student_user_id"
+ ],
+ "fields": [
+  {
+   "fieldname": "fees",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Fees",
+   "options": "Fees",
+   "reqd": 1
+  },
+  {
+   "fieldname": "fee_category",
+   "fieldtype": "Table",
+   "label": "Fee Category",
+   "options": "Fees Categories",
+   "reqd": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "paid_on",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Paid On",
+   "reqd": 1
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "label": "Amount",
+   "reqd": 1
+  },
+  {
+   "fieldname": "due_date",
+   "fieldtype": "Date",
+   "label": "Due Date"
+  },
+  {
+   "fieldname": "payment_grade",
+   "fieldtype": "Color",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Payment Grade"
+  },
+  {
+   "fetch_from": "fees.student",
+   "fieldname": "student_name",
+   "fieldtype": "Link",
+   "label": "Student Name",
+   "options": "Student"
+  },
+  {
+   "fetch_from": "student_name.student_email_id",
+   "fieldname": "student_email",
+   "fieldtype": "Data",
+   "label": "Student Email"
+  },
+  {
+   "fetch_from": "student_name.student_mobile_number",
+   "fieldname": "student_mobile_number",
+   "fieldtype": "Data",
+   "label": "Student Mobile Number"
+  },
+  {
+   "fetch_from": "student_name.address_line_1",
+   "fieldname": "student_address",
+   "fieldtype": "Data",
+   "label": "Student Address"
+  },
+  {
+   "fetch_from": "student_name.user",
+   "fieldname": "student_user_id",
+   "fieldtype": "Data",
+   "label": "Student User Id"
+  },
+  {
+   "fetch_from": "student_name.naming_series",
+   "fieldname": "student_id",
+   "fieldtype": "Data",
+   "label": "Student ID"
+  },
+  {
+   "fieldname": "school",
+   "fieldtype": "Link",
+   "label": "School",
+   "options": "School"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-08-11 00:38:59.686366",
+ "modified_by": "Administrator",
+ "module": "Fees",
+ "name": "Fee Receipt",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

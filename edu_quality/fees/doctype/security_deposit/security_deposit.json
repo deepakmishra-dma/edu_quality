@@ -1,0 +1,92 @@
+{
+ "actions": [],
+ "autoname": "field:deposit_name",
+ "creation": "2023-06-27 14:31:37.961461",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "deposit_name",
+  "description",
+  "academic_year",
+  "school",
+  "program",
+  "institution",
+  "amount"
+ ],
+ "fields": [
+  {
+   "fieldname": "academic_year",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Academic Year",
+   "options": "Fiscal Year",
+   "reqd": 1
+  },
+  {
+   "fieldname": "institution",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Institution",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "deposit_name",
+   "fieldtype": "Data",
+   "label": "Deposit Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "label": "Amount"
+  },
+  {
+   "fieldname": "program",
+   "fieldtype": "Link",
+   "label": "Program",
+   "options": "Program",
+   "reqd": 1
+  },
+  {
+   "fieldname": "school",
+   "fieldtype": "Link",
+   "label": "School",
+   "options": "School"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-08-20 21:59:26.633927",
+ "modified_by": "Administrator",
+ "module": "Fees",
+ "name": "Security Deposit",
+ "name_case": "UPPER CASE",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

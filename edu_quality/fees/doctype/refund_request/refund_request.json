@@ -1,0 +1,102 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:Refund-{student_id}-{####}",
+ "creation": "2023-08-01 15:55:51.732483",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "school",
+  "student_id",
+  "column_break_vh8b",
+  "refundable_after",
+  "section_break_0faj",
+  "pending_fees",
+  "security_deposit",
+  "amount",
+  "adjusted_amount",
+  "approved"
+ ],
+ "fields": [
+  {
+   "fieldname": "student_id",
+   "fieldtype": "Link",
+   "label": "Student ID",
+   "options": "Student"
+  },
+  {
+   "fieldname": "security_deposit",
+   "fieldtype": "Table",
+   "label": "Security Deposit",
+   "options": "Deposits"
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "label": "Amount"
+  },
+  {
+   "fieldname": "adjusted_amount",
+   "fieldtype": "Currency",
+   "label": "Adjusted Amount"
+  },
+  {
+   "default": "0",
+   "fieldname": "approved",
+   "fieldtype": "Check",
+   "label": "Approved"
+  },
+  {
+   "fieldname": "refundable_after",
+   "fieldtype": "Date",
+   "label": "Refundable After"
+  },
+  {
+   "fieldname": "column_break_vh8b",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_0faj",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "pending_fees",
+   "fieldtype": "Table MultiSelect",
+   "label": "Pending Fees",
+   "options": "Pending Fees"
+  },
+  {
+   "fieldname": "school",
+   "fieldtype": "Link",
+   "label": "School",
+   "options": "School"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-08-11 00:30:30.983099",
+ "modified_by": "Administrator",
+ "module": "Fees",
+ "name": "Refund Request",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1,0 +1,73 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:SD-{security_deposit}-{####}",
+ "creation": "2023-06-27 14:54:28.908559",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "security_deposit",
+  "amount_paid",
+  "fees",
+  "school"
+ ],
+ "fields": [
+  {
+   "fieldname": "security_deposit",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Security Deposit",
+   "options": "Security Deposit",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "security_deposit.amount",
+   "fieldname": "amount_paid",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Amount Paid",
+   "reqd": 1
+  },
+  {
+   "fieldname": "fees",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Fees",
+   "options": "Fees",
+   "reqd": 1
+  },
+  {
+   "fieldname": "school",
+   "fieldtype": "Link",
+   "label": "School",
+   "options": "School"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-08-11 00:28:46.518988",
+ "modified_by": "Administrator",
+ "module": "Fees",
+ "name": "Security Deposit Entry",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1,0 +1,59 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-08-18 10:02:14.084618",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "program_enrollment",
+  "student_group",
+  "academic_year",
+  "payment_plan"
+ ],
+ "fields": [
+  {
+   "fieldname": "program_enrollment",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Program Enrollment",
+   "options": "Program Enrollment",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "program_enrollment.academic_year",
+   "fieldname": "academic_year",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Academic Year",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "program_enrollment.custom_payment_plan",
+   "fieldname": "payment_plan",
+   "fieldtype": "Link",
+   "label": "Payment Plan",
+   "options": "Payment Plan"
+  },
+  {
+   "fetch_from": "program_enrollment.student_group",
+   "fieldname": "student_group",
+   "fieldtype": "Link",
+   "label": "Student Group",
+   "options": "Student Group",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2023-08-21 08:26:20.277655",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "Enrollment List",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
