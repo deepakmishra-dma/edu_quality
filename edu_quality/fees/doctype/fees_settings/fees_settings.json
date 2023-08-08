@@ -16,7 +16,8 @@
   "payment_method",
   "surcharge_section",
   "surcharge",
-  "default_account"
+  "default_account",
+  "application_fees"
  ],
  "fields": [
   {
@@ -74,6 +75,12 @@
    "fieldname": "before_days",
    "fieldtype": "Int",
    "label": "Create Payment Request Before Days"
+  },
+   {
+   "fieldname": "application_fees",
+   "fieldtype": "Table",
+   "label": "Application Fees",
+   "options": "Application Fees List"
   }
  ],
  "index_web_pages_for_search": 1,

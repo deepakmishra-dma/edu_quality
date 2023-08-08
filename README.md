@@ -4,4 +4,4 @@ Walnut App
 
 #### License
 
-MIT
+Prop
