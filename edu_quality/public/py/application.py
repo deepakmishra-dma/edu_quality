@@ -27,7 +27,8 @@ def before_save(doc,method=None):
 def calculate_total(doc):
     doc.total_amount = 0
     for component in doc.fee_components:
-        doc.total_amount += float(component.amount)
+        if component.amount:
+            doc.total_amount += float(component.amount)
 
 def get_deposits(doc):
     deposits = frappe.get_all('Security Deposit',{'program':doc.program,'academic_year':doc.academic_year},['name','amount'])
