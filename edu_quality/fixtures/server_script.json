@@ -286,5 +286,21 @@
   "reference_doctype": "Fees",
   "script": "for i in doc.payment_schedule:\n    if i.due_date:\n        doc.due_date = i.due_date\n        break",
   "script_type": "DocType Event"
+ },
+ {
+  "allow_guest": 0,
+  "api_method": null,
+  "cron_format": null,
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Server Script",
+  "doctype_event": "After Insert",
+  "event_frequency": "All",
+  "modified": "2023-09-04 09:19:16.990870",
+  "module": "Edu Quality",
+  "name": "Fee split payment plan",
+  "reference_doctype": "Fees",
+  "script": "if not doc.payment_plan:\n    pe = frappe.get_doc(\"Program Enrollment\", doc.program_enrollment)\n    if pe.custom_payment_plan is not None:\n        doc.payment_plan = pe.custom_payment_plan\n    else:\n        doc.payment_plan = frappe.db.get_value(\"Fee Schedule\",doc.fee_schedule,'payment_plan')\nif doc.payment_plan:\n            pp = frappe.get_doc(\"Payment Plan\",doc.payment_plan)\n            doc.payment_schedule = []\n            initial_payment = 0\n            for component in doc.components:\n                if component.fees_category in [\"Deposit\",\"deposit\", \"Application Fee\",\"Application fee\"]:\n                    initial_payment = initial_payment +  component.amount\n            i=0\n            for schedule in pp.payment_schedule:\n                payment_amount = schedule.payment_amount\n                description = \"Installment - \" + str(i+1)\n                if i==0 and initial_payment>0:\n                    payment_amount = payment_amount + initial_payment\n                    description = description + \" and deposit/application fee\"\n                i= i+1\n                doc.append(\"payment_schedule\",{\n                    'payment_term': schedule.payment_term,\n                    'description': description,\n                    'due_date': schedule.due_date,\n                    'invoice_portion': schedule.invoice_portion,\n                    'payment_amount': payment_amount,\n                    'outstanding': payment_amount,\n                })",
+  "script_type": "DocType Event"
  }
 ]
