@@ -239,6 +239,7 @@ fixtures = [
     ]},    
     {"doctype":"DocType Layout"},
     { "doctype": "Custom Field", "filters": [["Custom Field","module","=","Edu Quality"],]},   
-    {"dt": "Web Page"}
+    {"dt": "Web Page"},
+    {"dt":"Accounting Dimension"}
 
 ]

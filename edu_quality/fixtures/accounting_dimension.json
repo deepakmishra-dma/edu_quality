@@ -1,0 +1,24 @@
+[
+ {
+  "dimension_defaults": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Accounting Dimension",
+  "document_type": "Payment Request",
+  "fieldname": "payment_request",
+  "label": "School",
+  "modified": "2023-09-01 18:27:59.875751",
+  "name": "School"
+ },
+ {
+  "dimension_defaults": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Accounting Dimension",
+  "document_type": "Program",
+  "fieldname": "program",
+  "label": "Class",
+  "modified": "2023-09-04 11:05:59.781554",
+  "name": "Class"
+ }
+]
