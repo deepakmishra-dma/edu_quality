@@ -43,9 +43,9 @@ def update_student_group(p_e_doc,fee_structure=None):
             for item in st:
                 program_e_d.append("students",item)
             program_e_d.save()
-            if fee_structure:
-                fee_structure = frappe.get_value("Fee Schedule",{"fee_structure":fee_structure})
-                doc = frappe.get_doc("Fee Schedule Student Group", {"parent":fee_structure,"student_group":student_group})
+            if frappe.db.exists("Fee Schedule",{"fee_structure":fee_structure}):
+                fee_schedule = frappe.get_value("Fee Schedule",{"fee_structure":fee_structure})
+                doc = frappe.get_doc("Fee Schedule Student Group", {"parent":fee_schedule,"student_group":student_group})
                 doc.total_students = len(st)
                 doc.save()
         return
