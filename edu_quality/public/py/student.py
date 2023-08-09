@@ -68,7 +68,7 @@ def get_students_group(student_group):
         return []
 
 
-def create_payment_request(fees):
+def create_payment_request(fees,term=None):
     try:
         for f in fees:
             fee = frappe.get_doc("Fees", f.name)
@@ -81,6 +81,7 @@ def create_payment_request(fees):
                     party=fee.student,
                     dt="Fees",
                     dn=fee.name,
+                    payment_term = term,
                     recipient_id=fee.student_email,
                     submit_doc=True,
                     use_dummy_message=True,
