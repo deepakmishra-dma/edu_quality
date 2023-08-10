@@ -4,6 +4,15 @@ import frappe
 def before_save(doc, method=None):
     amount = 0
 
+    #only deposit and application fee
+    if not frappe.db.exists("Payment Request", {"reference_name": doc.reference_name}):
+        fees = frappe.get_doc("Fees", doc.reference_name)
+        if not fees.fee_schedule:
+            for fee in fees.components:
+                if fee.fee_category in ["Deposit","deposit", "Application Fee","Application fee"]:
+                    amount = amount + fee.amount
+        doc.grand_total = amount
+
     # if payment request has payment_term and reference_doctype is Fees
     if doc.payment_term and doc.reference_doctype == "Fees":
         fees = frappe.get_doc("Fees", doc.reference_name)

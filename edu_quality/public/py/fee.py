@@ -9,6 +9,7 @@ from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
     get_accounting_dimensions,
 )
 from frappe.utils import flt, get_url, nowdate
+from edu_quality.overrides import make_payment_request
 
 def before_save(doc,method=None):
     try:
@@ -79,14 +80,17 @@ def create_fees(doc,method=None):
         frappe.throw(str(e))
 
 
-def fees_after_insert(doc,method=None):
-    for fee in doc.components:
-        if frappe.db.exists("Security Deposit",fee.fees_category):
-            log = frappe.new_doc("Security Deposit Entry")
-            log.security_deposit = fee.fees_category 
-            log.amount_paid = fee.amount 
-            log.fees = doc.name 
-            log.insert()
+def fees_after_insert(doc,method=None):    
+    if not doc.fee_schedule:
+        make_payment_request(
+            party_type="Student",
+            party=doc.student,
+            dt="Fees",
+            dn=doc.name,
+            is_deposit=True,
+            recipient_id=doc.student_email,
+            submit_doc=True
+        )
 
 class CustomPaymentRequest(PaymentRequest):
     def create_payment_entry(self,submit=True):
@@ -183,3 +187,5 @@ def get_due_date(fee):
         if frappe.db.exists("Payment Request",{'payment_term':term.payment_term,"reference_name":fee.name}):
             due_date = term.due_date
     return due_date
+
+
