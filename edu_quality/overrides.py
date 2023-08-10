@@ -213,7 +213,7 @@ def get_amount(ref_doc, payment_account=None, is_deposit=False):
     elif dt == "Fees" and is_deposit:
         grand_total = 0
         for f in ref_doc.components:
-            if f.fee_category in ["Deposit","deposit", "Application Fee","Application fee"]:
+            if f.fees_category in ["Deposit","deposit", "Application Fee","Application fee"]:
                 grand_total += f.amount
 
     elif dt == "Fees":

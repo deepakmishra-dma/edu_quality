@@ -9,7 +9,7 @@ def before_save(doc, method=None):
         fees = frappe.get_doc("Fees", doc.reference_name)
         if not fees.fee_schedule:
             for fee in fees.components:
-                if fee.fee_category in ["Deposit","deposit", "Application Fee","Application fee"]:
+                if fee.fees_category in ["Deposit","deposit", "Application Fee","Application fee"]:
                     amount = amount + fee.amount
         doc.grand_total = amount
 
