@@ -270,6 +270,7 @@ def serialize_lead_to_application(doc: dict):
             'country':doc.get('country'),
             'pincode':doc.get('pincode'),
             'state':doc.get('state'),
+            'city':doc.get('city'),
             'last_name':doc.get('last_name'),
             'mother_f_name':doc.get('mothers_name'),
             'date_of_birth':doc.get('date_of_birth'),
@@ -277,7 +278,11 @@ def serialize_lead_to_application(doc: dict):
             'mother_mobile_number':doc.get('mothers_phone'),
             'father_mobile_no':doc.get('fathers_phone'),
             'bus_service_required':doc.get('bus_service_required'),
-            'rte_student':doc.get('rte_student')
+            'is_sibling_in_school':doc.get('is_sibling_already_at_walnut'),
+            'rte_student':doc.get('stud_rte'),
+            'catering':doc.get('catering'),
+            'referred_to':doc.get('referred_to'),
+            'if_yes_reference_number_of_child':doc.get('if_yes_reference_number_of_child')
             }
 
 @frappe.whitelist(allow_guest=True)
