@@ -18,7 +18,7 @@ def before_save(doc,method=None):
             doc.payment_schedule = []
             initial_payment = 0
             for component in doc.components:
-                if component.fees_category in ["Deposit", "Application Fee"]:
+                if component.fees_category in ["Deposit","deposit", "Application Fee","Application fee"]:
                     initial_payment += component.amount
             i=0
             for schedule in pp.payment_schedule:
