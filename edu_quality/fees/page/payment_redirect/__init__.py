@@ -25,29 +25,57 @@ def get_payment_details(**kwargs):
     breakup = []
     portion = 100
     if payment_request.payment_term:
+        description = ""
         for schedule in fees.payment_schedule:
             if schedule.payment_term == payment_request.payment_term:
                 portion = schedule.invoice_portion 
+                description = schedule.description
+        for fee in fees.components:
+            discounted_amount = fee.custom_amount_after_discount
+            amount = discounted_amount if discounted_amount else fee.amount
+            if frappe.db.exists("Fee Category",fee.fees_category):
+                company = frappe.db.get_value("Fee Category",fee.fees_category,"custom_company")
+            else:
+                company = fees.company
+            if "deposit" in description:
+                if fee.fees_category in ["Deposit","deposit", "Application Fee","Application fee"]:
+                        breakup.append({
+                            'fees_category': fee.fees_category,
+                            'amount':  frappe.utils.fmt_money(amount, currency="INR"),
+                            'company': company
+                            })
+            else:
+                breakup.append({
+                    'fees_category': fee.fees_category,
+                    'amount':  frappe.utils.fmt_money(amount *(portion/100), currency="INR"),
+                    'company': company
+                    })
+    else:
+        for fee in fees.components:
+            if fee.fees_Category in  ["Deposit","deposit", "Application Fee","Application fee"]:
+                discounted_amount = fee.custom_amount_after_discount
+                amount = discounted_amount if discounted_amount else fee.amount
+                if frappe.db.exists("Fee Category",fee.fees_category):
+                    company = frappe.db.get_value("Fee Category",fee.fees_category,"custom_company")
+                else:
+                    company = fees.company
+                breakup.append({
+                    'fees_category': fee.fees_category,
+                    'amount':  frappe.utils.fmt_money(amount, currency="INR"),
+                    'company': company
+                    })
+    total = 0
+    for i in breakup:
+        if i.amount:
+            total += i.amount
 
-    for fee in fees.components:
-        discounted_amount = fee.custom_amount_after_discount
-        amount = discounted_amount if discounted_amount else fee.amount
-        if frappe.db.exists("Fee Category",fee.fees_category):
-            company = frappe.db.get_value("Fee Category",fee.fees_category,"custom_company")
-        else:
-            company = fees.company
-        breakup.append({
-            'fees_category': fee.fees_category,
-            'amount':  frappe.utils.fmt_money(amount *(portion/100), currency="INR"),
-            'company': company
-            })
     return {
         'student_name': fees.student_name,
         'institution': fees.company,
         'due_date': fees.due_date,
         'class': fees.program,
         'student_id': fees.student,
-        'due_amount': frappe.utils.fmt_money(fees.grand_total*(portion/100),currency="INR"),
+        'due_amount': frappe.utils.fmt_money(total,currency="INR"),
         'payment_url': payment_url(payment_request,payment_method="UPI"),
         'status': payment_request.status,
         'receipt_url': frappe.utils.get_url() + "/api/method/edu_quality.fees.page.payment_redirect.payment_receipt?fees="+payment_request.reference_name,
