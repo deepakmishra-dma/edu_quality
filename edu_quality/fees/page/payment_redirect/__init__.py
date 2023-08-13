@@ -64,10 +64,6 @@ def get_payment_details(**kwargs):
                     'amount':  frappe.utils.fmt_money(amount, currency="INR"),
                     'company': company
                     })
-    total = 0
-    for i in breakup:
-        if i.amount:
-            total += i.amount
 
     return {
         'student_name': fees.student_name,
@@ -75,7 +71,7 @@ def get_payment_details(**kwargs):
         'due_date': fees.due_date,
         'class': fees.program,
         'student_id': fees.student,
-        'due_amount': frappe.utils.fmt_money(total,currency="INR"),
+        'due_amount': frappe.utils.fmt_money(payment_request.grand_total,currency="INR"),
         'payment_url': payment_url(payment_request,payment_method="UPI"),
         'status': payment_request.status,
         'receipt_url': frappe.utils.get_url() + "/api/method/edu_quality.fees.page.payment_redirect.payment_receipt?fees="+payment_request.reference_name,
