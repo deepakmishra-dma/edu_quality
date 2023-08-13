@@ -52,7 +52,7 @@ def get_payment_details(**kwargs):
                     })
     else:
         for fee in fees.components:
-            if fee.fees_Category in  ["Deposit","deposit", "Application Fee","Application fee"]:
+            if fee.fees_category in  ["Deposit","deposit", "Application Fee","Application fee"]:
                 discounted_amount = fee.custom_amount_after_discount
                 amount = discounted_amount if discounted_amount else fee.amount
                 if frappe.db.exists("Fee Category",fee.fees_category):
