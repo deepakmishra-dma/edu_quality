@@ -229,18 +229,18 @@ scheduler_events = {
 # ]
 
 fixtures = [
-    # {"dt": "Server Script", "filters": [
-    #     ["module","in",["Edu Quality","Fees"]]
-    # ]},
-    # {"dt": "Property Setter", "filters": [
-    #     ["module","in",["Edu Quality","Fees"]]
-    # ]},
-    # {"dt": "Client Script", "filters": [
-    #     ["module","in",["Edu Quality","Fees"]]
-    # ]},    
-    # {"doctype":"DocType Layout"},
-    # { "doctype": "Custom Field", "filters": [["Custom Field","module","=","Edu Quality"],]},   
-    # {"dt": "Web Page"},
+    {"dt": "Server Script", "filters": [
+        ["module","in",["Edu Quality","Fees"]]
+    ]},
+    {"dt": "Property Setter", "filters": [
+        ["module","in",["Edu Quality","Fees"]]
+    ]},
+    {"dt": "Client Script", "filters": [
+        ["module","in",["Edu Quality","Fees"]]
+    ]},    
+    {"doctype":"DocType Layout"},
+    { "doctype": "Custom Field", "filters": [["Custom Field","module","=","Edu Quality"],]},   
+    {"dt": "Web Page"},
     {"dt":"Accounting Dimension"}
 
 ]
