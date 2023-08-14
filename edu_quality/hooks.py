@@ -33,7 +33,8 @@ doctype_js = {
     "Student Applicant" : "public/js/application.js",
     "Reference Number Settings": "public/js/reference_number.js",
     "Fees": "public/js/fees.js",
-    "Lead":"public/js/lead.js"
+    "Lead":"public/js/lead.js",
+    "Fee Schedule":"public/js/fee_schedule.js"
               }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -228,18 +229,18 @@ scheduler_events = {
 # ]
 
 fixtures = [
-    {"dt": "Server Script", "filters": [
-        ["module","in",["Edu Quality","Fees"]]
-    ]},
-    {"dt": "Property Setter", "filters": [
-        ["module","in",["Edu Quality","Fees"]]
-    ]},
-    {"dt": "Client Script", "filters": [
-        ["module","in",["Edu Quality","Fees"]]
-    ]},    
-    {"doctype":"DocType Layout"},
-    { "doctype": "Custom Field", "filters": [["Custom Field","module","=","Edu Quality"],]},   
-    {"dt": "Web Page"},
+    # {"dt": "Server Script", "filters": [
+    #     ["module","in",["Edu Quality","Fees"]]
+    # ]},
+    # {"dt": "Property Setter", "filters": [
+    #     ["module","in",["Edu Quality","Fees"]]
+    # ]},
+    # {"dt": "Client Script", "filters": [
+    #     ["module","in",["Edu Quality","Fees"]]
+    # ]},    
+    # {"doctype":"DocType Layout"},
+    # { "doctype": "Custom Field", "filters": [["Custom Field","module","=","Edu Quality"],]},   
+    # {"dt": "Web Page"},
     {"dt":"Accounting Dimension"}
 
 ]
