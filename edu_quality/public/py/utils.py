@@ -12,6 +12,7 @@ def set_property(doctype, fieldname, prop, property_type, value):
     }
     if not frappe.db.exists("Property Setter", filters):
         ps = frappe.new_doc("Property Setter")
+        ps.module = "Edu Quality"
         ps.doctype_or_field = "DocField"
         ps.doc_type = doctype
         ps.field_name = fieldname
@@ -23,6 +24,7 @@ def set_property(doctype, fieldname, prop, property_type, value):
 
 def migrate():
     set_property("Fees", "due_date", "reqd", "Check", 0)
+    set_property("Fees", "fee_schedule", "reqd", "Check", 0)
     set_property("Fee Schedule", "due_date", "reqd", "Check", 0)
     set_property("Fee Schedule", "due_date", "hidden", "Check", 1)
     set_property("Program", "program_name", "unique", "Check", 0)
