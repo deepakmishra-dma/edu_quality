@@ -134,7 +134,7 @@
    "_user_tags": null,
    "creation": "2023-09-06 08:39:13.242313",
    "default_value": null,
-   "doc_type": "Program",
+   "doc_type": "Class",
    "docstatus": 0,
    "doctype_or_field": "DocField",
    "field_name": "program_name",
