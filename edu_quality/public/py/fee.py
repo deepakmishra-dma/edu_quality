@@ -36,6 +36,10 @@ def before_save(doc,method=None):
                     'payment_amount': payment_amount,
                     'outstanding': payment_amount,
                 })
+        if not doc.get("school"):
+            doc.school = frappe.db.get_value("Student",doc.student,"school")
+        if not doc.get("custom_school"):
+            doc.custom_school = frappe.db.get_value("Student",doc.student,"school")
     except Exception as e:
         frappe.logger("fee").exception(e)
 

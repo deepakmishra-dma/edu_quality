@@ -244,3 +244,6 @@ fixtures = [
     {"dt":"Accounting Dimension"}
 
 ]
+
+
+after_migrate = "edu_quality.public.py.utils.migrate"
