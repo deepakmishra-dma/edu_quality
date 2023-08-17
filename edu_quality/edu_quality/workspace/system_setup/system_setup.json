@@ -1,0 +1,78 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"UOQYhCdbl3\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">System Setup</span>\",\"col\":12}},{\"id\":\"kh4oWiIJyx\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"School\",\"col\":3}},{\"id\":\"Q7mQ8zr5NG\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Class\",\"col\":3}},{\"id\":\"yrQo17r_gr\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Academic Year\",\"col\":3}},{\"id\":\"0kRcOjpuRG\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Student Batch Name\",\"col\":3}},{\"id\":\"1MsPUdVI8d\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Program Enrollment\",\"col\":3}},{\"id\":\"09216M3fx7\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Division\",\"col\":3}},{\"id\":\"YeikhPQ5pF\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Company\",\"col\":3}}]",
+ "creation": "2023-09-07 18:47:55.632574",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "getting-started",
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "System Setup",
+ "links": [],
+ "modified": "2023-09-07 18:52:11.063247",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "System Setup",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [],
+ "sequence_id": 26.0,
+ "shortcuts": [
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "School",
+   "link_to": "School",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Class",
+   "link_to": "Program",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Academic Year",
+   "link_to": "Academic Year",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Student Batch Name",
+   "link_to": "Student Batch Name",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Program Enrollment",
+   "link_to": "Program Enrollment",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Division",
+   "link_to": "Student Group",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Company",
+   "link_to": "Company",
+   "type": "DocType"
+  }
+ ],
+ "title": "System Setup"
+}
