@@ -9,7 +9,7 @@ from erpnext.accounts.doctype.payment_entry.payment_entry import (
     get_company_defaults,
 )
 from erpnext.accounts.doctype.payment_request.payment_request import PaymentRequest, _get_payment_gateway_controller
-from frappe.utils.data import flt
+
 
 
 class CustomPaymentRequest(PaymentRequest):
