@@ -5,6 +5,9 @@ import frappe
 from frappe.model.document import Document
 
 class PaymentPlan(Document):
+	def autoname(self):
+		self.name = get_formatted_payment_plan(self)
+
 	def before_validate(self):
 		invoice_portion = 0
 		for schedule in self.payment_schedule:
@@ -39,3 +42,16 @@ class PaymentPlan(Document):
 					if is_identical:
 						frappe.throw("Identical Payment Plan already exists")
 
+
+
+def get_formatted_payment_plan(data):
+    program = data.program
+    academic_year = data.academic_year
+
+    invoice_portions = []
+    for ps in data.payment_schedule:
+        invoice_portions.append(str(ps.invoice_portion))
+    formatted_invoice_portions = "-".join(invoice_portions)
+    data.plan_name = f"{data.plan_name}-({formatted_invoice_portions})"
+    formatted_payment_plan = f"{data.plan_name}-{program}-({academic_year})"
+    return formatted_payment_plan

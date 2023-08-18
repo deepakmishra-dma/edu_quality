@@ -50,8 +50,8 @@ def create_payment_plans(**kwargs):
                         if is_identical:
                             frappe.throw("Identical Payment Plan already exists for this class " + str(class_name))
                             return False
-            formatted_payment_plan = get_formatted_payment_plan(submission_data)
-            pay_plan_name = plan_name+"-("+formatted_payment_plan[class_name]+")"
+                        
+            pay_plan_name = plan_name
             payment_plan = frappe.get_doc({
                 "doctype": "Payment Plan",
                 "plan_name": pay_plan_name,
@@ -76,19 +76,3 @@ def create_payment_plans(**kwargs):
         frappe.log_error(str(e))
         frappe.db.rollback()
         return False
-
-
-def get_formatted_payment_plan(data):
-    payment_plan = {}
-
-    for payment_term in data['paymentTerms']:
-        class_name = payment_term['class']
-        invoice_portion = payment_term['invoicePortion']
-        payment_plan[class_name] = payment_plan.get(class_name, []) + [invoice_portion]
-
-    formatted_payment_plan = {}
-
-    for class_name, invoice_portions in payment_plan.items():
-        formatted_invoice_portions = '-'.join(map(str, invoice_portions))
-        formatted_payment_plan[class_name] = formatted_invoice_portions
-    return formatted_payment_plan
