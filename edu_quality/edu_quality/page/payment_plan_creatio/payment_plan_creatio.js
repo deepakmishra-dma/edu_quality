@@ -71,7 +71,10 @@ function validatePaymentData(paymentData) {
         frappe.throw(`Duplicate payment term found for class: ${paymentClass}`);
       }
       if (classPaymentData[paymentClass].dueDates.has(dueDate)) {
-        frappe.throw(`Duplicate Deu Date found for class: ${paymentClass}`);
+        frappe.throw(`Duplicate Due Date found for class: ${paymentClass}`);
+      }
+      if (invoicePortion === 0) {
+        frappe.throw(`Invoice Portion cannot be 0 for ${paymentTerm}`);
       }
   
       // Add the paymentTerm to the set for the current class
