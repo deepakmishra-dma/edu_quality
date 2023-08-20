@@ -1,20 +1,28 @@
 import frappe
+import random
 import mysql.connector
 
 
 def migrate_mysql(database):
-    frappe.flags.in_import = False
-    frappe.msgprint("Migrating....")
+    frappe.flags.in_import = True
     config = frappe.get_site_config()
     mysql_host = config.get("mysql_host")
     mysql_user = config.get("mysql_user")
     mysql_password = config.get("mysql_password")
     table_name = config.get("table_name")
     doctype = config.get("doctype")
-    sync_data(mysql_host, mysql_user, mysql_password, database, table_name, doctype)
+    if database == "test_wal_db_WSF":
+        school = "Walnut School at Fursungi"
+    elif database == "test_wal_db_WSS":
+        school = "Walnut School Shivane"
+    elif database == "test_wal_db_WSW":
+        school = "Walnut School at Wakad"
+    sync_data(mysql_host, mysql_user, mysql_password, database, table_name, doctype, school)
+    frappe.flags.in_import = False
 
 
-def sync_data(host, user, password, database, mysql_table, doctype):
+
+def sync_data(host, user, password, database, mysql_table, doctype, school):
     try:
         mysql_connection = mysql.connector.connect(
             host=host, user=user, password=password, database=database
@@ -28,9 +36,8 @@ def sync_data(host, user, password, database, mysql_table, doctype):
         column_names = [desc[0] for desc in mysql_cursor.description]
 
         mysql_rows = mysql_cursor.fetchall()
-
         # Iterate over the rows and create Frappe records
-        for row in mysql_rows:
+        for row in mysql_rows[:100]:
             frappe_data = {}
             for i, value in enumerate(row):
                 frappe_data[column_names[i]] = value
@@ -79,69 +86,53 @@ def sync_data(host, user, password, database, mysql_table, doctype):
             student_name = (
                 f"{first_name} {'' if middle_name==None else middle_name} {last_name}"
             )
-            student_email_id = f"{str(first_name).lower().replace(' ', '')}{student_mobile_number[:5] if student_mobile_number else ''}@walnut.edu"
-            try:
-                if not frappe.db.exists(doctype, {"form_code": form_code}):
-                    new_doc = frappe.get_doc(
-                        {
-                            "form_code": form_code,
-                            "enabled": 1,
-                            "first_name": first_name,
-                            "middle_name": middle_name,
-                            "last_name": last_name,
-                            "date_of_birth": date_of_birth,
-                            "blood_group": blood_group,
-                            "student_mobile_number": student_mobile_number,
-                            "gender": gender,
-                            "nationality": nationality,
-                            "address_line_1": address_line_1,
-                            "address_line_2": address_line_2,
-                            "pincode": pincode,
-                            "city": city,
-                            "state": state,
-                            "country": country,
-                            "student_email_id": student_email_id,
-                            "joining_date": joining_date,
-                            "date_of_leaving": date_of_leaving,
-                            "student_name": student_name,
-                            "doctype": doctype,
-                        }
-                    )
-                    new_doc.insert(ignore_permissions=True)
-
-                else:
-                    doc = frappe.get_doc({"doctype": doctype, "form_code": form_code})
-                    doc.update(
-                        {
-                            "enabled": 1,
-                            "first_name": first_name,
-                            "middle_name": middle_name,
-                            "last_name": last_name,
-                            "date_of_birth": date_of_birth,
-                            "blood_group": blood_group,
-                            "student_mobile_number": student_mobile_number,
-                            "gender": gender,
-                            "nationality": nationality,
-                            "address_line_1": address_line_1,
-                            "address_line_2": address_line_2,
-                            "pincode": pincode,
-                            "city": city,
-                            "state": state,
-                            "country": country,
-                            "joining_date": joining_date,
-                            "date_of_leaving": date_of_leaving,
-                            "student_name": student_name,
-                        }
-                    )
-                    doc.save(ignore_permissions=True)
-
-                print(f"Frappe document created: {new_doc.name}")
-            except Exception as ex:
-                print(f"Error Occured: {repr(ex)}")
-            frappe.db.commit()
-        return "Success"
+            student_email_id = f"{str(first_name).lower().replace(' ', '')}{random.randint(100, 999)}@walnut.edu"
+            refno = frappe_data.get("refno")
+            father_f_name = frappe_data.get("father_f_name")
+            mother_f_name = frappe_data.get("mother_f_name")
+            aadhaar_card_number = frappe_data.get("aadhaar_card_number")
+            
+            if school == "Walnut School at Fursungi":
+                docname = "FU"+refno
+            elif school == "Walnut School Shivane":
+                docname = "SH"+refno
+            elif school == "Walnut School at Wakad":
+                docname = "WA" +refno
+            if not frappe.db.exists(doctype, docname):
+                new_doc = frappe.get_doc(
+                    {
+                        "custom_reference_number": refno,
+                        "custom_imported": 1,
+                        "form_code": form_code,
+                        "enabled": 1,
+                        "first_name": first_name,
+                        "middle_name": middle_name,
+                        "last_name": last_name,
+                        "date_of_birth": date_of_birth,
+                        "blood_group": blood_group,
+                        "student_mobile_number": student_mobile_number,
+                        "gender": gender,
+                        "nationality": nationality,
+                        "address_line_1": address_line_1,
+                        "address_line_2": address_line_2,
+                        "pincode": pincode,
+                        "city": city,
+                        "state": state,
+                        "country": country,
+                        "student_email_id": student_email_id,
+                        "joining_date": joining_date,
+                        "date_of_leaving": date_of_leaving,
+                        "student_name": student_name,
+                        "school": school,
+                        "custom_fathers_name":father_f_name,
+                        "custom_mothers_first_name": mother_f_name,
+                        "custom_aadhaar_card_number": aadhaar_card_number,
+                        "doctype": doctype,
+                    }
+                )
+                new_doc.insert(ignore_permissions=True)
     except Exception as ex:
-        return f"Error Occured: {repr(ex)}"
+        frappe.logger("edu_quality").exception(ex)
     finally:
         # Close the MySQL connection
         mysql_cursor.close()
