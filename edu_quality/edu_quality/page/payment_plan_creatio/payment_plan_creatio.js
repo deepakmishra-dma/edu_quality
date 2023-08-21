@@ -16,7 +16,7 @@ frappe.pages['payment-plan-creatio'].on_page_load = function(wrapper) {
 				hooks: {
 					
 					beforeSubmit(submission, next) {
-						if (!validateInvoicePortions(submission)) {
+						if (!validatePaymentData(submission.data)) {
                             return
                         }
 						else {
@@ -24,8 +24,6 @@ frappe.pages['payment-plan-creatio'].on_page_load = function(wrapper) {
 								method: 'edu_quality.edu_quality.page.payment_plan_creatio.payment_plan_creation.create_payment_plans',
 								args: submission
 							}).then(r => {
-                                console.log("+++++++++++++1")
-                                console.log(r)
                                 if(r.message==true)
                                 {
 								frappe.set_route(`/app/payment-plan`)
@@ -52,31 +50,50 @@ frappe.pages['payment-plan-creatio'].on_page_load = function(wrapper) {
 
 }
 
-function validateInvoicePortions(submission) {
-    const classes = {}; // Object to store class-wise invoicePortion totals
+function validatePaymentData(paymentData) {
+    const classPaymentData = {};
 
-    // Iterate through the form submissions to calculate invoicePortion totals for each class
-    submission.data.paymentTerms.forEach(term => {
-        const className = term.class;
-        const invoicePortion = parseFloat(term.invoicePortion) || 0;
-
-        if (!classes[className]) {
-            classes[className] = 0;
-        }
-
-        classes[className] += invoicePortion;
-    });
-
-    // Check if any class has invoicePortion total exceeding 100
-    for (const className in classes) {
-        if (classes[className] !=100) {
-            frappe.throw(`Total Invoice Portion value for each class must be 100.for ${className}`)
-            // return false; // Validation failed
-        }
+    // Loop through the paymentTerms array
+    for (const term of paymentData.paymentTerms) {
+      const { class: paymentClass, dueDate, paymentTerm, invoicePortion } = term;
+  
+      // Check if classPaymentData has an entry for the current class
+      if (!classPaymentData[paymentClass]) {
+        classPaymentData[paymentClass] = {
+          paymentTerms: new Set(),
+          dueDates: new Set(),
+          totalInvoicePortion: 0,
+        };
+      }
+  
+      // Check if the same paymentTerm exists for the same class
+      if (classPaymentData[paymentClass].paymentTerms.has(paymentTerm)) {
+        frappe.throw(`Duplicate payment term found for class: ${paymentClass}`);
+      }
+      if (classPaymentData[paymentClass].dueDates.has(dueDate)) {
+        frappe.throw(`Duplicate Due Date found for class: ${paymentClass}`);
+      }
+      if (invoicePortion === 0) {
+        frappe.throw(`Invoice Portion cannot be 0 for ${paymentTerm}`);
+      }
+  
+      // Add the paymentTerm to the set for the current class
+      classPaymentData[paymentClass].paymentTerms.add(paymentTerm);
+  
+      classPaymentData[paymentClass].dueDates.add(dueDate);
+      // Add the invoicePortion to the total for the current class
+      classPaymentData[paymentClass].totalInvoicePortion += invoicePortion;
     }
-
-    return true; // Validation passed
-}
+  
+    // Check if the invoicePortion is equal to 100 for all classes
+    for (const className in classPaymentData) {
+      if (classPaymentData[className].totalInvoicePortion !== 100) {
+        frappe.throw(`Invoice portion total is not 100 for class: ${className}`);
+      }
+    }
+  
+    return true;
+  }
 
 
 const formJson = {
@@ -234,7 +251,7 @@ const formJson = {
                                 {
                                     "label": "Due Date",
                                     "format": "yyyy-MM-dd",
-                                    "tableView": false,
+                                    "tableView": true,
                                     "datePicker": {
                                         "disableWeekends": false,
                                         "disableWeekdays": false
@@ -309,7 +326,7 @@ const formJson = {
                                     "label": "Invoice Portion(%)",
                                     "applyMaskOn": "change",
                                     "mask": false,
-                                    "tableView": false,
+                                    "tableView": true,
                                     "delimiter": false,
                                     "requireDecimal": false,
                                     "inputFormat": "plain",

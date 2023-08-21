@@ -9,6 +9,7 @@ from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
     get_accounting_dimensions,
 )
 from frappe.utils import flt, get_url, nowdate
+from edu_quality.overrides import make_payment_request
 
 def before_save(doc,method=None):
     try:
@@ -17,22 +18,28 @@ def before_save(doc,method=None):
             doc.payment_schedule = []
             initial_payment = 0
             for component in doc.components:
-                if component.fees_category in ["Deposit", "Application Fee"]:
+                if component.fees_category in ["Deposit","deposit", "Application Fee","Application fee"]:
                     initial_payment += component.amount
             i=0
             for schedule in pp.payment_schedule:
                 payment_amount = schedule.payment_amount
-                if i==0:
+                description = "Installment - " + str(i+1)
+                if i==0 and initial_payment>0:
                     payment_amount += initial_payment
-                    i=1
+                    description += " and deposit/application fee"
+                i+=1
                 doc.append("payment_schedule",{
                     'payment_term': schedule.payment_term,
-                    'description': schedule.description,
+                    'description': description,
                     'due_date': schedule.due_date,
                     'invoice_portion': schedule.invoice_portion,
-                    'payment_amount': schedule.payment_amount,
-                    'outstanding': schedule.payment_amount,
+                    'payment_amount': payment_amount,
+                    'outstanding': payment_amount,
                 })
+        if not doc.get("school"):
+            doc.school = frappe.db.get_value("Student",doc.student,"school")
+        if not doc.get("custom_school"):
+            doc.custom_school = frappe.db.get_value("Student",doc.student,"school")
     except Exception as e:
         frappe.logger("fee").exception(e)
 
@@ -77,14 +84,17 @@ def create_fees(doc,method=None):
         frappe.throw(str(e))
 
 
-def fees_after_insert(doc,method=None):
-    for fee in doc.components:
-        if frappe.db.exists("Security Deposit",fee.fees_category):
-            log = frappe.new_doc("Security Deposit Entry")
-            log.security_deposit = fee.fees_category 
-            log.amount_paid = fee.amount 
-            log.fees = doc.name 
-            log.insert()
+def fees_after_insert(doc,method=None):    
+    if not doc.fee_schedule:
+        make_payment_request(
+            party_type="Student",
+            party=doc.student,
+            dt="Fees",
+            dn=doc.name,
+            is_deposit=True,
+            recipient_id=doc.student_email,
+            submit_doc=True
+        )
 
 class CustomPaymentRequest(PaymentRequest):
     def create_payment_entry(self,submit=True):
@@ -181,3 +191,5 @@ def get_due_date(fee):
         if frappe.db.exists("Payment Request",{'payment_term':term.payment_term,"reference_name":fee.name}):
             due_date = term.due_date
     return due_date
+
+

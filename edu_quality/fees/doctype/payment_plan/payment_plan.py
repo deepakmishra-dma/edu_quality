@@ -5,6 +5,9 @@ import frappe
 from frappe.model.document import Document
 
 class PaymentPlan(Document):
+	def autoname(self):
+		self.name = get_formatted_payment_plan(self)
+
 	def before_validate(self):
 		invoice_portion = 0
 		for schedule in self.payment_schedule:
@@ -19,4 +22,36 @@ class PaymentPlan(Document):
 				elif schedule.payment_amount:
 					schedule.invoice_portion = (schedule.payment_amount/self.total_amount) *100
 
+		existing_payment_plan = frappe.db.get_all("Payment Plan", {
+                "academic_year": self.academic_year,
+                "school": self.school,
+                "program": self.program
+            }, ["name"])
 
+		if existing_payment_plan:
+			for plan in existing_payment_plan:
+				existing_payment_plan_doc = frappe.get_doc("Payment Plan", plan.name)
+				existing_schedule = existing_payment_plan_doc.payment_schedule
+				if len(existing_schedule) == len(self.payment_schedule):
+					# Compare payment terms, due dates, and invoice portions
+					is_identical = all(
+						term.payment_term == existing_term.payment_term and
+						term.invoice_portion == existing_term.invoice_portion
+						for term, existing_term in zip(self.payment_schedule, existing_schedule)
+					)
+					if is_identical:
+						frappe.throw("Identical Payment Plan already exists")
+
+
+
+def get_formatted_payment_plan(data):
+    program = data.program
+    academic_year = data.academic_year
+
+    invoice_portions = []
+    for ps in data.payment_schedule:
+        invoice_portions.append(str(ps.invoice_portion))
+    formatted_invoice_portions = "-".join(invoice_portions)
+    data.plan_name = f"{data.plan_name}-({formatted_invoice_portions})"
+    formatted_payment_plan = f"{data.plan_name}-{program}-({academic_year})"
+    return formatted_payment_plan

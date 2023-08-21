@@ -1,0 +1,53 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"YtRyiCdfXx\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Fees Setup</span>\",\"col\":12}},{\"id\":\"kxR-4ew92X\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Payment Plan Creation Tool\",\"col\":3}},{\"id\":\"ReAz2Jm-U_\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"60envMfsXY\",\"type\":\"quick_list\",\"data\":{\"quick_list_name\":\"Fee Schedule\",\"col\":6}},{\"id\":\"iEFrRjrWMs\",\"type\":\"quick_list\",\"data\":{\"quick_list_name\":\"Fees\",\"col\":6}},{\"id\":\"mjIQ7UIO_O\",\"type\":\"quick_list\",\"data\":{\"quick_list_name\":\"Payment Plan\",\"col\":6}},{\"id\":\"rbO9eqtSjW\",\"type\":\"quick_list\",\"data\":{\"quick_list_name\":\"Fee Structure\",\"col\":6}}]",
+ "creation": "2023-09-07 18:39:09.046799",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "money-coins-1",
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "Fees Setup",
+ "links": [],
+ "modified": "2023-09-07 18:46:55.108684",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "Fees Setup",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [
+  {
+   "document_type": "Fee Schedule",
+   "label": "Fee Schedule"
+  },
+  {
+   "document_type": "Fees",
+   "label": "Fees"
+  },
+  {
+   "document_type": "Payment Plan",
+   "label": "Payment Plan"
+  },
+  {
+   "document_type": "Fee Structure",
+   "label": "Fee Structure"
+  }
+ ],
+ "roles": [],
+ "sequence_id": 25.0,
+ "shortcuts": [
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Payment Plan Creation Tool",
+   "link_to": "payment-plan-creatio",
+   "type": "Page"
+  }
+ ],
+ "title": "Fees Setup"
+}

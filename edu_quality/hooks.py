@@ -30,11 +30,13 @@ app_license = "MIT"
 
 # include js in doctype views
 doctype_js = {
-    "Student Applicant" : "public/js/application.js",
+    "Student Applicant": "public/js/application.js",
     "Reference Number Settings": "public/js/reference_number.js",
     "Fees": "public/js/fees.js",
-    "Lead":"public/js/lead.js"
-              }
+    "Lead": "public/js/lead.js",
+    "Fee Schedule": "public/js/fee_schedule.js",
+    "Student": "public/js/student.js",
+}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -239,6 +241,10 @@ fixtures = [
     ]},    
     {"doctype":"DocType Layout"},
     { "doctype": "Custom Field", "filters": [["Custom Field","module","=","Edu Quality"],]},   
-    {"dt": "Web Page"}
+    {"dt": "Web Page"},
+    {"dt":"Accounting Dimension"}
 
 ]
+
+
+after_migrate = "edu_quality.public.py.utils.migrate"
