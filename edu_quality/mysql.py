@@ -37,7 +37,7 @@ def sync_data(host, user, password, database, mysql_table, doctype, school):
 
         mysql_rows = mysql_cursor.fetchall()
         # Iterate over the rows and create Frappe records
-        for row in mysql_rows[:100]:
+        for row in mysql_rows:
             frappe_data = {}
             for i, value in enumerate(row):
                 frappe_data[column_names[i]] = value
