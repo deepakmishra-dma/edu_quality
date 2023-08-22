@@ -24,11 +24,11 @@
   "doctype": "Server Script",
   "doctype_event": "Before Save",
   "event_frequency": "All",
-  "modified": "2023-09-12 07:31:37.081975",
+  "modified": "2023-09-13 08:38:55.586650",
   "module": "Edu Quality",
   "name": "FSH Autofill",
   "reference_doctype": "Student Applicant",
-  "script": "if not doc.fee_structure:\n    if frappe.db.exists(\"Fee Structure\",{'class':doc.program,'academic_year':doc.academic_year}):\n        doc.fee_structure = frappe.db.get_value(\"Fee Structure\",{'class':doc.program,'academic_year':doc.academic_year})\n\nif doc.fee_structure:\n    fsh = frappe.db.get_value(\"Fee Schedule\",{'fee_structure':doc.fee_structure},'name')\n    doc.fee_schedule = fsh\n    doc.application_fees = frappe.db.get_value(\"Application Fees List\",{'class_name':doc.program},'application_fees')",
+  "script": "if not doc.fee_structure:\n    if frappe.db.exists(\"Fee Structure\",{'program':doc.program,'academic_year':doc.academic_year}):\n        doc.fee_structure = frappe.db.get_value(\"Fee Structure\",{'program':doc.program,'academic_year':doc.academic_year})\n\nif doc.fee_structure:\n    fsh = frappe.db.get_value(\"Fee Schedule\",{'fee_structure':doc.fee_structure},'name')\n    doc.fee_schedule = fsh\n    doc.application_fees = frappe.db.get_value(\"Application Fees List\",{'class_name':doc.program},'application_fees')",
   "script_type": "DocType Event"
  },
  {
