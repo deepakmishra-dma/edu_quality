@@ -1,16 +1,32 @@
-// Copyright (c) 2023, Hybrowlabs Technologies and contributors
-// For license information, please see license.txt
-
-async function folderExists(parent,newFolder){
+async function folderExists(parent, newFolder) {
     const formData = new FormData()
-    formData.append('file_name',newFolder)
-    formData.append('folder',parent)
+    formData.append('file_name', newFolder)
+    formData.append('folder', parent)
 
-    try{
-    
-   let res =  await fetch(`/api/resource/File/${parent}/${newFolder}`)
-   if(res.status===404){
-     await fetch("/api/method/frappe.core.api.file.create_new_folder", {
+    try {
+
+        let res = await fetch(`/api/resource/File/${parent}/${newFolder}`)
+        if (res.status === 404) {
+            await fetch("/api/method/frappe.core.api.file.create_new_folder", {
+                method: 'POST',
+                headers: (() => {
+                    const headers = new Headers()
+                    headers.append('X-Frappe-CSRF-Token', frappe.csrf_token)
+                    return headers;
+                })(),
+                body: formData
+            })
+        }
+        return (await res.json())
+
+    } catch (e) {
+        console.error(e)
+    }
+
+}
+
+function uploadToGoogleDrive(file_url,folder_name){
+    return fetch("/api/method/edu_quality.edu_quality.doctype.google_drive_settings.google_drive_settings.upload_fil", {
         method: 'POST',
         headers: (() => {
             const headers = new Headers()
@@ -19,72 +35,87 @@ async function folderExists(parent,newFolder){
         })(),
         body: formData
     })
-   }
-   return (await res.json())
-
-    }
-    catch(e){
-
-    }
-
 }
-function uploadImage(image,frm) {
+
+async function uploadImage(image, frm) {
 
     return fetch(image).then((res) => res.blob()).then((blob) => {
         const formData = new FormData();
         const file = new File([blob], "image.jpg");
-   
+
         formData.append('file', file, "image.jpg")
-        formData.append('folder',"home/"+frm.doc.name)
+        formData.append('folder', "home/" + frm.doc.name)
         nativeInterface.logToNative(formData)
         return fetch("/api/method/upload_file", {
             method: 'POST',
             headers: (() => {
                 const headers = new Headers()
                 headers.append('X-Frappe-CSRF-Token', frappe.csrf_token)
-                return headers; 
+                return headers;
             })(),
             body: formData
         })
-    }
-    ).then((res) => {
-      
-      return res.json()}).then(({message}) => message.file_url).catch((error)=>{
-            nativeInterface.logToNative(error)
-        })
+    }).then((res) => {
+
+        return res.json()
+    }).then(({
+        message
+    }) => message.file_url).catch((error) => {
+        nativeInterface.logToNative(error)
+    })
 }
 
 frappe.ui.form.on("Carnival Event", {
-    refresh:function(frm){
+    refresh: function(frm) {
 
-     setTimeout(()=>{
-      
+        setTimeout(() => {
+
             frm.add_custom_button(__("Upload Images"), async function() {
-             const images = await nativeInterface.execute('openWebViewCamera',{multiple:true, preferredCameraType:'rear'})
-                   await  folderExists('Home',frm.doc.name)
-
-                     Promise.allSettled([images.map((img)=>uploadImage('data:image/jpg;base64,' + img.base64,frm))]).then(
-                        frappe.msgprint({
-                            title: __('Successful'),
-                            message: __('Upload Completed'),
-                        
-                        })
-                     )
-                   
-                   
+                try{
+                const images = await nativeInterface.execute('openWebViewCamera', {
+                    multiple: true,
+                    preferredCameraType: 'rear'
                 })
-              
-        
+                await folderExists('Home', frm.doc.name)
+             
+                const imageUrls = await Promise.allSettled(images.map((img) => uploadImage('data:image/jpg;base64,' + img.base64, frm)))
+                imageUrls.map((img) => frappe.call({
+                    method: "edu_quality.edu_quality.doctype.google_drive_settings.google_drive_settings.upload_file",
+                    args: {
+                        file_url: img.value,
+                        folder_name: frm.doc.name,
+                        type: "POST",
+                    },callback:()=>{
 
-            
-        
+                    }
+                }))
+
+       
+
+                frappe.msgprint({
+                    title: __('Successful'),
+                    message: __('Upload Completed'),
+
+                })
+            }
+            catch(e){
+                nativeInterface.logToNative(e)
+            }
+
+
+
             })
-    },
- 
-     school: function(frm) {
 
-           frm.set_query("class", function() {
-           return {
+
+
+
+        })
+    },
+
+    school: function(frm) {
+
+        frm.set_query("class", function() {
+            return {
                 "filters": {
                     "school": frm.doc.school
                     }
@@ -92,4 +123,3 @@ frappe.ui.form.on("Carnival Event", {
             });
         }
     });
-    

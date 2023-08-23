@@ -13,7 +13,8 @@
   "school",
   "column_break_1d3lr",
   "class",
-  "item_code"
+  "item_code",
+  "google_drive_folder_id"
  ],
  "fields": [
   {
@@ -47,11 +48,17 @@
   {
    "fieldname": "column_break_1d3lr",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "google_drive_folder_id",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "google_drive_folder_id"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-09-01 12:54:46.053689",
+ "modified": "2023-09-11 15:34:52.025793",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Carnival Event",

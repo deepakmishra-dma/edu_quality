@@ -13,6 +13,9 @@ def before_save(doc,method=None):
         })
     if frappe.db.get_single_value("Fees Settings",'apply_deposits'):
         get_deposits(doc)
+    if not doc.fee_structure:
+        if frappe.db.exists("Fee Structure",{'class':doc.program,'academic_year':doc.academic_year}):
+            doc.fee_structure = frappe.get_value("Fee Structure",{'class':doc.program,'academic_year':doc.academic_year},'name')
     if doc.fee_structure:
         fee_structure = frappe.get_doc("Fee Structure", doc.fee_structure)
         if frappe.db.get_single_value("Fees Settings",'apply_fees'):
@@ -22,8 +25,6 @@ def before_save(doc,method=None):
                     'amount':component.amount,
                     'description': component.description
                     })
-    else:
-        frappe.throw("Fee Structure is Mandatory")
     calculate_total(doc)
 
 def calculate_total(doc):

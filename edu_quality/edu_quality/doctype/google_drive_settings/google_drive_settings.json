@@ -1,0 +1,55 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-09-11 02:20:38.976311",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "refresh_token",
+  "auth_code",
+  "authorize"
+ ],
+ "fields": [
+  {
+   "fieldname": "refresh_token",
+   "fieldtype": "Password",
+   "label": "refresh_token"
+  },
+  {
+   "fieldname": "authorize",
+   "fieldtype": "Button",
+   "label": "Authorize"
+  },
+  {
+   "fieldname": "auth_code",
+   "fieldtype": "Password",
+   "label": "auth_code"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2023-09-11 10:00:51.935650",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "Google Drive Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
