@@ -6,7 +6,7 @@ frappe.ui.form.on('Security Deposit', {
 		frm.set_query("program", function() {
 		return {
 			 "filters": {
-				 "custom_school": frm.doc.school
+				 "school": frm.doc.school
 				 }
 			 };
 		 });
