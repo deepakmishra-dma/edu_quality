@@ -11,7 +11,6 @@
   "apply_deposits",
   "apply_fees",
   "column_break_c6e9",
-  "before_days",
   "payment_methods_section",
   "payment_method",
   "surcharge_section",
@@ -72,11 +71,6 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "before_days",
-   "fieldtype": "Int",
-   "label": "Create Payment Request Before Days"
-  },
-   {
    "fieldname": "application_fees",
    "fieldtype": "Table",
    "label": "Application Fees",
@@ -86,7 +80,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-08-31 18:04:09.177391",
+ "modified": "2023-09-13 08:14:08.168108",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Fees Settings",

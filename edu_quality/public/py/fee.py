@@ -10,36 +10,47 @@ from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
 )
 from frappe.utils import flt, get_url, nowdate
 from edu_quality.overrides import make_payment_request
+from datetime import datetime
+
+def before_insert(doc,method=None):
+    pe = frappe.get_doc("Program Enrollment", doc.program_enrollment)
+    if pe.custom_payment_plan is not None:
+        doc.payment_plan = pe.custom_payment_plan
+    else:
+        doc.payment_plan = frappe.db.get_value("Fee Schedule",doc.fee_schedule,'payment_plan')
+    if doc.payment_plan:
+                pp = frappe.get_doc("Payment Plan",doc.payment_plan)
+                doc.payment_schedule = []
+                initial_payment = 0
+                for component in doc.components:
+                    if component.fees_category in ["Deposit","deposit", "Application Fee","Application fee"]:
+                        initial_payment = initial_payment +  component.amount
+                i=0
+                for schedule in pp.payment_schedule:
+                    payment_amount = schedule.payment_amount
+                    description = "Installment - " + str(i+1)
+                    if i==0 and initial_payment>0:
+                        before_days = frappe.db.get_value("Fee Schedule",doc.fee_schedule,"create_payment_request_before")
+                        today = datetime.date(datetime.strptime(today, "%Y-%m-%d"))
+                        if (schedule.due_date - today).days <= before_days:
+                            payment_amount = payment_amount + initial_payment
+                            description = description + " and deposit/application fee"
+                        else:
+                            only_deposit(doc)
+                    i= i+1
+                    doc.append("payment_schedule",{
+                        'payment_term': schedule.payment_term,
+                        'description': description,
+                        'due_date': schedule.due_date,
+                        'invoice_portion': schedule.invoice_portion,
+                        'payment_amount': payment_amount,
+                        'outstanding': payment_amount,
+                    })
 
 def before_save(doc,method=None):
     try:
-        if doc.payment_plan:
-            pp = frappe.get_doc("Payment Plan",doc.payment_plan)
-            doc.payment_schedule = []
-            initial_payment = 0
-            for component in doc.components:
-                if component.fees_category in ["Deposit","deposit", "Application Fee","Application fee"]:
-                    initial_payment += component.amount
-            i=0
-            for schedule in pp.payment_schedule:
-                payment_amount = schedule.payment_amount
-                description = "Installment - " + str(i+1)
-                if i==0 and initial_payment>0:
-                    payment_amount += initial_payment
-                    description += " and deposit/application fee"
-                i+=1
-                doc.append("payment_schedule",{
-                    'payment_term': schedule.payment_term,
-                    'description': description,
-                    'due_date': schedule.due_date,
-                    'invoice_portion': schedule.invoice_portion,
-                    'payment_amount': payment_amount,
-                    'outstanding': payment_amount,
-                })
         if not doc.get("school"):
             doc.school = frappe.db.get_value("Student",doc.student,"school")
-        if not doc.get("custom_school"):
-            doc.custom_school = frappe.db.get_value("Student",doc.student,"school")
     except Exception as e:
         frappe.logger("fee").exception(e)
 
@@ -84,8 +95,7 @@ def create_fees(doc,method=None):
         frappe.throw(str(e))
 
 
-def fees_after_insert(doc,method=None):    
-    if not doc.fee_schedule:
+def only_deposit(doc):    
         make_payment_request(
             party_type="Student",
             party=doc.student,

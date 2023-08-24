@@ -26,18 +26,19 @@ def time_based():
 
 
 def create_payment_request_before_due_date():
-    before_days = frappe.db.get_single_value("Fees Settings", "before_days")
     today = datetime.date(datetime.strptime(today, "%Y-%m-%d"))
-    fee_schedule = frappe.get_all("Fee Schedule")
-    fee_list = frappe.get_all("Fees")
-    for fee in fee_list:
-        for schedule in fee.payment_schedule:
-            if (schedule.due_date - today).days == before_days:
-                frappe.enqueue(
-                    "edu_quality.public.py.student.create_payment_request",
-                    fees=fee,
-                    term = schedule.payment_term,
-                    is_async=True,
-                    queue="long",
-                    timeout=1800,
-                )
+    fee_schedules = frappe.get_all("Fee Schedule")
+    for fee_schedule in fee_schedules:
+        before_days = frappe.get_value("Fee Schedule",fee_schedule.name,"create_payment_request_before")
+        fee_list = frappe.get_all("Fees",{'fee_schedules':fee_schedule.name})
+        for fee in fee_list:
+            for schedule in fee.payment_schedule:
+                if (schedule.due_date - today).days == before_days:
+                    frappe.enqueue(
+                        "edu_quality.public.py.student.create_payment_request",
+                        fees=fee,
+                        term = schedule.payment_term,
+                        is_async=True,
+                        queue="long",
+                        timeout=1800,
+                    )
