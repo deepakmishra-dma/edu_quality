@@ -117,9 +117,9 @@ frappe.ui.form.on("Carnival Event", {
         frm.set_query("class", function() {
             return {
                 "filters": {
-                    "custom_school": frm.doc.school
-                }
-            };
-        });
-    }
-});
+                    "school": frm.doc.school
+                    }
+                };
+            });
+        }
+    });

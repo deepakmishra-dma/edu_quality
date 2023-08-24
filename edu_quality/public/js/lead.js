@@ -56,7 +56,7 @@ frappe.ui.form.on("Lead", {
            frm.set_query("class", function() {
            return {
                 "filters": {
-                    "custom_school": frm.doc.center
+                    "school": frm.doc.center
                     }
                 };
             });
