@@ -9,6 +9,7 @@
  "engine": "InnoDB",
  "field_order": [
   "school",
+  "sccode",
   "description",
   "location",
   "institution"
@@ -37,6 +38,12 @@
    "fieldtype": "Link",
    "label": "Institution",
    "options": "Company"
+  },
+  {
+   "fieldname": "sccode",
+   "fieldtype": "Data",
+   "label": "School  Code",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,

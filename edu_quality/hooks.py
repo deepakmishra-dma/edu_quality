@@ -37,7 +37,11 @@ doctype_js = {
     "Fee Schedule": "public/js/fee_schedule.js",
     "Student": "public/js/student.js",
 }
-# doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
+doctype_list_js = {
+    "Student Applicant" : "public/js/list/student_applicant_list.js",
+    "Lead": "public/js/list/lead_list.js",
+    "Student": "public/js/list/student_list.js",
+}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
