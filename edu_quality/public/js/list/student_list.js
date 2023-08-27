@@ -10,9 +10,9 @@ frappe.listview_settings['Student'] = {
         get_description(doc) {
             return __('Copy {0}', [`${doc.student_mobile_number}`])
         },
-        action(doc) {
+        action(doc) { 
             var tempTextarea = document.createElement('textarea');
-            tempTextarea.value = doc.fathers_phone;
+            tempTextarea.value = doc.student_mobile_number;
             document.body.appendChild(tempTextarea);
             tempTextarea.select();
             document.execCommand('copy');

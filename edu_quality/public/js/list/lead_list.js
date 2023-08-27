@@ -19,13 +19,5 @@ frappe.listview_settings['Lead'] = {
             document.body.removeChild(tempTextarea);
             frappe.msgprint(__("Phone numbers copied to clipboard: ") + doc.fathers_phone);
         }
-    },
-    formatters: {
-        title(val) {
-            return val.bold();
-        },
-        public(val) {
-            return val ? 'Yes' : 'No';
-        }
     }
 }
