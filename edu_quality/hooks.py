@@ -130,6 +130,12 @@ doc_events = {
     },
     "Student":{
         'autoname': "edu_quality.public.py.student.autoname"
+    },
+    "Custom Field":{
+        "after_insert" : "edu_quality.public.py.fixtures.custom_fields"
+    },
+    "Custom DocPerm":{
+        "after_insert" : "edu_quality.public.py.fixtures.custom_doc_perm"
     }
 }
 
@@ -246,7 +252,21 @@ fixtures = [
     {"doctype":"DocType Layout"},
     { "doctype": "Custom Field", "filters": [["Custom Field","module","=","Edu Quality"],]},   
     {"dt": "Web Page"},
-    {"dt":"Accounting Dimension"}
+    {"dt":"Accounting Dimension"},
+    {
+        "dt": "Role",
+        "filters": [
+            [
+                "name",
+                "in",
+                []
+            ]
+        ]
+    },
+    {
+        "dt": "Custom DocPerm",
+        "filters": [["module","=","Edu Quality"]]
+    }
 
 ]
 
