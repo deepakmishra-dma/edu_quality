@@ -1,13 +1,12 @@
 {
  "actions": [],
- "autoname": "format:{deposit_name}-{academic_year}-{school}",
+ "autoname": "format: DEPOSIT-{academic_year}-{school}",
  "creation": "2023-06-27 14:31:37.961461",
  "default_view": "List",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "deposit_name",
   "description",
   "academic_year",
   "school",
@@ -31,13 +30,6 @@
    "label": "Institution",
    "options": "Company",
    "reqd": 1
-  },
-  {
-   "fieldname": "deposit_name",
-   "fieldtype": "Data",
-   "label": "Deposit Name",
-   "reqd": 1,
-   "unique": 1
   },
   {
    "fieldname": "description",
@@ -65,7 +57,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-09-12 07:05:35.246462",
+ "modified": "2023-09-14 09:29:24.325632",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Security Deposit",

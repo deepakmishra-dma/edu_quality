@@ -12,7 +12,8 @@
   "sccode",
   "description",
   "location",
-  "institution"
+  "institution",
+  "prefix"
  ],
  "fields": [
   {
@@ -40,15 +41,14 @@
    "options": "Company"
   },
   {
-   "fieldname": "sccode",
+   "fieldname": "prefix",
    "fieldtype": "Data",
-   "label": "School  Code",
-   "reqd": 1
+   "label": "Prefix"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-09-13 12:59:45.769345",
+ "modified": "2023-09-14 09:34:53.151185",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "School",
