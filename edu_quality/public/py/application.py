@@ -64,6 +64,7 @@ def enroll_student(source_name):
     )
     student_applicant = frappe.get_doc("Student Applicant", source_name)
 
+    student.school = student_applicant.school
     student.custom_first_name_of_child = student_applicant.first_name_of_child
     student.custom_fathers_name = student_applicant.fathers_name
     student.custom_lms_refno = student_applicant.lms_refno
