@@ -243,7 +243,7 @@ def get_deposits(components):
     deposits = [component for component in components if component.fees_category in ["deposit", "Application fee"]]
     return deposits
 
-def get_categories(fees,payment_term,due_date=nowdate(),description=None,invoice_portion=100):
+def get_categories(fees,payment_term,due_date=nowdate(),description='description',invoice_portion=100):
     categories = []
     for schedule in fees.payment_schedule:
         if schedule.payment_term == payment_term:
