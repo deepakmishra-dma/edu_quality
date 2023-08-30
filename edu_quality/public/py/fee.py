@@ -35,6 +35,14 @@ def before_insert(doc,method=None):
                         if (schedule.due_date - today).days <= before_days:
                             payment_amount = payment_amount + initial_payment
                             description = description + " and deposit/application fee"
+                            frappe.enqueue(
+                                    "edu_quality.public.py.student.create_payment_request",
+                                    fees=doc,
+                                    term = schedule.payment_term,
+                                    is_async=True,
+                                    queue="long",
+                                    timeout=1800,
+                                )
                         else:
                             only_deposit(doc)
                     i= i+1
