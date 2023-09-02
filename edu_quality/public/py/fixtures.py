@@ -6,5 +6,5 @@ def custom_fields(doc,method=None):
     doc.save()
 
 def custom_doc_perm(doc,method=None):
-    doc.custom_module = "Edu Quality"
+    doc.module = "Edu Quality"
     doc.save()
