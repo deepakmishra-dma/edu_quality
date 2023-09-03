@@ -21,13 +21,13 @@ def autoname(doc,method=None):
         prefix = frappe.get_value("School",applicant.school,'prefix')
         series = frappe.get_value("Program",applicant.program,'reference_series')
         prefix += series
-        if frappe.db.count("Student",[["name","Like","%prefix%"]])>=99:
+        if frappe.db.count("Student",[["name","Like",prefix]])>=99:
             prefix = prefix[:-2] + chr(ord(prefix[-2]) + 1)
             series = series[0] + chr(ord(series[1])+1)
             frappe.db.set_value("Program",applicant.program,'reference_series',series)
         if not prefix:
             prefix = "EDU-STU-2023-"
-        count = frappe.db.count("Student",[["name","Like","%prefix%"]]) + 1
+        count = frappe.db.count("Student",[["name","Like",prefix]]) + 1
         if count>9:
             prefix += str(count)
         else:
