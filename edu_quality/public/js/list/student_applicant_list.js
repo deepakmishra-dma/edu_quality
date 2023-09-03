@@ -22,7 +22,7 @@ frappe.listview_settings['Student Applicant'] = {
     },
     formatters: {
         program(val) {
-            return val.split("-").slice(-2)[0];
+            return val.split("-")[0];
         }
     }
 }
