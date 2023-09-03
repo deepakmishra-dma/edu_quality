@@ -26,5 +26,5 @@ def migrate():
     set_property("Fees", "fee_schedule", "reqd", "Check", 0)
     set_property("Fee Schedule", "due_date", "reqd", "Check", 0)
     set_property("Fee Schedule", "due_date", "hidden", "Check", 1)
-    set_property("Class", "program_name", "unique", "Check", 0)
-    set_property("Division", "student_group_name", "unique", "Check", 0)
+    set_property("Program", "program_name", "unique", "Check", 0)
+    set_property("Student Group", "student_group_name", "unique", "Check", 0)
