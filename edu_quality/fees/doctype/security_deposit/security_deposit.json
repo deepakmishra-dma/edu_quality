@@ -1,6 +1,6 @@
 {
  "actions": [],
- "autoname": "format: DEPOSIT-{academic_year}-{school}",
+ "autoname": "format: DEPOSIT-{academic_year}-{program}",
  "creation": "2023-06-27 14:31:37.961461",
  "default_view": "List",
  "doctype": "DocType",
@@ -12,7 +12,8 @@
   "school",
   "program",
   "institution",
-  "amount"
+  "amount",
+  "amended_from"
  ],
  "fields": [
   {
@@ -44,6 +45,8 @@
   {
    "fieldname": "program",
    "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Program",
    "options": "Program",
    "reqd": 1
@@ -53,11 +56,21 @@
    "fieldtype": "Link",
    "label": "School",
    "options": "School"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Security Deposit",
+   "print_hide": 1,
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
+ "is_submittable": 1,
  "links": [],
- "modified": "2023-09-14 09:29:24.325632",
+ "modified": "2023-09-16 21:14:00.887014",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Security Deposit",

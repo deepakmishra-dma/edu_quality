@@ -21,14 +21,18 @@ def autoname(doc,method=None):
         prefix = frappe.get_value("School",applicant.school,'prefix')
         series = frappe.get_value("Program",applicant.program,'reference_series')
         prefix += series
-        if frappe.db.count("Student",[["name","Like","%prefix%"]])>=99:
+        if frappe.db.count("Student",[["name","Like",prefix + "%"]])>=99:
             prefix = prefix[:-2] + chr(ord(prefix[-2]) + 1)
             series = series[0] + chr(ord(series[1])+1)
             frappe.db.set_value("Program",applicant.program,'reference_series',series)
         if not prefix:
             prefix = "EDU-STU-2023-"
-        prefix += ".##"
-        doc.name = make_autoname(prefix)
+        count = frappe.db.count("Student",[["name","Like",prefix + "%"]]) + 1
+        if count>9:
+            prefix += str(count)
+        else:
+            prefix += "0" + str(count)
+        doc.name = prefix
 
 def update_student_group(p_e_doc,fee_structure=None):
     try:
