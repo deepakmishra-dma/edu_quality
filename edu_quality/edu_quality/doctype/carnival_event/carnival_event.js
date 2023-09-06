@@ -26,7 +26,7 @@ async function folderExists(parent, newFolder) {
 }
 
 function uploadToGoogleDrive(file_url,folder_name){
-    return fetch("/api/method/edu_quality.edu_quality.doctype.google_drive_settings.google_drive_settings.upload_fil", {
+    return fetch("/api/method/edu_quality.edu_quality.doctype.google_drive_settings.google_drive_settings.upload_file", {
         method: 'POST',
         headers: (() => {
             const headers = new Headers()
@@ -44,7 +44,9 @@ async function uploadImage(image, frm) {
         const file = new File([blob], "image.jpg");
 
         formData.append('file', file, "image.jpg")
-        formData.append('folder', "home/" + frm.doc.name)
+        formData.append('folder', "home/" + frm.doc.name)        
+        formData.append('file_name',`${frm.doc.name}-${Date.now()}`)
+        
         nativeInterface.logToNative(formData)
         return fetch("/api/method/upload_file", {
             method: 'POST',

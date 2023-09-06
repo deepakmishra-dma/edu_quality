@@ -31,7 +31,7 @@ def before_save(doc, method=None):
         # if payment request is not paid
         if frappe.db.exists("Payment Request", not_paid_filter):
             pr = frappe.get_doc("Payment Request", not_paid_filter)
-            if not pr.docstatus.is_cancelled():
+            if not pr.docstatus.is_cancelled() and not pr.docstatus.is_draft():
                 amount = pr.grand_total
                 pr.cancel()
 
@@ -129,7 +129,7 @@ def get_previous_term(fees, installment):
             index = installments.index(installment)
             if index > 0:
                 index = index - 1
-    return installments[index]
+        return installments[index]
 
 
 def is_discounted(fees, term):

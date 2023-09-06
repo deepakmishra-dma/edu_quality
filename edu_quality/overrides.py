@@ -93,7 +93,7 @@ class CustomPaymentRequest(PaymentRequest):
         paid_amount = fees.outstanding_amount - self.grand_total
         frappe.db.set_value(fees.doctype, fees.name, "outstanding_amount", paid_amount)
         self.db_set("status", "Paid")
-        create_fee_receipt(fees,self.payment_term)
+        create_fee_receipt(fees,self.payment_term, self.transaction_id)
 
     def get_payment_url(self, **kwargs):
         if self.reference_doctype != "Fees":
@@ -226,15 +226,15 @@ def get_amount(ref_doc, payment_account=None, is_deposit=False):
     else:
         frappe.throw(_("Payment Entry is already created"))
 
-
-def create_fee_receipt(fees,payment_term=None):
+ 
+def create_fee_receipt(fees,payment_term=None, transaction_id=None):
     try:
         if not payment_term:
             categories = get_deposits(fees.components)
             due_date = nowdate()
         else:
-            categories,due_date = get_categories(fees.components,payment_term)
-        company_wise_split(fees,categories,due_date)
+            categories,due_date = get_categories(fees, payment_term)
+        company_wise_split(fees, categories, due_date, payment_term, transaction_id)
     except Exception as e:
         frappe.logger('fee_receipt').exception(e)
         return e
@@ -257,7 +257,7 @@ def get_categories(fees,payment_term,due_date=nowdate(),description='description
             categories.append(component)
     return categories,due_date
 
-def company_wise_split(fees, categories,due_date):
+def company_wise_split(fees, categories, due_date, payment_term=None, transaction_id=None):
     fee_categories = {}
     amounts = {}
     fee_amounts = {}
@@ -280,6 +280,9 @@ def company_wise_split(fees, categories,due_date):
             fee_receipt.company = company
             fee_receipt.paid_on = nowdate()
             fee_receipt.amount = amounts[company]
+            fee_receipt.transaction_id = transaction_id
+            fee_receipt.payment_term = payment_term
+            fee_receipt.school = fees.custom_school
 
             for fee_category in fee_categories:
                 fee_receipt.append("fee_category", {
