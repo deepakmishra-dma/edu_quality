@@ -10,6 +10,7 @@
  "field_order": [
   "fees",
   "fee_category",
+  "section_break_53uk",
   "school",
   "company",
   "paid_on",
@@ -17,11 +18,14 @@
   "amount",
   "payment_grade",
   "student_name",
+  "column_break_elkh",
   "student_id",
   "student_email",
   "student_mobile_number",
   "student_address",
-  "student_user_id"
+  "student_user_id",
+  "transaction_id",
+  "payment_term"
  ],
  "fields": [
   {
@@ -114,11 +118,30 @@
    "fieldtype": "Link",
    "label": "School",
    "options": "School"
+  },
+  {
+   "fieldname": "section_break_53uk",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_elkh",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "payment_term",
+   "fieldtype": "Link",
+   "label": "Payment Term",
+   "options": "Payment Term"
+  },
+  {
+   "fieldname": "transaction_id",
+   "fieldtype": "Data",
+   "label": "Transaction ID"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-08-11 00:38:59.686366",
+ "modified": "2023-09-15 16:40:38.883102",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Fee Receipt",
