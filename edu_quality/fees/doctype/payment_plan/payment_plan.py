@@ -30,13 +30,19 @@ class PaymentPlan(Document):
 				elif schedule.payment_amount:
 					schedule.invoice_portion = (schedule.payment_amount/self.total_amount) *100
 
-		existing_payment_plan = frappe.db.get_all("Payment Plan", {
+		# due date cannot be less than previous due date
+		for i in range(1, len(self.payment_schedule)):
+			if self.payment_schedule[i].due_date < self.payment_schedule[i-1].due_date:
+				frappe.throw("Due Date cannot be less than previous Due Date")
+
+		old_doc = self.get_doc_before_save()
+		# if existing_payment_plan:
+		if not old_doc:
+			existing_payment_plan = frappe.db.get_all("Payment Plan", {
                 "academic_year": self.academic_year,
                 "school": self.school,
                 "program": self.program
             }, ["name"])
-
-		if existing_payment_plan:
 			for plan in existing_payment_plan:
 				existing_payment_plan_doc = frappe.get_doc("Payment Plan", plan.name)
 				existing_schedule = existing_payment_plan_doc.payment_schedule
