@@ -76,6 +76,12 @@ function validatePaymentData(paymentData) {
       if (invoicePortion === 0) {
         frappe.throw(`Invoice Portion cannot be 0 for ${paymentTerm}`);
       }
+        if (classPaymentData[paymentClass].dueDates.size > 0) {
+            let previous_due_date = Array.from(classPaymentData[paymentClass].dueDates).pop()
+            if (dueDate < previous_due_date) {
+                frappe.throw(`Due Date cannot be less than previous due date for ${paymentTerm}`);
+            }
+        }
   
       // Add the paymentTerm to the set for the current class
       classPaymentData[paymentClass].paymentTerms.add(paymentTerm);

@@ -9,6 +9,14 @@ class PaymentPlan(Document):
 		self.name = get_formatted_payment_plan(self)
 
 	def before_validate(self):
+		terms = []
+		for schedule in self.payment_schedule:
+			if schedule.payment_term:
+				if schedule.payment_term in terms:
+					frappe.throw("Payment Term cannot be repeated")
+				else:
+					terms.append(schedule.payment_term)
+
 		invoice_portion = 0
 		for schedule in self.payment_schedule:
 			if schedule.invoice_portion:
