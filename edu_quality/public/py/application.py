@@ -1,6 +1,14 @@
 import frappe
 from frappe.model.mapper import get_mapped_doc
+from frappe.model.naming import make_autoname
 
+
+def autoname(doc,method=None):
+    if doc.school_code and doc.class_name:
+        school_code = doc.school_code
+        class_name = doc.class_name
+        naming_format = f"{school_code}-{class_name}-LD-"
+        doc.name = make_autoname(naming_format + ".#####")
 
 def before_save(doc,method=None):
     doc.fee_components = []
