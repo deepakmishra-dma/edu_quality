@@ -30,8 +30,9 @@ class CustomPaymentRequest(PaymentRequest):
         paid_to_dict = {}
         companies = {}
         for component in fees.components:
-            fee_name = component.fees_category
-            doc = frappe.get_doc("Fee Category", fee_name)
+            if not self.payment_term and component.fees_category not in ["Deposit","deposit", "Application Fee","Application fee"]:
+                continue
+            doc = frappe.get_doc("Fee Category", component.fees_category)
             paid_to = doc.custom_account
             company = doc.custom_company
             paid_from = frappe.get_value(
@@ -39,11 +40,10 @@ class CustomPaymentRequest(PaymentRequest):
             )
             amount = component.custom_amount_after_discount
             amount = amount if amount else component.amount
-            if fee_name not in ["Deposit","deposit", "Application Fee","Application fee"]:
-                if self.payment_term:
-                    for schedule in fees.payment_schedule:
-                        if schedule.payment_term == self.payment_term:
-                            amount = flt((schedule.invoice_portion/100) * amount,2)
+            if self.payment_term:
+                for schedule in fees.payment_schedule:
+                    if schedule.payment_term == self.payment_term:
+                        amount = flt((schedule.invoice_portion/100) * amount,2)
 
             if paid_from_dict.get(paid_from) is not None:
                 paid_from_dict[paid_from] += amount
