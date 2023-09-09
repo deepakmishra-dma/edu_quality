@@ -13,8 +13,8 @@ def autoname(doc,method=None):
 def before_save(doc,method=None):
     doc.fee_components = []
     doc.application_fees = 0
-    if frappe.db.exists("Application Fees List",{'class':doc.program}):
-        doc.application_fees = frappe.get_value("Application Fees List",{'class':doc.program},'application_fees')
+    if frappe.db.exists("Application Fees List",{'class_name':doc.program}):
+        doc.application_fees = frappe.get_value("Application Fees List",{'class_name':doc.program},'application_fees')
         doc.append('fee_components',{
             'fees_category': "Application fee",
             'amount': doc.application_fees
