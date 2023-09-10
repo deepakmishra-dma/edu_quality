@@ -26,7 +26,7 @@ def time_based():
 
 
 def create_payment_request_before_due_date():
-    today = datetime.today().date
+    today = datetime.today().date()
     fee_schedules = frappe.get_all("Fee Schedule")
     for fee_schedule in fee_schedules:
         before_days = frappe.get_value("Fee Schedule",fee_schedule.name,"create_payment_request_before")
