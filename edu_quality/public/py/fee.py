@@ -31,7 +31,7 @@ def before_insert(doc,method=None):
                     description = "Installment - " + str(i+1)
                     if i==0 and initial_payment>0:
                         before_days = frappe.db.get_value("Fee Schedule",doc.fee_schedule,"create_payment_request_before")
-                        today = datetime.date(datetime.strptime(datetime.today(), "%Y-%m-%d"))
+                        today = datetime.today()
                         if (schedule.due_date - today).days <= before_days:
                             payment_amount = payment_amount + initial_payment
                             description = description + " and deposit/application fee"
