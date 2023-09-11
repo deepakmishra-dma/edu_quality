@@ -32,7 +32,10 @@ def after_insert(doc,method=None):
                     if i==0 and initial_payment>0:
                         before_days = frappe.db.get_value("Fee Schedule",doc.fee_schedule,"create_payment_request_before")
                         today = datetime.today().date()
-                        if (schedule.due_date - today).days <= before_days:
+                        difference = schedule.due_date - today
+                        frappe.logger('pr').exception(difference)
+                        frappe.logger('pr').exception(before_days)
+                        if difference.days <= before_days:
                             payment_amount = payment_amount + initial_payment
                             description = description + " and deposit/application fee"
                             frappe.enqueue(
