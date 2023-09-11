@@ -1,7 +1,7 @@
 {
  "charts": [],
- "content": "[{\"id\":\"FbQZbCRC9B\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Student Management</span>\",\"col\":12}},{\"id\":\"WUl5YYVHvm\",\"type\":\"quick_list\",\"data\":{\"quick_list_name\":\"Student\",\"col\":4}}]",
- "creation": "2023-09-06 22:33:37.293599",
+ "content": "[{\"id\":\"pazqDlm3rM\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Student Management</span>\",\"col\":12}},{\"id\":\"sYw7ztkGj8\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Student\",\"col\":3}}]",
+ "creation": "2023-09-20 18:06:07.431964",
  "custom_blocks": [],
  "docstatus": 0,
  "doctype": "Workspace",
@@ -12,7 +12,7 @@
  "is_hidden": 0,
  "label": "Student Management",
  "links": [],
- "modified": "2023-09-06 22:37:31.182606",
+ "modified": "2023-09-20 18:06:45.890399",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Student Management",
@@ -20,14 +20,17 @@
  "owner": "Administrator",
  "parent_page": "",
  "public": 1,
- "quick_lists": [
+ "quick_lists": [],
+ "roles": [],
+ "sequence_id": 27.0,
+ "shortcuts": [
   {
-   "document_type": "Student",
-   "label": "Student"
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Student",
+   "link_to": "Student",
+   "type": "DocType"
   }
  ],
- "roles": [],
- "sequence_id": 21.0,
- "shortcuts": [],
  "title": "Student Management"
 }
