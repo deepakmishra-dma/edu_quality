@@ -12,7 +12,7 @@ from frappe.utils import flt, get_url, nowdate
 from edu_quality.overrides import make_payment_request
 from datetime import datetime
 
-def before_insert(doc,method=None):
+def after_insert(doc,method=None):
     pe = frappe.get_doc("Program Enrollment", doc.program_enrollment)
     if pe.custom_payment_plan is not None:
         doc.payment_plan = pe.custom_payment_plan
