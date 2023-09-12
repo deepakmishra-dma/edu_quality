@@ -326,8 +326,9 @@ def make_payment_request(**args):
 
     ref_doc = frappe.get_doc(args.dt, args.dn)
     gateway_account = get_gateway_details(args) or frappe._dict()
-
+    frappe.logger('pr').exception(args.is_deposit)
     grand_total = get_amount(ref_doc, gateway_account.get("payment_account"), args.is_deposit)
+    frappe.logger('pr').exception(grand_total)
     if args.loyalty_points and args.dt == "Sales Order":
         from erpnext.accounts.doctype.loyalty_program.loyalty_program import validate_loyalty_points
 
@@ -355,7 +356,7 @@ def make_payment_request(**args):
 
     if existing_payment_request_amount:
         grand_total -= existing_payment_request_amount
-
+    frappe.logger('pr').exception(grand_total)
     if draft_payment_request:
         frappe.db.set_value(
             "Payment Request", draft_payment_request, "grand_total", grand_total, update_modified=False
