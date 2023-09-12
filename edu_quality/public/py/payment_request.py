@@ -8,14 +8,8 @@ def before_save(doc, method=None):
     #only deposit and application fee
     if not frappe.db.exists("Payment Request", {"reference_name": doc.reference_name}):
         fees = frappe.get_doc("Fees", doc.reference_name)
-        before_days = frappe.db.get_value("Fee Schedule",fees.fee_schedule,"create_payment_request_before")
-        today = datetime.today().date()
-        difference = schedule.due_date - today
-        if difference.days > before_days:
-            for fee in fees.components:
-                if fee.fees_category in ["Deposit","deposit", "Application Fee","Application fee"]:
-                    amount = amount + fee.amount
-        doc.grand_total = amount
+        if not doc.payment_term and doc.grand_total>0:
+            pass
 
     # if payment request has payment_term and reference_doctype is Fees
     if doc.payment_term and doc.reference_doctype == "Fees":
