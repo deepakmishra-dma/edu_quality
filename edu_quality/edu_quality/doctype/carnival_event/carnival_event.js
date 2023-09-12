@@ -82,7 +82,7 @@ frappe.ui.form.on("Carnival Event", {
              
                 const imageUrls = await Promise.allSettled(images.map((img) => uploadImage('data:image/jpg;base64,' + img.base64, frm)))
                 imageUrls.map((img) => frappe.call({
-                    method: "edu_quality.edu_quality.doctype.google_drive_settings.google_drive_settings.upload_file",
+                    method: "edu_quality.edu_quality.api.google_drive_upload.upload_file",
                     args: {
                         file_url: img.value,
                         folder_name: frm.doc.name,
