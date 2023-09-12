@@ -1,4 +1,5 @@
 import frappe
+from datetime import datetime
 
 
 def before_save(doc, method=None):
@@ -7,7 +8,10 @@ def before_save(doc, method=None):
     #only deposit and application fee
     if not frappe.db.exists("Payment Request", {"reference_name": doc.reference_name}):
         fees = frappe.get_doc("Fees", doc.reference_name)
-        if not fees.fee_schedule:
+        before_days = frappe.db.get_value("Fee Schedule",fees.fee_schedule,"create_payment_request_before")
+        today = datetime.today().date()
+        difference = schedule.due_date - today
+        if difference.days > before_days:
             for fee in fees.components:
                 if fee.fees_category in ["Deposit","deposit", "Application Fee","Application fee"]:
                     amount = amount + fee.amount
