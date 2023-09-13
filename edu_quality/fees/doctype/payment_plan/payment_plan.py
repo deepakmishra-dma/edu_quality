@@ -35,26 +35,27 @@ class PaymentPlan(Document):
 			if self.payment_schedule[i].due_date < self.payment_schedule[i-1].due_date:
 				frappe.throw("Due Date cannot be less than previous Due Date")
 
-		old_doc = self.get_doc_before_save()
-		# if existing_payment_plan:
-		if not old_doc:
-			existing_payment_plan = frappe.db.get_all("Payment Plan", {
-                "academic_year": self.academic_year,
-                "school": self.school,
-                "program": self.program
-            }, ["name"])
+		existing_payment_plan = frappe.db.get_all("Payment Plan", {
+			"academic_year": self.academic_year,
+			"school": self.school,
+			"program": self.program,
+		}, ["name"])
+		if existing_payment_plan:
 			for plan in existing_payment_plan:
-				existing_payment_plan_doc = frappe.get_doc("Payment Plan", plan.name)
-				existing_schedule = existing_payment_plan_doc.payment_schedule
-				if len(existing_schedule) == len(self.payment_schedule):
-					# Compare payment terms, due dates, and invoice portions
-					is_identical = all(
-						term.payment_term == existing_term.payment_term and
-						term.invoice_portion == existing_term.invoice_portion
-						for term, existing_term in zip(self.payment_schedule, existing_schedule)
-					)
-					if is_identical:
-						frappe.throw("Identical Payment Plan already exists")
+				if self.get_doc_before_save() and plan.name == self.name:
+					continue
+				else:
+					existing_payment_plan_doc = frappe.get_doc("Payment Plan", plan.name)
+					existing_schedule = existing_payment_plan_doc.payment_schedule
+					if len(existing_schedule) == len(self.payment_schedule):
+						# Compare payment terms, due dates, and invoice portions
+						is_identical = all(
+							term.payment_term == existing_term.payment_term and
+							term.invoice_portion == existing_term.invoice_portion
+							for term, existing_term in zip(self.payment_schedule, existing_schedule)
+						)
+						if is_identical:
+							frappe.throw("Identical Payment Plan already exists")
 
 
 
