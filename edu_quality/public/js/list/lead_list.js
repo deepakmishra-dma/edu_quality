@@ -5,7 +5,7 @@ frappe.listview_settings['Lead'] = {
             return doc.fathers_phone;
         },
         get_label() {
-            return 'Copy Mobile No';
+            return '<img src="https://static.vecteezy.com/system/resources/thumbnails/000/423/339/small/Multimedia__2850_29.jpg" width="14",height="14">';
         },
         get_description(doc) {
             return __('Copy {0}', [`${doc.fathers_phone}`])
@@ -17,7 +17,6 @@ frappe.listview_settings['Lead'] = {
             tempTextarea.select();
             document.execCommand('copy');
             document.body.removeChild(tempTextarea);
-            frappe.msgprint(__("Phone numbers copied to clipboard: ") + doc.fathers_phone);
         }
     }
 }
