@@ -443,3 +443,41 @@ def create_student_lead(**kwargs):
 
     lead_doc = lead_doc.insert(ignore_permissions=True)
     return lead_doc
+
+@frappe.whitelist(allow_guest=True)
+def create_student_lead_fb(**kwargs):
+    # return kwargs
+    if (
+        not kwargs.get("first_name")
+        or not kwargs.get("fathers_name")
+        or not kwargs.get("fathers_phone")
+    ):
+        raise frappe.exceptions.MandatoryError(
+            "First Name , Fathers Name or Fathers phone is required"
+        )
+    
+    school_name = frappe.db.get_value(
+        "School",
+        {"location": kwargs.get('locality')},
+        "name",
+    ) or kwargs.get('locality')
+
+    lead_doc = frappe.get_doc(
+        {
+            "doctype": "Lead",
+            "first_name": kwargs.get("first_name"),
+            "last_name": " ",
+            "fathers_name": kwargs.get("fathers_name"),
+            "fathers_email": kwargs.get("father_email_id"),
+            "fathers_phone": kwargs.get("fathers_phone"),
+            "mothers_name": " ",
+            "academic_year": kwargs.get("academic_year"),
+            "school_from_lead_source": kwargs.get("locality"),
+            "center": school_name,
+            "class_from_lead_source": kwargs.get("class"),
+            "source":kwargs.get('source') or None
+        }
+    )
+
+    lead_doc = lead_doc.insert(ignore_permissions=True)
+    return lead_doc

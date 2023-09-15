@@ -24,11 +24,14 @@ def check_for_folder_in_google_drive(folder_name):
 	"""Checks if folder exists in Google Drive else create it."""
 
 	def _create_folder_in_google_drive(google_drive, folder_name):
+		service_account_doc = frappe.get_single('Google Service Account')
+
 		file_metadata = {
 			"name": folder_name,
 			"mimeType": "application/vnd.google-apps.folder",
+			"parents":[service_account_doc.get('root_folder')]
 		}
-
+		
 		try:
 			folder = google_drive.files().create(body=file_metadata, fields="id").execute().get("id")
 			backup_folder_exists=True
@@ -42,10 +45,11 @@ def check_for_folder_in_google_drive(folder_name):
 	google_drive = get_google_drive_object()
 
 	try:
+		service_account_doc = frappe.get_single('Google Service Account')
 		google_drive_folders = (
-			google_drive.files().list(q="mimeType='application/vnd.google-apps.folder'").execute()
+			google_drive.files().list(q=f"mimeType='application/vnd.google-apps.folder' and '{service_account_doc.get('root_folder')}' in parents").execute()
 		)
-		return google_drive_folders
+	
 	
 	except HttpError as e:
 		frappe.throw(
