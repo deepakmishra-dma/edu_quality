@@ -64,6 +64,12 @@ def get_payment_details(**kwargs):
                     'amount':  frappe.utils.fmt_money(amount, currency="INR"),
                     'company': company
                     })
+            else:
+                breakup.append({
+                    'fees_category': fee.fees_category,
+                    'amount':  frappe.utils.fmt_money(amount *(portion/100), currency="INR"),
+                    'company': company
+                    })
 
     return {
         'student_name': fees.student_name,
@@ -74,7 +80,7 @@ def get_payment_details(**kwargs):
         'due_amount': frappe.utils.fmt_money(payment_request.grand_total,currency="INR"),
         'payment_url': payment_url(payment_request,payment_method="UPI"),
         'status': payment_request.status,
-        'receipt_url': frappe.utils.get_url() + "/api/method/edu_quality.fees.page.payment_redirect.payment_receipt?fees="+payment_request.reference_name,
+        'receipt_url': frappe.utils.get_url() + "/api/method/edu_quality.fees.page.payment_redirect.payment_receipt?payment_request="+payment_request.name,
         "breakup": breakup
     }
 
@@ -94,18 +100,18 @@ def payment_charge(**kwargs):
     frappe.response['message'] = {'charge':charge,'url':payment_request.get_payment_url(payment_method=kwargs.get('pm'))}
 
 @frappe.whitelist(allow_guest=True)
-def payment_receipt(fees,category):
+def payment_receipt(payment_request,category):
     try:
         company = frappe.db.get_value("Fee Category",category,"custom_company")
         if not company:
             company = "Unique Educational and Sports Foundation"
-        doc = frappe.db.get_value("Fee Receipt",{'fees':fees,"company":company},'name')
+        doc = frappe.db.get_value("Payment Entry",{'reference_no':payment_request,"company":company},'name')
         if frappe.session.user == "Guest":
             frappe.local.login_manager.login_as("Administrator")
-            pdf = download_pdf("Fee Receipt", doc)
+            pdf = download_pdf("Payment Entry", doc)
             frappe.local.login_manager.login_as("Guest")
         else:
-            pdf = download_pdf("Fee Receipt", doc)
+            pdf = download_pdf("Payment Entry", doc)
         return pdf
     except Exception as e:
         frappe.logger("download").exception(e)
