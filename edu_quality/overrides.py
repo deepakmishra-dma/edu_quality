@@ -29,6 +29,7 @@ class CustomPaymentRequest(PaymentRequest):
         paid_from_dict = {}
         paid_to_dict = {}
         companies = {}
+        fee_categories = {}
         for component in fees.components:
             if not self.payment_term and component.fees_category not in ["Deposit","deposit", "Application Fee","Application fee"]:
                 continue
@@ -45,12 +46,14 @@ class CustomPaymentRequest(PaymentRequest):
                     if schedule.payment_term == self.payment_term:
                         amount = flt((schedule.invoice_portion/100) * amount,2)
 
-            if paid_from_dict.get(paid_from) is not None:
-                paid_from_dict[paid_from] += amount
-            else:
-                paid_from_dict[paid_from] = amount
-            paid_to_dict[paid_from] = paid_to
-            companies[paid_from] = company
+                if paid_from_dict.get(paid_from) is not None:
+                    paid_from_dict[paid_from] += amount
+                    fee_categories[paid_from].append({component.fees_category:amount})
+                else: 
+                    paid_from_dict[paid_from] = amount
+                    fee_categories[paid_from] = [{component.fees_category:amount}]
+                paid_to_dict[paid_from] = paid_to
+                companies[paid_from] = company
 
         for paid_from, amount in paid_from_dict.items():
             cost_center = frappe.get_value(
@@ -64,13 +67,14 @@ class CustomPaymentRequest(PaymentRequest):
                 paid_to_dict[paid_from],
                 companies[paid_from],
                 cost_center,
+                fee_categories[paid_from]
             )
         if self.payment_term:
             mark_payment_term_paid(fees, self.payment_term, self.grand_total)
         paid_amount = fees.outstanding_amount - self.grand_total
         frappe.db.set_value(fees.doctype, fees.name, "outstanding_amount", paid_amount)
         self.db_set("status", "Paid")
-        create_fee_receipt(fees,self.payment_term, self.transaction_id)
+        # create_fee_receipt(fees,self.payment_term, self.transaction_id)
 
     def get_payment_url(self, **kwargs):
         if self.reference_doctype != "Fees":
@@ -105,7 +109,7 @@ class CustomPaymentRequest(PaymentRequest):
         )
 
 
-def payment_entry(doc, ref_doc, party_amount, paid_from, paid_to, company, cost_center):
+def payment_entry(doc, ref_doc, party_amount, paid_from, paid_to, company, cost_center, fee_categories=None):
     frappe.set_user("Administrator")
 
     payment_entry = frappe.get_doc(
@@ -124,6 +128,7 @@ def payment_entry(doc, ref_doc, party_amount, paid_from, paid_to, company, cost_
             "paid_to": paid_to,
             "paid_amount": party_amount,
             "received_amount": party_amount,
+            "payment_term": doc.payment_term,
             "source_exchange_rate": 1,
             "target_exchange_rate": 1,
         }
@@ -162,6 +167,17 @@ def payment_entry(doc, ref_doc, party_amount, paid_from, paid_to, company, cost_
                 "amount": payment_entry.difference_amount,
             },
         )
+
+    if fee_categories:
+        for fee_category in fee_categories:
+            for fee_name, amount in fee_category.items():
+                payment_entry.append(
+                    "fee_category",
+                    {
+                        "fee_category": fee_name,
+                        "amount": amount,
+                    },
+                )
 
     payment_entry.insert(ignore_permissions=True)
     payment_entry.submit()

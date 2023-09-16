@@ -1,6 +1,6 @@
 {
  "charts": [],
- "content": "[{\"id\":\"YtRyiCdfXx\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Fees Setup</span>\",\"col\":12}},{\"id\":\"kxR-4ew92X\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Payment Plan Creation Tool\",\"col\":3}},{\"id\":\"ReAz2Jm-U_\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"60envMfsXY\",\"type\":\"quick_list\",\"data\":{\"quick_list_name\":\"Fee Schedule\",\"col\":6}},{\"id\":\"iEFrRjrWMs\",\"type\":\"quick_list\",\"data\":{\"quick_list_name\":\"Fees\",\"col\":6}},{\"id\":\"mjIQ7UIO_O\",\"type\":\"quick_list\",\"data\":{\"quick_list_name\":\"Payment Plan\",\"col\":6}},{\"id\":\"rbO9eqtSjW\",\"type\":\"quick_list\",\"data\":{\"quick_list_name\":\"Fee Structure\",\"col\":6}}]",
+ "content": "[{\"id\":\"YtRyiCdfXx\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Fees Setup</span>\",\"col\":12}},{\"id\":\"kxR-4ew92X\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Payment Plan Creation Tool\",\"col\":3}},{\"id\":\"ReAz2Jm-U_\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"kM9iV81QaQ\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Fee Schedule\",\"col\":3}},{\"id\":\"USto1tph8n\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Fees\",\"col\":3}},{\"id\":\"K3HE02zIf4\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Payment Plan\",\"col\":3}},{\"id\":\"3aCsIvuUg3\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Fee Structure\",\"col\":3}}]",
  "creation": "2023-09-07 18:39:09.046799",
  "custom_blocks": [],
  "docstatus": 0,
@@ -12,7 +12,7 @@
  "is_hidden": 0,
  "label": "Fees Setup",
  "links": [],
- "modified": "2023-09-07 18:46:55.108684",
+ "modified": "2023-09-20 17:47:43.353440",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Fees Setup",
@@ -20,33 +20,57 @@
  "owner": "Administrator",
  "parent_page": "",
  "public": 1,
- "quick_lists": [
+ "quick_lists": [],
+ "roles": [
   {
-   "document_type": "Fee Schedule",
-   "label": "Fee Schedule"
+   "role": "Walnut Admin"
   },
   {
-   "document_type": "Fees",
-   "label": "Fees"
+   "role": "Walnut Accounts"
   },
   {
-   "document_type": "Payment Plan",
-   "label": "Payment Plan"
+   "role": "Teacher"
   },
   {
-   "document_type": "Fee Structure",
-   "label": "Fee Structure"
+   "role": "Councellor"
   }
  ],
- "roles": [],
  "sequence_id": 25.0,
  "shortcuts": [
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Fee Schedule",
+   "link_to": "Fee Schedule",
+   "type": "DocType"
+  },
   {
    "color": "Grey",
    "doc_view": "List",
    "label": "Payment Plan Creation Tool",
    "link_to": "payment-plan-creatio",
    "type": "Page"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Fees",
+   "link_to": "Fees",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Payment Plan",
+   "link_to": "Payment Plan",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Fee Structure",
+   "link_to": "Fee Structure",
+   "type": "DocType"
   }
  ],
  "title": "Fees Setup"

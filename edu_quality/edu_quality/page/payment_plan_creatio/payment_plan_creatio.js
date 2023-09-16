@@ -4,9 +4,6 @@ frappe.pages['payment-plan-creatio'].on_page_load = function(wrapper) {
 		title: 'Payment Plan Creation Tool',
 		single_column: true
 	});
-	if (!window.Formio) {
-		var script = document.createElement('script');
-		script.onload = () => {
 			window.Formio.setBaseUrl(window.location.origin)
 			this.page.main = $(`
 				<div id="quotation-wizard" class="p-4 layout-main-section frappe-card">
@@ -34,19 +31,7 @@ frappe.pages['payment-plan-creatio'].on_page_load = function(wrapper) {
 					}
 
 				}
-			}).then(function (form) {
-
-
-			});
-		};
-		script.src = "/assets/edu_quality/node_modules/formiojs/dist/formio.full.js";
-		document.head.appendChild(script); //or something of the likes
-
-	}
-	frappe.require(["/assets/edu_quality/node_modules/formiojs/dist/formio.full.css"], () => {
-
-	})
-
+			})
 
 }
 

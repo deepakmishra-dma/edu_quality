@@ -12,7 +12,7 @@
  "is_hidden": 0,
  "label": "System Setup",
  "links": [],
- "modified": "2023-09-07 18:52:11.063247",
+ "modified": "2023-09-20 17:48:17.442274",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "System Setup",
@@ -21,7 +21,11 @@
  "parent_page": "",
  "public": 1,
  "quick_lists": [],
- "roles": [],
+ "roles": [
+  {
+   "role": "Walnut Admin"
+  }
+ ],
  "sequence_id": 26.0,
  "shortcuts": [
   {
