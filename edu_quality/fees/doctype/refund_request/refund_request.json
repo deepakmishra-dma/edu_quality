@@ -28,9 +28,9 @@
   },
   {
    "fieldname": "security_deposit",
-   "fieldtype": "Table",
+   "fieldtype": "Link",
    "label": "Security Deposit",
-   "options": "Deposits"
+   "options": "Security Deposit"
   },
   {
    "fieldname": "amount",
@@ -76,7 +76,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-08-11 00:30:30.983099",
+ "modified": "2023-09-20 12:06:53.813183",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Refund Request",

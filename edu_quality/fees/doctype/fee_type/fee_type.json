@@ -34,7 +34,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Financial Year",
-   "options": "Financial Year",
+   "options": "Fiscal Year",
    "reqd": 1
   },
   {
