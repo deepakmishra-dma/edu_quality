@@ -300,13 +300,16 @@ def upload_to_mgr(doc):
         url=f'{CONFIG.get("MGR_API_BASE")}/student_lms/post_student_lms_data',
         json=json.loads(json.dumps(JSON, default=default)),
     )
+    try:
+        if "OK" not in response.text:
+            message = json.loads(response.text)
+            frappe.msgprint(msg=message.get("message"), title="Error", indicator="red")
+            raise frappe.exceptions.DuplicateEntryError(response.text)
 
-    if "OK" not in response.text:
-        message = json.loads(response.text)
-        frappe.msgprint(msg=message.get("message"), title="Error", indicator="red")
-        raise frappe.exceptions.DuplicateEntryError(response.text)
+        data = json.loads(response.text)
 
-    data = json.loads(response.text)
+    except Exception:
+        frappe.log_error("MGR Error", response.text)
     return data
 
 
@@ -347,7 +350,7 @@ def serialize_lead_to_application(doc: dict):
         }
     ]
 
-    if doc.get("mothers_name").strip():
+    if doc.get("mothers_name") and  doc.get("mothers_name").strip():
         mother = frappe.get_doc(
             {
                 "doctype": "Guardian",
