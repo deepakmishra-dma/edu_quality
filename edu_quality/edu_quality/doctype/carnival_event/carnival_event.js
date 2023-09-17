@@ -76,7 +76,8 @@ frappe.ui.form.on("Carnival Event", {
                 try{
                 const images = await nativeInterface.execute('openWebViewCamera', {
                     multiple: true,
-                    preferredCameraType: 'rear'
+                    preferredCameraType: 'rear',
+                    galleryTitle:frm.doc.name
                 })
                 await folderExists('Home', frm.doc.name)
              
