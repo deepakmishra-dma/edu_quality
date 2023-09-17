@@ -26,7 +26,9 @@ def create_student_application(**args):
     )
     created_mgr_lead = upload_to_mgr(student_application)
     student_application.lms_id = created_mgr_lead.get("ID")
-
+    lead_application.lead_status = "Enrolled"
+    lead_application.status = "Converted"
+    lead_application.save()
     student_application.insert()
     frappe.msgprint(("Upload to MGR successful"))
     return student_application
@@ -444,6 +446,13 @@ def create_student_lead(**kwargs):
     lead_doc = lead_doc.insert(ignore_permissions=True)
     return lead_doc
 
+
+id_to_location_map_fb = {
+    "wakad": "Wakad",
+    "shivane": "Shivane",
+    "fursungi": "Fursungi",
+}
+
 @frappe.whitelist(allow_guest=True)
 def create_student_lead_fb(**kwargs):
     # return kwargs
@@ -455,12 +464,12 @@ def create_student_lead_fb(**kwargs):
         raise frappe.exceptions.MandatoryError(
             "First Name , Fathers Name or Fathers phone is required"
         )
-    
+
     school_name = frappe.db.get_value(
         "School",
-        {"location": kwargs.get('locality')},
+        {"location": id_to_location_map_fb[str(kwargs.get("locality"))]},
         "name",
-    ) or kwargs.get('locality')
+    ) or kwargs.get("locality")
 
     lead_doc = frappe.get_doc(
         {
@@ -475,7 +484,7 @@ def create_student_lead_fb(**kwargs):
             "school_from_lead_source": kwargs.get("locality"),
             "center": school_name,
             "class_from_lead_source": kwargs.get("class"),
-            "source":kwargs.get('source') or None
+            "source": kwargs.get("source") or "Advertisement",
         }
     )
 
