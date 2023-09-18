@@ -106,11 +106,19 @@ def payment_receipt(payment_request,category):
         if not company:
             company = "Unique Educational and Sports Foundation"
         doc = frappe.db.get_value("Payment Entry",{'reference_no':payment_request,"company":company},'name')
+        fee_name = frappe.db.get_value("Payment Request", payment_request, 'reference_name')
+        program_name = frappe.db.get_value("Fees", fee_name, 'program')
+        print_format = frappe.db.get_value("Program", program_name, 'print_format')
+        letter_head = frappe.db.get_value("Program", program_name, 'letter_head')
+        letter_head_doc = frappe.get_doc("Letter Head", letter_head)
+        print_format_doc = frappe.get_doc("Print Format", print_format)
         if frappe.session.user == "Guest":
             frappe.local.login_manager.login_as("Administrator")
-            pdf = download_pdf("Payment Entry", doc)
+            pdf = download_pdf("Payment Entry", doc, format=print_format_doc, letterhead=letter_head_doc)
             frappe.local.login_manager.login_as("Guest")
         else:
+            print(print_format, letter_head)
+
             pdf = download_pdf("Payment Entry", doc)
         return pdf
     except Exception as e:
