@@ -1,0 +1,71 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-09-25 17:53:27.710051",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "email_template_new",
+  "email_template_all",
+  "welcome_email",
+  "deposit_email",
+  "payment_link_email"
+ ],
+ "fields": [
+  {
+   "fieldname": "welcome_email",
+   "fieldtype": "Link",
+   "label": "Welcome Email",
+   "options": "Email Template"
+  },
+  {
+   "fieldname": "deposit_email",
+   "fieldtype": "Link",
+   "label": "Deposit Email",
+   "options": "Email Template"
+  },
+  {
+   "fieldname": "payment_link_email",
+   "fieldtype": "Link",
+   "label": "Payment Link Email",
+   "options": "Email Template"
+  },
+  {
+   "fieldname": "email_template_new",
+   "fieldtype": "Link",
+   "label": "Fee Email Template (new students)",
+   "options": "Email Template"
+  },
+  {
+   "fieldname": "email_template_all",
+   "fieldtype": "Link",
+   "label": "Fee Email Template (all students)",
+   "options": "Email Template"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2023-09-25 17:56:59.385374",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "Communications",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
