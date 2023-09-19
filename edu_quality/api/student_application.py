@@ -350,7 +350,7 @@ def serialize_lead_to_application(doc: dict):
         }
     ]
 
-    if doc.get("mothers_name") and  doc.get("mothers_name").strip():
+    if doc.get("mothers_name") and doc.get("mothers_name").strip():
         mother = frappe.get_doc(
             {
                 "doctype": "Guardian",
@@ -413,6 +413,7 @@ id_to_location_map = {
     "46": "Fursungi",
 }
 
+
 @frappe.whitelist(allow_guest=True)
 def create_student_lead(**kwargs):
     if (
@@ -456,6 +457,7 @@ id_to_location_map_fb = {
     "fursungi": "Fursungi",
 }
 
+
 @frappe.whitelist(allow_guest=True)
 def create_student_lead_fb(**kwargs):
     # return kwargs
@@ -468,11 +470,19 @@ def create_student_lead_fb(**kwargs):
             "First Name , Fathers Name or Fathers phone is required"
         )
 
-    school_name = frappe.db.get_value(
-        "School",
-        {"location": id_to_location_map_fb[str(kwargs.get("locality"))]},
-        "name",
-    ) or kwargs.get("locality")
+    school_name = (
+        frappe.db.get_value(
+            "School",
+            {
+                "location": id_to_location_map_fb.get(
+                    str(kwargs.get("locality")).lower()
+                )
+            },
+            "name",
+        )
+        or kwargs.get("locality")
+        or kwargs.get("School 1")
+    )
 
     lead_doc = frappe.get_doc(
         {
