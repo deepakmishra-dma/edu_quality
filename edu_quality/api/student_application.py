@@ -306,11 +306,11 @@ def upload_to_mgr(doc):
             frappe.msgprint(msg=message.get("message"), title="Error", indicator="red")
             raise frappe.exceptions.DuplicateEntryError(response.text)
 
-        data = json.loads(response.text)
+        return json.loads(response.text)
 
     except Exception:
         frappe.log_error("MGR Error", response.text)
-    return data
+        raise frappe.exceptions.DuplicateEntryError(response.text)
 
 
 def serialize_lead_to_application(doc: dict):
