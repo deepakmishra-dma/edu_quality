@@ -260,13 +260,28 @@ fixtures = [
             [
                 "name",
                 "in",
-                []
+                ["Head Administration",
+                 "Councellor",
+                 "Teacher"
+                ]
             ]
         ]
     },
     {
         "dt": "Custom DocPerm",
         "filters": [["module","=","Edu Quality"]]
+    },
+    {'dt':"Workspace",
+     "filters": [
+            [
+                "name",
+                "in",
+                ["Walnut Accounts",
+                 "Student Management",
+                 "Fees Setup"
+                ]
+            ]
+        ]
     }
 
 ]
