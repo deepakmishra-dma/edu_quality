@@ -7,6 +7,7 @@ from frappe.utils import today, getdate
 
 @frappe.whitelist()
 def add_discount(fee_name, discount):
+    discount_applied = False
     fees = frappe.get_doc("Fees", fee_name)
     dis = frappe.get_doc("Discount Configuration", discount)
 
@@ -26,6 +27,7 @@ def add_discount(fee_name, discount):
                         discount = calculate_discount(component.amount, discounted_amount)
                         update_component(component.name, discount_name, discount, discounted_amount, grand_discount_amount, amount, fees)
                         message = dis.name + " Discount applied successfully"
+                        discount_applied = True
                         frappe.response['message'] = message
                     else:
                         amount = component.amount
@@ -35,6 +37,7 @@ def add_discount(fee_name, discount):
                         amount = amount - discounted_amount
                         update_component(component.name, discount_name, discount, discounted_amount, grand_discount_amount, amount, fees)
                         message = dis.name + " Discount applied successfully"
+                        discount_applied = True
                         frappe.response['message'] = message
                 else:
                     frappe.response['message'] = "Discount already applied"
@@ -56,6 +59,7 @@ def add_discount(fee_name, discount):
                     discount = calculate_discount(component.amount, discounted_amount)
                     update_component(component.name, discount_name, discount, discounted_amount, grand_discount_amount, amount, fees)
                     message = dis.name + " Discount applied successfully"
+                    discount_applied = True
                     frappe.response['message'] = message
                 else:
                     grand_discount_amount = (component.amount * float(dis.discount)) / 100
@@ -63,12 +67,16 @@ def add_discount(fee_name, discount):
                     amount = component.amount - discounted_amount
                     update_component(component.name, discount_name, dis.discount, discounted_amount, grand_discount_amount, amount, fees)
                     message = dis.name + " Discount applied successfully"
+                    discount_applied = True
                     frappe.response['message'] = message
+    if discount_applied:
+        update_payment_request_after_discount(fees)
 
 
 #remove discount
 @frappe.whitelist()
 def remove_discount(fee_name, discount):
+    discount_removed = False
     fees = frappe.get_doc("Fees", fee_name)
     dis = frappe.get_doc("Discount Configuration", discount)
 
@@ -85,10 +93,13 @@ def remove_discount(fee_name, discount):
                 # updating the data in the database
                 remove_and_update_component(component.name, discount_name, discount, discount_amount, grand_discount_amount, amount, fees)
                 message = dis.name + " Discount removed successfully"
+                discount_removed = True
                 frappe.response['message'] = message
             elif discount not in discount_list:
                 message = dis.name + " Discount does not present"
                 frappe.response['message'] = message
+    if discount_removed:
+        update_payment_request_after_discount(fees)
 
 
 def get_discount_list(input_string):

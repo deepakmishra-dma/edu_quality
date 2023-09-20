@@ -183,7 +183,7 @@ def payment_entry(doc, ref_doc, party_amount, paid_from, paid_to, company, cost_
     payment_entry.submit()
     return payment_entry
 
-def get_amount(ref_doc, payment_account=None, is_deposit=False):
+def get_amount(ref_doc, payment_account=None, is_deposit=False, payment_term=None):
     """get amount based on doctype"""
     dt = ref_doc.doctype
     if dt in ["Sales Order", "Purchase Order"]:
@@ -208,8 +208,15 @@ def get_amount(ref_doc, payment_account=None, is_deposit=False):
     elif dt == "Fees" and is_deposit:
         grand_total = 0
         for f in ref_doc.components:
-            if f.fees_category in ["Deposit","deposit", "Application Fee","Application fee"]:
+            fee_category = f.fees_category.lower()
+            if fee_category in ["deposit","application fee"]:
                 grand_total += f.amount
+
+    elif dt == "Fees" and payment_term:
+        grand_total = 0
+        for schedule in ref_doc.payment_schedule:
+            if schedule.payment_term == payment_term:
+                grand_total += flt(schedule.outstanding, 2)
 
     elif dt == "Fees":
         grand_total = ref_doc.outstanding_amount
@@ -285,49 +292,6 @@ def company_wise_split(fees, categories, due_date, payment_term=None, transactio
             fee_receipt.insert(ignore_permissions=True)
 
 
-# def create_fee_receipt(fees,payment_term=None):
-#     try:
-#         fee_categories = {}
-#         amounts = {}
-#         fee_amounts = {}
-#         for component in fees.components:
-#             discounted_amount = component.custom_amount_after_discount
-#             amount = discounted_amount if discounted_amount else component.amount
-#             if payment_term:
-#                 for schedule in fees.payment_schedule:
-#                     if schedule.payment_term == payment_term:
-#                         amount = flt((schedule.invoice_portion/100) * amount,2)
-#                         due_date = schedule.due_date
-#             else:
-#                 due_date = nowdate()
-#             fee_category = component.fees_category
-#             fee_amounts[fee_category] = amount
-#             company = frappe.get_value("Fee Category",fee_category, "custom_company")
-#             if fee_categories.get(company) is not None:
-#                 fee_categories[company].append(fee_category)
-#                 amounts[company] += amount
-#             else:
-#                 fee_categories[company] = [fee_category]
-#                 amounts[company] = amount
-
-#         for company, fee_categories in fee_categories.items():
-#             fee_receipt = frappe.new_doc("Fee Receipt")
-#             fee_receipt.fees = fees.name
-#             fee_receipt.due_date = due_date
-#             fee_receipt.company = company
-#             fee_receipt.paid_on = nowdate()
-#             fee_receipt.amount = amounts[company]
-
-#             for fee_category in fee_categories:
-#                 fee_receipt.append("fee_category", {
-#                     "fee_category": fee_category,
-#                     "amount": fee_amounts[fee_category]
-#                 })
-#             fee_receipt.insert(ignore_permissions=True)
-#     except Exception as e:
-#         frappe.logger("edu_quality").exception(e)
-
-
 def mark_payment_term_paid(fees, term, paid_amount):
     for schedule in fees.payment_schedule:
         if schedule.payment_term == term:
@@ -343,7 +307,7 @@ def make_payment_request(**args):
     ref_doc = frappe.get_doc(args.dt, args.dn)
     gateway_account = get_gateway_details(args) or frappe._dict()
     frappe.logger('pr').exception(args.is_deposit)
-    grand_total = get_amount(ref_doc, gateway_account.get("payment_account"), args.is_deposit)
+    grand_total = get_amount(ref_doc, gateway_account.get("payment_account"), args.is_deposit, args.payment_term)
     frappe.logger('pr').exception(grand_total)
     if args.loyalty_points and args.dt == "Sales Order":
         from erpnext.accounts.doctype.loyalty_program.loyalty_program import validate_loyalty_points
