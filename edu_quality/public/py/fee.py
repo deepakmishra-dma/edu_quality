@@ -1,4 +1,4 @@
-from edu_quality.public.py.discount import payment_plan, referal_discount, time_based_discount
+from edu_quality.public.py.discount import payment_plan, referal_discount, time_based_discount, update_payment_schedule
 import frappe 
 from erpnext.accounts.utils import get_account_currency
 from erpnext.accounts.doctype.payment_request.payment_request import PaymentRequest
@@ -19,6 +19,7 @@ def after_insert(doc,method=None):
 def before_submit(doc,method=None):
     time_based_discount(doc)
     referal_discount(doc)
+    update_payment_schedule(doc)
 
 def before_save(doc,method=None):
     try:

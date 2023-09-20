@@ -216,7 +216,7 @@ def get_amount(ref_doc, payment_account=None, is_deposit=False, payment_term=Non
         grand_total = 0
         for schedule in ref_doc.payment_schedule:
             if schedule.payment_term == payment_term:
-                grand_total += flt(schedule.outstanding, 2)
+                grand_total = frappe.db.get_value("Payment Schedule",schedule.name,"outstanding")
 
     elif dt == "Fees":
         grand_total = ref_doc.outstanding_amount
