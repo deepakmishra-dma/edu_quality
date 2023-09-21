@@ -299,11 +299,11 @@ def update_payment_plan_after_discount(doc, total_discount=0, apply_discount=Fal
                 pass
             else:
                 if apply_discount:
-                    amount = schedule.outstanding - discount
+                    amount = schedule.outstanding - (schedule.invoice_portion*total_discount/100)
                     frappe.db.set_value("Payment Schedule",schedule.name,"payment_amount",amount)
                     frappe.db.set_value("Payment Schedule",schedule.name,"outstanding",amount)
                 else:
-                    amount = schedule.outstanding + discount
+                    amount = schedule.outstanding + (schedule.invoice_portion*total_discount/100)
                     frappe.db.set_value("Payment Schedule",schedule.name,"payment_amount",amount)
                     frappe.db.set_value("Payment Schedule",schedule.name,"outstanding",amount)
 
@@ -316,7 +316,6 @@ def get_unpaid_terms_count(doc):
 
 
 def update_payment_schedule(doc):
-    print(doc.grand_total)
     if doc.payment_plan:
         for schedule in doc.payment_schedule:
             amount = (schedule.invoice_portion * doc.grand_total) / 100
