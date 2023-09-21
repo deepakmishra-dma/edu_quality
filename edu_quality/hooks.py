@@ -260,7 +260,10 @@ fixtures = [
             [
                 "name",
                 "in",
-                []
+                ["Head Administration",
+                 "Councellor",
+                 "Teacher"
+                ]
             ]
         ]
     },
@@ -269,6 +272,18 @@ fixtures = [
         "filters": [["module","=","Edu Quality"]]
     },
     {"dt":"Email Template"},
+    {'dt':"Workspace",
+     "filters": [
+            [
+                "name",
+                "in",
+                ["Walnut Accounts",
+                 "Student Management",
+                 "Fees Setup"
+                ]
+            ]
+        ]
+    }
 ]
 
 
