@@ -271,6 +271,7 @@ fixtures = [
         "dt": "Custom DocPerm",
         "filters": [["module","=","Edu Quality"]]
     },
+    {"dt":"Email Template"},
     {'dt':"Workspace",
      "filters": [
             [
@@ -283,7 +284,6 @@ fixtures = [
             ]
         ]
     }
-
 ]
 
 
