@@ -299,11 +299,11 @@ def update_payment_plan_after_discount(doc, total_discount=0, apply_discount=Fal
                 pass
             else:
                 if apply_discount:
-                    amount = schedule.outstanding - (schedule.invoice_portion*total_discount/100)
+                    amount = schedule.outstanding - discount
                     frappe.db.set_value("Payment Schedule",schedule.name,"payment_amount",amount)
                     frappe.db.set_value("Payment Schedule",schedule.name,"outstanding",amount)
                 else:
-                    amount = schedule.outstanding + (schedule.invoice_portion*total_discount/100)
+                    amount = schedule.outstanding + discount
                     frappe.db.set_value("Payment Schedule",schedule.name,"payment_amount",amount)
                     frappe.db.set_value("Payment Schedule",schedule.name,"outstanding",amount)
 
