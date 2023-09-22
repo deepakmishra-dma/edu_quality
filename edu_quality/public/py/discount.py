@@ -71,8 +71,8 @@ def add_discount(fee_name, discount):
                     discount_applied = True
                     frappe.response['message'] = message
     if discount_applied:
-        update_payment_request_after_discount(fees)
         update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=True)
+        update_payment_request_after_discount(fees)
 
 
 #remove discount
@@ -102,8 +102,8 @@ def remove_discount(fee_name, discount):
                 message = dis.name + " Discount does not present"
                 frappe.response['message'] = message
     if discount_removed:
-        update_payment_request_after_discount(fees)
         update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=False)
+        update_payment_request_after_discount(fees)
 
 
 def get_discount_list(input_string):
