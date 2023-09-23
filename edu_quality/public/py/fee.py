@@ -18,8 +18,9 @@ def after_insert(doc,method=None):
 
 def before_submit(doc,method=None):
     time_based_discount(doc)
-    referal_discount(doc)
     update_payment_schedule(doc)
+    referal_discount(doc)
+
 
 def before_save(doc,method=None):
     try:

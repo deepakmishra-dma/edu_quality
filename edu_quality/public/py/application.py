@@ -1,3 +1,4 @@
+from edu_quality.public.py.discount import calculate_discount, get_discount_list, update_component, update_payment_plan_after_discount
 import frappe
 from frappe.model.mapper import get_mapped_doc
 from frappe.model.naming import make_autoname
@@ -34,6 +35,10 @@ def before_save(doc,method=None):
                     'description': component.description
                     })
     calculate_total(doc)
+
+
+def after_insert(doc, method=None):
+    add_referral_discount(doc)
 
 def calculate_total(doc):
     doc.total_amount = 0
@@ -173,3 +178,119 @@ def enroll_student(source_name):
 def get_student_group(doc):
     filters = {"academic_year": doc.academic_year, "program": doc.program}
     return frappe.db.get_value("Student Group", filters, "name")
+
+
+def add_referral_discount(doc):
+    referred_by = doc.custom_referred_by
+    ref = frappe.get_doc("Referral Settings")
+    try:
+        referral_amount = float(ref.referral[0].referral_amount)
+    except:
+        referral_amount = 0
+
+    if frappe.db.exists("Referral Log", {"student_id": referred_by}):
+        ref_log = frappe.get_doc("Referral Log", {"student_id": referred_by})
+        previous_referral_amount = float(ref_log.referral_amount)
+        number_of_referral = int(ref_log.number_of_referral)+1
+        ref_log.number_of_referral = number_of_referral
+        
+        # get referral amount with reference to the number of referral
+        for r in ref.referral:
+            if r.idx == number_of_referral:
+                referral_amount = int(r.referral_amount)
+                ref_log.referral_amount = referral_amount
+            
+        ref_log.save(ignore_permissions=True)
+        if frappe.db.exists("Fees", {"student": referred_by}):
+            fees = frappe.get_doc("Fees", {"student": referred_by})
+            discount_amount = referral_amount - previous_referral_amount
+            update_referral_discount(fees, discount_amount)
+    else:
+        ref_log = frappe.new_doc("Referral Log")
+        ref_log.student_id = referred_by
+        ref_log.number_of_referral = 1
+        ref_log.referral_amount = referral_amount
+        ref_log.save(ignore_permissions=True)
+
+        if frappe.db.exists("Fees", {"student": referred_by}):
+            fees = frappe.get_doc("Fees", {"student": referred_by})
+            apply_referrral_discount(fees, ref_log.referral_amount)
+
+
+
+def apply_referrral_discount(doc, referral_amount):
+    filters = {"type": "Referral", "enabled": 1}
+    if frappe.db.exists("Referral Log", {"student_id": doc.student}):
+        ref = frappe.get_doc("Referral Log", {"student_id": doc.student})
+        discount = float(ref.referral_amount)
+        for component in doc.components:
+            amount = component.custom_amount_after_discount
+            amount = amount if amount else component.amount
+            if amount > discount and discount != 0:
+                if frappe.db.exists("Discount Configuration", filters):
+                    dis = frappe.get_doc("Discount Configuration", filters)
+                    discount_list = get_discount_list(component.custom_discounts)
+                    # if other discount is already present
+                    if discount_list and dis.name not in discount_list:
+                        discount_list.append(dis.name)
+                        discount_name = ", ".join(discount_list)
+                        discounted_amount = (
+                            referral_amount + component.custom_discount_amount
+                        )
+                        amount = component.amount - discounted_amount
+                        discount = calculate_discount(
+                            component.amount, discounted_amount
+                        )
+                        update_component(
+                            component.name,
+                            discount_name,
+                            discount,
+                            discounted_amount,
+                            referral_amount,
+                            amount,
+                            doc,
+                        )
+                        update_payment_plan_after_discount(doc, referral_amount, apply_discount=True)
+
+                        break
+                    else:
+                        discount_name = dis.name
+                        amount = component.custom_amount_after_discount
+                        amount = amount if amount else component.amount
+                        total_discount = component.custom_discount_amount + discount
+                        discounted_amount = amount - total_discount
+                        discount_percentage = calculate_discount(amount, total_discount)
+                        update_component(
+                            component.name,
+                            discount_name,
+                            discount_percentage,
+                            total_discount,
+                            total_discount,
+                            discounted_amount,
+                            doc,
+                        )
+                        update_payment_plan_after_discount(doc, total_discount, apply_discount=True)
+                        break
+
+
+def update_referral_discount(doc, discount_amount):
+    for component in doc.components:
+        discount_name = component.custom_discounts
+        if discount_name and "referral" in discount_name.lower():
+            amount = component.custom_amount_after_discount - discount_amount
+            grand_total = doc.grand_total - discount_amount
+            outstanding_amount = doc.outstanding_amount - discount_amount
+            previous_discount = component.custom_discount_amount
+            new_discount = previous_discount + discount_amount
+            discount_percentage = calculate_discount(component.amount, new_discount)
+            frappe.db.set_value("Fee Component", component.name, "custom_discount_amount", new_discount)
+            frappe.db.set_value("Fee Component", component.name, "custom_amount_after_discount", amount)
+            frappe.db.set_value("Fee Component", component.name, "custom_discount_percentage", discount_percentage)
+            grand_total_in_words = str(frappe.utils.in_words(grand_total)).title()
+            frappe.db.set_value("Fees", doc.name, "grand_total", grand_total)
+            frappe.db.set_value("Fees", doc.name, "grand_total_in_words", grand_total_in_words)
+            frappe.db.set_value("Fees", doc.name, "outstanding_amount", outstanding_amount)
+            update_payment_plan_after_discount(doc, discount_amount, apply_discount=True)
+            break;
+        else:
+            apply_referrral_discount(doc, discount_amount)
