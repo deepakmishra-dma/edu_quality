@@ -28,3 +28,39 @@ def migrate():
     set_property("Fee Schedule", "due_date", "hidden", "Check", 1)
     set_property("Program", "program_name", "unique", "Check", 0)
     set_property("Student Group", "student_group_name", "unique", "Check", 0)
+
+
+@frappe.whitelist()
+def send_payment_link_email(doc, url):
+    template_name = frappe.get_single("Communications").payment_link_email
+
+    # Fetch the email template content from the doctype
+    email_template = frappe.get_doc("Email Template", template_name)
+
+    # Extract the subject and content from the email template
+    subject = email_template.subject
+    content = email_template.response
+
+    academic_year = frappe.db.get_value("Fees", doc.reference_name, "academic_year")
+    first_name = frappe.db.get_value("Student", doc.party, "first_name")
+    email = frappe.db.get_value("Student", doc.party, "student_email_id")
+
+    # Define variables to be used in Jinja templating
+    context = {
+        "first_name": first_name.capitalize(),
+        "acad_year": academic_year,
+        "fee_link": url,
+    }
+
+    # Render the Jinja template with the context
+    content = frappe.render_template(content, context)
+
+    # Create a dictionary with email parameters
+    email_args = {
+        "recipients": email,
+        "subject": subject,
+        "message": content,
+    }
+
+    # Send the email
+    frappe.sendmail(**email_args)
