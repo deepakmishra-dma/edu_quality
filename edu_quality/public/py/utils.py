@@ -54,12 +54,14 @@ def send_payment_link_email(doc, url):
 
     # Render the Jinja template with the context
     content = frappe.render_template(content, context)
-
+    pdf = [frappe.attach_print(doc.doctype, doc.name, file_name=doc.name)]
     # Create a dictionary with email parameters
     email_args = {
         "recipients": email,
         "subject": subject,
         "message": content,
+        "attachments": pdf,
+        "delayed": False
     }
 
     # Send the email
