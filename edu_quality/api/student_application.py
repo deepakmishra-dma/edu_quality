@@ -447,7 +447,7 @@ def create_student_lead(**kwargs):
         }
     )
 
-    lead_doc = lead_doc.insert(ignore_permissions=True)
+    lead_doc = lead_doc.insert(ignore_permissions=True,ignore_mandatory=True)
     return lead_doc
 
 
@@ -475,13 +475,13 @@ def create_student_lead_fb(**kwargs):
             "School",
             {
                 "location": id_to_location_map_fb.get(
-                    str(kwargs.get("locality")).lower()
+                    str(kwargs.get("school")).lower()
                 )
             },
             "name",
         )
-        or kwargs.get("locality")
-        or kwargs.get("School 1")
+        or kwargs.get("school")
+        or kwargs.get("school")
     )
 
     lead_doc = frappe.get_doc(
@@ -494,12 +494,12 @@ def create_student_lead_fb(**kwargs):
             "fathers_phone": kwargs.get("fathers_phone"),
             "mothers_name": " ",
             "academic_year": kwargs.get("academic_year"),
-            "school_from_lead_source": kwargs.get("locality"),
+            "school_from_lead_source": kwargs.get("school"),
             "center": school_name,
             "class_from_lead_source": kwargs.get("class"),
-            "source": kwargs.get("source") or "Advertisement",
+            "source": kwargs.get("source") or "Facebook",
         }
     )
 
-    lead_doc = lead_doc.insert(ignore_permissions=True)
+    lead_doc = lead_doc.insert(ignore_permissions=True,ignore_mandatory=True)
     return lead_doc

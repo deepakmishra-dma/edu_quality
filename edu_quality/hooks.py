@@ -251,6 +251,7 @@ fixtures = [
         ["module","in",["Edu Quality","Fees"]]
     ]},    
     {"dt":"DocType Layout"},
+    {"dt":"Lead Source"},
     {"dt": "Custom Field", "filters": [["module","=","Edu Quality"]]},   
     {"dt": "Web Page"},
     {"dt":"Accounting Dimension"},
