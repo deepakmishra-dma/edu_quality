@@ -117,8 +117,6 @@ def payment_receipt(payment_request,category):
             pdf = download_pdf("Payment Entry", doc, format=print_format_doc, letterhead=letter_head_doc)
             frappe.local.login_manager.login_as("Guest")
         else:
-            print(print_format, letter_head)
-
             pdf = download_pdf("Payment Entry", doc)
         return pdf
     except Exception as e:

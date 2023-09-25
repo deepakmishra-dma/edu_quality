@@ -1,3 +1,4 @@
+from edu_quality.public.py.discount import payment_plan, referal_discount, time_based_discount, update_payment_schedule
 import frappe 
 from erpnext.accounts.utils import get_account_currency
 from erpnext.accounts.doctype.payment_request.payment_request import PaymentRequest
@@ -13,49 +14,13 @@ from edu_quality.overrides import make_payment_request
 from datetime import datetime
 
 def after_insert(doc,method=None):
-    pe = frappe.get_doc("Program Enrollment", doc.program_enrollment)
-    if pe.custom_payment_plan is not None:
-        doc.payment_plan = pe.custom_payment_plan
-    else:
-        doc.payment_plan = frappe.db.get_value("Fee Schedule",doc.fee_schedule,'payment_plan')
-    if doc.payment_plan:
-                pp = frappe.get_doc("Payment Plan",doc.payment_plan)
-                doc.payment_schedule = []
-                initial_payment = 0
-                for component in doc.components:
-                    if component.fees_category in ["Deposit","deposit", "Application Fee","Application fee"]:
-                        initial_payment = initial_payment +  component.amount
-                i=0
-                for schedule in pp.payment_schedule:
-                    payment_amount = schedule.payment_amount
-                    description = "Installment - " + str(i+1)
-                    if i==0 and initial_payment>0:
-                        before_days = frappe.db.get_value("Fee Schedule",doc.fee_schedule,"create_payment_request_before")
-                        today = datetime.today().date()
-                        difference = schedule.due_date - today
-                        if difference.days > before_days:
-                             frappe.logger("pr").exception("only deposit")
-                             only_deposit(doc)
-                        else:
-                            payment_amount = payment_amount + initial_payment
-                            description = description + " and deposit/application fee"
-                            frappe.enqueue(
-                                    "edu_quality.public.py.student.create_payment_request",
-                                    fees=doc,
-                                    term = schedule.payment_term,
-                                    is_async=True,
-                                    queue="long",
-                                    timeout=1800,
-                                )
-                    i= i+1
-                    doc.append("payment_schedule",{
-                        'payment_term': schedule.payment_term,
-                        'description': description,
-                        'due_date': schedule.due_date,
-                        'invoice_portion': schedule.invoice_portion,
-                        'payment_amount': payment_amount,
-                        'outstanding': payment_amount,
-                    })
+    payment_plan(doc)
+
+def before_submit(doc,method=None):
+    time_based_discount(doc)
+    update_payment_schedule(doc)
+    referal_discount(doc)
+
 
 def before_save(doc,method=None):
     try:
@@ -105,16 +70,6 @@ def create_fees(doc,method=None):
         frappe.throw(str(e))
 
 
-def only_deposit(doc):    
-        make_payment_request(
-            party_type="Student",
-            party=doc.student,
-            dt="Fees",
-            dn=doc.name,
-            is_deposit=True,
-            recipient_id=doc.student_email,
-            submit_doc=True
-        )
 
 class CustomPaymentRequest(PaymentRequest):
     def create_payment_entry(self,submit=True):
