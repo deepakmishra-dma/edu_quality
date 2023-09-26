@@ -71,8 +71,12 @@ def add_discount(fee_name, discount):
                     discount_applied = True
                     frappe.response['message'] = message
     if discount_applied:
-        update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=True)
-        update_payment_request_after_discount(fees)
+        if dis.needs_admin_approval:
+            frappe.db.set_value("Fees",fee_name,"workflow_state","Pending")
+            update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=True)
+        else:
+            update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=True)
+            update_payment_request_after_discount(fees)
 
 
 #remove discount
