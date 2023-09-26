@@ -12,6 +12,7 @@ from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
 from frappe.utils import flt, get_url, nowdate
 from edu_quality.overrides import make_payment_request
 from datetime import datetime
+from edu_quality.public.py.payment_request import update_payment_request_after_discount
 
 def after_insert(doc,method=None):
     payment_plan(doc)
@@ -26,6 +27,9 @@ def before_save(doc,method=None):
     try:
         if not doc.get("school"):
             doc.school = frappe.db.get_value("Student",doc.student,"school")
+        old = doc.get_doc_before_save()
+        if old.workflow_state == 'Pending' and doc.workflow_state == "Approved":
+            update_payment_request_after_discount(doc)
     except Exception as e:
         frappe.logger("fee").exception(e)
 
