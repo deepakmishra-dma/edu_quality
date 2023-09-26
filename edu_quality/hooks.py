@@ -275,6 +275,7 @@ fixtures = [
         "filters": [["module","=","Edu Quality"]]
     },
     {"dt":"Email Template"},
+    {"dt":"Letter Head"},
     {'dt':"Workspace",
      "filters": [
             [
