@@ -13,20 +13,6 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "lead_status",
-    "label": "Lead Status",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
-    "fieldname": "naming_series",
-    "label": "Series",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
     "fieldname": "gender",
     "label": "Gender",
     "parent": "Lead",
@@ -34,8 +20,15 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "academic_year",
-    "label": "Academic Year",
+    "fieldname": "status",
+    "label": "Status",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "lead_status",
+    "label": "Lead Status",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
@@ -48,13 +41,6 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "school_from_lead_source",
-    "label": "School from Lead Source",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
     "fieldname": "class",
     "label": "Class",
     "parent": "Lead",
@@ -62,8 +48,78 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "fathers_phone",
-    "label": "Fathers Phone",
+    "fieldname": "academic_year",
+    "label": "Academic Year",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "naming_series",
+    "label": "Series",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "address",
+    "label": "Address",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "country",
+    "label": "Country",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "city",
+    "label": "City",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "source",
+    "label": "Source",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "custom_column_break_fmsgl",
+    "label": null,
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "last_name",
+    "label": "Last Name",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "date_of_birth",
+    "label": "Date of Birth",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "lead_sub_status",
+    "label": "Lead Sub Status",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "school_from_lead_source",
+    "label": "School from Lead Source",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
@@ -76,22 +132,8 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "financepeer_checkbox",
-    "label": "Financepeer Checkbox",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
-    "fieldname": "mothers_name",
-    "label": "Mothers Name",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
-    "fieldname": "address",
-    "label": "Address",
+    "fieldname": "school_code",
+    "label": "School Code",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
@@ -111,20 +153,6 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "how_did_you_hear_about_walnut",
-    "label": "How did you hear about walnut",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
-    "fieldname": "city",
-    "label": "City",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
     "fieldname": "state",
     "label": "State",
     "parent": "Lead",
@@ -132,50 +160,15 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "country",
-    "label": "Country",
+    "fieldname": "financepeer_checkbox",
+    "label": "Financepeer Checkbox",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "lead_sub_status",
-    "label": "Lead Sub Status",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
-    "fieldname": "referred_to",
-    "label": "Referred To",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
-    "fieldname": "next_action_date",
-    "label": "next action date",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
-    "fieldname": "processed",
-    "label": "Processed",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
-    "fieldname": "column_break_uemiw",
-    "label": null,
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
-    "fieldname": "last_name",
-    "label": "Last Name",
+    "fieldname": "custom_parent_section",
+    "label": "Parent Section",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
@@ -195,6 +188,27 @@
     "parenttype": "DocType Layout"
    },
    {
+    "fieldname": "mothers_name",
+    "label": "Mothers Name",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "custom_column_break_bryqy",
+    "label": null,
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "fathers_phone",
+    "label": "Fathers Phone",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
     "fieldname": "mothers_email",
     "label": "Mothers Email",
     "parent": "Lead",
@@ -202,15 +216,36 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "mothers_phone",
-    "label": "Mothers Phone",
+    "fieldname": "custom_details",
+    "label": "Details",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "date_of_birth",
-    "label": "Date of Birth",
+    "fieldname": "walk_details",
+    "label": "Walk Details",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "walk_in_2",
+    "label": "Walk in 2",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "next_action_date",
+    "label": "next action date",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "how_did_you_hear_about_walnut",
+    "label": "How did you hear about walnut",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
@@ -230,6 +265,20 @@
     "parenttype": "DocType Layout"
    },
    {
+    "fieldname": "processed",
+    "label": "Processed",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "mothers_phone",
+    "label": "Mothers Phone",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
     "fieldname": "medium",
     "label": "Medium",
     "parent": "Lead",
@@ -237,8 +286,22 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "walk_details",
-    "label": "Walk Details",
+    "fieldname": "custom_referred_to",
+    "label": "Referred To",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "custom_cold_comment",
+    "label": "Cold Comment",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "column_break_uemiw",
+    "label": null,
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
@@ -246,13 +309,6 @@
    {
     "fieldname": "walk_in_1",
     "label": "Walk in 1",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
-    "fieldname": "walk_in_2",
-    "label": "Walk in 2",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
@@ -454,13 +510,6 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "source",
-    "label": "Source",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
     "fieldname": "col_break123",
     "label": null,
     "parent": "Lead",
@@ -470,13 +519,6 @@
    {
     "fieldname": "lead_owner",
     "label": "Lead Owner",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
-    "fieldname": "status",
-    "label": "Status",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
@@ -837,9 +879,23 @@
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "financepeer2_checkbox",
+    "label": "Financepeer Checkbox",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "how_did_you_hear_about_walnut_school",
+    "label": "How did you hear about Walnut School",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
    }
   ],
-  "modified": "2023-08-30 22:53:11.934126",
+  "modified": "2023-10-03 19:42:22.523253",
   "name": "Lead",
   "route": "/app/lead"
  }
