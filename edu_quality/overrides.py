@@ -20,6 +20,7 @@ from erpnext.accounts.doctype.payment_entry.payment_entry import (
     get_company_defaults
 )
 from erpnext.accounts.party import get_party_bank_account
+from edu_quality.public.py.utils import send_receipt_over_email
 
 class CustomPaymentRequest(PaymentRequest):
     def create_payment_entry(self):
@@ -74,7 +75,7 @@ class CustomPaymentRequest(PaymentRequest):
         paid_amount = fees.outstanding_amount - self.grand_total
         frappe.db.set_value(fees.doctype, fees.name, "outstanding_amount", paid_amount)
         self.db_set("status", "Paid")
-        # create_fee_receipt(fees,self.payment_term, self.transaction_id)
+        send_receipt_over_email(self)
 
     def get_payment_url(self, **kwargs):
         if self.reference_doctype != "Fees":
