@@ -1,0 +1,54 @@
+{
+ "cards": [
+  {
+   "card": "Lead Count"
+  },
+  {
+   "card": "Enrolled Count"
+  },
+  {
+   "card": "Lead to Warm"
+  },
+  {
+   "card": "Lead to Enrolled"
+  }
+ ],
+ "charts": [
+  {
+   "chart": "Lead Funnel by Status",
+   "width": "Half"
+  },
+  {
+   "chart": "Lead Count by Source",
+   "width": "Half"
+  },
+  {
+   "chart": "Lead Count by Counsellor",
+   "width": "Half"
+  },
+  {
+   "chart": "Lead Verification Report",
+   "width": "Half"
+  },
+  {
+   "chart": "Top Reasons for All Leads",
+   "width": "Half"
+  },
+  {
+   "chart": "School Visit Done",
+   "width": "Half"
+  }
+ ],
+ "creation": "2023-10-03 18:27:26.860233",
+ "dashboard_name": "Walnut Analytics Dashboard",
+ "docstatus": 0,
+ "doctype": "Dashboard",
+ "idx": 0,
+ "is_default": 0,
+ "is_standard": 1,
+ "modified": "2023-10-03 20:05:54.449617",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "Walnut Analytics Dashboard",
+ "owner": "Administrator"
+}

@@ -9,6 +9,25 @@ var error_msg = {
     "date_of_birth":"Date of Birth is required before pushing to MGR",
 }
 
+var subStatuses = {
+    'fresh':["Not Known","Online Enquiry","Telephonic Enquiry","Walkin Enquiry"],
+    'warm':["Center Visit Planned","School Visit Done"],
+    'followup/callback':["Call back later",
+        "Call not answering",
+        "Curious",
+        "Interaction Done",
+       "Not Reachable",
+        "School Visit Done",
+        "Switched Off",
+        "Trial Class",],
+        "hot":["Followup for Enrollment","Interested-Will Enroll","School Visit Done"]
+        ,"cold":["Added in Waiting List","Enrolled in another school","Fees High","Junk/Invalid","Location not Convenient","Rejected","Schedule not Convenient","School Visit Done"],
+        "enrolled":["Admission Taken"],
+        "existing parents":["Already Enrolled"],
+        "old leads":['Old lead'],
+        "closed":['zxc']
+}
+
 frappe.ui.form.on("Lead", {
     refresh:function(frm){
         setTimeout(()=>{
@@ -31,7 +50,12 @@ frappe.ui.form.on("Lead", {
     });
             })
     },10)
+    
+    if(frm.doc.status)
+    frm.set_df_property("lead_sub_status","options",subStatuses[frm.doc.status.toLowerCase()])
+    $("textarea[data-fieldname='custom_cold_comment']").css({'height':'70'});
     },
+    
     validate:function(frm){
         
         if(!frm.doc.date_of_birth || frm.doc.date_of_birth.trim()==='') return
@@ -60,6 +84,11 @@ frappe.ui.form.on("Lead", {
                     }
                 };
             });
+        },
+        status:function(frm){
+          
+            if(frm.doc.status)
+            frm.set_df_property("lead_sub_status","options",subStatuses[frm.doc.status.toLowerCase()])
         }
     });
     

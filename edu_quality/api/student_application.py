@@ -397,7 +397,7 @@ def serialize_lead_to_application(doc: dict):
         "is_sibling_in_school": doc.get("is_sibling_already_at_walnut"),
         "rte_student": doc.get("stud_rte"),
         "catering": doc.get("catering"),
-        "referred_to": doc.get("referred_to"),
+        "custom_referred_to": doc.get("referred_to"),
         "if_yes_reference_number_of_child": doc.get("if_yes_reference_number_of_child"),
     }
 
@@ -431,6 +431,17 @@ def create_student_lead(**kwargs):
             "name",
         )
 
+    class_name =  (frappe.db.get_value(
+        "Program",
+        {
+            "school": school_name,
+            "custom_mgr_id":str(kwargs.get("class"))
+        },
+        "name",
+    )
+    or kwargs.get("class")
+    or kwargs.get("class")
+)
     lead_doc = frappe.get_doc(
         {
             "doctype": "Lead",
@@ -443,6 +454,7 @@ def create_student_lead(**kwargs):
             "academic_year": kwargs.get("academic_year"),
             "school_from_lead_source": kwargs.get("school"),
             "center": school_name,
+            "class":class_name,
             "class_from_lead_source": kwargs.get("class"),
         }
     )
@@ -484,6 +496,18 @@ def create_student_lead_fb(**kwargs):
         or kwargs.get("school")
     )
 
+    class_name =  (frappe.db.get_value(
+            "Program",
+            {
+                "school": school_name,
+                "program_name":kwargs.get("class")
+            },
+            "name",
+        )
+        or kwargs.get("class")
+        or kwargs.get("class")
+    )
+
     lead_doc = frappe.get_doc(
         {
             "doctype": "Lead",
@@ -496,6 +520,7 @@ def create_student_lead_fb(**kwargs):
             "academic_year": kwargs.get("academic_year"),
             "school_from_lead_source": kwargs.get("school"),
             "center": school_name,
+            "class":class_name,
             "class_from_lead_source": kwargs.get("class"),
             "source": kwargs.get("source") or "Facebook",
         }

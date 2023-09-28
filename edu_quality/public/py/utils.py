@@ -1,5 +1,6 @@
 import frappe
 
+
 def set_property(doctype, fieldname, prop, property_type, value):
     filters = {
         "doctype_or_field": "DocField",
@@ -61,8 +62,47 @@ def send_payment_link_email(doc, url):
         "subject": subject,
         "message": content,
         "attachments": pdf,
-        "delayed": False
+        "delayed": False,
     }
 
     # Send the email
     frappe.sendmail(**email_args)
+
+
+def send_receipt_over_email(payment_request):
+    payment_entries = frappe.get_list(
+        "Payment Entry", {"reference_no": payment_request.name}
+    )
+    email = frappe.db.get_value("Student", payment_request.party, "student_email_id")
+
+    print_format, letter_head = get_print_format(payment_request.name)
+
+    attachments = [
+        frappe.attach_print(
+            "Payment Entry",
+            pe.name,
+            file_name=pe.name,
+            print_format=print_format,
+            print_letterhead=True,
+        )
+        for pe in payment_entries
+    ]
+
+    email_args = {
+        "recipients": email,
+        "subject": "Payment Receipt",
+        "message": "Please find the attached payment receipt",
+        "attachments": attachments,
+        "delayed": False,
+    }
+
+    if attachments:
+        frappe.sendmail(**email_args)
+
+
+def get_print_format(payment_request):
+    fee_name = frappe.db.get_value("Payment Request", payment_request, "reference_name")
+    program_name = frappe.db.get_value("Fees", fee_name, "program")
+    print_format = frappe.db.get_value("Program", program_name, "print_format")
+    letter_head = frappe.db.get_value("Program", program_name, "letter_head")
+    return print_format, letter_head
