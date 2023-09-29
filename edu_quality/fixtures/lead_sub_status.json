@@ -1,0 +1,234 @@
+[
+ {
+  "docstatus": 0,
+  "doctype": "Lead Sub Status",
+  "modified": "2023-10-03 17:49:12.696121",
+  "name": "Not Known",
+  "name1": "Not Known",
+  "type": "Fresh"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Lead Sub Status",
+  "modified": "2023-10-03 17:49:12.696121",
+  "name": "Online Enquiry",
+  "name1": "Online Enquiry",
+  "type": "Fresh"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Lead Sub Status",
+  "modified": "2023-10-03 17:49:12.696121",
+  "name": "Telephonic Enquiry",
+  "name1": "Telephonic Enquiry",
+  "type": "Fresh"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Lead Sub Status",
+  "modified": "2023-10-03 17:49:12.696121",
+  "name": "Walkin Enquiry",
+  "name1": "Walkin Enquiry",
+  "type": "Fresh"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Lead Sub Status",
+  "modified": "2023-10-03 17:49:12.696121",
+  "name": "Center Visit Planned",
+  "name1": "Center Visit Planned",
+  "type": "Warm"
+ },
+ {
+    "docstatus": 0,
+    "doctype": "Lead Sub Status",
+    "modified": "2023-10-03 17:49:12.696121",
+    "name": "Warm-School Visit Done",
+    "name1": "School Visit Done",
+    "type": "Warm"
+   },
+ {
+  "docstatus": 0,
+  "doctype": "Lead Sub Status",
+  "modified": "2023-10-03 17:49:12.696121",
+  "name": "Call back later",
+  "name1": "Call back later",
+  "type": "FollowUp/Callback"
+ },
+ {
+    "docstatus": 0,
+    "doctype": "Lead Sub Status",
+    "modified": "2023-10-03 17:49:12.696121",
+    "name": "FollowUp/Callback-Visit Done",
+    "name1": "School Visit Done",
+    "type": "Warm"
+   },
+ {
+  "docstatus": 0,
+  "doctype": "Lead Sub Status",
+  "modified": "2023-10-03 17:49:12.696121",
+  "name": "Call not answering",
+  "name1": "Call not answering",
+  "type": "FollowUp/Callback"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Lead Sub Status",
+  "modified": "2023-10-03 17:49:12.696121",
+  "name": "Curious",
+  "name1": "Curious",
+  "type": "FollowUp/Callback"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Lead Sub Status",
+  "modified": "2023-10-03 17:49:12.696121",
+  "name": "Interaction Done",
+  "name1": "Interaction Done",
+  "type": "FollowUp/Callback"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Lead Sub Status",
+  "modified": "2023-10-03 17:49:12.696121",
+  "name": "Note Reachable",
+  "name1": "Note Reachable",
+  "type": "FollowUp/Callback"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Lead Sub Status",
+  "modified": "2023-10-03 17:49:12.696121",
+  "name": "Switched Off",
+  "name1": "Switched Off",
+  "type": "FollowUp/Callback"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Lead Sub Status",
+  "modified": "2023-10-03 17:49:12.696121",
+  "name": "Trial Class",
+  "name1": "Trial Class",
+  "type": "FollowUp/Callback"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Lead Sub Status",
+  "modified": "2023-10-03 17:49:12.696121",
+  "name": "Follow Up Enrollment",
+  "name1": "Follow Up Enrollment",
+  "type": "Hot"
+ },
+ {
+    "docstatus": 0,
+    "doctype": "Lead Sub Status",
+    "modified": "2023-10-03 17:49:12.696121",
+    "name": "Hot-School Visit Done",
+    "name1": "Hot-School Visit Done",
+    "type": "Hot"
+   },
+ {
+  "docstatus": 0,
+  "doctype": "Lead Sub Status",
+  "modified": "2023-10-03 17:49:12.696121",
+  "name": "Interested-Will Enroll",
+  "name1": "Interested-Will Enroll",
+  "type": "Hot"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Lead Sub Status",
+  "modified": "2023-10-03 17:49:12.696121",
+  "name": "Added in Waiting List",
+  "name1": "Added in Waiting List",
+  "type": "Cold"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Lead Sub Status",
+  "modified": "2023-10-03 17:49:12.696121",
+  "name": "Enrolled in another school",
+  "name1": "Enrolled in another school",
+  "type": "Cold"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Lead Sub Status",
+  "modified": "2023-10-03 17:49:12.696121",
+  "name": "Fees High",
+  "name1": "Fees High",
+  "type": "Cold"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Lead Sub Status",
+  "modified": "2023-10-03 17:49:12.696121",
+  "name": "Junk/Invalid",
+  "name1": "Junk/Invalid",
+  "type": "Cold"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Lead Sub Status",
+  "modified": "2023-10-03 17:49:12.696121",
+  "name": "Location not Convenient",
+  "name1": "Location not Convenient",
+  "type": "Cold"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Lead Sub Status",
+  "modified": "2023-10-03 17:49:12.696121",
+  "name": "Rejected",
+  "name1": "Rejected",
+  "type": "Cold"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Lead Sub Status",
+  "modified": "2023-10-03 17:49:12.696121",
+  "name": "Schedule not Convenient",
+  "name1": "Schedule not Convenient",
+  "type": "Cold"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Lead Sub Status",
+  "modified": "2023-10-03 17:49:12.696121",
+  "name": "Cold-School Visit Done",
+  "name1": "School Visit Done",
+  "type": "Cold"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Lead Sub Status",
+  "modified": "2023-10-03 17:49:12.696121",
+  "name": "Admission Taken",
+  "name1": "Admission Taken",
+  "type": "Enrolled"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Lead Sub Status",
+  "modified": "2023-10-03 17:49:12.696121",
+  "name": "Already Enrolled",
+  "name1": "Already Enrolled",
+  "type": "Existing Parents"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Lead Sub Status",
+  "modified": "2023-10-03 17:49:12.696121",
+  "name": "Old lead",
+  "name1": "Old lead",
+  "type": "Old Leads"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Lead Sub Status",
+  "modified": "2023-10-03 17:49:12.696121",
+  "name": "zxc",
+  "name1": "zxc",
+  "type": "Closed"
+ }
+]

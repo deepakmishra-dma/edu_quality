@@ -53,9 +53,10 @@ frappe.ui.form.on("Lead", {
     
     if(frm.doc.status)
     frm.set_df_property("lead_sub_status","options",subStatuses[frm.doc.status.toLowerCase()])
-    $("textarea[data-fieldname='custom_cold_comment']").css({'height':'70'});
-    },
+    $("textarea[data-fieldname='custom_cold_comment'],textarea[data-fieldname='overall_remarks'],textarea[data-fieldname='follow_up_comment']").css({'height':'70'});
     
+    },
+
     validate:function(frm){
         
         if(!frm.doc.date_of_birth || frm.doc.date_of_birth.trim()==='') return
@@ -87,8 +88,13 @@ frappe.ui.form.on("Lead", {
         },
         status:function(frm){
           
-            if(frm.doc.status)
-            frm.set_df_property("lead_sub_status","options",subStatuses[frm.doc.status.toLowerCase()])
+            frm.set_query("custom_lead_sub_status", function() {
+                return {
+                     "filters": {
+                         "type": frm.doc.status
+                         }
+                     };
+                 });
         }
     });
     

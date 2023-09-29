@@ -1,0 +1,31 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-10-04 00:41:28.507324",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "sub_status"
+ ],
+ "fields": [
+  {
+   "fieldname": "sub_status",
+   "fieldtype": "Link",
+   "label": "Sub Status",
+   "options": "Lead Sub Status"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2023-10-04 00:41:28.507324",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "Lead Sub Status Detail",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
