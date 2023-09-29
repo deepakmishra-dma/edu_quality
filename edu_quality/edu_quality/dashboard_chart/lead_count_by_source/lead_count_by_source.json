@@ -15,7 +15,7 @@
  "is_public": 1,
  "is_standard": 1,
  "last_synced_on": "2023-10-03 20:08:22.519161",
- "modified": "2023-10-03 20:09:36.592059",
+ "modified": "2023-10-03 21:44:42.836562",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Lead Count by Source",
@@ -27,7 +27,7 @@
  "time_interval": "Yearly",
  "timeseries": 0,
  "timespan": "Last Year",
- "type": "Line",
+ "type": "Bar",
  "use_report_chart": 0,
  "value_based_on": "",
  "y_axis": []
