@@ -23,6 +23,27 @@ def before_submit(doc,method=None):
     referal_discount(doc)
 
 
+def before_update(doc,method=None):
+    for ps in doc.payment_schedule:
+        if ps.outstanding == 0:
+            frappe.throw(f"Cannot Update Payment Plan, {ps.payment_term} is already paid")
+    
+    old_doc = doc.get_doc_before_save()
+    if old_doc.payment_plan != doc.payment_plan:
+        doc.payment_schedule = []
+        payment_schedule = frappe.get_doc("Payment Plan",doc.payment_plan).payment_schedule
+        for i, ps in enumerate(payment_schedule):
+            amount = (ps.invoice_portion * doc.grand_total) / 100
+            doc.append("payment_schedule",{
+                'payment_term':ps.payment_term,
+                'description': f"Installment {i+1}",
+                'invoice_portion': ps.invoice_portion,
+                'payment_amount':amount,
+                'outstanding':amount,
+                'due_date':ps.due_date
+            })
+        update_payment_request_after_discount(doc)
+
 def before_save(doc,method=None):
     try:
         if not doc.get("school"):

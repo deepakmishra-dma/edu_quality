@@ -126,7 +126,8 @@ doc_events = {
     "Fees":{
         "after_insert":"edu_quality.public.py.fee.after_insert",
         "before_submit":"edu_quality.public.py.fee.before_submit",
-        "before_save":"edu_quality.public.py.fee.before_save"
+        "before_save":"edu_quality.public.py.fee.before_save",
+        "before_update_after_submit":"edu_quality.public.py.fee.before_update"
     },
     "Payment Request": {
         "before_save":"edu_quality.public.py.payment_request.before_save",
