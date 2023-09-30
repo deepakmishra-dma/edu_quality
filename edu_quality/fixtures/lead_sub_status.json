@@ -44,7 +44,7 @@
     "doctype": "Lead Sub Status",
     "modified": "2023-10-03 17:49:12.696121",
     "name": "Warm-School Visit Done",
-    "name1": "School Visit Done",
+    "name1": "Warm-School Visit Done",
     "type": "Warm"
    },
  {
@@ -59,8 +59,8 @@
     "docstatus": 0,
     "doctype": "Lead Sub Status",
     "modified": "2023-10-03 17:49:12.696121",
-    "name": "FollowUp/Callback-Visit Done",
-    "name1": "School Visit Done",
+    "name": "FollowUp/Callback-School Visit Done",
+    "name1": "FollowUp/Callback-School Visit Done",
     "type": "Warm"
    },
  {
@@ -196,7 +196,7 @@
   "doctype": "Lead Sub Status",
   "modified": "2023-10-03 17:49:12.696121",
   "name": "Cold-School Visit Done",
-  "name1": "School Visit Done",
+  "name1": "Cold-School Visit Done",
   "type": "Cold"
  },
  {
