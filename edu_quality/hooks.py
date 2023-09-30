@@ -284,7 +284,8 @@ fixtures = [
                 "in",
                 ["Walnut Accounts",
                  "Student Management",
-                 "Fees Setup"
+                 "Fees Setup",
+                 "Walnut Analytics Dashboard"
                 ]
             ]
         ]
