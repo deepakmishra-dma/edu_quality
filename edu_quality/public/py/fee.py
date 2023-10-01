@@ -19,14 +19,14 @@ def after_insert(doc,method=None):
 
 def before_submit(doc,method=None):
     time_based_discount(doc)
-    update_payment_schedule(doc)
     referal_discount(doc)
+    update_payment_schedule(doc)
 
 
 def before_update(doc,method=None):    
     old_doc = doc.get_doc_before_save()
     if old_doc.payment_schedule != doc.payment_schedule:
-        for term,old_term in zip(doc.payment_schedule,old_doc.payment_term):
+        for term,old_term in zip(doc.payment_schedule,old_doc.payment_schedule):
             if old_term.outstanding == 0 and term.outstanding != 0:
                 frappe.throw("Cannot Change term - " + term.payment_term + " As it is already Paid!")
             if term.invoice_portion:
