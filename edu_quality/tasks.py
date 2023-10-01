@@ -30,7 +30,7 @@ def create_payment_request_before_due_date():
     fee_schedules = frappe.get_all("Fee Schedule")
     for fee_schedule in fee_schedules:
         before_days = frappe.get_value("Fee Schedule",fee_schedule.name,"create_payment_request_before")
-        fee_list = frappe.get_all("Fees",{'fee_schedules':fee_schedule.name})
+        fee_list = frappe.get_all("Fees",{'fee_schedule':fee_schedule.name,'workflow_state':'Approved'})
         for fee in fee_list:
             for schedule in fee.payment_schedule:
                 if (schedule.due_date - today).days == before_days:
