@@ -73,9 +73,9 @@ def add_discount(fee_name, discount):
     if discount_applied:
         if dis.needs_admin_approval:
             frappe.db.set_value("Fees",fee_name,"workflow_state","Pending")
-            update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=True)
+            update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=True,dis=dis)
         else:
-            update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=True)
+            update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=True,dis=dis)
             update_payment_request_after_discount(fees)
 
 
@@ -106,7 +106,7 @@ def remove_discount(fee_name, discount):
                 message = dis.name + " Discount does not present"
                 frappe.response['message'] = message
     if discount_removed:
-        update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=False)
+        update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=False,dis=dis)
         update_payment_request_after_discount(fees)
 
 
@@ -295,22 +295,36 @@ def apply_time_based_discount(dis, component, fees):
         fees.grand_total_in_words = grand_total_in_words
         fees.outstanding_amount = grand_total
 
-def update_payment_plan_after_discount(doc, total_discount=0, apply_discount=False):
+def update_payment_plan_after_discount(doc, total_discount=0, apply_discount=False,dis={}):
     if doc.payment_plan:
         for i, schedule in enumerate(doc.payment_schedule):
             if schedule.outstanding == 0:
                 pass
             else:
                 if apply_discount:
-                    if i == len(doc.payment_schedule) - 1:
+                    if dis.type != "Payment Plan":
                         amount = schedule.outstanding - total_discount
                         frappe.db.set_value("Payment Schedule",schedule.name,"payment_amount",amount)
                         frappe.db.set_value("Payment Schedule",schedule.name,"outstanding",amount)
+                        break
+                    else:
+                        if i == len(doc.payment_schedule) - 1:
+                            amount = schedule.outstanding - total_discount
+                            frappe.db.set_value("Payment Schedule",schedule.name,"payment_amount",amount)
+                            frappe.db.set_value("Payment Schedule",schedule.name,"outstanding",amount)
+
+
                 else:
-                    if i == len(doc.payment_schedule) - 1:
+                    if dis.type != "Payment Plan":
                         amount = schedule.outstanding + total_discount
                         frappe.db.set_value("Payment Schedule",schedule.name,"payment_amount",amount)
                         frappe.db.set_value("Payment Schedule",schedule.name,"outstanding",amount)
+                        break
+                    else:
+                        if i == len(doc.payment_schedule) - 1:
+                            amount = schedule.outstanding - total_discount
+                            frappe.db.set_value("Payment Schedule",schedule.name,"payment_amount",amount)
+                            frappe.db.set_value("Payment Schedule",schedule.name,"outstanding",amount)
 
 def update_payment_plan_after_discount_before_submit(doc, total_discount):
     if doc.payment_plan:
