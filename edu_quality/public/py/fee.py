@@ -26,6 +26,7 @@ def before_submit(doc,method=None):
 def before_update(doc,method=None):    
     old_doc = doc.get_doc_before_save()
     if old_doc.payment_schedule != doc.payment_schedule:
+        ps = []
         for term,old_term in zip(doc.payment_schedule,old_doc.payment_schedule):
             if old_term.outstanding == 0 and term.outstanding != 0:
                 frappe.throw("Cannot Change term - " + term.payment_term + " As it is already Paid!")
@@ -33,6 +34,8 @@ def before_update(doc,method=None):
                 term.payment_amount = (term.invoice_portion * doc.grand_total)/100
             elif term.payment_amount:
                 term.invoice_portion = (term.payment_amount/doc.grand_total)*100
+            ps.append(term)
+        doc.payment_schedule = ps
         update_payment_request_after_discount(doc)
 
 def before_save(doc,method=None):
