@@ -41,7 +41,7 @@ def before_update(doc,method=None):
                 'invoice_portion': term.invoice_portion,
                 'payment_amount':term.payment_amount,
                 'outstanding':term.payment_amount,
-                'due_date':term.payment_amount
+                'due_date':term.due_date
             })
             i+=1
         doc.payment_schedule = []
