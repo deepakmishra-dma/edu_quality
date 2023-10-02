@@ -52,9 +52,9 @@ def before_save(doc,method=None):
         if not doc.get("school"):
             doc.school = frappe.db.get_value("Student",doc.student,"school")
         old = doc.get_doc_before_save()
-        if old.workflow_state != doc.workflow_state:
-            update_payment_schedule(doc)
-            update_payment_request_after_discount(doc)
+        # if old.workflow_state != doc.workflow_state:
+        #     update_payment_schedule(doc)
+        #     update_payment_request_after_discount(doc)
     except Exception as e:
         frappe.logger("fee").exception(e)
 

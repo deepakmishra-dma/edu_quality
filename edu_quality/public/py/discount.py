@@ -332,10 +332,10 @@ def update_payment_plan_after_discount_before_submit(doc, total_discount):
             if schedule.outstanding == 0:
                 pass
             else:
-                if i == len(doc.payment_schedule) - 1:
-                    amount = schedule.outstanding - total_discount
-                    schedule.payment_amount = amount
-                    schedule.outstanding = amount
+                amount = schedule.outstanding - total_discount
+                schedule.payment_amount = amount
+                schedule.outstanding = amount
+                break
 
 
 
