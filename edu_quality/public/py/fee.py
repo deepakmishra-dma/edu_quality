@@ -26,8 +26,6 @@ def before_submit(doc,method=None):
 def before_update(doc,method=None):    
     old_doc = doc.get_doc_before_save()
     if old_doc.payment_schedule != doc.payment_schedule:
-        ps = []
-        i=0
         for term,old_term in zip(doc.payment_schedule,old_doc.payment_schedule):
             if old_term.outstanding == 0 and term.outstanding != 0:
                 frappe.throw("Cannot Change term - " + term.payment_term + " As it is already Paid!")
@@ -35,18 +33,18 @@ def before_update(doc,method=None):
                 term.payment_amount = (term.invoice_portion * doc.grand_total)/100
             elif term.payment_amount:
                 term.invoice_portion = (term.payment_amount/doc.grand_total)*100
-            ps.append({
-                'payment_term':term.payment_term,
-                'description': f"Installment {i+1}",
-                'invoice_portion': term.invoice_portion,
-                'payment_amount':term.payment_amount,
-                'outstanding':term.payment_amount,
-                'due_date':term.due_date
-            })
-            i+=1
+        payment_schedule = doc.payment_schedule
         doc.payment_schedule = []
-        for term in ps:
-            doc.append("payment_schedule",term)
+        for i, ps in enumerate(payment_schedule):
+            amount = (ps.invoice_portion * doc.grand_total) / 100
+            doc.append("payment_schedule",{
+                'payment_term':ps.payment_term,
+                'description': f"Installment {i+1}",
+                'invoice_portion': ps.invoice_portion,
+                'payment_amount':amount,
+                'outstanding':amount,
+                'due_date':ps.due_date
+            })
         update_payment_request_after_discount(doc)
 
 def before_save(doc,method=None):
