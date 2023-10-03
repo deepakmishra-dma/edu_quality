@@ -53,7 +53,7 @@ frappe.ui.form.on("Lead", {
     
     if(frm.doc.status)
     frm.set_df_property("lead_sub_status","options",subStatuses[frm.doc.status.toLowerCase()])
-    $("textarea[data-fieldname='custom_cold_comment'],textarea[data-fieldname='overall_remarks'],textarea[data-fieldname='follow_up_comment']").css({'height':'70'});
+    $("textarea[data-fieldname='custom_cold_comment'],textarea[data-fieldname='overall_remarks'],textarea[data-fieldname='follow_up_comment'],textarea[data-fieldname='walk_in_1'],textarea[data-fieldname='walk_in_2'],textarea[data-fieldname='walk_in_3']").css({'height':'70'});
     
     },
 
