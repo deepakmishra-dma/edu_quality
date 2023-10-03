@@ -72,7 +72,7 @@ frappe.ui.form.on("Carnival Event", {
 
         setTimeout(() => {
 
-            frm.add_custom_button(__("Upload Images"), async function() {
+           var element= frm.add_custom_button(__("Upload Images"), async function() {
                 try{
                 const images = await nativeInterface.execute('openWebViewCamera', {
                     multiple: true,
@@ -107,10 +107,9 @@ frappe.ui.form.on("Carnival Event", {
 
 
 
-            })
-
-
-
+            }).addClass('btn-primary')
+            element.addClass('btn-primary')
+            element.parent().removeClass('hidden-xs hidden-md')
 
         })
     },

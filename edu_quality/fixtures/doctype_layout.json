@@ -20,20 +20,6 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "status",
-    "label": "Status",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
-    "fieldname": "lead_status",
-    "label": "Lead Status",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
     "fieldname": "center",
     "label": "School",
     "parent": "Lead",
@@ -111,13 +97,6 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "lead_sub_status",
-    "label": "Lead Sub Status",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
     "fieldname": "school_from_lead_source",
     "label": "School from Lead Source",
     "parent": "Lead",
@@ -167,6 +146,13 @@
     "parenttype": "DocType Layout"
    },
    {
+    "fieldname": "campaign_name",
+    "label": "Campaign Name",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
     "fieldname": "custom_parent_section",
     "label": "Parent Section",
     "parent": "Lead",
@@ -188,8 +174,8 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "mothers_name",
-    "label": "Mothers Name",
+    "fieldname": "mothers_email",
+    "label": "Mothers Email",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
@@ -209,8 +195,15 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "mothers_email",
-    "label": "Mothers Email",
+    "fieldname": "mothers_name",
+    "label": "Mothers Name",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "mothers_phone",
+    "label": "Mothers Phone",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
@@ -223,15 +216,15 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "walk_details",
-    "label": "Walk Details",
+    "fieldname": "status",
+    "label": "Status",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "walk_in_2",
-    "label": "Walk in 2",
+    "fieldname": "custom_do_you_want_to_add_or_update_your_existing_follow_up",
+    "label": "Do you want to add or update your existing follow up",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
@@ -244,27 +237,6 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "how_did_you_hear_about_walnut",
-    "label": "How did you hear about walnut",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
-    "fieldname": "is_sibling_already_at_walnut",
-    "label": "Is Sibling Already at Walnut",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
-    "fieldname": "if_yes_reference_number_of_child",
-    "label": "If Yes reference number of child",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
     "fieldname": "processed",
     "label": "Processed",
     "parent": "Lead",
@@ -272,8 +244,8 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "mothers_phone",
-    "label": "Mothers Phone",
+    "fieldname": "if_yes_reference_number_of_child",
+    "label": "If Yes reference number of child",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
@@ -307,6 +279,83 @@
     "parenttype": "DocType Layout"
    },
    {
+    "fieldname": "custom_lead_sub_status",
+    "label": "Lead Sub Status",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "follow_up_comment",
+    "label": "Follow up comment",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "overall_remarks",
+    "label": "Overall Remarks",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "is_sibling_already_at_walnut",
+    "label": "Is Sibling Already at Walnut",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "custom_if_yes_reference_number_of_child",
+    "label": "If Yes reference number of child",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "custom_walk_in_details",
+    "label": "Walk In details",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "walk_details",
+    "label": "Walk Details",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "custom_walk_in_3_action_date",
+    "label": "Walk in 3 Action Date",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "custom_walk_in_2_action_date",
+    "label": "Walk in 2 Action Date",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "custom_walk_in_1_action_date",
+    "label": "Walk in 1 Action Date",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "custom_column_break_e2tcp",
+    "label": "",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
     "fieldname": "walk_in_1",
     "label": "Walk in 1",
     "parent": "Lead",
@@ -321,29 +370,8 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "action_time",
-    "label": "action time",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
-    "fieldname": "do_you_want_to_add_or_update_your_existing_follow_up",
-    "label": "Do you want to add or update your existing follow up",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
-    "fieldname": "follow_up_comment",
-    "label": "follow up comment",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
-    "fieldname": "overall_remarks",
-    "label": "Overall Remarks",
+    "fieldname": "walk_in_2",
+    "label": "Walk in 2",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
@@ -755,13 +783,6 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "campaign_name",
-    "label": "Campaign Name",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
     "fieldname": "company",
     "label": "Company",
     "parent": "Lead",
@@ -888,14 +909,28 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "how_did_you_hear_about_walnut_school",
-    "label": "How did you hear about Walnut School",
+    "fieldname": "referred_to",
+    "label": "Referred To",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "do_you_want_to_add_or_update_your_existing_follow_up",
+    "label": "Do you want to add or update your existing follow up",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "sub_status",
+    "label": "Sub Status",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
    }
   ],
-  "modified": "2023-10-03 19:42:22.523253",
+  "modified": "2023-10-04 12:01:29.753420",
   "name": "Lead",
   "route": "/app/lead"
  }

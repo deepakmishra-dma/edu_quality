@@ -12,6 +12,13 @@ CONFIG = {
 }
 
 
+def get_class_without_std(txt):
+    if not txt:
+        return " "
+    if "Std. " in txt:
+        return txt.split("Std. ")[1]
+    return txt
+
 @frappe.whitelist()
 def create_student_application(**args):
     if not args:
@@ -26,8 +33,8 @@ def create_student_application(**args):
     )
     created_mgr_lead = upload_to_mgr(student_application)
     student_application.lms_id = created_mgr_lead.get("ID")
-    lead_application.lead_status = "Enrolled"
-    lead_application.status = "Converted"
+    # lead_application.lead_status = "Enrolled"
+    lead_application.status = "Enrolled"
     lead_application.save()
     student_application.insert()
     frappe.msgprint(("Upload to MGR successful"))
@@ -270,6 +277,8 @@ def default(obj):
 
 
 def upload_to_mgr(doc):
+
+    program = frappe.db.get_value('Program',doc.get('program'),'program_name') or " "
     JSON = {
         "user": frappe.db.get_single_value("MGR Settings", "username"),
         "password": frappe.utils.password.get_decrypted_password(
@@ -290,7 +299,7 @@ def upload_to_mgr(doc):
         "city": doc.get("city") or " ",
         "state": doc.get("state") or " ",
         "bus_service_required": "yes" if doc.get("bus_service_required") else "no",
-        "class": doc.get("program") or " ",
+        "class": get_class_without_std(program) or " ",
         "RTE_student": "yes" if doc.get("rte_student") else "no",
         "preferred_batch_time": doc.get("batch_time") or " ",
         "academic_year": doc.get("academic_year") or " ",
@@ -424,6 +433,11 @@ def create_student_lead(**kwargs):
         raise frappe.exceptions.MandatoryError(
             "First Name , Fathers Name or Fathers phone is required"
         )
+    
+    existing_leads=frappe.db.get_list('Lead',filters={"first_name":kwargs.get('first_name'),"fathers_name":kwargs.get('fathers_name'),"fathers_phone":kwargs.get('fathers_phone')},ignore_permissions=True)
+    if len(existing_leads):
+        return frappe.get_doc('Lead',existing_leads[0].get('name'))
+    
     if kwargs.get("school"):
         school_name = frappe.db.get_value(
             "School",
@@ -482,6 +496,10 @@ def create_student_lead_fb(**kwargs):
             "First Name , Fathers Name or Fathers phone is required"
         )
 
+    existing_leads=frappe.db.get_list('Lead',filters={"first_name":kwargs.get('first_name'),"fathers_name":kwargs.get('fathers_name'),"fathers_phone":kwargs.get('fathers_phone')},ignore_permissions=True)
+    if len(existing_leads):
+        return frappe.get_doc('Lead',existing_leads[0].get('name'))
+    
     school_name = (
         frappe.db.get_value(
             "School",
