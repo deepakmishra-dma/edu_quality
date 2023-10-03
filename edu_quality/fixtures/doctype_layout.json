@@ -244,13 +244,6 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "if_yes_reference_number_of_child",
-    "label": "If Yes reference number of child",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
     "fieldname": "medium",
     "label": "Medium",
     "parent": "Lead",
@@ -328,8 +321,8 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "custom_walk_in_3_action_date",
-    "label": "Walk in 3 Action Date",
+    "fieldname": "custom_walk_in_1_action_date",
+    "label": "Walk in 1 Action Date",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
@@ -342,8 +335,8 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "custom_walk_in_1_action_date",
-    "label": "Walk in 1 Action Date",
+    "fieldname": "custom_walk_in_3_action_date",
+    "label": "Walk in 3 Action Date",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
@@ -363,15 +356,15 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "walk_in_3",
-    "label": "Walk in 3",
+    "fieldname": "walk_in_2",
+    "label": "Walk in 2",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "walk_in_2",
-    "label": "Walk in 2",
+    "fieldname": "walk_in_3",
+    "label": "Walk in 3",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
@@ -930,7 +923,7 @@
     "parenttype": "DocType Layout"
    }
   ],
-  "modified": "2023-10-04 12:01:29.753420",
+  "modified": "2023-10-04 17:01:35.864494",
   "name": "Lead",
   "route": "/app/lead"
  }
