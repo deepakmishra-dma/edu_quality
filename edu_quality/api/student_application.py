@@ -433,6 +433,11 @@ def create_student_lead(**kwargs):
         raise frappe.exceptions.MandatoryError(
             "First Name , Fathers Name or Fathers phone is required"
         )
+    
+    existing_leads=frappe.db.get_list('Lead',filters={"first_name":kwargs.get('first_name'),"fathers_name":kwargs.get('fathers_name'),"fathers_phone":kwargs.get('fathers_phone')},ignore_permissions=True)
+    if len(existing_leads):
+        return frappe.get_doc('Lead',existing_leads[0].get('name'))
+    
     if kwargs.get("school"):
         school_name = frappe.db.get_value(
             "School",
@@ -491,6 +496,10 @@ def create_student_lead_fb(**kwargs):
             "First Name , Fathers Name or Fathers phone is required"
         )
 
+    existing_leads=frappe.db.get_list('Lead',filters={"first_name":kwargs.get('first_name'),"fathers_name":kwargs.get('fathers_name'),"fathers_phone":kwargs.get('fathers_phone')},ignore_permissions=True)
+    if len(existing_leads):
+        return frappe.get_doc('Lead',existing_leads[0].get('name'))
+    
     school_name = (
         frappe.db.get_value(
             "School",
