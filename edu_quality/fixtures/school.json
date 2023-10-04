@@ -1,0 +1,39 @@
+[
+
+ {
+  "custom_mgr_id": "74",
+  "description": null,
+  "docstatus": 0,
+  "doctype": "School",
+  "institution": null,
+  "location": "Wakad",
+  "modified": "2023-10-03 18:13:42.700013",
+  "name": "Walnut School at Wakad",
+  "prefix": "WA",
+  "school": "Walnut School at Wakad"
+ },
+ {
+    "custom_mgr_id": "46",
+    "description": null,
+    "docstatus": 0,
+    "doctype": "School",
+    "institution": null,
+    "location": "Shivane",
+    "modified": "2023-10-03 18:13:42.700013",
+    "name": "Walnut School at Fursungi",
+    "prefix": "FU",
+    "school": "Walnut School at Fursungi"
+   },
+   {
+    "custom_mgr_id": "47",
+    "description": null,
+    "docstatus": 0,
+    "doctype": "School",
+    "institution": null,
+    "location": "Fursungi",
+    "modified": "2023-10-03 18:13:42.700013",
+    "name": "Walnut School at Shivane",
+    "prefix": "SH",
+    "school": "Walnut School at Shivane"
+   }
+]
