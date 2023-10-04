@@ -29,7 +29,7 @@ def check_for_folder_in_google_drive(folder_name):
 		file_metadata = {
 			"name": folder_name,
 			"mimeType": "application/vnd.google-apps.folder",
-			"parents":[service_account_doc.get('root_folder')]
+			"parents":[service_account_doc.get('root_folder').split("  id:  ")[-1]]
 		}
 		
 		try:
@@ -47,7 +47,7 @@ def check_for_folder_in_google_drive(folder_name):
 	try:
 		service_account_doc = frappe.get_single('Google Service Account')
 		google_drive_folders = (
-			google_drive.files().list(q=f"mimeType='application/vnd.google-apps.folder' and '{service_account_doc.get('root_folder')}' in parents").execute()
+			google_drive.files().list(q=f"mimeType='application/vnd.google-apps.folder' and '{service_account_doc.get('root_folder').split('  id:  ')[-1]}' in parents").execute()
 		)
 	
 	
