@@ -299,7 +299,7 @@ def upload_to_mgr(doc):
         "city": doc.get("city") or " ",
         "state": doc.get("state") or " ",
         "bus_service_required": "yes" if doc.get("bus_service_required") else "no",
-        "class": get_class_without_std(program) or " ",
+        "class": program or " ",
         "RTE_student": "yes" if doc.get("rte_student") else "no",
         "preferred_batch_time": doc.get("batch_time") or " ",
         "academic_year": doc.get("academic_year") or " ",
@@ -518,7 +518,7 @@ def create_student_lead_fb(**kwargs):
             "Program",
             {
                 "school": school_name,
-                "program_name":kwargs.get("class")
+                "program_name":get_class_without_std(kwargs.get("class"))
             },
             "name",
         )

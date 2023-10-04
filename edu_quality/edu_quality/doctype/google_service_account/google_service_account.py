@@ -13,4 +13,4 @@ def get_folder_list():
 	oauth_obj = GoogleServiceAccountAuth("drive")
 	google_drive_obj = oauth_obj.get_google_service_object()
 	folders= google_drive_obj.files().list(q="mimeType='application/vnd.google-apps.folder'").execute()
-	return [f'{folder.get("id")}' for folder in folders.get('files')]
+	return [f'{folder.get("name")}  id:  {folder.get("id")}' for folder in folders.get('files')]
