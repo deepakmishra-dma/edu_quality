@@ -19,6 +19,13 @@ def get_class_without_std(txt):
         return txt.split("Std. ")[1]
     return txt
 
+def remove_indian_country_code(phone):
+    if not phone:
+        return ""
+    if "+91" in phone:
+        return phone[3::]    
+    return phone
+
 @frappe.whitelist()
 def create_student_application(**args):
     if not args:
@@ -289,7 +296,7 @@ def upload_to_mgr(doc):
         "last_name": doc.get("last_name") or " ",
         "mother_name": doc.get("mother_f_name") or " ",
         "father_name": doc.get("father_f_name"),
-        "father_mobile_number": doc.get("father_mobile_no"),
+        "father_mobile_number": remove_indian_country_code( doc.get("father_mobile_no")),
         "father_email_address": doc.get("father_email"),
         "gender": doc.get("gender") or " ",
         "date_of_birth": doc.get("date_of_birth") or " ",
@@ -434,7 +441,7 @@ def create_student_lead(**kwargs):
             "First Name , Fathers Name or Fathers phone is required"
         )
     
-    existing_leads=frappe.db.get_list('Lead',filters={"first_name":kwargs.get('first_name'),"fathers_name":kwargs.get('fathers_name'),"fathers_phone":kwargs.get('fathers_phone')},ignore_permissions=True)
+    existing_leads=frappe.db.get_list('Lead',filters={"first_name":kwargs.get('first_name'),"fathers_name":kwargs.get('fathers_name'),"fathers_phone":remove_indian_country_code( kwargs.get('fathers_phone'))},ignore_permissions=True)
     if len(existing_leads):
         return frappe.get_doc('Lead',existing_leads[0].get('name'))
     
@@ -463,7 +470,7 @@ def create_student_lead(**kwargs):
             "last_name": " ",
             "fathers_name": kwargs.get("fathers_name"),
             "fathers_email": kwargs.get("father_email_id"),
-            "fathers_phone": kwargs.get("fathers_phone"),
+            "fathers_phone": remove_indian_country_code(kwargs.get("fathers_phone")),
             "mothers_name": " ",
             "academic_year": kwargs.get("academic_year"),
             "school_from_lead_source": kwargs.get("school"),
@@ -496,7 +503,7 @@ def create_student_lead_fb(**kwargs):
             "First Name , Fathers Name or Fathers phone is required"
         )
 
-    existing_leads=frappe.db.get_list('Lead',filters={"first_name":kwargs.get('first_name'),"fathers_name":kwargs.get('fathers_name'),"fathers_phone":kwargs.get('fathers_phone')},ignore_permissions=True)
+    existing_leads=frappe.db.get_list('Lead',filters={"first_name":kwargs.get('first_name'),"fathers_name":kwargs.get('fathers_name'),"fathers_phone":remove_indian_country_code(kwargs.get('fathers_phone'))},ignore_permissions=True)
     if len(existing_leads):
         return frappe.get_doc('Lead',existing_leads[0].get('name'))
     
@@ -533,7 +540,7 @@ def create_student_lead_fb(**kwargs):
             "last_name": " ",
             "fathers_name": kwargs.get("fathers_name"),
             "fathers_email": kwargs.get("father_email_id"),
-            "fathers_phone": kwargs.get("fathers_phone"),
+            "fathers_phone": remove_indian_country_code(kwargs.get("fathers_phone")),
             "mothers_name": " ",
             "academic_year": kwargs.get("academic_year"),
             "school_from_lead_source": kwargs.get("school"),
