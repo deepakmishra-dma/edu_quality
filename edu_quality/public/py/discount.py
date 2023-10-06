@@ -221,7 +221,19 @@ def payment_plan(doc, method=None):
                             queue="long",
                             timeout=1800,
                         )
-            i= i+1
+            discount = discount_type = None
+            if i == len(pp.payment_schedule)-1:
+                payment_plan_discount = get_payment_plan_discount(doc.payment_plan, doc)
+                if payment_plan_discount:
+                    if payment_plan_discount[2]:
+                        payment_amount = payment_amount - payment_plan_discount[0]
+                        discount = payment_plan_discount[2]
+                        discount_type = payment_plan_discount[1]
+                    else:
+                        payment_amount = payment_amount - payment_plan_discount[0]
+                        discount = payment_plan_discount[0]
+                        discount_type = payment_plan_discount[1]
+            i = i+1
             doc.append("payment_schedule",{
                 'payment_term': schedule.payment_term,
                 'description': description,
@@ -229,7 +241,31 @@ def payment_plan(doc, method=None):
                 'invoice_portion': schedule.invoice_portion,
                 'payment_amount': payment_amount,
                 'outstanding': payment_amount,
+                'discount_type': discount_type,
+                'discount': discount,
+                'discount_date': schedule.due_date
             })
+
+def get_payment_plan_discount(payment_plan, doc):
+    for component in doc.components:
+        dis_filter = {"payment_plan": payment_plan, "fee_structure":doc.fee_structure, "fee_category": component.fees_category}
+        if frappe.db.exists("Discount Configuration", dis_filter):
+            dis = frappe.get_doc("Discount Configuration", dis_filter)
+            if dis.discount_amount:
+                component.custom_discounts = dis.name
+                component.custom_discount_percentage = calculate_discount(component.amount, dis.discount_amount)
+                component.custom_discount_amount = dis.discount_amount
+                component.custom_amount_after_discount = component.amount - dis.discount_amount
+                return (dis.discount_amount, "Amount", 0)
+            else:
+                discount_amount = (component.amount * float(dis.discount)) / 100
+                component.custom_discounts = dis.name
+                component.custom_discount_percentage = dis.discount
+                component.custom_discount_amount = discount_amount
+                component.custom_amount_after_discount = component.amount - discount_amount
+                return (discount_amount, "Percentage", dis.discount)
+        else:
+            return None
 
 def only_deposit(doc):    
     make_payment_request(
