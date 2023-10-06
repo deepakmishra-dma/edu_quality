@@ -106,3 +106,37 @@ def get_print_format(payment_request):
     print_format = frappe.db.get_value("Program", program_name, "print_format")
     letter_head = frappe.db.get_value("Program", program_name, "letter_head")
     return print_format, letter_head
+
+
+def get_undertaking_template(doc):
+    fee = frappe.get_value("Payment Request", doc.name, "reference_name")
+    class_name = frappe.get_value("Fees", fee, "program")
+    template = frappe.get_doc("Rules and Regulation Template", {"class": class_name})
+    site_url = frappe.utils.get_url()
+    pdf_url = site_url + template.pdf
+    return pdf_url
+
+
+@frappe.whitelist()
+def handle_undertaking_submission(**kwargs):
+    payment_hash = kwargs.get("payment_request")
+    student, fee = frappe.get_value("Payment Request", {"payment_hash": payment_hash}, ["party", "reference_name"])
+    class_name = frappe.get_value("Fees", fee, "program")
+    template = frappe.get_doc("Rules and Regulation Template", {"class": class_name})
+    student_doc = frappe.get_doc("Student", student)
+
+    if not frappe.db.exists("Rules and Regulation Submission", {"reference_no": student_doc.custom_reference_number}):
+        new_doc = frappe.new_doc("Rules and Regulation Submission")
+        new_doc.student = student_doc
+        new_doc.reference_no = student_doc.custom_reference_number
+        new_doc.fathers_name = student_doc.custom_fathers_first_name
+        new_doc.mothers_name = student_doc.custom_mothers_first_name
+        new_doc.submitted_with_response = "Yes"
+        new_doc.rules_and_regulation_template = template
+        new_doc.submitted_date = frappe.utils.nowdate()
+        new_doc.otp_entered = None
+        new_doc.otp_sent_to_contact_no = student_doc.custom_fathers_mobile_no
+        new_doc.otp_sent_to_email_id = student_doc.student_email_id
+        new_doc.ip_address = kwargs.get("ip_address")
+        new_doc.user_info = kwargs.get("browser_info")
+        new_doc.save(ignore_permissions=True)

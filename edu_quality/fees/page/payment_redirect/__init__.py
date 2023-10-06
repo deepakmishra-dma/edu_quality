@@ -1,6 +1,7 @@
 import frappe 
 import pickle
 from frappe.utils.print_format import download_pdf
+from edu_quality.public.py.utils import get_undertaking_template
 
 def cache_data(ttl):
     def cache_processor(func):
@@ -81,7 +82,8 @@ def get_payment_details(**kwargs):
         'payment_url': payment_url(payment_request,payment_method="UPI"),
         'status': payment_request.status,
         'receipt_url': frappe.utils.get_url() + "/api/method/edu_quality.fees.page.payment_redirect.payment_receipt?payment_request="+payment_request.name,
-        "breakup": breakup
+        "breakup": breakup,
+        "undertaking_url": get_undertaking_template(payment_request)
     }
 
 
