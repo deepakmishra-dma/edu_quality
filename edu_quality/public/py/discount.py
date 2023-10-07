@@ -221,18 +221,6 @@ def payment_plan(doc, method=None):
                             queue="long",
                             timeout=1800,
                         )
-            discount = discount_type = None
-            if i == len(pp.payment_schedule)-1:
-                payment_plan_discount = get_payment_plan_discount(doc.payment_plan, doc)
-                if payment_plan_discount:
-                    if payment_plan_discount[2]:
-                        payment_amount = payment_amount - payment_plan_discount[0]
-                        discount = payment_plan_discount[2]
-                        discount_type = payment_plan_discount[1]
-                    else:
-                        payment_amount = payment_amount - payment_plan_discount[0]
-                        discount = payment_plan_discount[0]
-                        discount_type = payment_plan_discount[1]
             i = i+1
             doc.append("payment_schedule",{
                 'payment_term': schedule.payment_term,
@@ -241,9 +229,6 @@ def payment_plan(doc, method=None):
                 'invoice_portion': schedule.invoice_portion,
                 'payment_amount': payment_amount,
                 'outstanding': payment_amount,
-                'discount_type': discount_type,
-                'discount': discount,
-                'discount_date': schedule.due_date
             })
 
 def get_payment_plan_discount(payment_plan, doc):
@@ -256,6 +241,11 @@ def get_payment_plan_discount(payment_plan, doc):
                 component.custom_discount_percentage = calculate_discount(component.amount, dis.discount_amount)
                 component.custom_discount_amount = dis.discount_amount
                 component.custom_amount_after_discount = component.amount - dis.discount_amount
+                grand_total = doc.grand_total - discount_amount
+                grand_total_in_words = str(frappe.utils.in_words(grand_total)).title()
+                doc.grand_total = grand_total
+                doc.grand_total_in_words = grand_total_in_words
+                doc.outstanding_amount = grand_total
                 return (dis.discount_amount, "Amount", 0)
             else:
                 discount_amount = (component.amount * float(dis.discount)) / 100
@@ -263,6 +253,11 @@ def get_payment_plan_discount(payment_plan, doc):
                 component.custom_discount_percentage = dis.discount
                 component.custom_discount_amount = discount_amount
                 component.custom_amount_after_discount = component.amount - discount_amount
+                grand_total = doc.grand_total - discount_amount
+                grand_total_in_words = str(frappe.utils.in_words(grand_total)).title()
+                doc.grand_total = grand_total
+                doc.grand_total_in_words = grand_total_in_words
+                doc.outstanding_amount = grand_total
                 return (discount_amount, "Percentage", dis.discount)
         else:
             return None
@@ -376,8 +371,38 @@ def update_payment_plan_after_discount_before_submit(doc, total_discount):
 
 
 def update_payment_schedule(doc):
-    if doc.payment_plan:
-        for schedule in doc.payment_schedule:
-            amount = (schedule.invoice_portion * doc.grand_total) / 100
+    payment_plan_discount = get_payment_plan_discount(doc.payment_plan, doc)
+    other_discount = 0
+    for component in doc.components:
+        if component.custom_discounts:
+            discount_name = component.custom_discounts.lower()
+            discount_amount = component.custom_discount_amount
+            if discount_amount and "payment plan" not in discount_name:
+                other_discount = component.custom_discount_amount
+    
+    discount_applied = False
+    for i, schedule in enumerate(doc.payment_schedule):
+        if not discount_applied:
+            amount = schedule.outstanding - other_discount
             schedule.payment_amount = amount
             schedule.outstanding = amount
+            schedule.discount = other_discount
+            schedule.discount_type = "Amount"
+            schedule.discount_date = schedule.due_date
+            discount_applied = True
+
+        elif i == len(doc.payment_schedule) - 1:
+            if payment_plan_discount and payment_plan_discount[1] == "Amount":
+                amount = schedule.outstanding - payment_plan_discount[0]
+                schedule.payment_amount = amount
+                schedule.outstanding = amount
+                schedule.discount = payment_plan_discount[0]
+                schedule.discount_type = payment_plan_discount[1]
+                schedule.discount_date = schedule.due_date
+            elif payment_plan_discount and payment_plan_discount[1] == "Percentage":
+                amount = schedule.outstanding - payment_plan_discount[0]
+                schedule.payment_amount = amount
+                schedule.outstanding = amount
+                schedule.discount = payment_plan_discount[2]
+                schedule.discount_type = payment_plan_discount[1]
+                schedule.discount_date = schedule.due_date
