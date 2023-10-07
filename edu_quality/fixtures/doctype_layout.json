@@ -13,6 +13,13 @@
     "parenttype": "DocType Layout"
    },
    {
+    "fieldname": "last_name",
+    "label": "Last Name",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
     "fieldname": "gender",
     "label": "Gender",
     "parent": "Lead",
@@ -34,6 +41,55 @@
     "parenttype": "DocType Layout"
    },
    {
+    "fieldname": "naming_series",
+    "label": "Series",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "source",
+    "label": "Source",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "custom_column_break_fmsgl",
+    "label": null,
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "middle_name",
+    "label": "Middle Name",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "date_of_birth",
+    "label": "Date of Birth",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "campaign_name",
+    "label": "Campaign Name",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "school_code",
+    "label": "School Code",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
     "fieldname": "academic_year",
     "label": "Academic Year",
     "parent": "Lead",
@@ -41,8 +97,29 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "naming_series",
-    "label": "Series",
+    "fieldname": "school_from_lead_source",
+    "label": "School from Lead Source",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "class_from_lead_source",
+    "label": "Class from lead source",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "financepeer_checkbox",
+    "label": "Financepeer Checkbox",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "custom_address",
+    "label": "Address",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
@@ -69,50 +146,8 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "source",
-    "label": "Source",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
-    "fieldname": "custom_column_break_fmsgl",
+    "fieldname": "custom_column_break_z42ls",
     "label": null,
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
-    "fieldname": "last_name",
-    "label": "Last Name",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
-    "fieldname": "date_of_birth",
-    "label": "Date of Birth",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
-    "fieldname": "school_from_lead_source",
-    "label": "School from Lead Source",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
-    "fieldname": "class_from_lead_source",
-    "label": "Class from lead source",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
-    "fieldname": "school_code",
-    "label": "School Code",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
@@ -125,13 +160,6 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "pincode",
-    "label": "Pincode",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
     "fieldname": "state",
     "label": "State",
     "parent": "Lead",
@@ -139,15 +167,8 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "financepeer_checkbox",
-    "label": "Financepeer Checkbox",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
-    "fieldname": "campaign_name",
-    "label": "Campaign Name",
+    "fieldname": "pincode",
+    "label": "Pincode",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
@@ -356,6 +377,13 @@
     "parenttype": "DocType Layout"
    },
    {
+    "fieldname": "action_time",
+    "label": "action time",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
     "fieldname": "walk_in_2",
     "label": "Walk in 2",
     "parent": "Lead",
@@ -498,13 +526,6 @@
    {
     "fieldname": "section_break_p5dwp",
     "label": null,
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
-    "fieldname": "middle_name",
-    "label": "Middle Name",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
@@ -923,7 +944,7 @@
     "parenttype": "DocType Layout"
    }
   ],
-  "modified": "2023-10-04 17:01:35.864494",
+  "modified": "2023-10-06 19:53:58.884191",
   "name": "Lead",
   "route": "/app/lead"
  }

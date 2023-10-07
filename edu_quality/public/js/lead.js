@@ -31,8 +31,11 @@ var subStatuses = {
 frappe.ui.form.on("Lead", {
     refresh:function(frm){
         setTimeout(()=>{
-            frm.remove_custom_button('Add to Prospect', 'Action')
-            frm.remove_custom_button('Customer','Opportunity','Quotation','Prospect','Create');
+            frm.clear_custom_buttons()
+
+
+
+
             frm.add_custom_button(__("Push To MGR"), function() {
             var errorKey = Object.keys(error_msg).find(error=>frm.doc[error]=== null || frm.doc[error]===undefined || frm.doc[error] ==='' )
             if(errorKey){
@@ -43,12 +46,14 @@ frappe.ui.form.on("Lead", {
                 });
                 return 
             }
+
                 frappe.call({
         method:"edu_quality.api.student_application.create_student_application",
         type: "POST",
         args: {name:frm.docname},
     });
             })
+            $('.inner-group-button[data-label="Create"]').remove()
     },10)
     
     if(frm.doc.status)
@@ -56,6 +61,7 @@ frappe.ui.form.on("Lead", {
     $("textarea[data-fieldname='custom_cold_comment'],textarea[data-fieldname='overall_remarks'],textarea[data-fieldname='follow_up_comment'],textarea[data-fieldname='walk_in_1'],textarea[data-fieldname='walk_in_2'],textarea[data-fieldname='walk_in_3']").css({'height':'70'});
     
     },
+
 
     validate:function(frm){
         
