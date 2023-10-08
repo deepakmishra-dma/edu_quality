@@ -1,0 +1,122 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:SUB-{student}-{####}",
+ "creation": "2023-10-05 18:16:48.593692",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "reference_no",
+  "student",
+  "fathers_name",
+  "mothers_name",
+  "submitted_with_response",
+  "rules_and_regulation_template",
+  "column_break_ya8c",
+  "submitted_date",
+  "otp_entered",
+  "otp_sent_to_contact_no",
+  "otp_sent_to_email_id",
+  "ip_address",
+  "user_info"
+ ],
+ "fields": [
+  {
+   "fieldname": "student",
+   "fieldtype": "Link",
+   "label": "Student",
+   "options": "Student"
+  },
+  {
+   "fetch_from": "student.custom_fathers_first_name",
+   "fieldname": "fathers_name",
+   "fieldtype": "Data",
+   "label": "Father's Name"
+  },
+  {
+   "fieldname": "column_break_ya8c",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "rules_and_regulation_template",
+   "fieldtype": "Link",
+   "label": "Rules and Regulation Template",
+   "options": "Rules and Regulation Template"
+  },
+  {
+   "fetch_from": "student.custom_reference_number",
+   "fieldname": "reference_no",
+   "fieldtype": "Data",
+   "label": "Reference No"
+  },
+  {
+   "fetch_from": "student.custom_mothers_first_name",
+   "fieldname": "mothers_name",
+   "fieldtype": "Data",
+   "label": "Mother's Name"
+  },
+  {
+   "fieldname": "submitted_with_response",
+   "fieldtype": "Select",
+   "label": "Form Submitted with response",
+   "options": "Yes\nNo"
+  },
+  {
+   "fieldname": "submitted_date",
+   "fieldtype": "Date",
+   "label": "Submitted Date"
+  },
+  {
+   "fieldname": "otp_entered",
+   "fieldtype": "Data",
+   "label": "OTP Entered"
+  },
+  {
+   "fieldname": "otp_sent_to_contact_no",
+   "fieldtype": "Data",
+   "label": "OTP Sent to Contact No"
+  },
+  {
+   "fieldname": "otp_sent_to_email_id",
+   "fieldtype": "Data",
+   "label": "OTP Sent to Email ID"
+  },
+  {
+   "fieldname": "ip_address",
+   "fieldtype": "Data",
+   "label": "IP Address"
+  },
+  {
+   "fieldname": "user_info",
+   "fieldtype": "Data",
+   "label": "User Info"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-10-05 22:56:39.220979",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "Rules and Regulation Submission",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

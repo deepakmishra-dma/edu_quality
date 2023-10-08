@@ -1,0 +1,78 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:Undertaking-({academic_year})",
+ "creation": "2023-10-05 18:07:09.119405",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "academic_year",
+  "class",
+  "status",
+  "column_break_inge",
+  "show_on",
+  "pdf"
+ ],
+ "fields": [
+  {
+   "fieldname": "academic_year",
+   "fieldtype": "Link",
+   "label": "Academic Year",
+   "options": "Academic Year"
+  },
+  {
+   "fieldname": "class",
+   "fieldtype": "Link",
+   "label": "Class",
+   "options": "Program"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Defaulter\nNew Student\nCurrent Student"
+  },
+  {
+   "fieldname": "show_on",
+   "fieldtype": "Data",
+   "label": "Show On"
+  },
+  {
+   "fieldname": "pdf",
+   "fieldtype": "Attach",
+   "label": "PDF",
+   "options": "pdf"
+  },
+  {
+   "fieldname": "column_break_inge",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-10-05 18:12:29.321131",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "Rules and Regulation Template",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
