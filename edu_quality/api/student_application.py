@@ -469,7 +469,7 @@ id_to_location_map_fb = {
     "shivane": "Shivane",
     "fursungi": "Fursungi",
     "walnut school at shivane":"Shivane",
-    "walnut school at fursungi":"fursungi",
+    "walnut school at fursungi":"Fursungi",
 }
 
 
