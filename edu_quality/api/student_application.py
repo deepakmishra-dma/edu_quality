@@ -462,15 +462,20 @@ def serialize_lead_to_application(doc: dict):
 # 74 Wakad
 
 #  these ids coresspond to ids on wordpress location, select
-id_to_location_map = {
-    "74": "Wakad",
-    "47": "Shivane",
-    "46": "Fursungi",
+
+
+id_to_location_map_fb = {
+    "wakad": "Wakad",
+    "shivane": "Shivane",
+    "fursungi": "Fursungi",
+    "walnut school at shivane":"Shivane",
+    "walnut school at fursungi":"fursungi",
 }
 
 
 @frappe.whitelist(allow_guest=True)
 def create_student_lead(**kwargs):
+    # return kwargs
     if (
         not kwargs.get("first_name")
         or not kwargs.get("fathers_name")
@@ -479,35 +484,41 @@ def create_student_lead(**kwargs):
         raise frappe.exceptions.MandatoryError(
             "First Name , Fathers Name or Fathers phone is required"
         )
-    
-    existing_leads=frappe.db.get_list('Lead',filters={"first_name":kwargs.get('first_name'),"fathers_name":kwargs.get('fathers_name'),"fathers_phone":remove_indian_country_code( kwargs.get('fathers_phone'))},ignore_permissions=True)
+
+    existing_leads=frappe.db.get_list('Lead',filters={"first_name":kwargs.get('first_name'),"fathers_name":kwargs.get('fathers_name'),"fathers_phone":remove_indian_country_code(kwargs.get('fathers_phone'))},ignore_permissions=True)
     if len(existing_leads):
         return frappe.get_doc('Lead',existing_leads[0].get('name'))
     
-    if kwargs.get("school"):
-        school_name = frappe.db.get_value(
+    school_name = (
+        frappe.db.get_value(
             "School",
-            {"location": id_to_location_map[str(kwargs.get("school"))]},
+            {
+                "location": id_to_location_map_fb.get(
+                    str(kwargs.get("school")).lower()
+                )
+            },
             "name",
         )
+        or kwargs.get("school")
+        or kwargs.get("school")
+    )
 
     class_name =  (frappe.db.get_value(
-        "Program",
-        {
-            "school": school_name,
-            "custom_mgr_id":str(kwargs.get("class"))
-        },
-        "name",
+            "Program",
+            {
+                "school": school_name,
+                "program_name":get_class_without_std(kwargs.get("class"))
+            },
+            "name",
+        )
+        or kwargs.get("class")
+        or kwargs.get("class")
     )
-    or kwargs.get("class")
-    or kwargs.get("class")
-)
     student_name = separate_name(kwargs.get("first_name"))
-    
     lead_doc = frappe.get_doc(
         {
             "doctype": "Lead",
-            "first_name": student_name.get('first_name'),
+           "first_name": student_name.get('first_name'),
             "last_name":student_name.get('last_name'),
             "middle_name":student_name.get('middle_name'),
             "fathers_name": kwargs.get("fathers_name"),
@@ -526,13 +537,7 @@ def create_student_lead(**kwargs):
     return lead_doc
 
 
-id_to_location_map_fb = {
-    "wakad": "Wakad",
-    "shivane": "Shivane",
-    "fursungi": "Fursungi",
-}
-
-
+# to remove
 @frappe.whitelist(allow_guest=True)
 def create_student_lead_fb(**kwargs):
     # return kwargs
