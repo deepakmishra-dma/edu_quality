@@ -291,7 +291,10 @@ def update_stud_data(**data):
     existing_student_doc.aadhaar_card_number = data.get("adhar_card_no")
 
     existing_student_doc.nationality = data.get("nationality")
-    existing_student_doc.allergies = data.get("other_allergies") or data.get(
+    existing_student_doc.allergies = bool(data.get("other_allergies") or data.get(
+        "allergies"
+    ))
+    existing_student_doc.custom_allergies = data.get("other_allergies") or data.get(
         "allergies"
     )
 
@@ -453,6 +456,7 @@ def serialize_lead_to_application(doc: dict):
         "rte_student": doc.get("stud_rte"),
         "catering": doc.get("catering"),
         "custom_referred_to": doc.get("referred_to"),
+        "seeking_admission_in_class":doc.get('class'),
         "if_yes_reference_number_of_child": doc.get("if_yes_reference_number_of_child"),
     }
 
