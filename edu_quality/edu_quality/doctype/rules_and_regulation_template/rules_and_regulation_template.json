@@ -42,8 +42,10 @@
   {
    "fieldname": "pdf",
    "fieldtype": "Attach",
+   "in_list_view": 1,
    "label": "PDF",
-   "options": "pdf"
+   "options": "pdf",
+   "reqd": 1
   },
   {
    "fieldname": "column_break_inge",
@@ -52,7 +54,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-10-05 18:12:29.321131",
+ "modified": "2023-10-09 14:43:05.211121",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Rules and Regulation Template",

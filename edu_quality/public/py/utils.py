@@ -111,10 +111,21 @@ def get_print_format(payment_request):
 def get_undertaking_template(doc):
     fee = frappe.get_value("Payment Request", doc.name, "reference_name")
     class_name = frappe.get_value("Fees", fee, "program")
-    template = frappe.get_doc("Rules and Regulation Template", {"class": class_name})
-    site_url = frappe.utils.get_url()
-    pdf_url = site_url + template.pdf
-    return pdf_url
+    if frappe.db.exists("Rules and Regulation Template", {"class": class_name}):
+        template = frappe.get_doc("Rules and Regulation Template", {"class": class_name})
+        site_url = frappe.utils.get_url()
+        pdf_url = site_url + template.pdf
+        return pdf_url
+    else:
+        return None
+    
+def get_submitted_undertaking(payment_request):
+    student = frappe.get_value("Payment Request", payment_request, ["party"])
+
+    if frappe.db.exists("Rules and Regulation Submission", {"student": student}):
+        return True
+    else:
+        return False
 
 
 @frappe.whitelist()
