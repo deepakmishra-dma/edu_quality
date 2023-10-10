@@ -196,8 +196,8 @@ def payment_plan(doc, method=None):
         doc.payment_schedule = []
         initial_payment = 0
         for component in doc.components:
-            fee_category = component.fees_category.lower()
-            if fee_category in ["deposit","application fee"]:
+            fee_type = frappe.db.get_value("Fee Category",component.fees_category,"type")
+            if fee_type != "Regular":
                 initial_payment = initial_payment +  component.amount
         i=0
         for schedule in pp.payment_schedule:
