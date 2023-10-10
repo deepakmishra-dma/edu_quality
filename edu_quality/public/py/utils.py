@@ -128,7 +128,7 @@ def get_submitted_undertaking(payment_request):
         return False
 
 
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=True)
 def handle_undertaking_submission(**kwargs):
     payment_hash = kwargs.get("payment_request")
     student, fee = frappe.get_value("Payment Request", {"payment_hash": payment_hash}, ["party", "reference_name"])
