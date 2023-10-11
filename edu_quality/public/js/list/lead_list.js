@@ -18,5 +18,45 @@ frappe.listview_settings['Lead'] = {
             document.execCommand('copy');
             document.body.removeChild(tempTextarea);
         }
+    },
+    onload:function(lsit_view){
+        list_view.add_action_item("Create a Broadcast Group",()=>{
+            const selectedLeads =   list_view?.get_checked_items(true)
+            const broadCastDialog = new frappe.ui.Dialog({
+                title: "Create a BroadCast Group",
+                fields: [
+                  {
+                    fieldtype: "Data",
+                    label: "Name",
+                    fieldname: "group_name",
+                    reqd: true,
+                  },
+                ],
+                size: "small",
+                primary_action_label: "Create",
+                primary_action(values) {
+                    const payload = {
+                    
+                    }
+                  selectedLeads.forEach((doc) => {
+                    frappe.call({
+                      method:
+                        "nextai.funnel.doctype.funnel_task.triggers.on_custom_trigger.trigger",
+                      args: {
+                        trigger_name: values.funnel_name,
+                        doctype: doctype,
+                        doctype_name: doc,
+                      },
+                    });
+                  });
+                  d.hide();
+                },
+              });
+    
+              d.show();
+        })
+   
+        
+    
     }
 }
