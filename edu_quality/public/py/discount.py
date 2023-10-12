@@ -91,17 +91,30 @@ def remove_discount(fee_name, discount):
         if component.custom_discounts:
             discount_list = get_discount_list(component.custom_discounts)
             if component.fees_category == dis.fee_category and discount in discount_list:
-                grand_discount_amount = (component.amount * float(dis.discount)) / 100
-                amount = component.custom_amount_after_discount + grand_discount_amount
-                discount_amount = component.custom_discount_amount - grand_discount_amount
-                discount = calculate_discount(component.amount, discount_amount)
-                discount_list.remove(dis.name)
-                discount_name = ", ".join(discount_list)
-                # updating the data in the database
-                remove_and_update_component(component.name, discount_name, discount, discount_amount, grand_discount_amount, amount, fees)
-                message = dis.name + " Discount removed successfully"
-                discount_removed = True
-                frappe.response['message'] = message
+                if dis.discount_amount:
+                    grand_discount_amount = dis.discount_amount
+                    amount = component.custom_amount_after_discount + grand_discount_amount
+                    discount_amount = component.custom_discount_amount - grand_discount_amount
+                    discount = calculate_discount(component.amount, discount_amount)
+                    discount_list.remove(dis.name)
+                    discount_name = ", ".join(discount_list)
+                    # updating the data in the database
+                    remove_and_update_component(component.name, discount_name, discount, discount_amount, grand_discount_amount, amount, fees)
+                    message = dis.name + " Discount removed successfully"
+                    discount_removed = True
+                    frappe.response['message'] = message
+                else:
+                    grand_discount_amount = (component.amount * float(dis.discount)) / 100
+                    amount = component.custom_amount_after_discount + grand_discount_amount
+                    discount_amount = component.custom_discount_amount - grand_discount_amount
+                    discount = calculate_discount(component.amount, discount_amount)
+                    discount_list.remove(dis.name)
+                    discount_name = ", ".join(discount_list)
+                    # updating the data in the database
+                    remove_and_update_component(component.name, discount_name, discount, discount_amount, grand_discount_amount, amount, fees)
+                    message = dis.name + " Discount removed successfully"
+                    discount_removed = True
+                    frappe.response['message'] = message
             elif discount not in discount_list:
                 message = dis.name + " Discount does not present"
                 frappe.response['message'] = message
