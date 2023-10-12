@@ -1,13 +1,15 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "format:{name}-{custom_name}",
  "creation": "2023-10-10 09:13:55.751649",
  "default_view": "List",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "group_members"
+  "group_members",
+  "custom_name"
  ],
  "fields": [
   {
@@ -15,14 +17,20 @@
    "fieldtype": "Table",
    "label": "Group Members",
    "options": "Broadcast Group Member"
+  },
+  {
+   "fieldname": "custom_name",
+   "fieldtype": "Data",
+   "label": "Name"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-10-10 09:13:55.751649",
+ "modified": "2023-10-10 13:56:46.785602",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Broadcast Group",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {
