@@ -31,15 +31,9 @@ frappe.ui.form.on('Fees', {
                     fee_name: frm.doc.name
                 },
                 callback: function(response) {
-                    frappe.msgprint({
-                        title: __("Add Discount"),
+                    frappe.show_alert({
                         message: __(response.message),
-                        primary_action: {
-                            label: __("OK"),
-                            action: function() {
-                                frappe.hide_msgprint();
-                            }
-                        }
+                        indicator: 'green'
                     });
                     frm.reload_doc();
                 }
@@ -82,15 +76,9 @@ frappe.ui.form.on('Fees', {
                     fee_name: frm.doc.name
                 },
                 callback: function(response) {
-                    frappe.msgprint({
-                        title: __("Remove Discount"),
+                    frappe.show_alert({
                         message: __(response.message),
-                        primary_action: {
-                            label: __("OK"),
-                            action: function() {
-                                frappe.hide_msgprint();
-                            }
-                        }
+                        indicator: 'orange'
                     });
                     frm.reload_doc();
                 }
