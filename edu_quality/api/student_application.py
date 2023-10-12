@@ -22,7 +22,7 @@ def get_class_without_std(txt):
 def remove_indian_country_code(phone):
     if not phone:
         return ""
-    if "+91" in phone:
+    if "+91" in str(phone):
         return phone[3::]    
     return phone
 
@@ -489,7 +489,7 @@ def create_student_lead(**kwargs):
             "First Name , Fathers Name or Fathers phone is required"
         )
 
-    existing_leads=frappe.db.get_list('Lead',filters={"first_name":kwargs.get('first_name'),"fathers_name":kwargs.get('fathers_name'),"fathers_phone":remove_indian_country_code(kwargs.get('fathers_phone'))},ignore_permissions=True)
+    existing_leads=frappe.db.get_list('Lead',filters={"first_name":kwargs.get('first_name'),"fathers_name":kwargs.get('fathers_name'),"fathers_phone":remove_indian_country_code(str(kwargs.get('fathers_phone')))},ignore_permissions=True)
     if len(existing_leads):
         return frappe.get_doc('Lead',existing_leads[0].get('name'))
     
@@ -511,7 +511,7 @@ def create_student_lead(**kwargs):
             "Program",
             {
                 "school": school_name,
-                "program_name":get_class_without_std(kwargs.get("class"))
+                "program_name":get_class_without_std(str(kwargs.get("class")))
             },
             "name",
         )
@@ -527,9 +527,9 @@ def create_student_lead(**kwargs):
             "middle_name":student_name.get('middle_name'),
             "fathers_name": kwargs.get("fathers_name"),
             "fathers_email": kwargs.get("father_email_id"),
-            "fathers_phone": remove_indian_country_code(kwargs.get("fathers_phone")),
+            "fathers_phone": remove_indian_country_code(str(kwargs.get("fathers_phone"))),
             "mothers_name": " ",
-            "academic_year": kwargs.get("academic_year"),
+            "academic_year": kwargs.get("academic_year") or "2024-2025",
             "school_from_lead_source": kwargs.get("school"),
             "center": school_name,
             "class":class_name,
@@ -576,7 +576,7 @@ def create_student_lead_fb(**kwargs):
             "Program",
             {
                 "school": school_name,
-                "program_name":get_class_without_std(kwargs.get("class"))
+                "program_name":get_class_without_std(str(kwargs.get("class")))
             },
             "name",
         )
@@ -594,7 +594,7 @@ def create_student_lead_fb(**kwargs):
             "fathers_email": kwargs.get("father_email_id"),
             "fathers_phone": remove_indian_country_code(kwargs.get("fathers_phone")),
             "mothers_name": " ",
-            "academic_year": kwargs.get("academic_year"),
+            "academic_year": kwargs.get("academic_year") or "2024-2025",
             "school_from_lead_source": kwargs.get("school"),
             "center": school_name,
             "class":class_name,
