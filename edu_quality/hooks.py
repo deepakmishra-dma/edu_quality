@@ -289,6 +289,25 @@ fixtures = [
                 ]
             ]
         ]
+    },
+    {'dt':"Module Profile",
+     "filters": [
+            [
+                "name",
+                "in",
+                ["Councellor"
+                ]
+            ]
+        ]
+    },
+    {'dt':"Role Profile",
+     "filters": [
+            [
+                "name",
+                "in",
+                ["Councellor"]
+            ]
+        ]
     }
 ]
 
