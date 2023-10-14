@@ -423,6 +423,10 @@ def serialize_lead_to_application(doc: dict):
                 "guardian_name": mother.get("guardian_name"),
             }
         )
+    
+    if(doc.get("is_sibling_already_at_walnut")):
+        sibling_id = doc.get("custom_if_yes_reference_number_of_child")
+        siblings= [{"student":sibling_id}] or []
 
 
     return {
@@ -454,7 +458,9 @@ def serialize_lead_to_application(doc: dict):
         "bus_service_required": doc.get("bus_service_required"),
         "is_sibling_in_school": doc.get("is_sibling_already_at_walnut"),
         "rte_student": doc.get("stud_rte"),
+        "stud_rte": doc.get("rte_student"),
         "catering": doc.get("catering"),
+        "siblings": siblings or [],
         "custom_referred_to": doc.get("referred_to"),
         "seeking_admission_in_class":doc.get('class'),
         "if_yes_reference_number_of_child": doc.get("if_yes_reference_number_of_child"),
@@ -534,6 +540,7 @@ def create_student_lead(**kwargs):
             "center": school_name,
             "class":class_name,
             "class_from_lead_source": kwargs.get("class"),
+            "source":kwargs.get("source","Website") or "Website" or "Others",
         }
     )
 
