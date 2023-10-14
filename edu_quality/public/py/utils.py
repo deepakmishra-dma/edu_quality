@@ -108,6 +108,39 @@ def get_print_format(payment_request):
     return print_format, letter_head
 
 
+
+import math, random
+
+@frappe.whitelist()
+def generate_otp(fee,mobile):
+    try:
+        rs = frappe.cache()
+        key = fee
+        digits = "0123456789"
+        OTP = ""
+        for i in range(4) :
+            OTP += digits[math.floor(random.random() * 10)]
+        rs.set_value(key, OTP, expires_in_sec=300)
+        return send_otp(mobile,OTP)
+    except Exception as e:
+        return False
+
+def send_otp(mobile, otp):
+    try:
+        #whatsapp message
+        return True
+    except Exception as e:
+        return False
+    
+def verify_otp(fee,otp):
+    try:
+        rs = frappe.cache()
+        if rs.get_value(fee) == otp:
+            return True 
+        return False
+    except Exception as e:
+        return False
+
 def get_undertaking_template(doc):
     fee = frappe.get_value("Payment Request", doc.name, "reference_name")
     class_name = frappe.get_value("Fees", fee, "program")
