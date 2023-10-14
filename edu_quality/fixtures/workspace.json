@@ -316,13 +316,6 @@
     "parenttype": "Workspace"
    },
    {
-    "chart_name": "Top Reasons for All Leads",
-    "label": "Top Reasons for All Leads",
-    "parent": "Walnut Analytics Dashboard",
-    "parentfield": "charts",
-    "parenttype": "Workspace"
-   },
-   {
     "chart_name": "School Visit Done",
     "label": "School Visit Done",
     "parent": "Walnut Analytics Dashboard",
@@ -330,7 +323,7 @@
     "parenttype": "Workspace"
    }
   ],
-  "content": "[{\"id\":\"it4WZnWj5I\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Walnut Analytics Dashboard</span>\",\"col\":12}},{\"id\":\"2D1vBY9XKo\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Lead Count\",\"col\":3}},{\"id\":\"b59EYbX356\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Enrolled Count\",\"col\":3}},{\"id\":\"XjAFdpL7oR\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Lead to Warm\",\"col\":3}},{\"id\":\"kBOA0c62zP\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Lead to Enrolled\",\"col\":3}},{\"id\":\"JftyOt7Mzp\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Lead Funnel by Status\",\"col\":6}},{\"id\":\"F2zVwb0JMc\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Lead Count by Source\",\"col\":6}},{\"id\":\"Sa_LFsvNRG\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Lead Count by Counsellor\",\"col\":6}},{\"id\":\"MTgDTJ3amt\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Top Reasons for All Leads\",\"col\":6}},{\"id\":\"EBE2s_cYRT\",\"type\":\"chart\",\"data\":{\"chart_name\":\"School Visit Done\",\"col\":12}}]",
+  "content": "[{\"id\":\"it4WZnWj5I\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Walnut Analytics Dashboard</span>\",\"col\":12}},{\"id\":\"2D1vBY9XKo\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Lead Count\",\"col\":3}},{\"id\":\"b59EYbX356\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Enrolled Count\",\"col\":3}},{\"id\":\"XjAFdpL7oR\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Lead to Warm\",\"col\":3}},{\"id\":\"kBOA0c62zP\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Lead to Enrolled\",\"col\":3}},{\"id\":\"JftyOt7Mzp\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Lead Funnel by Status\",\"col\":6}},{\"id\":\"F2zVwb0JMc\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Lead Count by Source\",\"col\":6}},{\"id\":\"Sa_LFsvNRG\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Lead Count by Counsellor\",\"col\":6}},{\"id\":\"EBE2s_cYRT\",\"type\":\"chart\",\"data\":{\"chart_name\":\"School Visit Done\",\"col\":12}}]",
   "custom_blocks": [],
   "docstatus": 0,
   "doctype": "Workspace",
@@ -340,7 +333,7 @@
   "is_hidden": 0,
   "label": "Walnut Analytics Dashboard",
   "links": [],
-  "modified": "2023-10-04 04:22:01.797872",
+  "modified": "2023-10-11 10:16:02.743964",
   "module": null,
   "name": "Walnut Analytics Dashboard",
   "number_cards": [

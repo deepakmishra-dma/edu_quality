@@ -22,9 +22,41 @@ def get_class_without_std(txt):
 def remove_indian_country_code(phone):
     if not phone:
         return ""
-    if "+91" in phone:
+    if "+91" in str(phone):
         return phone[3::]    
     return phone
+
+def separate_name(full_name):
+    # Split the full name into words
+    if not full_name:
+        return " "
+    name_parts = full_name.split()
+
+    # Determine the number of name parts
+    num_parts = len(name_parts)
+
+    if num_parts == 1:
+        # If only one word is provided, consider it as the first name
+        first_name = name_parts[0]
+        middle_name = ""
+        last_name = ""
+    elif num_parts == 2:
+        # If two words are provided, consider the first as first name and the second as last name
+        first_name = name_parts[0]
+        middle_name = ""
+        last_name = name_parts[1]
+    else:
+        # If more than two words are provided, consider the first as first name,
+        # the last as last name, and everything in between as middle name(s)
+        first_name = name_parts[0]
+        last_name = name_parts[-1]
+        middle_name = " ".join(name_parts[1:-1])
+
+    return {
+        "first_name": first_name,
+        "middle_name": middle_name,
+        "last_name": last_name
+    }
 
 @frappe.whitelist()
 def create_student_application(**args):
@@ -259,7 +291,10 @@ def update_stud_data(**data):
     existing_student_doc.aadhaar_card_number = data.get("adhar_card_no")
 
     existing_student_doc.nationality = data.get("nationality")
-    existing_student_doc.allergies = data.get("other_allergies") or data.get(
+    existing_student_doc.allergies = bool(data.get("other_allergies") or data.get(
+        "allergies"
+    ))
+    existing_student_doc.custom_allergies = data.get("other_allergies") or data.get(
         "allergies"
     )
 
@@ -292,7 +327,7 @@ def upload_to_mgr(doc):
             "MGR Settings", "MGR Settings", "password"
         ),
         "school_name": doc.get("school"),
-        "first_name": doc.get("first_name"),
+        "first_name": doc.get("first_name")+" "+(doc.get('middle_name') or ""),
         "last_name": doc.get("last_name") or " ",
         "mother_name": doc.get("mother_f_name") or " ",
         "father_name": doc.get("father_f_name"),
@@ -348,12 +383,14 @@ def serialize_lead_to_application(doc: dict):
         },
         "name",
     )
-
+    fathers_name = separate_name(doc.get("fathers_name"))
     father = frappe.get_doc(
         {
             "doctype": "Guardian",
             "guardian_name": doc.get("fathers_name"),
-            "first_name": doc.get("fathers_name"),
+              "first_name": fathers_name.get('first_name') or " ",
+                "middle_name":fathers_name.get('middle_name'),
+                "last_name":fathers_name.get('last_name'),
             "mobile_number": doc.get("fathers_phone"),
             "email_address": doc.get("fathers_email"),
         }
@@ -367,11 +404,14 @@ def serialize_lead_to_application(doc: dict):
     ]
 
     if doc.get("mothers_name") and doc.get("mothers_name").strip():
+        mothers_name = separate_name(doc.get('mothers_name'))
         mother = frappe.get_doc(
             {
                 "doctype": "Guardian",
                 "guardian_name": doc.get("mothers_name") or " ",
-                "first_name": doc.get("mothers_name") or " ",
+                "first_name": mothers_name.get('first_name') or " ",
+                "middle_name":mothers_name.get('middle_name'),
+                "last_name":mothers_name.get('last_name'),
                 "mobile_number": doc.get("mothers_phone") or " ",
                 "email_address": doc.get("mothers_email"),
             }
@@ -384,9 +424,11 @@ def serialize_lead_to_application(doc: dict):
             }
         )
 
+
     return {
         "doctype": "Student Applicant",
         "first_name": doc.get("first_name"),
+        "last_name":doc.get("last_name"),
         "school": doc.get("center"),
         "academic_year": doc.get("academic_year"),
         "fee_structure": fees_structure,
@@ -414,6 +456,7 @@ def serialize_lead_to_application(doc: dict):
         "rte_student": doc.get("stud_rte"),
         "catering": doc.get("catering"),
         "custom_referred_to": doc.get("referred_to"),
+        "seeking_admission_in_class":doc.get('class'),
         "if_yes_reference_number_of_child": doc.get("if_yes_reference_number_of_child"),
     }
 
@@ -423,15 +466,20 @@ def serialize_lead_to_application(doc: dict):
 # 74 Wakad
 
 #  these ids coresspond to ids on wordpress location, select
-id_to_location_map = {
-    "74": "Wakad",
-    "47": "Shivane",
-    "46": "Fursungi",
+
+
+id_to_location_map_fb = {
+    "wakad": "Wakad",
+    "shivane": "Shivane",
+    "fursungi": "Fursungi",
+    "walnut school at shivane":"Shivane",
+    "walnut school at fursungi":"Fursungi",
 }
 
 
 @frappe.whitelist(allow_guest=True)
 def create_student_lead(**kwargs):
+    # return kwargs
     if (
         not kwargs.get("first_name")
         or not kwargs.get("fathers_name")
@@ -440,39 +488,48 @@ def create_student_lead(**kwargs):
         raise frappe.exceptions.MandatoryError(
             "First Name , Fathers Name or Fathers phone is required"
         )
-    
-    existing_leads=frappe.db.get_list('Lead',filters={"first_name":kwargs.get('first_name'),"fathers_name":kwargs.get('fathers_name'),"fathers_phone":remove_indian_country_code( kwargs.get('fathers_phone'))},ignore_permissions=True)
+
+    existing_leads=frappe.db.get_list('Lead',filters={"first_name":kwargs.get('first_name'),"fathers_name":kwargs.get('fathers_name'),"fathers_phone":remove_indian_country_code(str(kwargs.get('fathers_phone')))},ignore_permissions=True)
     if len(existing_leads):
         return frappe.get_doc('Lead',existing_leads[0].get('name'))
     
-    if kwargs.get("school"):
-        school_name = frappe.db.get_value(
+    school_name = (
+        frappe.db.get_value(
             "School",
-            {"location": id_to_location_map[str(kwargs.get("school"))]},
+            {
+                "location": id_to_location_map_fb.get(
+                    str(kwargs.get("school")).lower()
+                )
+            },
             "name",
         )
+        or kwargs.get("school")
+        or kwargs.get("school")
+    )
 
     class_name =  (frappe.db.get_value(
-        "Program",
-        {
-            "school": school_name,
-            "custom_mgr_id":str(kwargs.get("class"))
-        },
-        "name",
+            "Program",
+            {
+                "school": school_name,
+                "program_name":get_class_without_std(str(kwargs.get("class")))
+            },
+            "name",
+        )
+        or kwargs.get("class")
+        or kwargs.get("class")
     )
-    or kwargs.get("class")
-    or kwargs.get("class")
-)
+    student_name = separate_name(kwargs.get("first_name"))
     lead_doc = frappe.get_doc(
         {
             "doctype": "Lead",
-            "first_name": kwargs.get("first_name"),
-            "last_name": " ",
+           "first_name": student_name.get('first_name'),
+            "last_name":student_name.get('last_name'),
+            "middle_name":student_name.get('middle_name'),
             "fathers_name": kwargs.get("fathers_name"),
             "fathers_email": kwargs.get("father_email_id"),
-            "fathers_phone": remove_indian_country_code(kwargs.get("fathers_phone")),
+            "fathers_phone": remove_indian_country_code(str(kwargs.get("fathers_phone"))),
             "mothers_name": " ",
-            "academic_year": kwargs.get("academic_year"),
+            "academic_year": kwargs.get("academic_year") or "2024-2025",
             "school_from_lead_source": kwargs.get("school"),
             "center": school_name,
             "class":class_name,
@@ -484,13 +541,7 @@ def create_student_lead(**kwargs):
     return lead_doc
 
 
-id_to_location_map_fb = {
-    "wakad": "Wakad",
-    "shivane": "Shivane",
-    "fursungi": "Fursungi",
-}
-
-
+# to remove
 @frappe.whitelist(allow_guest=True)
 def create_student_lead_fb(**kwargs):
     # return kwargs
@@ -525,24 +576,25 @@ def create_student_lead_fb(**kwargs):
             "Program",
             {
                 "school": school_name,
-                "program_name":get_class_without_std(kwargs.get("class"))
+                "program_name":get_class_without_std(str(kwargs.get("class")))
             },
             "name",
         )
         or kwargs.get("class")
         or kwargs.get("class")
     )
-
+    student_name = separate_name(kwargs.get("first_name"))
     lead_doc = frappe.get_doc(
         {
             "doctype": "Lead",
-            "first_name": kwargs.get("first_name"),
-            "last_name": " ",
+           "first_name": student_name.get('first_name'),
+            "last_name":student_name.get('last_name'),
+            "middle_name":student_name.get('middle_name'),
             "fathers_name": kwargs.get("fathers_name"),
             "fathers_email": kwargs.get("father_email_id"),
             "fathers_phone": remove_indian_country_code(kwargs.get("fathers_phone")),
             "mothers_name": " ",
-            "academic_year": kwargs.get("academic_year"),
+            "academic_year": kwargs.get("academic_year") or "2024-2025",
             "school_from_lead_source": kwargs.get("school"),
             "center": school_name,
             "class":class_name,

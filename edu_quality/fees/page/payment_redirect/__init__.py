@@ -1,6 +1,7 @@
 import frappe 
 import pickle
 from frappe.utils.print_format import download_pdf
+from edu_quality.public.py.utils import get_submitted_undertaking, get_undertaking_template
 
 def cache_data(ttl):
     def cache_processor(func):
@@ -38,7 +39,8 @@ def get_payment_details(**kwargs):
             else:
                 company = fees.company
             if "deposit" in description:
-                if fee.fees_category in ["Deposit","deposit", "Application Fee","Application fee"]:
+                fee_type = frappe.db.get_value("Fee Category",fee.fees_category,"type")
+                if fee_type != "Regular":
                         breakup.append({
                             'fees_category': fee.fees_category,
                             'amount':  frappe.utils.fmt_money(amount, currency="INR"),
@@ -52,7 +54,8 @@ def get_payment_details(**kwargs):
                     })
     else:
         for fee in fees.components:
-            if fee.fees_category in  ["Deposit","deposit", "Application Fee","Application fee"]:
+            fee_type = frappe.db.get_value("Fee Category",fee.fees_category,"type")
+            if fee_type != "Regular":
                 discounted_amount = fee.custom_amount_after_discount
                 amount = discounted_amount if discounted_amount else fee.amount
                 if frappe.db.exists("Fee Category",fee.fees_category):
@@ -81,7 +84,9 @@ def get_payment_details(**kwargs):
         'payment_url': payment_url(payment_request,payment_method="UPI"),
         'status': payment_request.status,
         'receipt_url': frappe.utils.get_url() + "/api/method/edu_quality.fees.page.payment_redirect.payment_receipt?payment_request="+payment_request.name,
-        "breakup": breakup
+        "breakup": breakup,
+        "undertaking_url": get_undertaking_template(payment_request),
+        "undertaking_accepted": get_submitted_undertaking(payment_request)
     }
 
 

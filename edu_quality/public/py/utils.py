@@ -108,6 +108,7 @@ def get_print_format(payment_request):
     return print_format, letter_head
 
 
+
 import math, random
 
 @frappe.whitelist()
@@ -139,3 +140,47 @@ def verify_otp(fee,otp):
         return False
     except Exception as e:
         return False
+
+def get_undertaking_template(doc):
+    fee = frappe.get_value("Payment Request", doc.name, "reference_name")
+    class_name = frappe.get_value("Fees", fee, "program")
+    if frappe.db.exists("Rules and Regulation Template", {"class": class_name}):
+        template = frappe.get_doc("Rules and Regulation Template", {"class": class_name})
+        site_url = frappe.utils.get_url()
+        pdf_url = site_url + template.pdf
+        return pdf_url
+    else:
+        return None
+    
+def get_submitted_undertaking(payment_request):
+    student = frappe.get_value("Payment Request", payment_request, ["party"])
+
+    if frappe.db.exists("Rules and Regulation Submission", {"student": student}):
+        return True
+    else:
+        return False
+
+
+@frappe.whitelist(allow_guest=True)
+def handle_undertaking_submission(**kwargs):
+    payment_hash = kwargs.get("payment_request")
+    student, fee = frappe.get_value("Payment Request", {"payment_hash": payment_hash}, ["party", "reference_name"])
+    class_name = frappe.get_value("Fees", fee, "program")
+    template = frappe.get_doc("Rules and Regulation Template", {"class": class_name})
+    student_doc = frappe.get_doc("Student", student)
+
+    if not frappe.db.exists("Rules and Regulation Submission", {"reference_no": student_doc.custom_reference_number}):
+        new_doc = frappe.new_doc("Rules and Regulation Submission")
+        new_doc.student = student_doc
+        new_doc.reference_no = student_doc.custom_reference_number
+        new_doc.fathers_name = student_doc.custom_fathers_first_name
+        new_doc.mothers_name = student_doc.custom_mothers_first_name
+        new_doc.submitted_with_response = "Yes"
+        new_doc.rules_and_regulation_template = template
+        new_doc.submitted_date = frappe.utils.nowdate()
+        new_doc.otp_entered = None
+        new_doc.otp_sent_to_contact_no = student_doc.custom_fathers_mobile_no
+        new_doc.otp_sent_to_email_id = student_doc.student_email_id
+        new_doc.ip_address = kwargs.get("ip_address")
+        new_doc.user_info = kwargs.get("browser_info")
+        new_doc.save(ignore_permissions=True)

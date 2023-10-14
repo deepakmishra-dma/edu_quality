@@ -32,7 +32,8 @@ class CustomPaymentRequest(PaymentRequest):
         companies = {}
         fee_categories = {}
         for component in fees.components:
-            if not self.payment_term and component.fees_category not in ["Deposit","deposit", "Application Fee","Application fee"]:
+            fee_type = frappe.db.get_value("Fee Category",component.fees_category,"type")
+            if not self.payment_term and fee_type != "Regular":
                 continue
             doc = frappe.get_doc("Fee Category", component.fees_category)
             paid_to = doc.custom_account
@@ -209,8 +210,8 @@ def get_amount(ref_doc, payment_account=None, is_deposit=False, payment_term=Non
     elif dt == "Fees" and is_deposit:
         grand_total = 0
         for f in ref_doc.components:
-            fee_category = f.fees_category.lower()
-            if fee_category in ["deposit","application fee"]:
+            fee_type = frappe.db.get_value("Fee Category",f.fees_category,"type")
+            if fee_type != "Regular":
                 grand_total += f.amount
 
     elif dt == "Fees" and payment_term:

@@ -23,9 +23,11 @@ def before_submit(doc,method=None):
     update_payment_schedule(doc)
 
 
-def before_update(doc,method=None):    
+def before_update(doc,method=None):   
     old_doc = doc.get_doc_before_save()
-    if old_doc.payment_schedule != doc.payment_schedule:
+    if old_doc.payment_plan != doc.payment_plan:
+        return
+    elif old_doc.payment_schedule != doc.payment_schedule:
         for term,old_term in zip(doc.payment_schedule,old_doc.payment_schedule):
             if old_term.outstanding == 0 and term.outstanding != 0:
                 frappe.throw("Cannot Change term - " + term.payment_term + " As it is already Paid!")
@@ -46,6 +48,51 @@ def before_update(doc,method=None):
                 'due_date':ps.due_date
             })
         update_payment_request_after_discount(doc)
+
+@frappe.whitelist()
+def update_payment_plan(payment_plan, old_payment_plan, fee_name):
+    doc = frappe.get_doc("Fees", fee_name)
+    for ps in doc.payment_schedule:
+        if ps.outstanding == 0:
+            frappe.throw(f"Cannot Change Payment Plan As {ps.term} is already Paid!")
+
+    old_payment_plan = frappe.get_doc("Payment Plan",old_payment_plan)
+    if "deposit" in doc.payment_schedule[0].description.lower():
+        amount = old_payment_plan.payment_schedule[0].payment_amount
+        doc_amount = doc.payment_schedule[0].payment_amount
+        deposit = doc_amount - amount
+    else:
+        deposit = 0
+    payment_plan = frappe.get_doc("Payment Plan", payment_plan)
+    doc.payment_schedule = []
+    for i, ps in enumerate(payment_plan.payment_schedule):
+        if i == 0:
+            description = f"Installment {i+1} with Deposit"
+            amount = (ps.invoice_portion * doc.grand_total) / 100
+            doc.append("payment_schedule",{
+                'payment_term':ps.payment_term,
+                'description': description,
+                'invoice_portion': ps.invoice_portion,
+                'payment_amount':amount + deposit,
+                'outstanding':amount + deposit,
+                'due_date':ps.due_date
+            })
+        else:
+            description = f"Installment {i+1}"
+            amount = (ps.invoice_portion * doc.grand_total) / 100
+            doc.append("payment_schedule",{
+                'payment_term':ps.payment_term,
+                'description': description,
+                'invoice_portion': ps.invoice_portion,
+                'payment_amount':amount,
+                'outstanding':amount,
+                'due_date':ps.due_date
+            })
+    doc.payment_plan = payment_plan.name
+    doc.save(ignore_permissions=True)
+    frappe.response['message'] = "Payment Plan Updated Successfully!"
+
+
 
 def before_save(doc,method=None):
     try:

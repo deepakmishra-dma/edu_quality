@@ -1,0 +1,17 @@
+[
+ {
+  "docstatus": 0,
+  "doctype": "Role Profile",
+  "modified": "2023-10-11 10:07:01.117153",
+  "name": "Councellor",
+  "role_profile": "Councellor",
+  "roles": [
+   {
+    "parent": "Councellor",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Councellor"
+   }
+  ]
+ }
+]
