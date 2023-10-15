@@ -423,7 +423,8 @@ def serialize_lead_to_application(doc: dict):
                 "guardian_name": mother.get("guardian_name"),
             }
         )
-    
+
+    siblings = []
     if(doc.get("is_sibling_already_at_walnut")):
         sibling_id = doc.get("custom_if_yes_reference_number_of_child")
         siblings= [{"student":sibling_id}] or []
