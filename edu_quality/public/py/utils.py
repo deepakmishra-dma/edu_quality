@@ -178,7 +178,7 @@ def handle_undertaking_submission(**kwargs):
         new_doc.submitted_with_response = "Yes"
         new_doc.rules_and_regulation_template = template
         new_doc.submitted_date = frappe.utils.nowdate()
-        new_doc.otp_entered = None
+        new_doc.otp_entered = kwargs.get("otp")
         new_doc.otp_sent_to_contact_no = student_doc.custom_fathers_mobile_no
         new_doc.otp_sent_to_email_id = student_doc.student_email_id
         new_doc.ip_address = kwargs.get("ip_address")
