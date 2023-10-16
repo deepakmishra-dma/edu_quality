@@ -112,8 +112,10 @@ def get_print_format(payment_request):
 import math, random
 
 @frappe.whitelist()
-def generate_otp(fee,mobile):
+def generate_otp(payment_hash):
     try:
+        fee = get_fee(payment_hash)
+        mobile, email = get_contacts(fee)
         rs = frappe.cache()
         key = fee
         digits = "0123456789"
@@ -121,19 +123,39 @@ def generate_otp(fee,mobile):
         for i in range(4) :
             OTP += digits[math.floor(random.random() * 10)]
         rs.set_value(key, OTP, expires_in_sec=300)
-        return send_otp(mobile,OTP)
+        return send_otp(mobile, email, OTP)
     except Exception as e:
         return False
 
-def send_otp(mobile, otp):
+def get_contacts(fee):
+    student = frappe.get_value("Fees", fee, "student")
+    mobile = frappe.get_value("Student", student, "custom_fathers_mobile_no")
+    email = frappe.get_value("Student", student, "student_email_id")
+    return mobile, email
+
+def get_fee(payment_hash):
+    fee = frappe.get_value("Payment Request", payment_hash, "reference_name")
+    return fee
+
+    
+def send_otp(mobile, email, otp):
     try:
+        # OTP via email
+        frappe.sendmail(**{
+            "recipients": email,
+            "subject": "OTP for undertaking submission",
+            "message": "OTP for undertaking submission is " + otp,
+            "delayed": False,
+        })
         #whatsapp message
         return True
     except Exception as e:
         return False
-    
-def verify_otp(fee,otp):
+
+@frappe.whitelist()
+def verify_otp(payment_hash, otp):
     try:
+        fee = get_fee(payment_hash)
         rs = frappe.cache()
         if rs.get_value(fee) == otp:
             return True 
