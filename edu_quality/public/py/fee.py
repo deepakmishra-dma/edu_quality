@@ -66,7 +66,7 @@ def update_payment_plan(payment_plan, old_payment_plan, fee_name):
     payment_plan = frappe.get_doc("Payment Plan", payment_plan)
     doc.payment_schedule = []
     for i, ps in enumerate(payment_plan.payment_schedule):
-        if i == 0:
+        if i == 0 and deposit != 0:
             description = f"Installment {i+1} with Deposit"
             amount = (ps.invoice_portion * doc.grand_total) / 100
             doc.append("payment_schedule",{

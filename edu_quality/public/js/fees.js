@@ -114,17 +114,19 @@ frappe.ui.form.on('Fees', {
             primary_action_label: 'Submit',
             primary_action: async function (values) {
                 frappe.call({
-                    method: "edu_quality.public.py.fee.remove_payment_plan_discount",
+                    method: "edu_quality.public.py.discount.remove_payment_plan_discount",
                     type: "POST",
                     args: {
                         payment_plan: doc.payment_plan,
                         doc: doc.name
                     },
                     callback: function(response) {
-                        frappe.show_alert({
-                            message: __(response.message),
-                            indicator: 'green'
-                        });
+                        if (response.message != null){
+                            frappe.show_alert({
+                                message: __(response.message),
+                                indicator: 'green'
+                            });
+                        }
                     },
                     async: false
                 });
