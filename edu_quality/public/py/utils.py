@@ -1,5 +1,5 @@
 import frappe
-
+import math, random
 
 def set_property(doctype, fieldname, prop, property_type, value):
     filters = {
@@ -73,7 +73,9 @@ def send_receipt_over_email(payment_request):
     payment_entries = frappe.get_list(
         "Payment Entry", {"reference_no": payment_request.name}
     )
-    email = frappe.db.get_value("Student", payment_request.party, "student_email_id")
+    student = payment_request.party
+    email = frappe.db.get_value("Student", student, "student_email_id")
+    undertaking_submission_pdf = get_undertaking_submission_pdf(student)
 
     print_format, letter_head = get_print_format(payment_request.name)
 
@@ -87,6 +89,9 @@ def send_receipt_over_email(payment_request):
         )
         for pe in payment_entries
     ]
+
+    if undertaking_submission_pdf:
+        attachments.append(undertaking_submission_pdf)
 
     email_args = {
         "recipients": email,
@@ -107,9 +112,6 @@ def get_print_format(payment_request):
     letter_head = frappe.db.get_value("Program", program_name, "letter_head")
     return print_format, letter_head
 
-
-
-import math, random
 
 @frappe.whitelist()
 def generate_otp(payment_hash):
@@ -134,20 +136,19 @@ def get_contacts(fee):
     return mobile, email
 
 def get_fee(payment_hash):
-    fee = frappe.get_value("Payment Request", payment_hash, "reference_name")
+    fee = frappe.get_value("Payment Request", {"payment_hash": payment_hash}, "reference_name")
     return fee
 
     
 def send_otp(mobile, email, otp):
     try:
         # OTP via email
-        frappe.sendmail(**{
-            "recipients": email,
-            "subject": "OTP for undertaking submission",
-            "message": "OTP for undertaking submission is " + otp,
-            "delayed": False,
-        })
-        #whatsapp message
+        subject = "OTP for undertaking submission"
+        message = f"OTP for undertaking submission is {otp}"
+        frappe.sendmail(
+            recipients=email, subject=subject, message=message, delayed=False
+        )
+        # whatsapp message
         return True
     except Exception as e:
         return False
@@ -206,3 +207,11 @@ def handle_undertaking_submission(**kwargs):
         new_doc.ip_address = kwargs.get("ip_address")
         new_doc.user_info = kwargs.get("browser_info")
         new_doc.save(ignore_permissions=True)
+
+
+def get_undertaking_submission_pdf(student):
+    if frappe.db.exists("Rules and Regulation Submission", {"student": student}):
+        name = frappe.get_value("Rules and Regulation Submission", {"student": student}, "name")
+        return frappe.attach_print("Rules and Regulation Submission", name, file_name=name)
+    else:
+        return None
