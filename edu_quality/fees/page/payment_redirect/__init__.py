@@ -55,9 +55,9 @@ def get_payment_details(**kwargs):
     else:
         for fee in fees.components:
             fee_type = frappe.db.get_value("Fee Category",fee.fees_category,"type")
+            amount = discounted_amount if discounted_amount else fee.amount
             if fee_type != "Regular":
                 discounted_amount = fee.custom_amount_after_discount
-                amount = discounted_amount if discounted_amount else fee.amount
                 if frappe.db.exists("Fee Category",fee.fees_category):
                     company = frappe.db.get_value("Fee Category",fee.fees_category,"custom_company")
                 else:
