@@ -114,10 +114,8 @@ def get_print_format(payment_request):
 
 
 @frappe.whitelist()
-def generate_otp(payment_hash):
+def generate_otp(fee, mobile=None, email=None):
     try:
-        fee = get_fee(payment_hash)
-        mobile, email = get_contacts(fee)
         rs = frappe.cache()
         key = fee
         digits = "0123456789"
@@ -125,9 +123,22 @@ def generate_otp(payment_hash):
         for i in range(4) :
             OTP += digits[math.floor(random.random() * 10)]
         rs.set_value(key, OTP, expires_in_sec=300)
-        return send_otp(mobile, email, OTP)
+        return send_otp(OTP, mobile, email)
     except Exception as e:
         return False
+
+@frappe.whitelist()
+def generate_undertaking_otp(payment_hash):
+    fee = get_fee(payment_hash)
+    mobile, email = get_contacts(fee)
+    return generate_otp(fee, mobile, email)
+
+
+@frappe.whitelist()
+def verify_undertaking_otp(payment_hash, otp):
+    fee = get_fee(payment_hash)
+    return verify_otp(fee, otp)
+
 
 def get_contacts(fee):
     student = frappe.get_value("Fees", fee, "student")
@@ -140,7 +151,7 @@ def get_fee(payment_hash):
     return fee
 
     
-def send_otp(mobile, email, otp):
+def send_otp(otp, mobile=None, email=None):
     try:
         # OTP via email
         subject = "OTP for undertaking submission"
@@ -154,9 +165,8 @@ def send_otp(mobile, email, otp):
         return False
 
 @frappe.whitelist()
-def verify_otp(payment_hash, otp):
+def verify_otp(fee, otp):
     try:
-        fee = get_fee(payment_hash)
         rs = frappe.cache()
         if rs.get_value(fee) == otp:
             return True 
@@ -166,9 +176,10 @@ def verify_otp(payment_hash, otp):
 
 def get_undertaking_template(doc):
     fee = frappe.get_value("Payment Request", doc.name, "reference_name")
-    class_name = frappe.get_value("Fees", fee, "program")
-    if frappe.db.exists("Rules and Regulation Template", {"class": class_name}):
-        template = frappe.get_doc("Rules and Regulation Template", {"class": class_name})
+    class_name, academic_year = frappe.get_value("Fees", fee, ["program", "academic_year"])
+    doc_filter = {"class": class_name, "academic_year": academic_year}
+    if frappe.db.exists("Rules and Regulation Template", doc_filter):
+        template = frappe.get_doc("Rules and Regulation Template", doc_filter)
         site_url = frappe.utils.get_url()
         pdf_url = site_url + template.pdf
         return pdf_url

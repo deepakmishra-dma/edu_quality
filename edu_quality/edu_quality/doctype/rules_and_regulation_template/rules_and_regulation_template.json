@@ -32,12 +32,13 @@
    "fieldname": "status",
    "fieldtype": "Select",
    "label": "Status",
-   "options": "Defaulter\nNew Student\nCurrent Student"
+   "options": "Defaulter\nNew Student\nRollover Student"
   },
   {
    "fieldname": "show_on",
-   "fieldtype": "Data",
-   "label": "Show On"
+   "fieldtype": "Select",
+   "label": "Show On",
+   "options": "Deposit\nFees"
   },
   {
    "fieldname": "pdf",
@@ -54,7 +55,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-10-09 14:43:05.211121",
+ "modified": "2023-10-12 16:15:42.369579",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Rules and Regulation Template",
