@@ -121,17 +121,35 @@ def generate_otp(fee,mobile):
         for i in range(4) :
             OTP += digits[math.floor(random.random() * 10)]
         rs.set_value(key, OTP, expires_in_sec=300)
-        return send_otp(mobile,OTP)
+        return send_otp(fee,OTP)
     except Exception as e:
         return False
 
-def send_otp(mobile, otp):
+def send_otp(fee,otp):
     try:
+        student = frappe.get_value("Fees",fee,"student")
+        student = frappe.get_doc("Student",student)
+        if student.custom_fathers_email:
+            email = student.custom_fathers_email
+        elif student.custom_mothers_email:
+            email = student.custom_mothers_email
+        elif student.custom_guardians_email_id:
+            email = student.custom_guardians_email_id
+        if email:
+            email_otp(email,otp)
         #whatsapp message
         return True
     except Exception as e:
         return False
     
+def email_otp(email,otp):
+    subject = "OTP for Changing Payment Plan"
+    message = f"OTP for Changing Payment Plan is {otp}"
+    frappe.sendmail(
+        recipients=email, subject=subject, message=message, delayed=False
+    )
+
+
 def verify_otp(fee,otp):
     try:
         rs = frappe.cache()
