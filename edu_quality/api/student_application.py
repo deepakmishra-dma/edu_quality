@@ -58,26 +58,56 @@ def separate_name(full_name):
         "last_name": last_name
     }
 
+def is_dob_in_range(lead_application,program_doc):
+  
+    start = program_doc.get('custom_date_start')
+    end = program_doc.get('custom_date_end')
+    dob = lead_application.get('date_of_birth')
+    
+    if(not dob):
+        raise frappe.exceptions.MandatoryError("Date of Birth is required")
+    if(not start or not end):
+        return True
+    if(start<=dob<=end):
+        return True
+    else:
+        return False
+
 @frappe.whitelist()
 def create_student_application(**args):
-    if not args:
-        raise frappe.exceptions.MandatoryError("Arguments are required")
+    try:
+        if not args:
+            raise frappe.exceptions.MandatoryError("Arguments are required")
+        
+        lead_doc_name = args.get("name")
+        lead_application = frappe.get_doc("Lead", {"name": lead_doc_name})
+        program_doc = frappe.get_doc("Program",lead_application.get('class'))
 
-    lead_doc_name = args.get("name")
-    lead_application = frappe.get_doc("Lead", {"name": lead_doc_name})
-    if not lead_application:
-        return None
-    student_application = frappe.get_doc(
-        serialize_lead_to_application(lead_application)
-    )
-    created_mgr_lead = upload_to_mgr(student_application)
-    student_application.lms_id = created_mgr_lead.get("ID")
-    # lead_application.lead_status = "Enrolled"
-    lead_application.status = "Enrolled"
-    lead_application.save()
-    student_application.insert()
-    frappe.msgprint(("Upload to MGR successful"))
-    return student_application
+        if(not is_dob_in_range(lead_application,program_doc)):
+            message =f"Date of Birth for class {lead_application.get('class')} is not in range {program_doc.get('custom_date_start')} to {program_doc.get('custom_date_end')}"
+            # frappe.msgprint(msg=message, title="Error", indicator="red")
+            raise frappe.exceptions.MandatoryError(message)
+
+        if not lead_application:
+            return None
+        
+        student_application = frappe.get_doc(
+            serialize_lead_to_application(lead_application)
+        )
+
+        created_mgr_lead = upload_to_mgr(student_application)
+        student_application.lms_id = created_mgr_lead.get("ID")
+        # lead_application.lead_status = "Enrolled"
+        lead_application.status = "Enrolled"
+        lead_application.save()
+        student_application.insert()
+        frappe.msgprint(("Upload to MGR successful"))
+        return student_application
+    
+    except Exception as e:
+        frappe.msgprint(msg=str(e), title="Error", indicator="red")
+        raise e
+
 
 
 @frappe.whitelist(allow_guest=True)
@@ -535,6 +565,7 @@ def create_student_lead(**kwargs):
             "fathers_name": kwargs.get("fathers_name"),
             "fathers_email": kwargs.get("father_email_id")  or kwargs.get("fathers_email"),
             "fathers_phone": remove_indian_country_code(str(kwargs.get("fathers_phone"))),
+            "mobile_no": remove_indian_country_code(str(kwargs.get("fathers_phone"))),
             "mothers_name": " ",
             "academic_year": kwargs.get("academic_year") or "2024-2025",
             "school_from_lead_source": kwargs.get("school"),
@@ -545,7 +576,7 @@ def create_student_lead(**kwargs):
         }
     )
 
-    lead_doc = lead_doc.insert(ignore_permissions=True,ignore_mandatory=True)
+    lead_doc = lead_doc.insert(ignore_permissions=True)
     return lead_doc
 
 
@@ -611,5 +642,5 @@ def create_student_lead_fb(**kwargs):
         }
     )
 
-    lead_doc = lead_doc.insert(ignore_permissions=True,ignore_mandatory=True)
+    lead_doc = lead_doc.insert(ignore_permissions=True)
     return lead_doc

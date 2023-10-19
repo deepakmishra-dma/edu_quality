@@ -74,9 +74,11 @@ frappe.ui.form.on('Broadcast Group', {
 							]
 						})
 						templateReactDialog.sendFallback = async (_, message) => {
+
 							try {
 								const messages = frm.doc.group_members?.map((memberDoc) => {
-									return { ...message, to: memberDoc?.fathers_phone_number }
+									const a = frappe.model.get_doc("Lead", memberDoc?.member_name)
+									return { ...message, to: memberDoc.contact_doc }
 								})
 
 								const sentAll = await Promise.all(messages.map(handleTemplateBroadcast))
