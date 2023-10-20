@@ -110,6 +110,22 @@
     "docstatus": 0,
     "doctype": "Lead Source",
     "modified": "2023-09-29 16:43:44.438760",
+    "name": "ChatBot",
+    "source_name": "ChatBot"
+  },
+  {
+    "details": null,
+    "docstatus": 0,
+    "doctype": "Lead Source",
+    "modified": "2023-09-29 16:43:44.438760",
+    "name": "Existing Parents",
+    "source_name": "Existing Parents"
+  },
+  {
+    "details": null,
+    "docstatus": 0,
+    "doctype": "Lead Source",
+    "modified": "2023-09-29 16:43:44.438760",
     "name": "Others",
     "source_name": "Others"
   }

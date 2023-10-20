@@ -1,0 +1,62 @@
+[
+  {
+    "campaign_name": "Online Lead",
+    "campaign_schedules": [],
+    "description": null,
+    "docstatus": 0,
+    "doctype": "Campaign",
+    "modified": "2023-10-13 00:23:50.774503",
+    "name": "Online Lead",
+    "naming_series": "SAL-CAM-.YYYY.-"
+  },
+  {
+    "campaign_name": "New Walnut Form - 20th June 2023",
+    "campaign_schedules": [],
+    "description": null,
+    "docstatus": 0,
+    "doctype": "Campaign",
+    "modified": "2023-10-13 00:24:00.800002",
+    "name": "New Walnut Form - 20th June 2023",
+    "naming_series": "SAL-CAM-.YYYY.-"
+  },
+  {
+    "campaign_name": "Chatbot Enquiry",
+    "campaign_schedules": [],
+    "description": null,
+    "docstatus": 0,
+    "doctype": "Campaign",
+    "modified": "2023-10-13 00:24:00.800002",
+    "name": "Chatbot Enquiry",
+    "naming_series": "SAL-CAM-.YYYY.-"
+  },
+  {
+    "campaign_name": "New Walnut Form - 20th June 2023-converted",
+    "campaign_schedules": [],
+    "description": null,
+    "docstatus": 0,
+    "doctype": "Campaign",
+    "modified": "2023-10-13 00:24:00.800002",
+    "name": "New Walnut Form - 20th June 2023-converted",
+    "naming_series": "SAL-CAM-.YYYY.-"
+  },
+  {
+    "campaign_name": "Web Quick Add Lead, Walnut Wakad Lead Ad",
+    "campaign_schedules": [],
+    "description": null,
+    "docstatus": 0,
+    "doctype": "Campaign",
+    "modified": "2023-10-13 00:24:00.800002",
+    "name": "Web Quick Add Lead, Walnut Wakad Lead Ad",
+    "naming_series": "SAL-CAM-.YYYY.-"
+  },
+  {
+    "campaign_name": "Short-admission-form",
+    "campaign_schedules": [],
+    "description": null,
+    "docstatus": 0,
+    "doctype": "Campaign",
+    "modified": "2023-10-13 00:24:00.800002",
+    "name": "Short-admission-form",
+    "naming_series": "SAL-CAM-.YYYY.-"
+  }
+]

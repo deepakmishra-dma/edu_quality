@@ -140,6 +140,9 @@ doc_events = {
     },
     "Custom DocPerm":{
         "after_insert" : "edu_quality.public.py.fixtures.custom_doc_perm"
+    },
+    "Lead":{
+        "after_insert":"edu_quality.public.py.lead.after_insert"
     }
 }
 
