@@ -46,18 +46,26 @@ frappe.ui.form.on("Lead", {
                     });
                     return
                 }
-
                 frappe.call({
-                    method: "edu_quality.api.student_application.create_student_application",
-                    type: "POST",
-                    args: { name: frm.docname },
+                    method: "frappe.desk.form.save.savedocs",
+                    args: { doc: frm.doc, action: 'Save' },
+                    callback: function (r) {
+                        $(document).trigger("save", [frm.doc]);
+
+                        frappe.call({
+                            method: "edu_quality.api.student_application.create_student_application",
+                            type: "POST",
+                            args: { name: frm.docname },
+                        });
+                    },
+                    error: function (r) {
+                    },
                 });
+
             })
             $('.inner-group-button[data-label="Create"]').remove()
         }, 10)
 
-        if (frm.doc.status)
-            frm.set_df_property("lead_sub_status", "options", subStatuses[frm.doc.status.toLowerCase()])
         $("textarea[data-fieldname='custom_cold_comment'],textarea[data-fieldname='overall_remarks'],textarea[data-fieldname='follow_up_comment'],textarea[data-fieldname='walk_in_1'],textarea[data-fieldname='walk_in_2'],textarea[data-fieldname='walk_in_3']").css({ 'height': '70' });
 
     },
