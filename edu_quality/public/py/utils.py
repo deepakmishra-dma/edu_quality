@@ -162,10 +162,14 @@ def verify_otp(fee,otp):
     except Exception as e:
         return False
 
-def get_undertaking_template(doc):
+def get_undertaking_template(doc, is_deposit=False):
     fee = frappe.get_value("Payment Request", doc.name, "reference_name")
     class_name, academic_year = frappe.get_value("Fees", fee, ["program", "academic_year"])
     doc_filter = {"class": class_name, "academic_year": academic_year}
+    if is_deposit:
+        doc_filter["show_on"] = "Deposit"
+    else:
+        doc_filter["show_on"] = "Fees"
     if frappe.db.exists("Rules and Regulation Template", doc_filter):
         template = frappe.get_doc("Rules and Regulation Template", doc_filter)
         site_url = frappe.utils.get_url()

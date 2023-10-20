@@ -25,6 +25,7 @@ def get_payment_details(**kwargs):
     fees = frappe.get_doc("Fees",payment_request.reference_name)
     breakup = []
     portion = 100
+    is_deposit = False
     if payment_request.payment_term:
         description = ""
         for schedule in fees.payment_schedule:
@@ -41,11 +42,12 @@ def get_payment_details(**kwargs):
             if "deposit" in description:
                 fee_type = frappe.db.get_value("Fee Category",fee.fees_category,"type")
                 if fee_type != "Regular":
-                        breakup.append({
-                            'fees_category': fee.fees_category,
-                            'amount':  frappe.utils.fmt_money(amount, currency="INR"),
-                            'company': company
-                            })
+                    breakup.append({
+                        'fees_category': fee.fees_category,
+                        'amount':  frappe.utils.fmt_money(amount, currency="INR"),
+                        'company': company
+                    })
+                    is_deposit = True
             else:
                 breakup.append({
                     'fees_category': fee.fees_category,
@@ -66,13 +68,14 @@ def get_payment_details(**kwargs):
                     'fees_category': fee.fees_category,
                     'amount':  frappe.utils.fmt_money(amount, currency="INR"),
                     'company': company
-                    })
+                })
+                is_deposit = True
             else:
                 breakup.append({
                     'fees_category': fee.fees_category,
                     'amount':  frappe.utils.fmt_money(amount *(portion/100), currency="INR"),
                     'company': company
-                    })
+                })
 
     return {
         'student_name': fees.student_name,
@@ -85,7 +88,7 @@ def get_payment_details(**kwargs):
         'status': payment_request.status,
         'receipt_url': frappe.utils.get_url() + "/api/method/edu_quality.fees.page.payment_redirect.payment_receipt?payment_request="+payment_request.name,
         "breakup": breakup,
-        "undertaking_url": get_undertaking_template(payment_request),
+        "undertaking_url": get_undertaking_template(payment_request, is_deposit=is_deposit),
         "undertaking_accepted": get_submitted_undertaking(payment_request)
     }
 
