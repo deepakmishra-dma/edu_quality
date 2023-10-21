@@ -162,21 +162,39 @@ def verify_otp(fee,otp):
     except Exception as e:
         return False
 
+
 def get_undertaking_template(doc, is_deposit=False):
     fee = frappe.get_value("Payment Request", doc.name, "reference_name")
-    class_name, academic_year = frappe.get_value("Fees", fee, ["program", "academic_year"])
-    doc_filter = {"class": class_name, "academic_year": academic_year}
+    class_name, academic_year, student = frappe.get_value("Fees", fee, ["program", "academic_year", "student"])
+    status = is_old_student(student, academic_year)
+    filter_dict = {"class": class_name, "academic_year": academic_year}
+
     if is_deposit:
-        doc_filter["show_on"] = "Deposit"
+        filter_dict["show_on"] = "Deposit"
     else:
-        doc_filter["show_on"] = "Fees"
-    if frappe.db.exists("Rules and Regulation Template", doc_filter):
-        template = frappe.get_doc("Rules and Regulation Template", doc_filter)
+        filter_dict["show_on"] = "Fees"
+
+    if status:
+        filter_dict["status"] = "Rollover Student"
+    else:
+        filter_dict["status"] = "New Student"
+
+    # check if doc filter exists in database
+    template = frappe.db.get_value("Rules and Regulation Template", filter_dict, ["pdf", "name"])
+    if template:
         site_url = frappe.utils.get_url()
-        pdf_url = site_url + template.pdf
+        pdf_url = site_url + template[0]
         return pdf_url
-    else:
-        return None
+
+    # check if default filter exists in database
+    default_filter = {"class": class_name, "academic_year": academic_year, "status": "Defaulter"}
+    template = frappe.db.get_value("Rules and Regulation Template", default_filter, ["pdf", "name"])
+    if template:
+        site_url = frappe.utils.get_url()
+        pdf_url = site_url + template[0]
+        return pdf_url
+
+    return None
     
 def get_submitted_undertaking(payment_request):
     student = frappe.get_value("Payment Request", payment_request, ["party"])
@@ -218,3 +236,29 @@ def get_undertaking_submission_pdf(student):
         return frappe.attach_print("Rules and Regulation Submission", name, file_name=name)
     else:
         return None
+    
+
+def is_old_student(student, academic_year):
+    previous_academic_year = get_previous_academic_year(academic_year)
+    if frappe.db.exists("Program Enrollment",{"student":student,"academic_year":previous_academic_year}):
+        return True
+    else:
+        return False
+    
+
+def get_previous_academic_year(academic_year):
+    # Extract the year parts from the current academic year
+    current_year_parts = academic_year.split("-")
+    current_start_year = int(current_year_parts[0])
+    current_end_year = int(current_year_parts[1])
+
+    # Calculate the start year of the previous academic year
+    previous_start_year = current_start_year - 1
+    previous_end_year = current_end_year - 1
+
+    # Construct the previous academic year name
+    previous_academic_year_name = f"{previous_start_year}-{previous_end_year}"
+
+    # Check if the previous academic year exists
+    previous_academic_year_exists = frappe.get_value("Academic Year", {"name": previous_academic_year_name}, "name")
+    return bool(previous_academic_year_exists)
