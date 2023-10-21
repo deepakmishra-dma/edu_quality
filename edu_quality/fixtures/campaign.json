@@ -40,13 +40,13 @@
     "naming_series": "SAL-CAM-.YYYY.-"
   },
   {
-    "campaign_name": "Web Quick Add Lead, Walnut Wakad Lead Ad",
+    "campaign_name": "Web Quick Add Lead",
     "campaign_schedules": [],
     "description": null,
     "docstatus": 0,
     "doctype": "Campaign",
     "modified": "2023-10-13 00:24:00.800002",
-    "name": "Web Quick Add Lead, Walnut Wakad Lead Ad",
+    "name": "Web Quick Add Lead",
     "naming_series": "SAL-CAM-.YYYY.-"
   },
   {
@@ -57,6 +57,16 @@
     "doctype": "Campaign",
     "modified": "2023-10-13 00:24:00.800002",
     "name": "Short-admission-form",
+    "naming_series": "SAL-CAM-.YYYY.-"
+  },
+  {
+    "campaign_name": "Walnut Wakad Lead Ad",
+    "campaign_schedules": [],
+    "description": null,
+    "docstatus": 0,
+    "doctype": "Campaign",
+    "modified": "2023-10-13 00:24:00.800002",
+    "name": "Walnut Wakad Lead Ad",
     "naming_series": "SAL-CAM-.YYYY.-"
   }
 ]
