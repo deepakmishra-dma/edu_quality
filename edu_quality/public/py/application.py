@@ -20,12 +20,19 @@ def before_save(doc,method=None):
             'fees_category': "Application fee",
             'amount': doc.application_fees
         })
+        
     if frappe.db.get_single_value("Fees Settings",'apply_deposits'):
         get_deposits(doc)
+
     if not doc.fee_structure:
-        if frappe.db.exists("Fee Structure",{'class':doc.program,'academic_year':doc.academic_year}):
-            doc.fee_structure = frappe.get_value("Fee Structure",{'class':doc.program,'academic_year':doc.academic_year},'name')
+        if frappe.db.exists("Fee Structure",{'program':doc.program,'academic_year':doc.academic_year}):
+            doc.fee_structure = frappe.get_value("Fee Structure",{'program':doc.program,'academic_year':doc.academic_year},'name')
+
     if doc.fee_structure:
+        fee_schedule = frappe.db.get_value("Fee Schedule",{'fee_structure':doc.fee_structure},'name')
+        doc.fee_schedule = fee_schedule
+        doc.application_fees = frappe.db.get_value("Application Fees List",{'class_name':doc.program},'application_fees')
+
         fee_structure = frappe.get_doc("Fee Structure", doc.fee_structure)
         if frappe.db.get_single_value("Fees Settings",'apply_fees'):
             for component in fee_structure.components:
@@ -33,7 +40,7 @@ def before_save(doc,method=None):
                     'fees_category':component.fees_category,
                     'amount':component.amount,
                     'description': component.description
-                    })
+                })
     calculate_total(doc)
 
 
