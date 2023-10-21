@@ -565,7 +565,7 @@ def create_student_lead(**kwargs):
             "fathers_name": kwargs.get("fathers_name"),
             "fathers_email": kwargs.get("father_email_id")  or kwargs.get("fathers_email"),
             "fathers_phone": remove_indian_country_code(str(kwargs.get("fathers_phone"))),
-            "mobile_no": remove_indian_country_code(str(kwargs.get("fathers_phone"))),
+            # "mobile_no": remove_indian_country_code(str(kwargs.get("fathers_phone"))),
             "mothers_name": " ",
             "academic_year": kwargs.get("academic_year") or "2024-2025",
             "school_from_lead_source": kwargs.get("school"),
