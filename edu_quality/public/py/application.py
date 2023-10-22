@@ -60,7 +60,7 @@ def get_deposits(doc):
     deposits = frappe.get_all('Security Deposit',{'program':doc.program,'academic_year':doc.academic_year},['name','amount'])
     for deposit in deposits:
         doc.append('fee_components',{
-            'fees_category': "Deposit",
+            'fees_category': deposit.name,
             'amount': deposit.amount
         })
     
