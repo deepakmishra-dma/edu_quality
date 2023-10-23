@@ -40,13 +40,13 @@
   "type": "Warm"
  },
  {
-    "docstatus": 0,
-    "doctype": "Lead Sub Status",
-    "modified": "2023-10-03 17:49:12.696121",
-    "name": "Warm-School Visit Done",
-    "name1": "Warm-School Visit Done",
-    "type": "Warm"
-   },
+  "docstatus": 0,
+  "doctype": "Lead Sub Status",
+  "modified": "2023-10-03 17:49:12.696121",
+  "name": "Warm-School Visit Done",
+  "name1": "Warm-School Visit Done",
+  "type": "Warm"
+ },
  {
   "docstatus": 0,
   "doctype": "Lead Sub Status",
@@ -56,13 +56,13 @@
   "type": "FollowUp/Callback"
  },
  {
-    "docstatus": 0,
-    "doctype": "Lead Sub Status",
-    "modified": "2023-10-03 17:49:12.696121",
-    "name": "FollowUp/Callback-School Visit Done",
-    "name1": "FollowUp/Callback-School Visit Done",
-    "type": "Warm"
-   },
+  "docstatus": 0,
+  "doctype": "Lead Sub Status",
+  "modified": "2023-10-03 17:49:12.696121",
+  "name": "FollowUp/Callback-School Visit Done",
+  "name1": "FollowUp/Callback-School Visit Done",
+  "type": "Warm"
+ },
  {
   "docstatus": 0,
   "doctype": "Lead Sub Status",
@@ -120,13 +120,13 @@
   "type": "Hot"
  },
  {
-    "docstatus": 0,
-    "doctype": "Lead Sub Status",
-    "modified": "2023-10-03 17:49:12.696121",
-    "name": "Hot-School Visit Done",
-    "name1": "Hot-School Visit Done",
-    "type": "Hot"
-   },
+  "docstatus": 0,
+  "doctype": "Lead Sub Status",
+  "modified": "2023-10-03 17:49:12.696121",
+  "name": "Hot-School Visit Done",
+  "name1": "Hot-School Visit Done",
+  "type": "Hot"
+ },
  {
   "docstatus": 0,
   "doctype": "Lead Sub Status",
