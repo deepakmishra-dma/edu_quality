@@ -1,5 +1,7 @@
 import frappe
 import math, random
+import requests
+import urllib
 
 def set_property(doctype, fieldname, prop, property_type, value):
     filters = {
@@ -138,6 +140,14 @@ def send_otp(fee,otp):
             email = student.custom_mothers_email
         elif student.custom_guardians_email_id:
             email = student.custom_guardians_email_id
+        if student.custom_fathers_mobile_no:
+            mobile = student.custom_fathers_mobile_no
+        elif student.custom_mothers_mobile_no:
+            mobile = student.custom_mothers_mobile_no
+        elif student.custom_guardians_mobile_no:
+            mobile = student.custom_guardians_mobile_no
+        if mobile:
+            sms_otp(mobile,otp)
         if email:
             email_otp(email,otp)
         #whatsapp message
@@ -151,6 +161,21 @@ def email_otp(email,otp):
     frappe.sendmail(
         recipients=email, subject=subject, message=message, delayed=False
     )
+
+@frappe.whitelist(allow_guest=True)
+def sms_otp(number,otp):
+    api_key = "***REMOVED-SMS-KEY***"
+    url = "https://smssolution.net.in/api/v4/?api_key=" + api_key
+    url += "&method=sms&message="
+    message = "The%20OTP%20for%20making%20changes%20to%20your%20account%20is%20-%20" + str(otp)
+    url += message
+    url += "&to=" + number
+    url += "&sender=" + "WALNUT"
+    response = requests.post(url)
+    response = response.json()
+    return response
+
+
 
 
 def verify_otp(fee,otp):
