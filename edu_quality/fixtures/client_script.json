@@ -147,10 +147,10 @@
   "doctype": "Client Script",
   "dt": "Fees",
   "enabled": 1,
-  "modified": "2023-10-11 10:33:25.353090",
+  "modified": "2023-10-17 09:38:18.124483",
   "module": "Edu Quality",
   "name": "Send OTP",
-  "script": "frappe.ui.form.on('Fees', {\n\trefresh(frm) {\n\t   frm.add_custom_button(__('Send OTP'), function(){\n    \t    frappe.call({\n    \t\t\tmethod:\"edu_quality.public.py.utils.generate_otp\",\n    \t\t\targs: {\n    \t\t\t\t\"fee\":frm.doc.name,\n    \t\t\t\t\"mobile\": \"9944090284\"\n    \t\t\t},\n    \t\t\tcallback: function(r) {\n    \t\t\t    console.log(r);\n    \t\t\t}\n    \t\t});\n\t   });\n\t}\n})\n\n\n\n",
+  "script": "frappe.ui.form.on('Fees', {\n\trefresh(frm) {\n\t   if(frm.doc.parent_otp===0){\n\t   frm.add_custom_button(__('Send OTP'), function(){\n    \t    frappe.call({\n    \t\t\tmethod:\"edu_quality.public.py.utils.generate_otp\",\n    \t\t\targs: {\n    \t\t\t\t\"fee\":frm.doc.name\n    \t\t\t},\n    \t\t\tcallback: function(r) {\n    \t\t\t    console.log(r);\n    \t\t\t}\n    \t\t});\n\t   },__(\"OTP\"));\n\t       \n\t   }\n\t}\n})\n\n\n\n",
   "view": "Form"
  },
  {
@@ -158,10 +158,10 @@
   "doctype": "Client Script",
   "dt": "Fees",
   "enabled": 1,
-  "modified": "2023-10-11 10:37:18.099691",
+  "modified": "2023-10-17 09:38:35.812129",
   "module": "Edu Quality",
   "name": "Verify OTP",
-  "script": "frappe.ui.form.on('Fees', {\n\trefresh(frm) {\n\t   frm.add_custom_button(__('Verify OTP'), function(){\n        let d = new frappe.ui.Dialog({\n        title: 'Add Discount',\n        fields: [\n            {\n                label: 'OTP',\n                fieldname: 'otp',\n                fieldtype: 'Int'\n            }\n        ],\n        primary_action_label: 'Submit',\n        primary_action(values) {\n            frappe.call({\n               \tmethod:\"edu_quality.public.py.utils.verify_otp\",\n    \t\t\targs: {\n    \t\t\t\t\"fee\":frm.doc.name,\n    \t\t\t\t\"otp\":otp\n    \t\t\t},\n                callback: function(response) {\n                    console.log(response);\n                }\n            });\n            d.hide();\n            frm.doc.refresh();\n        }\n    });\n    \n    d.show();\n\t   });\n\t}\n});\n\n\n\n",
+  "script": "frappe.ui.form.on('Fees', {\n\trefresh(frm) {\n\t    if(frm.doc.parent_otp===0){\n\t   frm.add_custom_button(__('Verify OTP'), function(){\n        let d = new frappe.ui.Dialog({\n        title: 'Add Discount',\n        fields: [\n            {\n                label: 'OTP',\n                fieldname: 'otp',\n                fieldtype: 'Int'\n            }\n        ],\n        primary_action_label: 'Submit',\n        primary_action(values) {\n            frappe.call({\n               \tmethod:\"edu_quality.public.py.utils.verify_otp\",\n    \t\t\targs: {\n    \t\t\t\t\"fee\":frm.doc.name,\n    \t\t\t\t\"otp\":otp\n    \t\t\t},\n                callback: function(response) {\n                    console.log(response);\n                }\n            });\n            d.hide();\n            frm.doc.refresh();\n        }\n    });\n    \n    d.show();\n\t   },__(\"OTP\"));\n\t    }\n\t}\n});\n\n\n\n",
   "view": "Form"
  }
 ]

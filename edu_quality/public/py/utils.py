@@ -171,10 +171,9 @@ def sms_otp(number,otp):
     url += message
     url += "&to=" + number
     url += "&sender=" + "WALNUT"
-    response = requests.post(url)
+    response = requests.post(url,verify=False)
     response = response.json()
     return response
-
 
 
 
