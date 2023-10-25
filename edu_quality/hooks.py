@@ -143,7 +143,10 @@ doc_events = {
     },
     "Lead":{
         "after_insert":"edu_quality.public.py.lead.after_insert"
-    }
+    },
+    "Payment Entry":{
+        "autoname":"edu_quality.public.py.payment_entry.autoname"
+    },
 }
 
 # Scheduled Tasks
