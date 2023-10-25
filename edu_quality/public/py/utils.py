@@ -176,8 +176,8 @@ def sms_otp(number,otp):
     return response
 
 
-
-def verify_otp(fee,otp):
+@frappe.whitelist()
+def verify_otp(fee, otp):
     try:
         rs = frappe.cache()
         if rs.get_value(fee) == otp:
