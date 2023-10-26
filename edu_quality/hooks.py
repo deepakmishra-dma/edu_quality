@@ -293,6 +293,9 @@ fixtures = [
             ]
         ]
     },
+       {'dt':"Custom HTML Block",
+
+    },
     {'dt':"Module Profile",
      "filters": [
             [

@@ -1,36 +1,40 @@
 // Copyright (c) 2023, Hybrowlabs Technologies and contributors
 // For license information, please see license.txt
-const handleTemplateBroadcast = async (messsageToSend) => {
+const handleTemplateBroadcast = async (members, message) => {
 	const headers = new Headers()
 	headers.append('X-Frappe-CSRF-Token', frappe.csrf_token)
-	headers.append('content', 'application/json')
+	headers.append('Content-Type', 'application/json')
 	try {
-		const messageCreatedRes = await fetch("/api/resource/WhatsApp Message", {
+
+		const messageCreatedRes = await fetch("/api/method/edu_quality.api.broadcast_whatsapp.message", {
 			headers: headers,
 			method: "POST",
-			body: JSON.stringify(messsageToSend)
+			body: JSON.stringify({ members: members, message: message })
+
 		})
 		const messageCreatedMsg = await messageCreatedRes.json()
-		if (messageCreatedRes.status === 500 || messageCreatedRes.status === 417 || messageCreatedRes.status === 400) {
-			throw messageCreatedMsg
-		}
+		console.log(messageCreatedMsg, 'asa')
+		// if (messageCreatedRes.status === 500 || messageCreatedRes.status === 417 || messageCreatedRes.status === 400) {
+		// 	throw messageCreatedMsg
+		// }
 
-		const body = `docs=${encodeURIComponent(
-			JSON.stringify(messageCreatedMsg?.data)
-		)}&method=send`;
+		// const body = `docs=${encodeURIComponent(
+		// 	JSON.stringify(messageCreatedMsg?.data)
+		// )}&method=send`;
 
-		const ranSuccessfully = await fetch(`/api/method/run_doc_method?${body}`, {
-			method: "POST",
-			headers: headers,
-			body: body,
-		});
+		// const ranSuccessfully = await fetch(`/api/method/run_doc_method?${body}`, {
+		// 	method: "POST",
+		// 	headers: headers,
+		// 	body: body,
+		// });
 
-		const data = await ranSuccessfully.json()
-		if (ranSuccessfully.status !== 200) {
-			throw data
-		}
+		// const data = await ranSuccessfully.json()
+		// if (ranSuccessfully.status !== 200) {
+		// 	throw data
+		// }
 	}
 	catch (e) {
+		console.error(e)
 		return Promise.reject(e)
 	}
 
@@ -80,13 +84,25 @@ frappe.ui.form.on('Broadcast Group', {
 									const a = frappe.model.get_doc("Lead", memberDoc?.member_name)
 									return { ...message, to: memberDoc.contact_doc }
 								})
+								console.log(frm.doc.group_members)
+								const res = await handleTemplateBroadcast(frm.doc.group_members, message)
+								// const sentAll = frappe.call({
+								// 	method: "edu_quality.api.broadcast_whatsapp.message",
+								// 	type: "POST",
 
-								const sentAll = await Promise.all(messages.map(handleTemplateBroadcast))
-								frappe.msgprint({
-									title: __('Successful'),
-									message: __('Queued All'),
+								// 	body: {
+								// 		members: frm.doc.group_members,
+								// 		message: JSON.parse(message)
+								// 	},
+								// 	callback: function (r) {
+								// 		frappe.msgprint({
+								// 			title: __('Successful'),
+								// 			message: __('Queued All'),
 
-								})
+								// 		})
+								// 	}
+								// })
+
 							}
 							catch (e) {
 								frappe.msgprint({

@@ -70,6 +70,14 @@ frappe.ui.form.on("Lead", {
 
     },
 
+    validate: function (frm) {
+        const re = /^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/
+        if (!re.test(frm.doc.fathers_phone)) {
+            frappe.validated = false
+        }
+        return true
+    },
+
 
     center: function (frm) {
 
@@ -81,6 +89,7 @@ frappe.ui.form.on("Lead", {
             };
         });
     },
+
     status: function (frm) {
 
         frm.set_query("custom_lead_sub_status", function () {

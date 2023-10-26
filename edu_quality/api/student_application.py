@@ -585,6 +585,7 @@ def create_student_lead(**kwargs):
             "center": school_name,
             "class": class_name,
             "class_from_lead_source": kwargs.get("class"),
+            "custom_previous_school":kwargs.get('current_school',''),
             "source": kwargs.get("source", "Website") or "Website" or "Others",
         }
     )
@@ -658,7 +659,8 @@ def create_student_lead_fb(**kwargs):
             "school_from_lead_source": kwargs.get("school"),
             "center": school_name,
             "class": class_name,
-            "class_from_lead_source": kwargs.get("class"),
+            "class_from_lead_source": kwargs.get("class"),            
+            "custom_previous_school":kwargs.get('current_school',''),
             "source": kwargs.get("source") or "Facebook",
         }
     )
