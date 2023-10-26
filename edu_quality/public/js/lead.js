@@ -30,11 +30,29 @@ var subStatuses = {
 
 frappe.ui.form.on("Lead", {
     refresh: function (frm) {
+        if (frm.doc.status === "Hot" && frm.doc.custom_re_enquired_count) {
+            frm.page.set_indicator('Hot ' + frm.doc.custom_re_enquired_count, "orange")
+        }
+
         setTimeout(() => {
             frm.clear_custom_buttons()
 
 
+            frm.add_custom_button("Open in Whatsapp UI", function () {
+                frappe.call({
+                    "method": "frappe.desk.form.linked_with.get",
+                    args: {
+                        docname: frm.doc.name,
+                        doctype: "Lead"
+                    }, callback: (data) => {
+                
+                        if (data?.message && data.message.Contact && data.message.Contact?.[0]?.name) {
 
+                            window.location.href = window.location.origin + "/app/whatsapp_manager?user=" + data.message.Contact?.[0]?.name
+                        }
+                    }
+                })
+            })
 
             frm.add_custom_button(__("Push To MGR"), function () {
                 var errorKey = Object.keys(error_msg).find(error => frm.doc[error] === null || frm.doc[error] === undefined || frm.doc[error] === '')
