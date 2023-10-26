@@ -285,7 +285,7 @@ fixtures = [
             [
                 "name",
                 "in",
-                ["Walnut Accounts",
+                ["Home","Walnut Accounts",
                  "Student Management",
                  "Fees Setup",
                  "Walnut Analytics Dashboard"

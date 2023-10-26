@@ -286,6 +286,13 @@
     "parenttype": "DocType Layout"
    },
    {
+    "fieldname": "custom_re_enquired_count",
+    "label": "Re Enquired Count",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
     "fieldname": "column_break_uemiw",
     "label": null,
     "parent": "Lead",
@@ -986,7 +993,7 @@
     "parenttype": "DocType Layout"
    }
   ],
-  "modified": "2023-10-17 11:43:03.229563",
+  "modified": "2023-10-17 18:46:15.890689",
   "name": "Lead",
   "route": "/app/lead"
  }

@@ -585,7 +585,7 @@ def create_student_lead(**kwargs):
             "center": school_name,
             "class": class_name,
             "class_from_lead_source": kwargs.get("class"),
-            "custom_previous_school":kwargs.get('current_school',''),
+            "custom_previous_school": kwargs.get("current_school", ""),
             "source": kwargs.get("source", "Website") or "Website" or "Others",
         }
     )
@@ -659,8 +659,8 @@ def create_student_lead_fb(**kwargs):
             "school_from_lead_source": kwargs.get("school"),
             "center": school_name,
             "class": class_name,
-            "class_from_lead_source": kwargs.get("class"),            
-            "custom_previous_school":kwargs.get('current_school',''),
+            "class_from_lead_source": kwargs.get("class"),
+            "custom_previous_school": kwargs.get("current_school", ""),
             "source": kwargs.get("source") or "Facebook",
         }
     )
@@ -671,6 +671,7 @@ def create_student_lead_fb(**kwargs):
 
 def process_lead(source, lead):
     lead.status = "Hot"
+    source = source if source else "Not Known"
     if source.lower() == "school":
         lead.append("custom_lead_sub_status", {"sub_status": "Hot-School Visit Done"})
         lead.custom_walk_in_1_action_date = datetime.datetime.now(
@@ -683,6 +684,6 @@ def process_lead(source, lead):
             "note": f'<div class="ql-editor read-mode"><p>Lead Re-Registered from <b>{source.capitalize()}</b> at <b>{datetime.datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%d-%m-%Y , %H:%M IST")}</b> </p></div>'
         },
     )
-
+    lead.custom_re_enquired_count += 1
     lead.save(ignore_permissions=True)
     return lead

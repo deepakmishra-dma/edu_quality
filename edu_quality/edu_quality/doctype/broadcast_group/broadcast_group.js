@@ -39,6 +39,29 @@ const handleTemplateBroadcast = async (members, message) => {
 	}
 
 }
+
+const getFieldsInLead = async () => {
+
+
+	const headers = new Headers()
+	headers.append('X-Frappe-CSRF-Token', frappe.csrf_token)
+	headers.append('Content-Type', 'application/json')
+	try {
+
+		const response = await fetch("/api/method/edu_quality.public.py.utils.generate_fields_map?docName=Lead", {
+			headers: headers,
+			method: "GET",
+
+		})
+		const data = await response.json()
+		return data
+	}
+	catch (e) {
+		console.error(e)
+		return Promise.reject(e)
+	}
+
+}
 frappe.ui.form.on('Broadcast Group', {
 	// refresh: function(frm) {
 
@@ -65,8 +88,13 @@ frappe.ui.form.on('Broadcast Group', {
 				primary_action: async function (values) {
 					try {
 						const templateReactDialog = document.createElement("whatsapp-template")
+						const docVariables = await getFieldsInLead()
+						console.log(docVariables?.message?.array, 'aa')
 						templateReactDialog.templateName = values.group_name;
 						templateReactDialog.hideCloseButton = true
+						templateReactDialog.docVariables = docVariables?.message?.array || []
+						templateReactDialog.enableDocVariablePicker = true
+
 						// document.body.appendChild(el)
 						const templateDialog = new frappe.ui.Dialog({
 							title: "Enter template content",
@@ -80,11 +108,6 @@ frappe.ui.form.on('Broadcast Group', {
 						templateReactDialog.sendFallback = async (_, message) => {
 
 							try {
-								const messages = frm.doc.group_members?.map((memberDoc) => {
-									const a = frappe.model.get_doc("Lead", memberDoc?.member_name)
-									return { ...message, to: memberDoc.contact_doc }
-								})
-								console.log(frm.doc.group_members)
 								const res = await handleTemplateBroadcast(frm.doc.group_members, message)
 								// const sentAll = frappe.call({
 								// 	method: "edu_quality.api.broadcast_whatsapp.message",
