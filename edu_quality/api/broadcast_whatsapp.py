@@ -1,5 +1,6 @@
 import frappe
 from edu_quality.public.py.utils import generate_fields_map
+from nextai.utils import get_host_with_protocol
 import json
 import re
 
@@ -11,6 +12,7 @@ import re
 def message(**data):
     members = data.get("members")
     message = data.get("message")
+    current_url = get_host_with_protocol()
     if not members or not message:
         return "Members or message not found"
     for i in members:
@@ -18,6 +20,7 @@ def message(**data):
             "edu_quality.api.broadcast_whatsapp.send",
             member_lead_id=i.get("member_name"),
             message=message,
+            current_url=current_url,
             # fields=trimmed_field_map,
             queue="long",
             timeout=1800,
@@ -27,7 +30,7 @@ def message(**data):
 
 # for lead only
 @frappe.whitelist()
-def send(member_lead_id, message):
+def send(member_lead_id, message, current_url):
     lead_doc = frappe.get_doc("Lead", member_lead_id)
     # raise Exception(message)
     pattern = r"\{([^}]+)\}"
@@ -76,4 +79,4 @@ def send(member_lead_id, message):
     if message_doc.get("media_file"):
         message_doc.upload_media()
 
-    message_doc.send_templated_message()
+    message_doc.send_templated_message(current_url)
