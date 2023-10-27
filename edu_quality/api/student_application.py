@@ -26,7 +26,7 @@ def remove_indian_country_code(phone):
         return ""
     if "+91" in str(phone):
         return phone[3::]
-    return phone
+    return str(phone)
 
 
 def separate_name(full_name):
@@ -542,6 +542,17 @@ def create_student_lead(**kwargs):
         return process_lead(
             kwargs.get("source"), frappe.get_doc("Lead", existing_leads[0].get("name"))
         )
+    source = "Website"
+    if source:
+        source_doc = frappe.db.get_list(
+            "Lead Source",
+            filters={"source_name": kwargs.get("source", "Website")},
+            ignore_permissions=True,
+        )
+        if len(source_doc):
+            source = source_doc[0].get("name", None)
+        else:
+            source = "Others"
 
     school_name = (
         frappe.db.get_value(
@@ -586,7 +597,7 @@ def create_student_lead(**kwargs):
             "class": class_name,
             "class_from_lead_source": kwargs.get("class"),
             "custom_previous_school": kwargs.get("current_school", ""),
-            "source": kwargs.get("source", "Website") or "Website" or "Others",
+            "source": source or "Website" or "Others",
         }
     )
 
@@ -620,7 +631,17 @@ def create_student_lead_fb(**kwargs):
         return process_lead(
             kwargs.get("source"), frappe.get_doc("Lead", existing_leads[0].get("name"))
         )
-
+    source = "Facebook"
+    if source:
+        source_doc = frappe.db.get_list(
+            "Lead Source",
+            filters={"source_name": kwargs.get("source", "Facebook")},
+            ignore_permissions=True,
+        )
+        if len(source_doc):
+            source = source_doc[0].get("name", None)
+        else:
+            source = "Others"
     school_name = (
         frappe.db.get_value(
             "School",
@@ -661,7 +682,7 @@ def create_student_lead_fb(**kwargs):
             "class": class_name,
             "class_from_lead_source": kwargs.get("class"),
             "custom_previous_school": kwargs.get("current_school", ""),
-            "source": kwargs.get("source") or "Facebook",
+            "source": source or "Facebook",
         }
     )
 
@@ -672,7 +693,7 @@ def create_student_lead_fb(**kwargs):
 def process_lead(source, lead):
     lead.status = "Hot"
     source = source if source else "Not Known"
-    if source.lower() == "school":
+    if source.lower() == "school" or id_to_location_map_fb.get(str(source).lower(), None):
         lead.append("custom_lead_sub_status", {"sub_status": "Hot-School Visit Done"})
         lead.custom_walk_in_1_action_date = datetime.datetime.now(
             pytz.timezone("Asia/Kolkata")

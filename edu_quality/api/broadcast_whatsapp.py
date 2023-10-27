@@ -73,7 +73,7 @@ def send(member_lead_id, message):
     message_doc = frappe.get_doc(message)
     message_doc.insert()
 
-    if message_doc.media_file:
+    if message_doc.get("media_file"):
         message_doc.upload_media()
 
     message_doc.send_templated_message()
