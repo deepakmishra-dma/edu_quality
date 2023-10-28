@@ -34,9 +34,21 @@ def migrate():
     set_property("Student Group", "student_group_name", "unique", "Check", 0)
 
 
+def is_deposit(fees, term):
+    deposit = False
+    if fees.payment_schedule:
+        for schedule in fees.payment_schedule:
+            if schedule.payment_term == term and "deposit" in schedule.description.lower():
+                deposit = True
+    return deposit
+
+
 @frappe.whitelist()
-def send_payment_link_email(doc, url):
-    template_name = frappe.get_single("Communications").payment_link_email
+def send_payment_link_email(doc, url, deposit=False):
+    if deposit:
+        template_name = frappe.get_single("Communications").deposit_email
+    else:
+        template_name = frappe.get_single("Communications").payment_link_email
 
     # Fetch the email template content from the doctype
     email_template = frappe.get_doc("Email Template", template_name)
@@ -53,7 +65,7 @@ def send_payment_link_email(doc, url):
     context = {
         "first_name": first_name.capitalize(),
         "acad_year": academic_year,
-        "fee_link": url,
+        "link": url,
     }
 
     # Render the Jinja template with the context
