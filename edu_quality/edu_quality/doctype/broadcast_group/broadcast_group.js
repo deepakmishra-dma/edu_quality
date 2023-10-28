@@ -13,7 +13,7 @@ const handleTemplateBroadcast = async (members, message) => {
 
 		})
 		const messageCreatedMsg = await messageCreatedRes.json()
-		console.log(messageCreatedMsg, 'asa')
+
 		// if (messageCreatedRes.status === 500 || messageCreatedRes.status === 417 || messageCreatedRes.status === 400) {
 		// 	throw messageCreatedMsg
 		// }
@@ -89,7 +89,7 @@ frappe.ui.form.on('Broadcast Group', {
 					try {
 						const templateReactDialog = document.createElement("whatsapp-template")
 						const docVariables = await getFieldsInLead()
-						console.log(docVariables?.message?.array, 'aa')
+
 						templateReactDialog.templateName = values.group_name;
 						templateReactDialog.hideCloseButton = true
 						templateReactDialog.docVariables = docVariables?.message?.array || []
