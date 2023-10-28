@@ -163,15 +163,14 @@ def email_otp(email,otp):
     )
 
 @frappe.whitelist(allow_guest=True)
-def sms_otp(number,otp):
+def sms_otp(number, otp):
     api_key = "***REMOVED-SMS-KEY***"
-    url = "https://smssolution.net.in/api/v4/?api_key=" + api_key
-    url += "&method=sms&message="
-    message = "The%20OTP%20for%20making%20changes%20to%20your%20account%20is%20-%20" + str(otp)
-    url += message
-    url += "&to=" + number
-    url += "&sender=" + "WALNUT"
-    response = requests.post(url,verify=False)
+    message = f"{otp} is OTP for updating child details (JE08) initiated by you -Team Walnut"
+    template_id = 1007162244812510707
+    sender = "WLTSCL"
+    encoded_message = requests.utils.quote(message)
+    url = f"http://smssolution.net.in/api/v4/?api_key={api_key}&method=sms&message={encoded_message}&to={number}&sender={sender}&template_id={template_id}"
+    response = requests.post(url)
     response = response.json()
     return response
 
