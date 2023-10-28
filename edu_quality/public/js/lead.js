@@ -45,9 +45,7 @@ frappe.ui.form.on("Lead", {
                         docname: frm.doc.name,
                         doctype: "Lead"
                     }, callback: (data) => {
-                
                         if (data?.message && data.message.Contact && data.message.Contact?.[0]?.name) {
-
                             window.location.href = window.location.origin + "/app/whatsapp_manager?user=" + data.message.Contact?.[0]?.name
                         }
                     }
@@ -69,11 +67,14 @@ frappe.ui.form.on("Lead", {
                     args: { doc: frm.doc, action: 'Save' },
                     callback: function (r) {
                         $(document).trigger("save", [frm.doc]);
-
                         frappe.call({
                             method: "edu_quality.api.student_application.create_student_application",
                             type: "POST",
                             args: { name: frm.docname },
+                            callback: () => {
+                                frm.disable_form()
+                                frm.disable_save()
+                            }
                         });
                     },
                     error: function (r) {
