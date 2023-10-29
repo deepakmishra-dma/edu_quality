@@ -1,0 +1,13 @@
+[
+ {
+  "docstatus": 0,
+  "doctype": "Custom HTML Block",
+  "html": "<a id=\"lead-action\" style=\"text-decoration:none;\" onclick=\"reRoute()\"><span class=\"ellipsis\" title=\"Lead Next Action Date From Today\"   style=\"font-weight:500;\">Lead Next Action Date From Today</span><svg class=\"icon ml-2 icon-xs\" style=\"stroke: grey\">\r\n\t\t\t<use class=\"\" href=\"#icon-arrow-up-right\"></use>\r\n\t\t</svg></a>",
+  "modified": "2023-10-19 18:19:33.824730",
+  "name": "Lead Next Action Date  From Today",
+  "private": 0,
+  "roles": [],
+  "script": "\nvar anchorTag = root_element.getElementById(\"lead-action\")\nanchorTag.addEventListener('click',reRoute)\n\nfunction reRoute(e){\n    e.preventDefault()\n    var todayDate = new Date()\n    \n \n    frappe.set_route(\"app\",\"lead\",{next_action_date:`${todayDate.getFullYear()}-${todayDate.getMonth()+1}-${todayDate.getDate()}`})\n}",
+  "style": null
+ }
+]

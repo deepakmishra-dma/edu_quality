@@ -111,6 +111,13 @@
     "parenttype": "DocType Layout"
    },
    {
+    "fieldname": "custom_previous_school",
+    "label": "Previous School",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
     "fieldname": "custom_address",
     "label": "Address",
     "parent": "Lead",
@@ -279,6 +286,13 @@
     "parenttype": "DocType Layout"
    },
    {
+    "fieldname": "custom_re_enquired_count",
+    "label": "Re Enquired Count",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
     "fieldname": "column_break_uemiw",
     "label": null,
     "parent": "Lead",
@@ -365,13 +379,6 @@
    {
     "fieldname": "walk_in_1",
     "label": "Walk in 1",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
-    "fieldname": "action_time",
-    "label": "action time",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
@@ -928,9 +935,65 @@
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "how_did_you_hear_about_walnut_school",
+    "label": "How did you hear about Walnut School",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "how_did_you_hear_about_walnut",
+    "label": "How did you hear about walnut",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "custom_school_code",
+    "label": "School Code",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "financepeer_checkbox",
+    "label": "Financepeer Checkbox",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "lead_sub_status",
+    "label": "Lead Sub Status",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "lead_status",
+    "label": "Lead Status",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "financepeer2_checkbox",
+    "label": "Financepeer Checkbox",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "if_yes_reference_number_of_child",
+    "label": "If Yes reference number of child",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
    }
   ],
-  "modified": "2023-10-12 09:45:21.499919",
+  "modified": "2023-10-17 18:46:15.890689",
   "name": "Lead",
   "route": "/app/lead"
  }

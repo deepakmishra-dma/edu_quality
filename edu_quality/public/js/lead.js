@@ -30,11 +30,27 @@ var subStatuses = {
 
 frappe.ui.form.on("Lead", {
     refresh: function (frm) {
+        if (frm.doc.status === "Hot" && frm.doc.custom_re_enquired_count) {
+            frm.page.set_indicator('Hot ' + frm.doc.custom_re_enquired_count, "orange")
+        }
+
         setTimeout(() => {
             frm.clear_custom_buttons()
 
 
-
+            frm.add_custom_button("Open in Whatsapp UI", function () {
+                frappe.call({
+                    "method": "frappe.desk.form.linked_with.get",
+                    args: {
+                        docname: frm.doc.name,
+                        doctype: "Lead"
+                    }, callback: (data) => {
+                        if (data?.message && data.message.Contact && data.message.Contact?.[0]?.name) {
+                            window.location.href = window.location.origin + "/app/whatsapp_manager?user=" + data.message.Contact?.[0]?.name
+                        }
+                    }
+                })
+            })
 
             frm.add_custom_button(__("Push To MGR"), function () {
                 var errorKey = Object.keys(error_msg).find(error => frm.doc[error] === null || frm.doc[error] === undefined || frm.doc[error] === '')
@@ -51,11 +67,14 @@ frappe.ui.form.on("Lead", {
                     args: { doc: frm.doc, action: 'Save' },
                     callback: function (r) {
                         $(document).trigger("save", [frm.doc]);
-
                         frappe.call({
                             method: "edu_quality.api.student_application.create_student_application",
                             type: "POST",
                             args: { name: frm.docname },
+                            callback: () => {
+                                frm.disable_form()
+                                frm.disable_save()
+                            }
                         });
                     },
                     error: function (r) {
@@ -70,6 +89,14 @@ frappe.ui.form.on("Lead", {
 
     },
 
+    validate: function (frm) {
+        const re = /^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/
+        if (!re.test(frm.doc.fathers_phone)) {
+            frappe.validated = false
+        }
+        return true
+    },
+
 
     center: function (frm) {
 
@@ -81,6 +108,7 @@ frappe.ui.form.on("Lead", {
             };
         });
     },
+
     status: function (frm) {
 
         frm.set_query("custom_lead_sub_status", function () {
