@@ -36,16 +36,19 @@ def after_insert(doc, method=None):
 
 
 def enqueue_email(email, program):
-    template_name = frappe.db.get_value("Program", program, "custom_email_template")
-    email_template = frappe.get_doc("Email Template", template_name)
+    try:
+        template_name = frappe.db.get_value("Program", program, "custom_email_template")
+        email_template = frappe.get_doc("Email Template", template_name)
 
-    content = frappe.render_template(
-        email_template.get("response_html") or email_template.get("response"), {}
-    )
-    email_args = {
-        "recipients": [email],
-        "subject": email_template.get("subject"),
-        "message": content,
-    }
+        content = frappe.render_template(
+            email_template.get("response_html") or email_template.get("response"), {}
+        )
+        email_args = {
+            "recipients": [email],
+            "subject": email_template.get("subject"),
+            "message": content,
+        }
 
-    frappe.sendmail(**email_args)
+        frappe.sendmail(**email_args)
+    except Exception as e:
+        frappe.log_error("Error sending lead generation email", str(e))

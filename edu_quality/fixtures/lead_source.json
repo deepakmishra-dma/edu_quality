@@ -168,5 +168,22 @@
     "modified": "2023-09-29 16:43:44.438760",
     "name": "email_on_lead_gen",
     "source_name": "email_on_lead_gen"
+  },
+
+  {
+    "details": null,
+    "docstatus": 0,
+    "doctype": "Lead Source",
+    "modified": "2023-09-29 16:43:44.438760",
+    "name": "email",
+    "source_name": "email"
+  },
+  {
+    "details": null,
+    "docstatus": 0,
+    "doctype": "Lead Source",
+    "modified": "2023-09-29 16:43:44.438760",
+    "name": "walkin",
+    "source_name": "walkin"
   }
 ]
