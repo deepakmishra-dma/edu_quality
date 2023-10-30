@@ -423,7 +423,7 @@ def remove_payment_plan_discount(payment_plan, doc):
     for component in doc.components:
         for discount_config in discount_configs:
             if discount_config.fee_category == component.fees_category:
-                remove_discount(doc.name, discount_config.name, update_payment_request=False)
+                remove_discount(doc.name, discount_config.name, update_payment_request=True)
                 frappe.response['message'] = f"{discount_config.name} Discount removed successfully"
                 break
             
