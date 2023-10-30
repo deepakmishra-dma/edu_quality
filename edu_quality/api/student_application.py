@@ -540,7 +540,9 @@ def create_student_lead(**kwargs):
     )
     if len(existing_leads):
         return process_lead(
-            kwargs.get("source"), frappe.get_doc("Lead", existing_leads[0].get("name"))
+            kwargs.get("source"),
+            frappe.get_doc("Lead", existing_leads[0].get("name")),
+            kwargs.get("page_location", ""),
         )
     source = "Website"
     if source:
@@ -600,7 +602,12 @@ def create_student_lead(**kwargs):
             "source": source or "Website" or "Others",
         }
     )
-
+    lead_doc.append(
+        "notes",
+        {
+            "note": f'<div class="ql-editor read-mode"><p>Lead Registered from <b>{kwargs.get("source",source).capitalize()} {("at location" + kwargs.get("page_location")) if kwargs.get("page_location") else ""}</b> at <b>{datetime.datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%d-%m-%Y , %H:%M IST")}</b> </p></div>'
+        },
+    )
     lead_doc = lead_doc.insert(ignore_permissions=True)
     return lead_doc
 
@@ -629,7 +636,9 @@ def create_student_lead_fb(**kwargs):
     )
     if len(existing_leads):
         return process_lead(
-            kwargs.get("source"), frappe.get_doc("Lead", existing_leads[0].get("name"))
+            kwargs.get("source"),
+            frappe.get_doc("Lead", existing_leads[0].get("name")),
+            kwargs.get("page_location", ""),
         )
     source = "Facebook"
     if source:
@@ -685,15 +694,22 @@ def create_student_lead_fb(**kwargs):
             "source": source or "Facebook",
         }
     )
-
+    lead_doc.append(
+        "notes",
+        {
+            "note": f'<div class="ql-editor read-mode"><p>Lead Registered from <b>{kwargs.get("source",source).capitalize()}{("at location" + kwargs.get("page_location")) if kwargs.get("page_location") else ""}</b> at <b>{datetime.datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%d-%m-%Y , %H:%M IST")}</b> </p></div>'
+        },
+    )
     lead_doc = lead_doc.insert(ignore_permissions=True)
     return lead_doc
 
 
-def process_lead(source, lead):
+def process_lead(source, lead, page_location):
     lead.status = "Hot"
     source = source if source else "Not Known"
-    if source.lower() == "school" or id_to_location_map_fb.get(str(source).lower(), None):
+    if source.lower() == "school" or id_to_location_map_fb.get(
+        str(source).lower(), None
+    ):
         lead.append("custom_lead_sub_status", {"sub_status": "Hot-School Visit Done"})
         lead.custom_walk_in_1_action_date = datetime.datetime.now(
             pytz.timezone("Asia/Kolkata")
@@ -702,7 +718,7 @@ def process_lead(source, lead):
     lead.append(
         "notes",
         {
-            "note": f'<div class="ql-editor read-mode"><p>Lead Re-Registered from <b>{source.capitalize()}</b> at <b>{datetime.datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%d-%m-%Y , %H:%M IST")}</b> </p></div>'
+            "note": f'<div class="ql-editor read-mode"><p>Lead Re-Registered from <b>{source.capitalize()}  {("at location" + page_location.lower()) if page_location else ""}</b> at <b>{datetime.datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%d-%m-%Y , %H:%M IST")}</b> </p></div>'
         },
     )
     lead.custom_re_enquired_count += 1
