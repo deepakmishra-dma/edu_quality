@@ -1,7 +1,6 @@
 [
  {
   "courses": [],
-  "custom_date_end": "2018-12-31",
   "custom_date_start": "2018-01-01",
   "custom_email_template": "1 to 5 Lead Email Fursungi",
   "custom_mgr_id": "66",
@@ -21,7 +20,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": null,
   "custom_date_start": null,
   "custom_email_template": "1 to 5 Lead Email Fursungi",
   "custom_mgr_id": "67",
@@ -41,7 +39,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": null,
   "custom_date_start": null,
   "custom_email_template": "1 to 5 Lead Email Fursungi",
   "custom_mgr_id": "68",
@@ -61,7 +58,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": null,
   "custom_date_start": null,
   "custom_email_template": "1 to 5 Lead Email Fursungi",
   "custom_mgr_id": "69",
@@ -81,7 +77,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": null,
   "custom_date_start": null,
   "custom_email_template": "1 to 5 Lead Email Fursungi",
   "custom_mgr_id": "70",
@@ -101,7 +96,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": null,
   "custom_date_start": null,
   "custom_email_template": "6 to 10 Lead Email Fursungi",
   "custom_mgr_id": "71",
@@ -121,7 +115,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": null,
   "custom_date_start": null,
   "custom_email_template": "6 to 10 Lead Email Fursungi",
   "custom_mgr_id": "72",
@@ -141,7 +134,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": null,
   "custom_date_start": null,
   "custom_email_template": "6 to 10 Lead Email Fursungi",
   "custom_mgr_id": "149",
@@ -161,7 +153,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": null,
   "custom_date_start": null,
   "custom_email_template": "6 to 10 Lead Email Fursungi",
   "custom_mgr_id": "149",
@@ -181,7 +172,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": null,
   "custom_date_start": null,
   "custom_email_template": "6 to 10 Lead Email Fursungi",
   "custom_mgr_id": "142",
@@ -201,7 +191,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": "2020-12-31",
   "custom_date_start": "2020-01-01",
   "custom_email_template": "KG Lead Email Fursungi",
   "custom_mgr_id": "64",
@@ -221,7 +210,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": "2021-12-31",
   "custom_date_start": "2021-01-01",
   "custom_email_template": "KG Lead Email Fursungi",
   "custom_mgr_id": "63",
@@ -241,7 +229,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": "2019-12-31",
   "custom_date_start": "2019-01-01",
   "custom_email_template": "KG Lead Email Fursungi",
   "custom_mgr_id": "65",
@@ -261,7 +248,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": "2018-12-31",
   "custom_date_start": "2018-01-01",
   "custom_email_template": "1 to 5 Lead Email Wakad",
   "custom_mgr_id": "129",
@@ -281,7 +267,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": null,
   "custom_date_start": null,
   "custom_email_template": "1 to 5 Lead Email Wakad",
   "custom_mgr_id": "130",
@@ -301,7 +286,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": null,
   "custom_date_start": null,
   "custom_email_template": "1 to 5 Lead Email Wakad",
   "custom_mgr_id": "131",
@@ -321,7 +305,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": null,
   "custom_date_start": null,
   "custom_email_template": "1 to 5 Lead Email Wakad",
   "custom_mgr_id": "132",
@@ -341,7 +324,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": null,
   "custom_date_start": null,
   "custom_email_template": "1 to 5 Lead Email Wakad",
   "custom_mgr_id": "133",
@@ -361,7 +343,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": null,
   "custom_date_start": null,
   "custom_email_template": "6 to 10 Lead Email Wakad",
   "custom_mgr_id": "134",
@@ -381,7 +362,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": null,
   "custom_date_start": null,
   "custom_email_template": "6 to 10 Lead Email Wakad",
   "custom_mgr_id": "135",
@@ -401,7 +381,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": null,
   "custom_date_start": null,
   "custom_email_template": "6 to 10 Lead Email Wakad",
   "custom_mgr_id": "136",
@@ -421,7 +400,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": null,
   "custom_date_start": null,
   "custom_email_template": "6 to 10 Lead Email Wakad",
   "custom_mgr_id": "137",
@@ -441,7 +419,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": "2020-12-31",
   "custom_date_start": "2020-01-01",
   "custom_email_template": "KG Lead Email Wakad",
   "custom_mgr_id": "139",
@@ -461,7 +438,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": "2021-12-31",
   "custom_date_start": "2021-01-01",
   "custom_email_template": "KG Lead Email Wakad",
   "custom_mgr_id": "140",
@@ -481,7 +457,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": "2019-12-31",
   "custom_date_start": "2019-01-01",
   "custom_email_template": "KG Lead Email Wakad",
   "custom_mgr_id": "141",
@@ -501,7 +476,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": "2018-12-31",
   "custom_date_start": "2018-01-01",
   "custom_email_template": "1 to 5 lead email Shivane",
   "custom_mgr_id": "79",
@@ -521,7 +495,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": null,
   "custom_date_start": null,
   "custom_email_template": "1 to 5 lead email Shivane",
   "custom_mgr_id": "80",
@@ -541,7 +514,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": null,
   "custom_date_start": null,
   "custom_email_template": "1 to 5 lead email Shivane",
   "custom_mgr_id": "81",
@@ -561,7 +533,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": null,
   "custom_date_start": null,
   "custom_email_template": "1 to 5 lead email Shivane",
   "custom_mgr_id": "82",
@@ -581,7 +552,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": null,
   "custom_date_start": null,
   "custom_email_template": "1 to 5 lead email Shivane",
   "custom_mgr_id": "83",
@@ -601,7 +571,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": null,
   "custom_date_start": null,
   "custom_email_template": "6 to 10 Lead Email Shivane",
   "custom_mgr_id": "84",
@@ -621,7 +590,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": null,
   "custom_date_start": null,
   "custom_email_template": "6 to 10 Lead Email Shivane",
   "custom_mgr_id": "85",
@@ -641,7 +609,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": null,
   "custom_date_start": null,
   "custom_email_template": "6 to 10 Lead Email Shivane",
   "custom_mgr_id": "86",
@@ -661,7 +628,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": null,
   "custom_date_start": null,
   "custom_email_template": "6 to 10 Lead Email Shivane",
   "custom_mgr_id": "111",
@@ -681,7 +647,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": null,
   "custom_date_start": null,
   "custom_email_template": "6 to 10 Lead Email Shivane",
   "custom_mgr_id": "112",
@@ -701,7 +666,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": "2020-12-31",
   "custom_date_start": "2020-01-01",
   "custom_email_template": "KG Lead Email Shivane",
   "custom_mgr_id": "77",
@@ -721,7 +685,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": "2021-12-31",
   "custom_date_start": "2021-01-01",
   "custom_email_template": "KG Lead Email Shivane",
   "custom_mgr_id": "76",
@@ -741,7 +704,6 @@
  },
  {
   "courses": [],
-  "custom_date_end": "2019-12-31",
   "custom_date_start": "2019-01-01",
   "custom_email_template": "KG Lead Email Shivane",
   "custom_mgr_id": "78",
