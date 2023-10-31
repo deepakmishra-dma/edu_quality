@@ -1,95 +1,94 @@
 frappe.ui.form.on('Fees', {
-    refresh: function(frm) {
-        frm.add_custom_button(__('Add Discount'), function(){
-        let d = new frappe.ui.Dialog({
-        title: 'Add Discount',
-        fields: [
-            {
-                label: 'Discount Name',
-                fieldname: 'discount_name',
-                fieldtype: 'Link',
-                options: "Discount Configuration",
-                get_query: function () {
-    					return {
-    						doctype: 'Discount Configuration',
-    						filters: {
-    							fee_structure: frm.doc.fee_structure,
-    							type: "One Time"
-    						},
-    					};
-				    }
-            }
-        ],
-        size: 'large',
-        primary_action_label: 'Submit',
-        primary_action(values) {
-            frappe.call({
-                method: "edu_quality.public.py.discount.add_discount",
-                type: "POST",
-                args: {
-                    discount: values.discount_name,
-                    fee_name: frm.doc.name
-                },
-                callback: function(response) {
-                    frappe.show_alert({
-                        message: __(response.message),
-                        indicator: 'green'
+    refresh: function (frm) {
+        frm.add_custom_button(__('Add Discount'), function () {
+            let d = new frappe.ui.Dialog({
+                title: 'Add Discount',
+                fields: [
+                    {
+                        label: 'Discount Name',
+                        fieldname: 'discount_name',
+                        fieldtype: 'Link',
+                        options: "Discount Configuration",
+                        get_query: function () {
+                            return {
+                                doctype: 'Discount Configuration',
+                                filters: {
+                                    fee_structure: frm.doc.fee_structure,
+                                    type: "One Time"
+                                },
+                            };
+                        }
+                    }
+                ],
+                size: 'large',
+                primary_action_label: 'Submit',
+                primary_action(values) {
+                    frappe.call({
+                        method: "edu_quality.public.py.discount.add_discount",
+                        type: "POST",
+                        args: {
+                            discount: values.discount_name,
+                            fee_name: frm.doc.name
+                        },
+                        callback: function (response) {
+                            frappe.show_alert({
+                                message: __(response.message),
+                                indicator: 'green'
+                            });
+                            frm.reload_doc();
+                        }
                     });
-                    frm.reload_doc();
+                    d.hide();
                 }
             });
-            d.hide();
-        }
-    });
-    
-    d.show();
 
-    }, __("Discount"));
-    frm.add_custom_button(__('Remove Discount'), function(){
-        let d = new frappe.ui.Dialog({
-        title: 'Remove Discount',
-        fields: [
-            {
-                label: 'Discount Name',
-                fieldname: 'discount_name',
-                fieldtype: 'Link',
-                options: "Discount Configuration",
-                get_query: function () {
-    					return {
-    						doctype: 'Discount Configuration',
-    						filters: {
-    							fee_structure: frm.doc.fee_structure,
-    							type: "One Time"
-    						},
-    					};
-				    }
-            }
-        ],
-        size: 'large',
-        primary_action_label: 'Submit',
-        primary_action(values) {
-            frappe.call({
-                method: "edu_quality.public.py.discount.remove_discount",
-                type: "POST",
-                args: {
-                    discount: values.discount_name,
-                    fee_name: frm.doc.name
-                },
-                callback: function(response) {
-                    frappe.show_alert({
-                        message: __(response.message),
-                        indicator: 'orange'
+            d.show();
+
+        }, __("Discount"));
+        frm.add_custom_button(__('Remove Discount'), function () {
+            let d = new frappe.ui.Dialog({
+                title: 'Remove Discount',
+                fields: [
+                    {
+                        label: 'Discount Name',
+                        fieldname: 'discount_name',
+                        fieldtype: 'Link',
+                        options: "Discount Configuration",
+                        get_query: function () {
+                            return {
+                                doctype: 'Discount Configuration',
+                                filters: {
+                                    fee_structure: frm.doc.fee_structure,
+                                    type: "One Time"
+                                },
+                            };
+                        }
+                    }
+                ],
+                size: 'large',
+                primary_action_label: 'Submit',
+                primary_action(values) {
+                    frappe.call({
+                        method: "edu_quality.public.py.discount.remove_discount",
+                        type: "POST",
+                        args: {
+                            discount: values.discount_name,
+                            fee_name: frm.doc.name
+                        },
+                        callback: function (response) {
+                            frappe.show_alert({
+                                message: __(response.message),
+                                indicator: 'orange'
+                            });
+                            frm.reload_doc();
+                        }
                     });
-                    frm.reload_doc();
+                    d.hide();
                 }
             });
-            d.hide();
-        }
-    });
-    
-    d.show();
-    }, __("Discount"));
-    if (frm.doc.parent_otp === 1) {
+
+            d.show();
+        }, __("Discount"));
         frm.add_custom_button(__('Modify Payment Plan'), function () {
             const doc = frm.doc;
             const dialog = new frappe.ui.Dialog({
@@ -114,108 +113,117 @@ frappe.ui.form.on('Fees', {
                 size: 'large',
                 primary_action_label: 'Submit',
                 primary_action: async function (values) {
-                    frappe.call({
-                        method: "edu_quality.public.py.discount.remove_payment_plan_discount",
-                        type: "POST",
-                        args: {
-                            payment_plan: doc.payment_plan,
-                            doc: doc.name
-                        },
-                        callback: function (response) {
-                            if (response.message != null) {
+                    if (frm.doc.need_otp === 1 && frm.doc.parent_otp === 1) {
+                        frappe.call({
+                            method: "edu_quality.public.py.discount.remove_payment_plan_discount",
+                            type: "POST",
+                            args: {
+                                payment_plan: doc.payment_plan,
+                                doc: doc.name
+                            },
+                            callback: function (response) {
+                                if (response.message != null) {
+                                    frappe.show_alert({
+                                        message: __(response.message),
+                                        indicator: 'green'
+                                    });
+                                }
+                            },
+                            async: false
+                        });
+                        doc.payment_plan = values.payment_plan;
+                        await frappe.call({
+                            method: "edu_quality.public.py.fee.update_payment_plan",
+                            type: "POST",
+                            args: {
+                                payment_plan: values.payment_plan,
+                                old_payment_plan: doc.payment_plan,
+                                fee_name: doc.name
+                            },
+                            callback: function (response) {
                                 frappe.show_alert({
                                     message: __(response.message),
                                     indicator: 'green'
                                 });
-                            }
-                        },
-                        async: false
-                    });
-                    doc.payment_plan = values.payment_plan;
-                    await frappe.call({
-                        method: "edu_quality.public.py.fee.update_payment_plan",
-                        type: "POST",
-                        args: {
-                            payment_plan: values.payment_plan,
-                            old_payment_plan: doc.payment_plan,
-                            fee_name: doc.name
-                        },
-                        callback: function (response) {
-                            frappe.show_alert({
-                                message: __(response.message),
-                                indicator: 'green'
-                            });
-                        },
-                        async: false
-                    });
+                            },
+                            async: false
+                        });
+                    } else {
+                        frm.doc.need_otp = 1;
+                        frappe.show_alert({
+                            message: __("Please verify parent OTP"),
+                            indicator: 'red'
+                        });
+                        frm.save('Update');
+                    }
                     dialog.hide();
                     frm.reload_doc();
                 }
             });
             dialog.show();
         });
-    } else {
-        frm.add_custom_button(__('Send OTP'), function () {
-            frappe.call({
-                method: "edu_quality.public.py.utils.generate_otp",
-                args: {
-                    "fee": frm.doc.name
-                },
-                callback: function (r) {
-                    if(r.message === true) {
-                        frappe.show_alert({
-                            message: __("OTP Sent Successfully"),
-                            indicator: 'green'
-                        });
-                    }else {
-                        frappe.show_alert({
-                            message: __("OTP not sent, Please try again"),
-                            indicator: 'red'
-                        });
-                    }
-                }
-            });
-        }, __("OTP"));
-        frm.add_custom_button(__('Verify OTP'), function () {
-            let d = new frappe.ui.Dialog({
-                title: 'Verify OTP',
-                fields: [
-                    {
-                        label: 'OTP',
-                        fieldname: 'otp',
-                        fieldtype: 'Int'
-                    }
-                ],
-                primary_action_label: 'Submit',
-                primary_action(values) {
-                    frappe.call({
-                        method: "edu_quality.public.py.utils.verify_otp",
-                        args: {
-                            "fee": frm.doc.name,
-                            "otp": values.otp
-                        },
-                        callback: function (r) {
-                            if(r.message === true) {
-                                frappe.show_alert({
-                                    message: __("OTP Verified Successfully"),
-                                    indicator: 'green'
-                                });
-                                frm.doc.parent_otp = 1;
-                                frm.save('Update');
-                            }else {
-                                frappe.show_alert({
-                                    message: __("Invalid OTP, Please try again"),
-                                    indicator: 'red'
-                                });
-                            }
+        if (frm.doc.need_otp === 1 && frm.doc.parent_otp === 0) {
+            frm.add_custom_button(__('Send OTP'), function () {
+                frappe.call({
+                    method: "edu_quality.public.py.utils.generate_otp",
+                    args: {
+                        "fee": frm.doc.name
+                    },
+                    callback: function (r) {
+                        if (r.message === true) {
+                            frappe.show_alert({
+                                message: __("OTP Sent Successfully"),
+                                indicator: 'green'
+                            });
+                        } else {
+                            frappe.show_alert({
+                                message: __("OTP not sent, Please try again"),
+                                indicator: 'red'
+                            });
                         }
-                    });
-                    d.hide();
-                    frm.refresh();
-                }
-            });
-            d.show();
-        }, __("OTP"));
+                    }
+                });
+            }, __("OTP"));
+            frm.add_custom_button(__('Verify OTP'), function () {
+                let d = new frappe.ui.Dialog({
+                    title: 'Verify OTP',
+                    fields: [
+                        {
+                            label: 'OTP',
+                            fieldname: 'otp',
+                            fieldtype: 'Int'
+                        }
+                    ],
+                    primary_action_label: 'Submit',
+                    primary_action(values) {
+                        frappe.call({
+                            method: "edu_quality.public.py.utils.verify_otp",
+                            args: {
+                                "fee": frm.doc.name,
+                                "otp": values.otp
+                            },
+                            callback: function (r) {
+                                if (r.message === true) {
+                                    frappe.show_alert({
+                                        message: __("OTP Verified Successfully"),
+                                        indicator: 'green'
+                                    });
+                                    frm.doc.parent_otp = 1;
+                                    frm.save('Update');
+                                } else {
+                                    frappe.show_alert({
+                                        message: __("Invalid OTP, Please try again"),
+                                        indicator: 'red'
+                                    });
+                                }
+                            }
+                        });
+                        d.hide();
+                        frm.refresh();
+                    }
+                });
+                d.show();
+            }, __("OTP"));
+        }
     }
-  }
 });
