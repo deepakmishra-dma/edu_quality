@@ -212,7 +212,7 @@ def get_undertaking_template(doc, is_deposit=False):
         filter_dict["show_on"] = "Fees"
 
     if status:
-        filter_dict["status"] = "Rollover Student"
+        filter_dict["status"] = "Current Student"
     else:
         filter_dict["status"] = "New Student"
 
@@ -220,20 +220,25 @@ def get_undertaking_template(doc, is_deposit=False):
     template = frappe.db.get_value(
         "Rules and Regulation Template", filter_dict, ["pdf", "name"]
     )
-    if template:
-        site_url = frappe.utils.get_url()
-        pdf_url = site_url + template[0]
-        return pdf_url
+
+    # change the filter to check for the show_on Both
+    if not template:
+        filter_dict["show_on"] = "Both"
+        template = frappe.db.get_value(
+            "Rules and Regulation Template", filter_dict, ["pdf", "name"]
+        )
 
     # check if default filter exists in database
-    default_filter = {
-        "class": class_name,
-        "academic_year": academic_year,
-        "status": "Defaulter",
-    }
-    template = frappe.db.get_value(
-        "Rules and Regulation Template", default_filter, ["pdf", "name"]
-    )
+    if not template:
+        default_filter = {
+            "class": class_name,
+            "academic_year": academic_year,
+            "status": "Defaulter",
+        }
+        template = frappe.db.get_value(
+            "Rules and Regulation Template", default_filter, ["pdf", "name"]
+        )
+
     if template:
         site_url = frappe.utils.get_url()
         pdf_url = site_url + template[0]

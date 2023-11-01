@@ -1,15 +1,22 @@
 import frappe
-import math, random
-from edu_quality.public.py.utils import verify_otp
+import math, random, json
+from edu_quality.public.py.utils import sms_otp, verify_otp
+
+try:
+    from nextai.whatsapp_business_api_integration.doctype.whatsapp_message.whatsapp_message import (
+        send_templated_message,
+    )
+except ImportError:
+    print("Chatnext is not installed")
 
 
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=True)
 def generate_undertaking_otp(payment_hash):
     fee = get_fee(payment_hash)
     return generate_otp(fee)
 
 
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=True)
 def verify_undertaking_otp(payment_hash, otp):
     fee = get_fee(payment_hash)
     return verify_otp(fee, otp)
@@ -28,7 +35,7 @@ def generate_otp(fee):
         key = fee
         digits = "0123456789"
         OTP = ""
-        for i in range(4):
+        for i in range(6):
             OTP += digits[math.floor(random.random() * 10)]
         rs.set_value(key, OTP, expires_in_sec=300)
         return send_otp(fee, OTP)
@@ -40,17 +47,51 @@ def send_otp(fee, otp):
     try:
         student = frappe.get_value("Fees", fee, "student")
         student = frappe.get_doc("Student", student)
-        if student.custom_fathers_email:
-            email = student.custom_fathers_email
-        elif student.custom_mothers_email:
-            email = student.custom_mothers_email
-        elif student.custom_guardians_email_id:
-            email = student.custom_guardians_email_id
-        elif student.student_email_id:
-            email = student.student_email_id
+        mobile = get_mobile_number(student)
+        email = get_email_id(student)
+        if mobile:
+            sms_otp(mobile, otp)
         if email:
             email_otp(email, otp)
         # whatsapp message
+        if mobile and frappe.db.exists("Contact", {"whatsapp_id": mobile}):
+            contact = frappe.get_doc("Contact", {"whatsapp_id": mobile})
+            whatsapp_otp(contact, otp)
+        return True
+    except Exception as e:
+        return False
+
+
+def get_mobile_number(student):
+    if student.student_mobile_number:
+        return student.student_mobile_number
+    elif student.custom_fathers_mobile_number:
+        return student.custom_fathers_mobile_number
+    elif student.custom_mothers_mobile_number:
+        return student.custom_mothers_mobile_number
+    elif student.custom_guardians_mobile_number:
+        return student.custom_guardians_mobile_number
+    else:
+        return False
+
+
+def get_email_id(student):
+    if student.custom_fathers_email:
+        return student.custom_fathers_email
+    elif student.custom_mothers_email:
+        return student.custom_mothers_email
+    elif student.custom_guardians_email_id:
+        return student.custom_guardians_email_id
+    elif student.student_email_id:
+        return student.student_email_id
+    else:
+        return False
+
+
+def whatsapp_otp(contact, otp):
+    try:
+        template_data = [{"type": "text", "text": f"{otp}"}]
+        send_templated_message(contact, "send_otp_undertaking", json.dumps(template_data))
         return True
     except Exception as e:
         return False
