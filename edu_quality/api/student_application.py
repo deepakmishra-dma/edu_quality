@@ -64,14 +64,13 @@ def separate_name(full_name):
 
 def is_dob_in_range(lead_application, program_doc):
     start = program_doc.get("custom_date_start")
-    end = program_doc.get("custom_date_end")
     dob = lead_application.get("date_of_birth")
 
     if not dob:
         raise frappe.exceptions.MandatoryError("Date of Birth is required")
-    if not start or not end:
+    if not start:
         return True
-    if start <= dob <= end:
+    if dob >= start:
         return True
     else:
         return False
@@ -88,7 +87,7 @@ def create_student_application(**args):
         program_doc = frappe.get_doc("Program", lead_application.get("class"))
 
         if not is_dob_in_range(lead_application, program_doc):
-            message = f"Date of Birth for class {lead_application.get('class')} is not in range {program_doc.get('custom_date_start')} to {program_doc.get('custom_date_end')}"
+            message = f"Date of Birth for class {lead_application.get('class')} is not greater than {program_doc.get('custom_date_start')} "
             # frappe.msgprint(msg=message, title="Error", indicator="red")
             raise frappe.exceptions.MandatoryError(message)
 
@@ -138,20 +137,54 @@ def update_stud_data(**data):
         name,
         decode=True,
     )
-    image = save_file(
-        str(uuid.uuid4()),
-        data.get("student_photo"),
-        "Student Applicant",
-        name,
-        decode=True,
+    court_order = (
+        save_file(
+            str(uuid.uuid4()),
+            data.get("court_order_doc"),
+            "Student Applicant",
+            name,
+            decode=True,
+        )
+        if data.get("court_order_doc", "")
+        else {}
     )
-    birth_cert = save_file(
-        str(uuid.uuid4()),
-        data.get("birth_cert"),
-        "Student Applicant",
-        name,
-        decode=True,
+
+    image = (
+        save_file(
+            str(uuid.uuid4()),
+            data.get("student_photo"),
+            "Student Applicant",
+            name,
+            decode=True,
+        )
+        if data.get("student_photo", "")
+        else {}
     )
+
+    birth_cert = (
+        save_file(
+            str(uuid.uuid4()),
+            data.get("birth_cert"),
+            "Student Applicant",
+            name,
+            decode=True,
+        )
+        if data.get("birth_cert", "")
+        else {}
+    )
+
+    adhar_card_cert = (
+        save_file(
+            str(uuid.uuid4()),
+            data.get("adhar_card_cert"),
+            "Student Applicant",
+            name,
+            decode=True,
+        )
+        if data.get("adhar_card_cert", "")
+        else {}
+    )
+
     frappe.set_user(current_user)
 
     existing_student_doc = frappe.get_doc("Student Applicant", {"name": name})
@@ -330,11 +363,13 @@ def update_stud_data(**data):
     existing_student_doc.custom_allergies = data.get("other_allergies") or data.get(
         "allergies"
     )
-
-    existing_student_doc.aadhaar_card_cert = adhar_card_cert.file_url
-    existing_student_doc.birth_cert = birth_cert.file_url
-    existing_student_doc.image = image.file_url
-
+    existing_student_doc.custom_mother_tongue = data.get("mother_tongue") or data.get(
+        "other_mother_tongue"
+    )
+    existing_student_doc.aadhar_card_cert = adhar_card_cert.get("file_url", "")
+    existing_student_doc.birth_cert = birth_cert.get("file_url", "")
+    existing_student_doc.image = image.get("file_url", "")
+    existing_student_doc.custom_court_order = court_order.get("file_url", "")
     existing_student_doc.save(ignore_permissions=True)
     # if(mother_in_doc):
     #     mother.save(ignore_permissions=True)
