@@ -26,7 +26,7 @@ def remove_indian_country_code(phone):
         return ""
     if "+91" in str(phone):
         return phone[3::]
-    return phone
+    return str(phone)
 
 
 def separate_name(full_name):
@@ -64,14 +64,13 @@ def separate_name(full_name):
 
 def is_dob_in_range(lead_application, program_doc):
     start = program_doc.get("custom_date_start")
-    end = program_doc.get("custom_date_end")
     dob = lead_application.get("date_of_birth")
 
     if not dob:
         raise frappe.exceptions.MandatoryError("Date of Birth is required")
-    if not start or not end:
+    if not start:
         return True
-    if start <= dob <= end:
+    if dob >= start:
         return True
     else:
         return False
@@ -88,7 +87,7 @@ def create_student_application(**args):
         program_doc = frappe.get_doc("Program", lead_application.get("class"))
 
         if not is_dob_in_range(lead_application, program_doc):
-            message = f"Date of Birth for class {lead_application.get('class')} is not in range {program_doc.get('custom_date_start')} to {program_doc.get('custom_date_end')}"
+            message = f"Date of Birth for class {lead_application.get('class')} is not greater than {program_doc.get('custom_date_start')} "
             # frappe.msgprint(msg=message, title="Error", indicator="red")
             raise frappe.exceptions.MandatoryError(message)
 
@@ -138,20 +137,54 @@ def update_stud_data(**data):
         name,
         decode=True,
     )
-    image = save_file(
-        str(uuid.uuid4()),
-        data.get("student_photo"),
-        "Student Applicant",
-        name,
-        decode=True,
+    court_order = (
+        save_file(
+            str(uuid.uuid4()),
+            data.get("court_order_doc"),
+            "Student Applicant",
+            name,
+            decode=True,
+        )
+        if data.get("court_order_doc", "")
+        else {}
     )
-    birth_cert = save_file(
-        str(uuid.uuid4()),
-        data.get("birth_cert"),
-        "Student Applicant",
-        name,
-        decode=True,
+
+    image = (
+        save_file(
+            str(uuid.uuid4()),
+            data.get("student_photo"),
+            "Student Applicant",
+            name,
+            decode=True,
+        )
+        if data.get("student_photo", "")
+        else {}
     )
+
+    birth_cert = (
+        save_file(
+            str(uuid.uuid4()),
+            data.get("birth_cert"),
+            "Student Applicant",
+            name,
+            decode=True,
+        )
+        if data.get("birth_cert", "")
+        else {}
+    )
+
+    adhar_card_cert = (
+        save_file(
+            str(uuid.uuid4()),
+            data.get("adhar_card_cert"),
+            "Student Applicant",
+            name,
+            decode=True,
+        )
+        if data.get("adhar_card_cert", "")
+        else {}
+    )
+
     frappe.set_user(current_user)
 
     existing_student_doc = frappe.get_doc("Student Applicant", {"name": name})
@@ -330,11 +363,13 @@ def update_stud_data(**data):
     existing_student_doc.custom_allergies = data.get("other_allergies") or data.get(
         "allergies"
     )
-
-    existing_student_doc.aadhaar_card_cert = adhar_card_cert.file_url
-    existing_student_doc.birth_cert = birth_cert.file_url
-    existing_student_doc.image = image.file_url
-
+    existing_student_doc.custom_mother_tongue = data.get("mother_tongue") or data.get(
+        "other_mother_tongue"
+    )
+    existing_student_doc.aadhar_card_cert = adhar_card_cert.get("file_url", "")
+    existing_student_doc.birth_cert = birth_cert.get("file_url", "")
+    existing_student_doc.image = image.get("file_url", "")
+    existing_student_doc.custom_court_order = court_order.get("file_url", "")
     existing_student_doc.save(ignore_permissions=True)
     # if(mother_in_doc):
     #     mother.save(ignore_permissions=True)
@@ -540,8 +575,21 @@ def create_student_lead(**kwargs):
     )
     if len(existing_leads):
         return process_lead(
-            kwargs.get("source"), frappe.get_doc("Lead", existing_leads[0].get("name"))
+            kwargs.get("source"),
+            frappe.get_doc("Lead", existing_leads[0].get("name")),
+            kwargs.get("page_location", ""),
         )
+    source = "Website"
+    if source:
+        source_doc = frappe.db.get_list(
+            "Lead Source",
+            filters={"source_name": kwargs.get("source", "Website")},
+            ignore_permissions=True,
+        )
+        if len(source_doc):
+            source = source_doc[0].get("name", None)
+        else:
+            source = "Others"
 
     school_name = (
         frappe.db.get_value(
@@ -585,11 +633,16 @@ def create_student_lead(**kwargs):
             "center": school_name,
             "class": class_name,
             "class_from_lead_source": kwargs.get("class"),
-            "custom_previous_school":kwargs.get('current_school',''),
-            "source": kwargs.get("source", "Website") or "Website" or "Others",
+            "custom_previous_school": kwargs.get("current_school", ""),
+            "source": source or "Website" or "Others",
         }
     )
-
+    lead_doc.append(
+        "notes",
+        {
+            "note": f'<div class="ql-editor read-mode"><p>Lead Registered from <b>{kwargs.get("source",source).capitalize()} {("at location" + kwargs.get("page_location")) if kwargs.get("page_location") else ""}</b> at <b>{datetime.datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%d-%m-%Y , %H:%M IST")}</b> </p></div>'
+        },
+    )
     lead_doc = lead_doc.insert(ignore_permissions=True)
     return lead_doc
 
@@ -618,9 +671,21 @@ def create_student_lead_fb(**kwargs):
     )
     if len(existing_leads):
         return process_lead(
-            kwargs.get("source"), frappe.get_doc("Lead", existing_leads[0].get("name"))
+            kwargs.get("source"),
+            frappe.get_doc("Lead", existing_leads[0].get("name")),
+            kwargs.get("page_location", ""),
         )
-
+    source = "Facebook"
+    if source:
+        source_doc = frappe.db.get_list(
+            "Lead Source",
+            filters={"source_name": kwargs.get("source", "Facebook")},
+            ignore_permissions=True,
+        )
+        if len(source_doc):
+            source = source_doc[0].get("name", None)
+        else:
+            source = "Others"
     school_name = (
         frappe.db.get_value(
             "School",
@@ -659,19 +724,27 @@ def create_student_lead_fb(**kwargs):
             "school_from_lead_source": kwargs.get("school"),
             "center": school_name,
             "class": class_name,
-            "class_from_lead_source": kwargs.get("class"),            
-            "custom_previous_school":kwargs.get('current_school',''),
-            "source": kwargs.get("source") or "Facebook",
+            "class_from_lead_source": kwargs.get("class"),
+            "custom_previous_school": kwargs.get("current_school", ""),
+            "source": source or "Facebook",
         }
     )
-
+    lead_doc.append(
+        "notes",
+        {
+            "note": f'<div class="ql-editor read-mode"><p>Lead Registered from <b>{kwargs.get("source",source).capitalize()}{("at location" + kwargs.get("page_location")) if kwargs.get("page_location") else ""}</b> at <b>{datetime.datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%d-%m-%Y , %H:%M IST")}</b> </p></div>'
+        },
+    )
     lead_doc = lead_doc.insert(ignore_permissions=True)
     return lead_doc
 
 
-def process_lead(source, lead):
+def process_lead(source, lead, page_location):
     lead.status = "Hot"
-    if source.lower() == "school":
+    source = source if source else "Not Known"
+    if source.lower() == "school" or id_to_location_map_fb.get(
+        str(source).lower(), None
+    ):
         lead.append("custom_lead_sub_status", {"sub_status": "Hot-School Visit Done"})
         lead.custom_walk_in_1_action_date = datetime.datetime.now(
             pytz.timezone("Asia/Kolkata")
@@ -680,9 +753,9 @@ def process_lead(source, lead):
     lead.append(
         "notes",
         {
-            "note": f'<div class="ql-editor read-mode"><p>Lead Re-Registered from <b>{source.capitalize()}</b> at <b>{datetime.datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%d-%m-%Y , %H:%M IST")}</b> </p></div>'
+            "note": f'<div class="ql-editor read-mode"><p>Lead Re-Registered from <b>{source.capitalize()}  {("at location" + page_location.lower()) if page_location else ""}</b> at <b>{datetime.datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%d-%m-%Y , %H:%M IST")}</b> </p></div>'
         },
     )
-
+    lead.custom_re_enquired_count += 1
     lead.save(ignore_permissions=True)
     return lead

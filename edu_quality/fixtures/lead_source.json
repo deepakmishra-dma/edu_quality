@@ -128,5 +128,62 @@
     "modified": "2023-09-29 16:43:44.438760",
     "name": "Others",
     "source_name": "Others"
+  },
+  {
+    "details": null,
+    "docstatus": 0,
+    "doctype": "Lead Source",
+    "modified": "2023-09-29 16:43:44.438760",
+    "name": "School",
+    "source_name": "School"
+  },
+  {
+    "details": null,
+    "docstatus": 0,
+    "doctype": "Lead Source",
+    "modified": "2023-09-29 16:43:44.438760",
+    "name": "wakad",
+    "source_name": "wakad"
+  },
+  {
+    "details": null,
+    "docstatus": 0,
+    "doctype": "Lead Source",
+    "modified": "2023-09-29 16:43:44.438760",
+    "name": "fursungi",
+    "source_name": "fursungi"
+  },
+  {
+    "details": null,
+    "docstatus": 0,
+    "doctype": "Lead Source",
+    "modified": "2023-09-29 16:43:44.438760",
+    "name": "shivane",
+    "source_name": "shivane"
+  },
+  {
+    "details": null,
+    "docstatus": 0,
+    "doctype": "Lead Source",
+    "modified": "2023-09-29 16:43:44.438760",
+    "name": "email_on_lead_gen",
+    "source_name": "email_on_lead_gen"
+  },
+
+  {
+    "details": null,
+    "docstatus": 0,
+    "doctype": "Lead Source",
+    "modified": "2023-09-29 16:43:44.438760",
+    "name": "email",
+    "source_name": "email"
+  },
+  {
+    "details": null,
+    "docstatus": 0,
+    "doctype": "Lead Source",
+    "modified": "2023-09-29 16:43:44.438760",
+    "name": "walkin",
+    "source_name": "walkin"
   }
 ]

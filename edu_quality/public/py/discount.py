@@ -81,7 +81,7 @@ def add_discount(fee_name, discount):
 
 #remove discount
 @frappe.whitelist()
-def remove_discount(fee_name, discount):
+def remove_discount(fee_name, discount, update_payment_request=True):
     discount_removed = False
     grand_discount_amount = 0
     fees = frappe.get_doc("Fees", fee_name)
@@ -120,7 +120,8 @@ def remove_discount(fee_name, discount):
                 frappe.response['message'] = message
     if discount_removed:
         update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=False,dis=dis)
-        update_payment_request_after_discount(fees)
+        if update_payment_request:
+            update_payment_request_after_discount(fees)
 
 
 def get_discount_list(input_string):
@@ -422,7 +423,7 @@ def remove_payment_plan_discount(payment_plan, doc):
     for component in doc.components:
         for discount_config in discount_configs:
             if discount_config.fee_category == component.fees_category:
-                remove_discount(doc.name, discount_config.name)
+                remove_discount(doc.name, discount_config.name, update_payment_request=True)
                 frappe.response['message'] = f"{discount_config.name} Discount removed successfully"
                 break
             

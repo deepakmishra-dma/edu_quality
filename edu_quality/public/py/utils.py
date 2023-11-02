@@ -3,6 +3,7 @@ import math, random
 import requests
 import urllib
 
+
 def set_property(doctype, fieldname, prop, property_type, value):
     filters = {
         "doctype_or_field": "DocField",
@@ -33,9 +34,21 @@ def migrate():
     set_property("Student Group", "student_group_name", "unique", "Check", 0)
 
 
+def is_deposit(fees, term):
+    deposit = False
+    if fees.payment_schedule:
+        for schedule in fees.payment_schedule:
+            if schedule.payment_term == term and "deposit" in schedule.description.lower():
+                deposit = True
+    return deposit
+
+
 @frappe.whitelist()
-def send_payment_link_email(doc, url):
-    template_name = frappe.get_single("Communications").payment_link_email
+def send_payment_link_email(doc, url, deposit=False):
+    if deposit:
+        template_name = frappe.get_single("Communications").deposit_email
+    else:
+        template_name = frappe.get_single("Communications").payment_link_email
 
     # Fetch the email template content from the doctype
     email_template = frappe.get_doc("Email Template", template_name)
@@ -52,7 +65,7 @@ def send_payment_link_email(doc, url):
     context = {
         "first_name": first_name.capitalize(),
         "acad_year": academic_year,
-        "fee_link": url,
+        "link": url,
     }
 
     # Render the Jinja template with the context
@@ -122,7 +135,7 @@ def generate_otp(fee):
         key = fee
         digits = "0123456789"
         OTP = ""
-        for i in range(4) :
+        for i in range(4):
             OTP += digits[math.floor(random.random() * 10)]
         rs.set_value(key, OTP, expires_in_sec=300)
         return send_otp(fee, OTP)
@@ -130,10 +143,10 @@ def generate_otp(fee):
         return False
 
 
-def send_otp(fee,otp):
+def send_otp(fee, otp):
     try:
-        student = frappe.get_value("Fees",fee,"student")
-        student = frappe.get_doc("Student",student)
+        student = frappe.get_value("Fees", fee, "student")
+        student = frappe.get_doc("Student", student)
         if student.custom_fathers_email:
             email = student.custom_fathers_email
         elif student.custom_mothers_email:
@@ -149,39 +162,37 @@ def send_otp(fee,otp):
         if mobile:
             sms_otp(mobile,otp)
         if email:
-            email_otp(email,otp)
-        #whatsapp message
+            email_otp(email, otp)
+        # whatsapp message
         return True
     except Exception as e:
         return False
-    
-def email_otp(email,otp):
+
+
+def email_otp(email, otp):
     subject = "OTP for Changing Payment Plan"
     message = f"OTP for Changing Payment Plan is {otp}"
-    frappe.sendmail(
-        recipients=email, subject=subject, message=message, delayed=False
-    )
+    frappe.sendmail(recipients=email, subject=subject, message=message, delayed=False)
 
 @frappe.whitelist(allow_guest=True)
-def sms_otp(number,otp):
+def sms_otp(number, otp):
     api_key = "***REMOVED-SMS-KEY***"
-    url = "https://smssolution.net.in/api/v4/?api_key=" + api_key
-    url += "&method=sms&message="
-    message = "The%20OTP%20for%20making%20changes%20to%20your%20account%20is%20-%20" + str(otp)
-    url += message
-    url += "&to=" + number
-    url += "&sender=" + "WALNUT"
-    response = requests.post(url,verify=False)
+    message = f"{otp} is OTP for updating child details (JE08) initiated by you -Team Walnut"
+    template_id = 1007162244812510707
+    sender = "WLTSCL"
+    encoded_message = requests.utils.quote(message)
+    url = f"http://smssolution.net.in/api/v4/?api_key={api_key}&method=sms&message={encoded_message}&to={number}&sender={sender}&template_id={template_id}"
+    response = requests.post(url)
     response = response.json()
     return response
 
 
-
-def verify_otp(fee,otp):
+@frappe.whitelist()
+def verify_otp(fee, otp):
     try:
         rs = frappe.cache()
         if rs.get_value(fee) == otp:
-            return True 
+            return True
         return False
     except Exception as e:
         return False
@@ -189,7 +200,9 @@ def verify_otp(fee,otp):
 
 def get_undertaking_template(doc, is_deposit=False):
     fee = frappe.get_value("Payment Request", doc.name, "reference_name")
-    class_name, academic_year, student = frappe.get_value("Fees", fee, ["program", "academic_year", "student"])
+    class_name, academic_year, student = frappe.get_value(
+        "Fees", fee, ["program", "academic_year", "student"]
+    )
     status = is_old_student(student, academic_year)
     filter_dict = {"class": class_name, "academic_year": academic_year}
 
@@ -204,22 +217,31 @@ def get_undertaking_template(doc, is_deposit=False):
         filter_dict["status"] = "New Student"
 
     # check if doc filter exists in database
-    template = frappe.db.get_value("Rules and Regulation Template", filter_dict, ["pdf", "name"])
+    template = frappe.db.get_value(
+        "Rules and Regulation Template", filter_dict, ["pdf", "name"]
+    )
     if template:
         site_url = frappe.utils.get_url()
         pdf_url = site_url + template[0]
         return pdf_url
 
     # check if default filter exists in database
-    default_filter = {"class": class_name, "academic_year": academic_year, "status": "Defaulter"}
-    template = frappe.db.get_value("Rules and Regulation Template", default_filter, ["pdf", "name"])
+    default_filter = {
+        "class": class_name,
+        "academic_year": academic_year,
+        "status": "Defaulter",
+    }
+    template = frappe.db.get_value(
+        "Rules and Regulation Template", default_filter, ["pdf", "name"]
+    )
     if template:
         site_url = frappe.utils.get_url()
         pdf_url = site_url + template[0]
         return pdf_url
 
     return None
-    
+
+
 def get_submitted_undertaking(payment_request):
     student = frappe.get_value("Payment Request", payment_request, ["party"])
 
@@ -232,12 +254,17 @@ def get_submitted_undertaking(payment_request):
 @frappe.whitelist(allow_guest=True)
 def handle_undertaking_submission(**kwargs):
     payment_hash = kwargs.get("payment_request")
-    student, fee = frappe.get_value("Payment Request", {"payment_hash": payment_hash}, ["party", "reference_name"])
+    student, fee = frappe.get_value(
+        "Payment Request", {"payment_hash": payment_hash}, ["party", "reference_name"]
+    )
     class_name = frappe.get_value("Fees", fee, "program")
     template = frappe.get_doc("Rules and Regulation Template", {"class": class_name})
     student_doc = frappe.get_doc("Student", student)
 
-    if not frappe.db.exists("Rules and Regulation Submission", {"reference_no": student_doc.custom_reference_number}):
+    if not frappe.db.exists(
+        "Rules and Regulation Submission",
+        {"reference_no": student_doc.custom_reference_number},
+    ):
         new_doc = frappe.new_doc("Rules and Regulation Submission")
         new_doc.student = student_doc
         new_doc.reference_no = student_doc.custom_reference_number
@@ -256,19 +283,26 @@ def handle_undertaking_submission(**kwargs):
 
 def get_undertaking_submission_pdf(student):
     if frappe.db.exists("Rules and Regulation Submission", {"student": student}):
-        name = frappe.get_value("Rules and Regulation Submission", {"student": student}, "name")
-        return frappe.attach_print("Rules and Regulation Submission", name, file_name=name)
+        name = frappe.get_value(
+            "Rules and Regulation Submission", {"student": student}, "name"
+        )
+        return frappe.attach_print(
+            "Rules and Regulation Submission", name, file_name=name
+        )
     else:
         return None
-    
+
 
 def is_old_student(student, academic_year):
     previous_academic_year = get_previous_academic_year(academic_year)
-    if frappe.db.exists("Program Enrollment",{"student":student,"academic_year":previous_academic_year}):
+    if frappe.db.exists(
+        "Program Enrollment",
+        {"student": student, "academic_year": previous_academic_year},
+    ):
         return True
     else:
         return False
-    
+
 
 def get_previous_academic_year(academic_year):
     # Extract the year parts from the current academic year
@@ -284,5 +318,22 @@ def get_previous_academic_year(academic_year):
     previous_academic_year_name = f"{previous_start_year}-{previous_end_year}"
 
     # Check if the previous academic year exists
-    previous_academic_year_exists = frappe.get_value("Academic Year", {"name": previous_academic_year_name}, "name")
+    previous_academic_year_exists = frappe.get_value(
+        "Academic Year", {"name": previous_academic_year_name}, "name"
+    )
     return bool(previous_academic_year_exists)
+
+
+# edu_quality.public.py.utils.generate_fields_map
+@frappe.whitelist()
+def generate_fields_map(docName="Lead"):
+    meta = frappe.get_meta(docName)
+    fields = meta.get("fields", None)
+    if not fields:
+        raise Exception(f"Error getting fields from {docName} Doctype")
+    fields_dict = {}
+    fields_array = []
+    for i in fields:
+        fields_dict[i.get("fieldname")] = True
+        fields_array.append(i.get("fieldname"))
+    return {"dict": fields_dict, "array": fields_array}
