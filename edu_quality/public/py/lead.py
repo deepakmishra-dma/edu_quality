@@ -1,6 +1,10 @@
 import frappe
 import re
 
+try:
+    from nextai.funnel.custom_trigger import trigger_event
+except ImportError:
+    print("Chatnext is not installed")
 
 def add_indian_country_code(number):
     try:
@@ -32,6 +36,11 @@ def after_insert(doc, method=None):
     doc.contact_doc.save()
     if doc.get("fathers_email"):
         enqueue_email(doc.get("fathers_email"), doc.get("class"))
+
+    try:
+        trigger_event(doc, "lead_created")
+    except Exception as e:
+        frappe.log_error("Error triggering lead_created event", str(e))
     pass
 
 
