@@ -93,5 +93,24 @@
   "python_function_dotted_path": null,
   "style": null,
   "trigger_event_name": "lead_created"
+ },
+ {
+  "class_name": "edu_quality",
+  "default_doctype": null,
+  "docstatus": 0,
+  "doctype": "Funnel Node",
+  "element_type": "Action",
+  "form_data": "{\n  \"display\": \"form\",\n  \"components\": [\n    {\n      \"type\": \"button\",\n      \"label\": \"Submit\",\n      \"key\": \"submit\",\n      \"disableOnInvalid\": true,\n      \"input\": true,\n      \"tableView\": false,\n      \"placeholder\": \"\",\n      \"prefix\": \"\",\n      \"customClass\": \"\",\n      \"suffix\": \"\",\n      \"multiple\": false,\n      \"defaultValue\": null,\n      \"protected\": false,\n      \"unique\": false,\n      \"persistent\": false,\n      \"hidden\": false,\n      \"clearOnHide\": true,\n      \"refreshOn\": \"\",\n      \"redrawOn\": \"\",\n      \"modalEdit\": false,\n      \"dataGridLabel\": true,\n      \"labelPosition\": \"top\",\n      \"description\": \"\",\n      \"errorLabel\": \"\",\n      \"tooltip\": \"\",\n      \"hideLabel\": false,\n      \"tabindex\": \"\",\n      \"disabled\": false,\n      \"autofocus\": false,\n      \"dbIndex\": false,\n      \"customDefaultValue\": \"\",\n      \"calculateValue\": \"\",\n      \"calculateServer\": false,\n      \"widget\": {\n        \"type\": \"input\"\n      },\n      \"attributes\": {},\n      \"validateOn\": \"change\",\n      \"validate\": {\n        \"required\": false,\n        \"custom\": \"\",\n        \"customPrivate\": false,\n        \"strictDateValidation\": false,\n        \"multiple\": false,\n        \"unique\": false\n      },\n      \"conditional\": {\n        \"show\": null,\n        \"when\": null,\n        \"eq\": \"\"\n      },\n      \"overlay\": {\n        \"style\": \"\",\n        \"left\": \"\",\n        \"top\": \"\",\n        \"width\": \"\",\n        \"height\": \"\"\n      },\n      \"allowCalculateOverride\": false,\n      \"encrypted\": false,\n      \"showCharCount\": false,\n      \"showWordCount\": false,\n      \"properties\": {},\n      \"allowMultipleMasks\": false,\n      \"addons\": [],\n      \"size\": \"md\",\n      \"leftIcon\": \"\",\n      \"rightIcon\": \"\",\n      \"block\": false,\n      \"action\": \"submit\",\n      \"theme\": \"primary\",\n      \"id\": \"e5s09op\"\n    }\n  ]\n}",
+  "funnel_preview_image": null,
+  "handles": "[\n      {\n        \"id\": \"input\",\n        \"position\": \"top\",\n        \"type\": \"target\"\n      },\n      {\n        \"id\": \"output\",\n        \"position\": \"bottom\",\n        \"type\": \"source\",\n        \"label\": \"\",\n        \"style\": {\n          \"backgroundColor\": \"black\",\n          \"height\": \"0.75rem\",\n          \"width\": \"0.75rem\",\n          \"bottom\": \"-0.375rem\",\n          \"fontSize\": \"0.5rem\",\n          \"color\": \"white\"\n        }\n      }\n    ]",
+  "is_custom": 1,
+  "is_enabled": 0,
+  "modified": "2023-10-25 16:51:18.647721",
+  "name": "Get Email Arguments Action",
+  "node_name": "Get Email Arguments Action",
+  "on_drop_image": null,
+  "python_function_dotted_path": "edu_quality.public.py.funnel.get_email_args",
+  "style": null,
+  "trigger_event_name": null
  }
 ]
