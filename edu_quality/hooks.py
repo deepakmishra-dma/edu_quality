@@ -282,6 +282,8 @@ fixtures = [
         "dt": "Custom DocPerm",
         "filters": [["module","=","Edu Quality"]]
     }, {"dt":"Program"},    {"dt":"Lead Sub Status"},{"dt":"School"},{"dt":"Academic Year"},
+    {"dt": "Funnel Node", "filters": [["class_name","=","edu_quality"]]}, 
+    {"dt": "Funnel"}, 
     {"dt":"Email Template"},
     {"dt":"Letter Head"},
     {'dt':"Workspace",

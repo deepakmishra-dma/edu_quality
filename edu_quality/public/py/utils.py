@@ -2,6 +2,10 @@ import frappe
 import math, random
 import requests
 import urllib
+try:
+    from nextai.funnel.custom_trigger import trigger_event
+except ImportError:
+    print("Chatnext is not installed")
 
 
 def set_property(doctype, fieldname, prop, property_type, value):
@@ -33,6 +37,14 @@ def migrate():
     set_property("Program", "program_name", "unique", "Check", 0)
     set_property("Student Group", "student_group_name", "unique", "Check", 0)
 
+
+@frappe.whitelist()
+def trigger_funnel_event(doc, event_name):
+    try:
+        trigger_event(doc, event_name)
+        return True
+    except Exception as e:
+        return False
 
 def is_deposit(fees, term):
     deposit = False
@@ -212,7 +224,7 @@ def get_undertaking_template(doc, is_deposit=False):
         filter_dict["show_on"] = "Fees"
 
     if status:
-        filter_dict["status"] = "Rollover Student"
+        filter_dict["status"] = "Current Student"
     else:
         filter_dict["status"] = "New Student"
 
@@ -220,20 +232,25 @@ def get_undertaking_template(doc, is_deposit=False):
     template = frappe.db.get_value(
         "Rules and Regulation Template", filter_dict, ["pdf", "name"]
     )
-    if template:
-        site_url = frappe.utils.get_url()
-        pdf_url = site_url + template[0]
-        return pdf_url
+
+    # change the filter to check for the show_on Both
+    if not template:
+        filter_dict["show_on"] = "Both"
+        template = frappe.db.get_value(
+            "Rules and Regulation Template", filter_dict, ["pdf", "name"]
+        )
 
     # check if default filter exists in database
-    default_filter = {
-        "class": class_name,
-        "academic_year": academic_year,
-        "status": "Defaulter",
-    }
-    template = frappe.db.get_value(
-        "Rules and Regulation Template", default_filter, ["pdf", "name"]
-    )
+    if not template:
+        default_filter = {
+            "class": class_name,
+            "academic_year": academic_year,
+            "status": "Defaulter",
+        }
+        template = frappe.db.get_value(
+            "Rules and Regulation Template", default_filter, ["pdf", "name"]
+        )
+
     if template:
         site_url = frappe.utils.get_url()
         pdf_url = site_url + template[0]
@@ -279,6 +296,11 @@ def handle_undertaking_submission(**kwargs):
         new_doc.ip_address = kwargs.get("ip_address")
         new_doc.user_info = kwargs.get("browser_info")
         new_doc.save(ignore_permissions=True)
+
+        try:
+            trigger_event(new_doc, "rules_and_regulation_submission")
+        except Exception as e:
+            frappe.logger('edu_quality').exception(e)
 
 
 def get_undertaking_submission_pdf(student):
