@@ -6,6 +6,7 @@ import datetime
 import time
 import uuid
 import pytz
+import re
 
 CONFIG = {
     "WALSH_API_BASE": "https://testwalsh.walnutedu.in/indexCI.php",
@@ -21,12 +22,27 @@ def get_class_without_std(txt):
     return txt
 
 
-def remove_indian_country_code(phone):
-    if not phone:
+def remove_indian_country_code(number):
+    if not number:
         return ""
-    if "+91" in str(phone):
-        return phone[3::]
-    return str(phone)
+    try:
+        phone_pattern = r"^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$"
+        re_groups = re.findall(phone_pattern, str(number))
+
+        if len(re_groups) == 0:
+            return str(number)
+        
+        is_91 = re_groups[0][0]
+
+        
+        if is_91 == "+91" or is_91 == "91":
+            return str("".join(re_groups[0][1::]))
+        else:
+            return str(number)
+
+    except Exception as e:
+        frappe.log_error("Error adding indian country code on number " + number, str(e))
+        return str(number)
 
 
 def separate_name(full_name):
@@ -65,12 +81,13 @@ def separate_name(full_name):
 def is_dob_in_range(lead_application, program_doc):
     start = program_doc.get("custom_date_start")
     dob = lead_application.get("date_of_birth")
-
+    end = program_doc.get("custom_date_end")
     if not dob:
         raise frappe.exceptions.MandatoryError("Date of Birth is required")
     if not start:
         return True
-    if dob >= start:
+    
+    if dob <=end:
         return True
     else:
         return False
@@ -87,7 +104,7 @@ def create_student_application(**args):
         program_doc = frappe.get_doc("Program", lead_application.get("class"))
 
         if not is_dob_in_range(lead_application, program_doc):
-            message = f"Date of Birth for class {lead_application.get('class')} is not greater than {program_doc.get('custom_date_start')} "
+            message = f"Date of Birth for class {lead_application.get('class')} is not less than {program_doc.get('custom_date_end')} "
             # frappe.msgprint(msg=message, title="Error", indicator="red")
             raise frappe.exceptions.MandatoryError(message)
 
