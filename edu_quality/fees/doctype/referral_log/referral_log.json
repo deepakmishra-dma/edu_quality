@@ -10,7 +10,8 @@
  "field_order": [
   "student_id",
   "number_of_referral",
-  "referral_amount"
+  "referral_amount",
+  "student_email_id"
  ],
  "fields": [
   {
@@ -28,11 +29,16 @@
    "fieldname": "referral_amount",
    "fieldtype": "Data",
    "label": "Referral Amount"
+  },
+  {
+   "fieldname": "student_email_id",
+   "fieldtype": "Data",
+   "label": "Student Email ID"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-08-14 13:40:34.050344",
+ "modified": "2023-10-26 14:37:17.286563",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Referral Log",

@@ -241,5 +241,86 @@
   "modified": "2023-10-26 10:59:20.576318",
   "name": "Lead",
   "viewport": "{\"x\":10,\"y\":200,\"zoom\":1}"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Funnel",
+  "funnel_definition": [
+   {
+    "data": "{\"doctype\":\"Referral Log\",\"submit\":true}",
+    "element_type": "Trigger",
+    "id": "nAGHHUlkD2w9GMtjeklxe",
+    "parent": "Student Referral",
+    "parentfield": "funnel_definition",
+    "parenttype": "Funnel",
+    "position": "{\"x\":645,\"y\":-75}",
+    "source": null,
+    "sourcehandle": null,
+    "target": null,
+    "targethandle": null,
+    "type": "Student Referral Trigger"
+   },
+   {
+    "data": "{\"emailTemplate\":\"1 to 5 lead email Shivane\",\"emailAccount\":\"Badal\",\"sendToAssignedUsersAlso\":false,\"recepients\":[{\"recepientField\":\"student_email_id\",\"cc\":\"\"}],\"submit\":true,\"trigger_doc\":\"Referral Log\"}",
+    "element_type": "Action",
+    "id": "H-d4mQyOJ2aoFpPRd2J5H",
+    "parent": "Student Referral",
+    "parentfield": "funnel_definition",
+    "parenttype": "Funnel",
+    "position": "{\"x\":645,\"y\":330}",
+    "source": null,
+    "sourcehandle": null,
+    "target": null,
+    "targethandle": null,
+    "type": "Send Mail"
+   },
+   {
+    "data": "{\"submit\":true,\"trigger_doc\":\"Referral Log\"}",
+    "element_type": "Action",
+    "id": "lmvLL1krVZRwVvDJVub3K",
+    "parent": "Student Referral",
+    "parentfield": "funnel_definition",
+    "parenttype": "Funnel",
+    "position": "{\"x\":645,\"y\":120}",
+    "source": null,
+    "sourcehandle": null,
+    "target": null,
+    "targethandle": null,
+    "type": "Get Email Arguments Action"
+   },
+   {
+    "data": null,
+    "element_type": "edge",
+    "id": "reactflow__edge-nAGHHUlkD2w9GMtjeklxeoutput-lmvLL1krVZRwVvDJVub3Kinput",
+    "parent": "Student Referral",
+    "parentfield": "funnel_definition",
+    "parenttype": "Funnel",
+    "position": null,
+    "source": "nAGHHUlkD2w9GMtjeklxe",
+    "sourcehandle": "output",
+    "target": "lmvLL1krVZRwVvDJVub3K",
+    "targethandle": "input",
+    "type": null
+   },
+   {
+    "data": null,
+    "element_type": "edge",
+    "id": "reactflow__edge-lmvLL1krVZRwVvDJVub3Koutput-H-d4mQyOJ2aoFpPRd2J5Hinput",
+    "parent": "Student Referral",
+    "parentfield": "funnel_definition",
+    "parenttype": "Funnel",
+    "position": null,
+    "source": "lmvLL1krVZRwVvDJVub3K",
+    "sourcehandle": "output",
+    "target": "H-d4mQyOJ2aoFpPRd2J5H",
+    "targethandle": "input",
+    "type": null
+   }
+  ],
+  "funnel_name": "Student Referral",
+  "funnel_preview_image": "/files/thumbnail-funnel-preview-Payment Link.png",
+  "modified": "2023-10-26 14:52:51.814382",
+  "name": "Student Referral",
+  "viewport": "{\"x\":10,\"y\":200,\"zoom\":1}"
  }
 ]
