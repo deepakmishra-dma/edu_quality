@@ -50,11 +50,15 @@ def get_arguments(doctype, docname):
         site_url = frappe.utils.get_url()
         pdf_url = site_url + pdf
 
+        first_name = student_doc.first_name
+        mother_name = student_doc.custom_mothers_first_name
+        father_name = student_doc.custom_fathers_first_name
+
         context = {
             "refno": student_doc.custom_reference_number,
-            "first_name": student_doc.first_name.capitalize(),
-            "mother_name": student_doc.custom_mothers_first_name.capitalize(),
-            "father_name": student_doc.custom_fathers_first_name.capitalize(),
+            "first_name": first_name.capitalize() if first_name else "",
+            "mother_name": mother_name.capitalize() if mother_name else "",
+            "father_name": father_name.capitalize() if father_name else "",
             "submitted_with_response": undertaking_doc.submitted_with_response,
             "submitted_date": undertaking_doc.submitted_date,
             "otp_entered": undertaking_doc.otp_entered,
