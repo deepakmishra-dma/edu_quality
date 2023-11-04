@@ -31,10 +31,9 @@ def remove_indian_country_code(number):
 
         if len(re_groups) == 0:
             return str(number)
-        
+
         is_91 = re_groups[0][0]
 
-        
         if is_91 == "+91" or is_91 == "91":
             return str("".join(re_groups[0][1::]))
         else:
@@ -48,12 +47,21 @@ def remove_indian_country_code(number):
 def separate_name(full_name):
     # Split the full name into words
     if not full_name:
-        return " "
+        return {
+            "first_name": " ",
+            "middle_name": " ",
+            "last_name": " ",
+        }
     name_parts = full_name.split()
 
     # Determine the number of name parts
     num_parts = len(name_parts)
-
+    if num_parts == 0:
+        return {
+            "first_name": " ",
+            "middle_name": " ",
+            "last_name": " ",
+        }
     if num_parts == 1:
         # If only one word is provided, consider it as the first name
         first_name = name_parts[0]
@@ -86,8 +94,8 @@ def is_dob_in_range(lead_application, program_doc):
         raise frappe.exceptions.MandatoryError("Date of Birth is required")
     if not start:
         return True
-    
-    if dob <=end:
+
+    if dob <= end:
         return True
     else:
         return False
@@ -570,6 +578,7 @@ id_to_location_map_fb = {
 @frappe.whitelist(allow_guest=True)
 def create_student_lead(**kwargs):
     # return kwargs
+    kwargs["fathers_name"] = kwargs.get("fathers_name") or " "
     if (
         not kwargs.get("first_name")
         or not kwargs.get("fathers_name")
@@ -668,6 +677,7 @@ def create_student_lead(**kwargs):
 @frappe.whitelist(allow_guest=True)
 def create_student_lead_fb(**kwargs):
     # return kwargs
+    kwargs["fathers_name"] = kwargs.get("fathers_name") or " "
     if (
         not kwargs.get("first_name")
         or not kwargs.get("fathers_name")
