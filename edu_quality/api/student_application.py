@@ -578,7 +578,11 @@ id_to_location_map_fb = {
 @frappe.whitelist(allow_guest=True)
 def create_student_lead(**kwargs):
     # return kwargs
-    kwargs["fathers_name"] = kwargs.get("fathers_name") or " "
+    kwargs["fathers_name"] = (
+        " "
+        if kwargs.get("fathers_name") == kwargs.get("first_name")
+        else kwargs.get("fathers_name") or " "
+    )
     if (
         not kwargs.get("first_name")
         or not kwargs.get("fathers_name")
@@ -677,7 +681,12 @@ def create_student_lead(**kwargs):
 @frappe.whitelist(allow_guest=True)
 def create_student_lead_fb(**kwargs):
     # return kwargs
-    kwargs["fathers_name"] = kwargs.get("fathers_name") or " "
+    kwargs["fathers_name"] = (
+        " "
+        if kwargs.get("fathers_name") == kwargs.get("first_name")
+        else kwargs.get("fathers_name") or " "
+    )
+
     if (
         not kwargs.get("first_name")
         or not kwargs.get("fathers_name")

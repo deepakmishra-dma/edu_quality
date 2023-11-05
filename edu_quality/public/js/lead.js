@@ -37,8 +37,8 @@ frappe.ui.form.on("Lead", {
         setTimeout(() => {
             frm.clear_custom_buttons()
 
-
-            frm.add_custom_button(__(`<div style="display:flex;align-items:center;gap:4px;"><img alt="open whatsapp ui" src="/assets/edu_quality/img/whatsapp-icon.png" style="height:100%;object-fit:contain;background-repeat:no-repeat;max-height:19.5px" /><div>Open in Whatsapp UI</div></div>`), function () {
+            // <div style="display:flex;align-items:center;gap:4px;"><img alt="open whatsapp ui" src="/assets/edu_quality/img/whatsapp-icon.png" style="height:100%;object-fit:contain;background-repeat:no-repeat;max-height:19.5px" /><div>Open in Whatsapp UI</div></div>`
+            frm.add_custom_button(__(`Open in Whatsapp UI`), function () {
                 frappe.call({
                     "method": "frappe.desk.form.linked_with.get",
                     args: {
