@@ -92,7 +92,7 @@ def is_dob_in_range(lead_application, program_doc):
     end = program_doc.get("custom_date_end")
     if not dob:
         raise frappe.exceptions.MandatoryError("Date of Birth is required")
-    if not start:
+    if not start or not end:
         return True
 
     if dob <= end:
