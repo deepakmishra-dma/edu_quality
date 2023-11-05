@@ -1,8 +1,17 @@
-from edu_quality.public.py.discount import calculate_discount, get_discount_list, update_component, update_payment_plan_after_discount
 import frappe
 from frappe.model.mapper import get_mapped_doc
 from frappe.model.naming import make_autoname
+from edu_quality.public.py.discount import (
+    calculate_discount,
+    get_discount_list,
+    update_component,
+    update_payment_plan_after_discount,
+)
 
+try:
+    from nextai.funnel.custom_trigger import trigger_event
+except ImportError:
+    print("Chatnext is not installed")
 
 def autoname(doc,method=None):
     if doc.school_code and doc.class_name:
@@ -48,7 +57,9 @@ def before_save(doc,method=None):
 
 
 def after_insert(doc, method=None):
-    add_referral_discount(doc)
+    referred_by = doc.custom_referred_by
+    add_referral_discount(referred_by)
+
 
 def calculate_total(doc):
     doc.total_amount = 0
@@ -185,46 +196,51 @@ def enroll_student(source_name):
     )
     return program_enrollment
 
+
 def get_student_group(doc):
     filters = {"academic_year": doc.academic_year, "program": doc.program}
     return frappe.db.get_value("Student Group", filters, "name")
 
 
-def add_referral_discount(doc):
-    referred_by = doc.custom_referred_by
-    ref = frappe.get_doc("Referral Settings")
+def add_referral_discount(referred_by):
     try:
-        referral_amount = float(ref.referral[0].referral_amount)
-    except:
-        referral_amount = 0
+        student_email_id = frappe.get_value("Student", referred_by, "student_email_id")
+        referral_settings = frappe.get_single("Referral Settings")
+        referral_amounts = {r.get('idx'): r.get('referral_amount') for r in referral_settings.referral}
+        ref_doc_name = frappe.get_value("Referral Log", {"student_id": referred_by}, "name")
 
-    if frappe.db.exists("Referral Log", {"student_id": referred_by}):
-        ref_log = frappe.get_doc("Referral Log", {"student_id": referred_by})
-        previous_referral_amount = float(ref_log.referral_amount)
-        number_of_referral = int(ref_log.number_of_referral)+1
-        ref_log.number_of_referral = number_of_referral
-        
-        # get referral amount with reference to the number of referral
-        for r in ref.referral:
-            if r.idx == number_of_referral:
-                referral_amount = int(r.referral_amount)
-                ref_log.referral_amount = referral_amount
+        if ref_doc_name:
+            ref_doc = frappe.get_doc("Referral Log", ref_doc_name)
+            previous_referral_amount = float(ref_doc.referral_amount)
+            referral_no = int(ref_doc.number_of_referral) + 1
+            ref_doc.number_of_referral = referral_no
+            amount = referral_amounts.get(referral_no)
+
+            if amount:
+                ref_doc.referral_amount = amount
+                ref_doc.save(ignore_permissions=True)
+                trigger_event(doc=ref_doc, event_name="referral_created")
+
+                if frappe.db.exists("Fees", {"student": referred_by}):
+                    fees = frappe.get_doc("Fees", {"student": referred_by})
+                    discount_amount = float(ref_doc.referral_amount) - previous_referral_amount
+                    update_referral_discount(fees, discount_amount)
+        else:
+            amount = referral_amounts.get(1)
+            amount = float(amount) if amount else 0
+            ref_doc = frappe.new_doc("Referral Log")
+            ref_doc.student_id = referred_by
+            ref_doc.number_of_referral = 1
+            ref_doc.referral_amount = amount
+            ref_doc.student_email_id = student_email_id
+            ref_doc.save(ignore_permissions=True)
             
-        ref_log.save(ignore_permissions=True)
-        if frappe.db.exists("Fees", {"student": referred_by}):
-            fees = frappe.get_doc("Fees", {"student": referred_by})
-            discount_amount = referral_amount - previous_referral_amount
-            update_referral_discount(fees, discount_amount)
-    else:
-        ref_log = frappe.new_doc("Referral Log")
-        ref_log.student_id = referred_by
-        ref_log.number_of_referral = 1
-        ref_log.referral_amount = referral_amount
-        ref_log.save(ignore_permissions=True)
-
-        if frappe.db.exists("Fees", {"student": referred_by}):
-            fees = frappe.get_doc("Fees", {"student": referred_by})
-            apply_referrral_discount(fees, ref_log.referral_amount)
+            trigger_event(doc=ref_doc, event_name="referral_created")
+            if frappe.db.exists("Fees", {"student": referred_by}):
+                fees = frappe.get_doc("Fees", {"student": referred_by})
+                apply_referrral_discount(fees, amount)
+    except Exception as e:
+        frappe.logger('edu_quality').exception(e)
 
 
 
