@@ -38,7 +38,7 @@ frappe.ui.form.on("Lead", {
             frm.clear_custom_buttons()
 
 
-            frm.add_custom_button("Open in Whatsapp UI", function () {
+            frm.add_custom_button(__(`<div style="display:flex;align-items:center;gap:4px;"><img alt="open whatsapp ui" src="/assets/edu_quality/img/whatsapp-icon.png" style="height:100%;object-fit:contain;background-repeat:no-repeat;max-height:19.5px" /><div>Open in Whatsapp UI</div></div>`), function () {
                 frappe.call({
                     "method": "frappe.desk.form.linked_with.get",
                     args: {
@@ -50,7 +50,7 @@ frappe.ui.form.on("Lead", {
                         }
                     }
                 })
-            })
+            }, '', "Open in whatsapp ui")
 
             frm.add_custom_button(__("Push To MGR"), function () {
                 var errorKey = Object.keys(error_msg).find(error => frm.doc[error] === null || frm.doc[error] === undefined || frm.doc[error] === '')
