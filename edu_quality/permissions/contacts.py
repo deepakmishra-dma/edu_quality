@@ -5,7 +5,7 @@ def contact_query(user):
     user = frappe.session.user
     roles = frappe.get_roles(frappe.session.user)
     if "Councellor" in roles and "Administrator" not in roles:
-        if frappe.get_doc("User Permission",{"user":user,"allow":"School"}):
+        if frappe.get_value("User Permission",{"user":user,"allow":"School"}):
             all_lead = frappe.get_list("Lead","fathers_phone")
             all_lead_con = [p.fathers_phone for p in all_lead]
             if not all_lead_con:
