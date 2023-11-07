@@ -10,7 +10,6 @@ import re
 
 CONFIG = {
     "WALSH_API_BASE": "https://testwalsh.walnutedu.in/indexCI.php",
-    "MGR_API_BASE": "https://test.walnutedu.in/indexCI.php",
 }
 
 
@@ -438,9 +437,9 @@ def upload_to_mgr(doc):
         "preferred_batch_time": doc.get("batch_time") or " ",
         "academic_year": doc.get("academic_year") or " ",
     }
-
+    mgr_url = frappe.db.get_single_value("MGR Settings", "url") or "https://test.walnutedu.in/indexCI.php"
     response = requests.post(
-        url=f'{CONFIG.get("MGR_API_BASE")}/student_lms/post_student_lms_data',
+        url=f"{mgr_url}/student_lms/post_student_lms_data",
         json=json.loads(json.dumps(JSON, default=default)),
     )
     try:
@@ -579,7 +578,7 @@ id_to_location_map_fb = {
 def create_student_lead(**kwargs):
     # return kwargs
     kwargs["fathers_name"] = (
-        " "
+        "father of " + kwargs.get("first_name")
         if kwargs.get("fathers_name") == kwargs.get("first_name")
         else kwargs.get("fathers_name") or " "
     )
@@ -682,7 +681,7 @@ def create_student_lead(**kwargs):
 def create_student_lead_fb(**kwargs):
     # return kwargs
     kwargs["fathers_name"] = (
-        " "
+        "father of " + kwargs.get("first_name")
         if kwargs.get("fathers_name") == kwargs.get("first_name")
         else kwargs.get("fathers_name") or " "
     )

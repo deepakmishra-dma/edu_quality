@@ -8,7 +8,8 @@
  "engine": "InnoDB",
  "field_order": [
   "username",
-  "password"
+  "password",
+  "url"
  ],
  "fields": [
   {
@@ -20,12 +21,17 @@
    "fieldname": "password",
    "fieldtype": "Password",
    "label": "Password"
+  },
+  {
+   "fieldname": "url",
+   "fieldtype": "Data",
+   "label": "URL"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-08-24 01:28:56.246897",
+ "modified": "2023-10-27 12:01:53.241812",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "MGR Settings",
