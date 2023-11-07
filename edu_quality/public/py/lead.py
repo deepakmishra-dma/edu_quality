@@ -35,7 +35,9 @@ def after_insert(doc, method=None):
 
     doc.contact_doc.save()
     if doc.get("fathers_email"):
-        enqueue_email(doc.get("fathers_email"), doc.get("class"))
+        content = enqueue_email(doc.get("fathers_email"), doc.get("class"))
+        if content:
+            add_email_activity(doc, content)
 
     try:
         trigger_event(doc, "lead_created")
@@ -59,5 +61,24 @@ def enqueue_email(email, program):
         }
 
         frappe.sendmail(**email_args)
+        return content
     except Exception as e:
         frappe.log_error("Error sending lead generation email", str(e))
+        return None
+
+
+def add_email_activity(doc, content):
+    frappe.get_doc(
+        {
+            "doctype": "Communication",
+            "communication_type": "Communication",
+            "communication_medium": "Email",
+            "subject": "Lead Generation",
+            "content": content,
+            "sent_or_received": "Sent",
+            "sender": frappe.session.user,
+            "recipients": doc.get("fathers_email"),
+            "reference_doctype": "Lead",
+            "reference_name": doc.get("name"),
+        }
+    ).insert(ignore_permissions=True)
