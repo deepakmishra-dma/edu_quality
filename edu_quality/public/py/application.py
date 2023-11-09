@@ -101,7 +101,7 @@ def enroll_student(source_name):
     student_group = get_student_group(student_applicant)
     student_count = get_student_count(fee_schedule, student_group)
     max_strength = get_max_strength(student_group)
-    if student_count >= max_strength:
+    if student_count >= max_strength and max_strength != 0:
         frappe.throw(
             title="Division Full",
             msg="Division {0} has reached maximum strength".format(student_group),
