@@ -393,7 +393,7 @@ def get_payment_plan_discount(payment_plan, doc):
                 component.custom_discount_percentage = calculate_discount(component.amount, dis.discount_amount)
                 component.custom_discount_amount = dis.discount_amount
                 component.custom_amount_after_discount = component.amount - dis.discount_amount
-                grand_total = doc.grand_total - discount_amount
+                grand_total = doc.grand_total - dis.discount_amount
                 grand_total_in_words = str(frappe.utils.in_words(grand_total)).title()
                 doc.grand_total = grand_total
                 doc.grand_total_in_words = grand_total_in_words
