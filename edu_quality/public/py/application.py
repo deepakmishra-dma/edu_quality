@@ -97,6 +97,15 @@ def enroll_student(source_name):
         ignore_permissions=True,
     )
     student_applicant = frappe.get_doc("Student Applicant", source_name)
+    fee_schedule = frappe.get_doc("Fee Schedule", student_applicant.fee_schedule)
+    student_group = get_student_group(student_applicant)
+    student_count = get_student_count(fee_schedule, student_group)
+    max_strength = get_max_strength(student_group)
+    if student_count >= max_strength:
+        frappe.throw(
+            title="Division Full",
+            msg="Division {0} has reached maximum strength".format(student_group),
+        )
 
     # student.school = student_applicant.school
     # student.custom_first_name_of_child = student_applicant.first_name_of_child
@@ -188,7 +197,7 @@ def enroll_student(source_name):
     program_enrollment.program = student_applicant.program
     program_enrollment.academic_year = student_applicant.academic_year
     program_enrollment.academic_term = student_applicant.academic_term
-    program_enrollment.student_group = get_student_group(student_applicant)
+    program_enrollment.student_group = student_group
     program_enrollment.save()
     program_enrollment.submit()
     frappe.publish_realtime(
@@ -201,6 +210,17 @@ def get_student_group(doc):
     filters = {"academic_year": doc.academic_year, "program": doc.program}
     return frappe.db.get_value("Student Group", filters, "name")
 
+
+def get_max_strength(student_group):
+    return frappe.db.get_value("Student Group", student_group, "max_strength")
+
+
+def get_student_count(fee_schedule, student_group): 
+    for sg in fee_schedule.student_groups:
+        if sg.student_group == student_group:
+            return int(sg.total_students)
+    return 0
+    
 
 def add_referral_discount(referred_by):
     try:
