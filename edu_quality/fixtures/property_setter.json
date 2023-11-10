@@ -110,5 +110,21 @@
   "property_type": null,
   "row_name": null,
   "value": "Fresh\nWarm\nFollowUp/Callback\nHot\nCold\nEnrolled\nClosed\nExisting Parents\nOld Leads"
+ },
+ {
+  "default_value": null,
+  "doc_type": "Lead",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocType",
+  "field_name": null,
+  "is_system_generated": 0,
+  "modified": "2023-10-31 08:10:16.687087",
+  "module": "Edu Quality",
+  "name": "Lead-main-states_order",
+  "property": "states_order",
+  "property_type": "Small Text",
+  "row_name": null,
+  "value": "[\"24aa8749da\", \"872c004311\", \"1f0e580cd1\", \"d90d97255a\", \"e7bcbb4592\", \"96584888fa\"]"
  }
 ]
