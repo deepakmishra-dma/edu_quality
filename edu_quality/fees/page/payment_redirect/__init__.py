@@ -39,7 +39,7 @@ def get_payment_details(**kwargs):
                 company = frappe.db.get_value("Fee Category",fee.fees_category,"custom_company")
             else:
                 company = fees.company
-            if "deposit" in description:
+            if "deposit" in description and description != "":
                 fee_type = frappe.db.get_value("Fee Category",fee.fees_category,"type")
                 if fee_type != "Regular":
                     breakup.append({
