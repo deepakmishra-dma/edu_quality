@@ -10,5 +10,6 @@ class SecurityDeposit(Document):
         
             "doctype": "Fee Category",
             "category_name": self.name,
+            'type':"Deposit"
         })
         doc.insert()

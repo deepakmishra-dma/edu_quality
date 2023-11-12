@@ -41,7 +41,7 @@ def get_payment_details(**kwargs):
                 company = fees.company
             if "deposit" in description and description != "":
                 fee_type = frappe.db.get_value("Fee Category",fee.fees_category,"type")
-                if fee_type != "Regular":
+                if fee_type and fee_type!= "Regular":
                     breakup.append({
                         'fees_category': fee.fees_category,
                         'amount':  frappe.utils.fmt_money(amount, currency="INR"),

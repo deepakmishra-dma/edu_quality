@@ -222,7 +222,7 @@ def get_amount(ref_doc, payment_account=None, is_deposit=False, payment_term=Non
         grand_total = 0
         for f in ref_doc.components:
             fee_type = frappe.db.get_value("Fee Category",f.fees_category,"type")
-            if fee_type != "Regular":
+            if fee_type and fee_type!= "Regular":
                 grand_total += f.amount
 
     elif dt == "Fees" and payment_term:

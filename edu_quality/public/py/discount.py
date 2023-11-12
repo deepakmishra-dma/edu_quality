@@ -211,7 +211,7 @@ def payment_plan(doc, method=None):
         initial_payment = 0
         for component in doc.components:
             fee_type = frappe.db.get_value("Fee Category",component.fees_category,"type")
-            if fee_type != "Regular":
+            if fee_type and fee_type!= "Regular":
                 initial_payment = initial_payment +  component.amount
         i=0
         for schedule in pp.payment_schedule:

@@ -99,9 +99,6 @@ def before_save(doc,method=None):
         if not doc.get("school"):
             doc.school = frappe.db.get_value("Student",doc.student,"school")
         old = doc.get_doc_before_save()
-        # if old.workflow_state != doc.workflow_state:
-        #     update_payment_schedule(doc)
-        #     update_payment_request_after_discount(doc)
     except Exception as e:
         frappe.logger("fee").exception(e)
 
@@ -118,11 +115,6 @@ def create_fees(doc,method=None):
                 "fee_schedule": student_applicant.fee_schedule,
                 "company": student_applicant.institution
             })
-            # if student_applicant.application_fees:
-            #     fees.append("components",{
-            #         'fees_category':"Application Fees",
-            #         'amount':student_applicant.application_fees
-            #     })
             if len(student_applicant.fee_components) > 0:
                 for component in student_applicant.fee_components:
                     fees.append("components",{
@@ -165,10 +157,8 @@ class CustomPaymentRequest(PaymentRequest):
             else:
                 fees += component.amount
         if deposits:
-            frappe.logger('deposit').exception(deposits)
             payment_entry(self,ref_doc,deposits,deposits,company.default_payable_account)
         if fees:
-            frappe.logger('deposit').exception(fees)
             return payment_entry(self,ref_doc,fees,fees,company.default_receivable_account)
         
 
