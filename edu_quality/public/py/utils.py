@@ -327,23 +327,13 @@ def is_old_student(student, academic_year):
 
 
 def get_previous_academic_year(academic_year):
-    # Extract the year parts from the current academic year
-    current_year_parts = academic_year.split("-")
-    current_start_year = int(current_year_parts[0])
-    current_end_year = int(current_year_parts[1])
+    if not academic_year:
+        return False
 
-    # Calculate the start year of the previous academic year
-    previous_start_year = current_start_year - 1
-    previous_end_year = current_end_year - 1
+    start_year, end_year = map(int, academic_year.split("-"))
+    previous_academic_year = f"{start_year - 1}-{end_year - 1}"
 
-    # Construct the previous academic year name
-    previous_academic_year_name = f"{previous_start_year}-{previous_end_year}"
-
-    # Check if the previous academic year exists
-    previous_academic_year_exists = frappe.get_value(
-        "Academic Year", {"name": previous_academic_year_name}, "name"
-    )
-    return bool(previous_academic_year_exists)
+    return bool(frappe.get_value("Academic Year", {"name": previous_academic_year}, "name"))
 
 
 # edu_quality.public.py.utils.generate_fields_map
