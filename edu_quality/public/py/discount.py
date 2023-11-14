@@ -226,6 +226,7 @@ def payment_plan(doc, method=None):
                         frappe.logger('initial').exception("only deposit")
                         only_deposit(doc)
                 else:
+                    frappe.logger('initial').exception("combination"+str(initial_payment))
                     payment_amount = payment_amount + initial_payment
                     description = description + " and deposit/application fee"
                     frappe.enqueue(
