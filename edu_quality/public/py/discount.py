@@ -231,7 +231,7 @@ def payment_plan(doc, method=None):
                     description = description + " and deposit/application fee"
                     frappe.enqueue(
                             "edu_quality.public.py.student.create_payment_request",
-                            fees=doc,
+                            fee=doc,
                             term = schedule.payment_term,
                             is_async=True,
                             queue="long",
