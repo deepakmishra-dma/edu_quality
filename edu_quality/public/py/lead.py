@@ -6,6 +6,7 @@ try:
 except ImportError:
     print("Chatnext is not installed")
 
+
 def add_indian_country_code(number):
     try:
         phone_pattern = r"^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$"
@@ -35,7 +36,7 @@ def after_insert(doc, method=None):
 
     doc.contact_doc.save()
     if doc.get("fathers_email"):
-        content = enqueue_email(doc.get("fathers_email"), doc.get("class"))
+        content = enqueue_email(doc)
         if content:
             add_email_activity(doc, content)
 
@@ -46,18 +47,28 @@ def after_insert(doc, method=None):
     pass
 
 
-def enqueue_email(email, program):
+def enqueue_email(doc):
     try:
+        email = doc.get("fathers_email")
+        program = doc.get("class")
         template_name = frappe.db.get_value("Program", program, "custom_email_template")
         email_template = frappe.get_doc("Email Template", template_name)
 
         content = frappe.render_template(
             email_template.get("response_html") or email_template.get("response"), {}
         )
+        send_unsubscribe_message = frappe.get_value(
+            "Email Account", {"default_outgoing": 1}, "send_unsubscribe_message"
+        )
         email_args = {
             "recipients": [email],
             "subject": email_template.get("subject"),
             "message": content,
+            "reference_doctype": doc.get("doctype"),
+            "reference_name": doc.get("name"),
+            "add_unsubscribe_link": send_unsubscribe_message,
+            "unsubscribe_message": frappe._("Click Here"),
+            "delayed": False,
         }
 
         frappe.sendmail(**email_args)
