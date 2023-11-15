@@ -3887,7 +3887,7 @@
     "modified": "2023-10-31 14:17:07.390415",
     "module": "Edu Quality",
     "name": "7d64fbd978",
-    "parent": "Program",
+    "parent": "Class",
     "permlevel": 0,
     "print": 1,
     "read": 1,
