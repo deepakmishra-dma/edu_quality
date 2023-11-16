@@ -2,6 +2,8 @@ import frappe
 import math, random
 import requests
 import urllib
+import re
+
 try:
     from nextai.funnel.custom_trigger import trigger_event
 except ImportError:
@@ -46,11 +48,15 @@ def trigger_funnel_event(doc, event_name):
     except Exception as e:
         return False
 
+
 def is_deposit(fees, term):
     deposit = False
     if fees.payment_schedule:
         for schedule in fees.payment_schedule:
-            if schedule.payment_term == term and "deposit" in schedule.description.lower():
+            if (
+                schedule.payment_term == term
+                and "deposit" in schedule.description.lower()
+            ):
                 deposit = True
     return deposit
 
@@ -172,7 +178,7 @@ def send_otp(fee, otp):
         elif student.custom_guardians_mobile_no:
             mobile = student.custom_guardians_mobile_no
         if mobile:
-            sms_otp(mobile,otp)
+            sms_otp(mobile, otp)
         if email:
             email_otp(email, otp)
         # whatsapp message
@@ -186,10 +192,13 @@ def email_otp(email, otp):
     message = f"OTP for Changing Payment Plan is {otp}"
     frappe.sendmail(recipients=email, subject=subject, message=message, delayed=False)
 
+
 @frappe.whitelist(allow_guest=True)
 def sms_otp(number, otp):
     api_key = "***REMOVED-SMS-KEY***"
-    message = f"{otp} is OTP for updating child details (JE08) initiated by you -Team Walnut"
+    message = (
+        f"{otp} is OTP for updating child details (JE08) initiated by you -Team Walnut"
+    )
     template_id = 1007162244812510707
     sender = "WLTSCL"
     encoded_message = requests.utils.quote(message)
@@ -300,7 +309,7 @@ def handle_undertaking_submission(**kwargs):
         try:
             trigger_event(new_doc, "rules_and_regulation_submission")
         except Exception as e:
-            frappe.logger('edu_quality').exception(e)
+            frappe.logger("edu_quality").exception(e)
 
 
 def get_undertaking_submission_pdf(student):
@@ -349,3 +358,35 @@ def generate_fields_map(docName="Lead"):
         fields_dict[i.get("fieldname")] = True
         fields_array.append(i.get("fieldname"))
     return {"dict": fields_dict, "array": fields_array}
+
+
+def convert_time_string_to_hours(time_string):
+    if not time_string:
+        return None
+    hours, minutes, seconds_and_ms = time_string.split(":")
+    seconds, milliseconds = seconds_and_ms.split(".")
+
+    # Convert hours, minutes, seconds, and milliseconds to integers
+    hours = int(hours)
+    minutes = int(minutes)
+    seconds = int(seconds)
+    milliseconds = int(milliseconds)
+
+    # Calculate the total time in hours
+    total_hours = hours + (minutes / 60) + (seconds / 3600) + (milliseconds / 3600000)
+    return total_hours
+
+
+def add_indian_country_code(number):
+    try:
+        phone_pattern = r"^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$"
+        is_91 = re.findall(phone_pattern, number)[0][0]
+
+        if is_91:
+            return number
+        else:
+            return "91" + number
+
+    except Exception as e:
+        frappe.log_error("Error adding indian country code", str(e))
+        return number
