@@ -48,6 +48,12 @@ def get_payment_details(**kwargs):
                         'company': company
                     })
                     is_deposit = True
+                else:
+                    breakup.append({
+                        'fees_category': fee.fees_category,
+                        'amount':  frappe.utils.fmt_money(amount *(portion/100), currency="INR"),
+                        'company': company
+                    })
             else:
             
                 breakup.append({
