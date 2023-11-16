@@ -1,25 +1,10 @@
 import frappe
-import re
 
+from edu_quality.public.py.utils import add_indian_country_code
 try:
     from nextai.funnel.custom_trigger import trigger_event
 except ImportError:
     print("Chatnext is not installed")
-
-
-def add_indian_country_code(number):
-    try:
-        phone_pattern = r"^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$"
-        is_91 = re.findall(phone_pattern, number)[0][0]
-
-        if is_91:
-            return number
-        else:
-            return "+91" + number
-
-    except Exception as e:
-        frappe.log_error("Error adding indian country code", str(e))
-        return number
 
 
 def after_insert(doc, method=None):
