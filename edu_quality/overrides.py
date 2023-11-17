@@ -120,6 +120,12 @@ class CustomPaymentRequest(PaymentRequest):
                 "payment_method": kwargs.get("payment_method")
             }
         )
+    
+    def on_payment_authorized(self, status=None):
+        if not status:
+            return
+        if status in ["Authorized", "Completed"]:
+            self.set_as_paid()
 
 
 def payment_entry(doc, ref_doc, party_amount, paid_from, paid_to, company, cost_center, fee_categories=None):
