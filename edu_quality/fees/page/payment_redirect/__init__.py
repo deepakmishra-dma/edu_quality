@@ -23,6 +23,7 @@ def get_payment_details(**kwargs):
     payment_request = frappe.get_value("Payment Request",{'payment_hash': kwargs.get('doc')})
     payment_request = frappe.get_doc("Payment Request",payment_request)
     fees = frappe.get_doc("Fees",payment_request.reference_name)
+    due_date = ""
     breakup = []
     portion = 100
     is_deposit = False
@@ -30,6 +31,7 @@ def get_payment_details(**kwargs):
         description = ""
         for schedule in fees.payment_schedule:
             if schedule.payment_term == payment_request.payment_term:
+                due_date = schedule.due_date
                 portion = schedule.invoice_portion 
                 description = schedule.description
         for fee in fees.components:
@@ -48,7 +50,14 @@ def get_payment_details(**kwargs):
                         'company': company
                     })
                     is_deposit = True
+                else:
+                    breakup.append({
+                        'fees_category': fee.fees_category,
+                        'amount':  frappe.utils.fmt_money(amount *(portion/100), currency="INR"),
+                        'company': company
+                    })
             else:
+            
                 breakup.append({
                     'fees_category': fee.fees_category,
                     'amount':  frappe.utils.fmt_money(amount *(portion/100), currency="INR"),
@@ -71,17 +80,11 @@ def get_payment_details(**kwargs):
                     'company': company
                 })
                 is_deposit = True
-            else:
-                breakup.append({
-                    'fees_category': fee.fees_category,
-                    'amount':  frappe.utils.fmt_money(amount *(portion/100), currency="INR"),
-                    'company': company
-                })
 
     return {
         'student_name': fees.student_name,
         'institution': fees.company,
-        'due_date': fees.due_date,
+        'due_date': due_date,
         'class': fees.program,
         'student_id': fees.student,
         'due_amount': frappe.utils.fmt_money(payment_request.grand_total,currency="INR"),

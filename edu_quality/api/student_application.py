@@ -7,6 +7,14 @@ import time
 import uuid
 import pytz
 import re
+from frappe import _, qb, query_builder
+from frappe.query_builder import Criterion, functions
+from edu_quality.public.py.utils import (
+    convert_time_string_to_hours,
+    add_indian_country_code,
+)
+from itertools import chain
+
 
 CONFIG = {
     "WALSH_API_BASE": "https://testwalsh.walnutedu.in/indexCI.php",
@@ -437,7 +445,10 @@ def upload_to_mgr(doc):
         "preferred_batch_time": doc.get("batch_time") or " ",
         "academic_year": doc.get("academic_year") or " ",
     }
-    mgr_url = frappe.db.get_single_value("MGR Settings", "url") or "https://test.walnutedu.in/indexCI.php"
+    mgr_url = (
+        frappe.db.get_single_value("MGR Settings", "url")
+        or "https://test.walnutedu.in/indexCI.php"
+    )
     response = requests.post(
         url=f"{mgr_url}/student_lms/post_student_lms_data",
         json=json.loads(json.dumps(JSON, default=default)),
@@ -577,6 +588,9 @@ id_to_location_map_fb = {
 @frappe.whitelist(allow_guest=True)
 def create_student_lead(**kwargs):
     # return kwargs
+    kwargs["fathers_name"] = kwargs.get("fathers_name", "").strip()
+    kwargs["first_name"] = kwargs.get("first_name", "").strip()
+
     kwargs["fathers_name"] = (
         "father of " + kwargs.get("first_name")
         if kwargs.get("fathers_name") == kwargs.get("first_name")
@@ -669,7 +683,7 @@ def create_student_lead(**kwargs):
     lead_doc.append(
         "notes",
         {
-            "note": f'<div class="ql-editor read-mode"><p>Lead Registered from <b>{kwargs.get("source",source).capitalize()} {("at location" + kwargs.get("page_location")) if kwargs.get("page_location") else ""}</b> at <b>{datetime.datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%d-%m-%Y , %H:%M IST")}</b> </p></div>'
+            "note": f'<div class="ql-editor read-mode"><p>Lead Registered from <b>{kwargs.get("source",source).capitalize()} {("at location " + kwargs.get("page_location")) if kwargs.get("page_location") else ""}</b> at <b>{datetime.datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%d-%m-%Y , %H:%M IST")}</b> </p></div>'
         },
     )
     lead_doc = lead_doc.insert(ignore_permissions=True)
@@ -680,6 +694,9 @@ def create_student_lead(**kwargs):
 @frappe.whitelist(allow_guest=True)
 def create_student_lead_fb(**kwargs):
     # return kwargs
+    kwargs["fathers_name"] = kwargs.get("fathers_name", "").strip()
+    kwargs["first_name"] = kwargs.get("first_name", "").strip()
+
     kwargs["fathers_name"] = (
         "father of " + kwargs.get("first_name")
         if kwargs.get("fathers_name") == kwargs.get("first_name")
@@ -767,30 +784,239 @@ def create_student_lead_fb(**kwargs):
     lead_doc.append(
         "notes",
         {
-            "note": f'<div class="ql-editor read-mode"><p>Lead Registered from <b>{kwargs.get("source",source).capitalize()}{("at location" + kwargs.get("page_location")) if kwargs.get("page_location") else ""}</b> at <b>{datetime.datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%d-%m-%Y , %H:%M IST")}</b> </p></div>'
+            "note": f'<div class="ql-editor read-mode"><p>Lead Registered from <b>{kwargs.get("source",source).capitalize()}{("at location " + kwargs.get("page_location")) if kwargs.get("page_location") else ""}</b> at <b>{datetime.datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%d-%m-%Y , %H:%M IST")}</b> </p></div>'
         },
     )
     lead_doc = lead_doc.insert(ignore_permissions=True)
     return lead_doc
 
 
-def process_lead(source, lead, page_location):
+def process_lead(source, lead, page_location,detail=""):
     lead.status = "Hot"
     source = source if source else "Not Known"
     if source.lower() == "school" or id_to_location_map_fb.get(
         str(source).lower(), None
     ):
         lead.append("custom_lead_sub_status", {"sub_status": "Hot-School Visit Done"})
-        lead.custom_walk_in_1_action_date = datetime.datetime.now(
-            pytz.timezone("Asia/Kolkata")
-        ).strftime("%Y-%m-%d")
+        insert_walk_in_date(lead)
+
+    if source == "school_walkin":
+        lead.append("custom_lead_sub_status", {"sub_status": "Hot-School Visit Done"})
+        insert_walk_in_date(lead)
+        # if lead 3 there replace it otherwise find first empty and put there
 
     lead.append(
         "notes",
         {
-            "note": f'<div class="ql-editor read-mode"><p>Lead Re-Registered from <b>{source.capitalize()}  {("at location" + page_location.lower()) if page_location else ""}</b> at <b>{datetime.datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%d-%m-%Y , %H:%M IST")}</b> </p></div>'
+            "note": f'<div class="ql-editor read-mode"><p>Lead Re-Registered from <b>{source.capitalize()}  {("at location " + page_location.lower()) if page_location else ""}</b> at <b>{datetime.datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%d-%m-%Y , %H:%M IST")}</b> </p>{ " "+detail if detail else ""}</div>'
         },
     )
     lead.custom_re_enquired_count += 1
     lead.save(ignore_permissions=True)
     return lead
+
+
+def insert_walk_in_date(lead):
+    if not lead.get("custom_walk_in_3_action_date"):
+        lead.custom_walk_in_3_action_date = datetime.datetime.now(
+            pytz.timezone("Asia/Kolkata")
+        ).strftime("%Y-%m-%d")
+    else:
+        for i in range(1, 4):
+            if not lead.get(f"custom_walk_in_{i}_action_date"):
+                setattr(
+                    lead,
+                    f"custom_walk_in_{i}_action_date",
+                    datetime.datetime.now(pytz.timezone("Asia/Kolkata")).strftime(
+                        "%Y-%m-%d"
+                    ),
+                )
+                break
+
+
+# api for only updating all leads belonging to phone number and processing them
+@frappe.whitelist(allow_guest=True)
+def handle_school_visit(**kwargs):
+    school_visited = frappe.db.get_value(
+        "School",
+        {"location": id_to_location_map_fb.get(str(kwargs.get("location")).lower())},
+        "name",
+    )
+    existing_leads = frappe.db.get_list(
+        "Lead",
+        filters=[
+            [
+                "fathers_phone",
+                "Like",
+                f'%{remove_indian_country_code(kwargs.get("phone_number"))}%',
+            ],
+            ["status", "NOT IN", ["Closed", "Enrolled"]],
+            ["center", "Like", school_visited],
+        ],
+        ignore_permissions=True,
+    )
+    # return len(existing_leads)
+    # unoptimized to reduce from n+1 queries to 1
+    if len(existing_leads):
+        for lead in existing_leads:
+            lead_doc = frappe.get_doc("Lead", lead.get("name"))
+            if not lead_doc.custom_lead_scheduled:
+                lead_doc.custom_walked_out_time = frappe.utils.now()
+                lead_doc.custom_lead_scheduled = 1
+            process_lead(
+                "school_walkin", lead_doc, f"whatsapp {kwargs.get('location')}"
+            )
+
+
+@frappe.whitelist(allow_guest=True)
+def get_and_schedule_pending_walkouts():
+    try:
+        current = frappe.utils.now()
+        current_datetime = datetime.datetime.strptime(current, "%Y-%m-%d %H:%M:%S.%f")
+        lead = qb.DocType("Lead")
+
+        timediff = query_builder.CustomFunction("TIMEDIFF", ["cur_date", "due_date"])
+        hour = query_builder.CustomFunction("Hour", ["date"])
+
+        query = (
+            qb.from_(lead)
+            .select(
+                lead.fathers_phone,
+                lead.name,
+                lead.center,
+            )
+            .distinct()
+            .where(
+                (
+                    hour(
+                        timediff(
+                            current_datetime,
+                            lead.custom_walked_out_time,
+                        )
+                    )
+                    >= 4
+                )
+                & (lead.custom_lead_scheduled == 1)
+            )
+        )
+
+        leads = query.run(as_dict=True)
+        for i in leads:
+            frappe.enqueue(
+                "edu_quality.api.student_application.send_feedback_after_walkout",
+                name=i.get("name"),
+                school=i.get("center"),
+                phone_number=i.get("fathers_phone"),
+                queue="long",
+                timeout=4000,
+            )
+
+        return "Queuing"
+    except Exception as e:
+        frappe.logger("scheduling pending workflow for walkin").exception(e)
+
+
+@frappe.whitelist(allow_guest=True)
+def send_feedback_after_walkout(name, school, phone_number):
+    lead_doc = frappe.get_doc("Lead", name)
+    lead_doc.custom_walked_out_time = None
+    lead_doc.custom_lead_scheduled = 0
+
+    botpress_url = frappe.db.get_single_value(
+        "Whatsapp Settings", "botpress_webhook_url"
+    )
+    business_account_id = frappe.db.get_single_value(
+        "Whatsapp Settings", "business_account_id"
+    )
+    phone_number_id = frappe.db.get_single_value("Whatsapp Settings", "phone_number_id")
+    contact = frappe.get_all(
+        "Contact",
+        filters={"whatsapp_id": add_indian_country_code(str(phone_number))},
+        fields=["*"],
+        limit_page_length=1,
+    )
+
+    if len(contact) == 0:
+        frappe.log_error("Error No contact found for phone number " + str(phone_number))
+        return "Error contact not found"
+    contact = contact[0]
+    payload = {
+        "object": "whatsapp_business_account",
+        "entry": [
+            {
+                "id": business_account_id,
+                "changes": [
+                    {
+                        "value": {
+                            "messaging_product": "whatsapp",
+                            "metadata": {
+                                "phone_number_id": phone_number_id,
+                            },
+                            "contacts": [
+                                {
+                                    "profile": {"name": "NAME"},
+                                    "wa_id": contact.get("whatsapp_id"),
+                                }
+                            ],
+                            "messages": [
+                                {
+                                    "from": contact.get("whatsapp_id"),
+                                    "timestamp": datetime.datetime.now(
+                                        pytz.timezone("Asia/Kolkata")
+                                    ).isoformat(),
+                                    "id": str(uuid.uuid1()),
+                                    "text": {
+                                        "body": f"Start walkin feedback flow {school}"
+                                    },
+                                    "type": "text",
+                                }
+                            ],
+                        },
+                        "field": "messages",
+                    }
+                ],
+            }
+        ],
+        "contact": contact,
+    }
+
+    requests.post(
+        botpress_url, headers={"Content-Type": "application/json"}, json=json.loads(json.dumps(payload,default=default))
+    )
+    lead_doc.save(ignore_permissions=True)
+
+@frappe.whitelist()
+def handle_feedback(**kwargs):
+    school_visited = frappe.db.get_value(
+        "School",
+        {"location": id_to_location_map_fb.get(str(kwargs.get("location")).lower())},
+        "name",
+    )
+    existing_leads = frappe.db.get_list(
+        "Lead",
+        filters=[
+            [
+                "fathers_phone",
+                "Like",
+                f'%{remove_indian_country_code(kwargs.get("phone_number"))}%',
+            ],
+            ["status", "NOT IN", ["Closed", "Enrolled"]],
+            ["center", "Like", school_visited],
+        ],
+        ignore_permissions=True,
+    )
+    # return len(existing_leads)
+    # unoptimized to reduce from n+1 queries to 1
+    if len(existing_leads):
+        for lead in existing_leads:
+            lead_doc = frappe.get_doc("Lead", lead.get("name"))
+            process_lead(
+                "feedback from whatsapp", lead_doc, f"whatsapp {kwargs.get('location')}",f"""
+<div>
+<b>Feedback: {kwargs.get("feedback_choice")}</b>
+<p>
+{kwargs.get('call_me_time',"No call time specified")},<br/>{kwargs.get("no_admission_reason","Not selected")},<br/>{kwargs.get("visiting_date","No visiting date specified")}
+</p>
+</div>"""
+
+            )

@@ -69,23 +69,21 @@ def get_students_group(student_group):
         return []
 
 
-def create_payment_request(fees,term=None):
+def create_payment_request(fee,term=None):
     try:
-        for f in fees:
-            fee = frappe.get_doc("Fees", f.name)
-            if not frappe.db.exists(
-                "Payment Request",
-                {"reference_doctype": "Fees", "reference_docname": fee.name},
-            ):
-                make_payment_request(
-                    party_type="Student",
-                    party=fee.student,
-                    dt="Fees",
-                    dn=fee.name,
-                    payment_term = term,
-                    recipient_id=fee.student_email,
-                    submit_doc=True,
-                    use_dummy_message=True,
-                )
+        if not frappe.db.exists(
+            "Payment Request",
+            {"reference_doctype": "Fees", "reference_docname": fee.name},
+        ):
+            make_payment_request(
+                party_type="Student",
+                party=fee.student,
+                dt="Fees",
+                dn=fee.name,
+                payment_term = term,
+                recipient_id=fee.student_email,
+                submit_doc=True,
+                use_dummy_message=True,
+            )
     except Exception as e:
         frappe.logger("edu_quality").exception(e)

@@ -38,7 +38,7 @@ doctype_js = {
     "Student": "public/js/student.js",
 }
 doctype_list_js = {
-    "Student Applicant" : "public/js/list/student_applicant_list.js",
+    "Student Applicant": "public/js/list/student_applicant_list.js",
     "Lead": "public/js/list/lead_list.js",
     "Student": "public/js/list/student_list.js",
 }
@@ -53,7 +53,7 @@ doctype_list_js = {
 
 # website user home page (by Role)
 # role_home_page = {
-#	"Role": "home_page"
+# 	"Role": "home_page"
 # }
 
 # Generators
@@ -67,8 +67,8 @@ doctype_list_js = {
 
 # add methods and filters to jinja environment
 # jinja = {
-#	"methods": "edu_quality.utils.jinja_methods",
-#	"filters": "edu_quality.utils.jinja_filters"
+# 	"methods": "edu_quality.utils.jinja_methods",
+# 	"filters": "edu_quality.utils.jinja_filters"
 # }
 
 # Installation
@@ -94,11 +94,11 @@ doctype_list_js = {
 # Permissions evaluated in scripted ways
 
 permission_query_conditions = {
-	"Contact": "edu_quality.permissions.contacts.contact_query",
+    "Contact": "edu_quality.permissions.contacts.contact_query",
 }
 #
 # has_permission = {
-#	"Event": "frappe.desk.doctype.event.event.has_permission",
+# 	"Event": "frappe.desk.doctype.event.event.has_permission",
 # }
 
 # DocType Class
@@ -106,9 +106,9 @@ permission_query_conditions = {
 # Override standard doctype classes
 
 override_doctype_class = {
-	"Payment Request": "edu_quality.overrides.CustomPaymentRequest",
+    "Payment Request": "edu_quality.overrides.CustomPaymentRequest",
     "Fee Schedule": "edu_quality.public.py.fee_schedule.CustomFeeSchedule",
-    "Program Enrollment": "edu_quality.public.py.enrollment_override.CustomProgramEnrollment"
+    "Program Enrollment": "edu_quality.public.py.enrollment_override.CustomProgramEnrollment",
 }
 
 # Document Events
@@ -116,69 +116,56 @@ override_doctype_class = {
 # Hook on document methods and events
 
 doc_events = {
-	"Student Applicant" :{
-        "before_save":"edu_quality.public.py.application.before_save",
-        "after_insert":"edu_quality.public.py.application.after_insert",
-        'autoname': "edu_quality.public.py.application.autoname",
+    "Student Applicant": {
+        "before_save": "edu_quality.public.py.application.before_save",
+        "after_insert": "edu_quality.public.py.application.after_insert",
+        "autoname": "edu_quality.public.py.application.autoname",
     },
-    "Program Enrollment":{
-        "on_submit":"edu_quality.public.py.fee.create_fees"
-    },
-    "Fees":{
-        "after_insert":"edu_quality.public.py.fee.after_insert",
-        "before_submit":"edu_quality.public.py.fee.before_submit",
-        "before_save":"edu_quality.public.py.fee.before_save",
-        "before_update_after_submit":"edu_quality.public.py.fee.before_update"
+    "Program Enrollment": {"on_submit": "edu_quality.public.py.fee.create_fees"},
+    "Fees": {
+        "after_insert": "edu_quality.public.py.fee.after_insert",
+        "before_submit": "edu_quality.public.py.fee.before_submit",
+        "before_save": "edu_quality.public.py.fee.before_save",
+        "before_update_after_submit": "edu_quality.public.py.fee.before_update",
     },
     "Payment Request": {
-        "before_save":"edu_quality.public.py.payment_request.before_save",
+        "before_save": "edu_quality.public.py.payment_request.before_save",
     },
-    "Student":{
-        'autoname': "edu_quality.public.py.student.autoname"
+    "Student": {"autoname": "edu_quality.public.py.student.autoname"},
+    "Custom Field": {"after_insert": "edu_quality.public.py.fixtures.custom_fields"},
+    "Custom DocPerm": {
+        "after_insert": "edu_quality.public.py.fixtures.custom_doc_perm"
     },
-    "Custom Field":{
-        "after_insert" : "edu_quality.public.py.fixtures.custom_fields"
-    },
-    "Custom DocPerm":{
-        "after_insert" : "edu_quality.public.py.fixtures.custom_doc_perm"
-    },
-    "Lead":{
-        "after_insert":"edu_quality.public.py.lead.after_insert"
-    },
-    "Payment Entry":{
-        "autoname":"edu_quality.public.py.payment_entry.autoname"
-    },
+    "Lead": {"after_insert": "edu_quality.public.py.lead.after_insert"},
+    "Payment Entry": {"autoname": "edu_quality.public.py.payment_entry.autoname"},
 }
 
 # Scheduled Tasks
 # ---------------
 scheduler_events = {
-    "cron": {
-        "0 * * * *": [
-            "edu_quality.tasks.cron"
-        ]
-    },
+    "all": ["edu_quality.api.student_application.get_and_schedule_pending_walkouts"],
+    "cron": {"0 * * * *": ["edu_quality.tasks.cron"]},
     "daily": [
-		"edu_quality.tasks.time_based",
-        "edu_quality.tasks.create_payment_request_before_due_date"
-	],
+        "edu_quality.tasks.time_based",
+        "edu_quality.tasks.create_payment_request_before_due_date",
+    ],
 }
 # scheduler_events = {
-#	"all": [
-#		"edu_quality.tasks.all"
-#	],
-#	"daily": [
-#		"edu_quality.tasks.daily"
-#	],
-#	"hourly": [
-#		"edu_quality.tasks.hourly"
-#	],
-#	"weekly": [
-#		"edu_quality.tasks.weekly"
-#	],
-#	"monthly": [
-#		"edu_quality.tasks.monthly"
-#	],
+# 	"all": [
+# 		"edu_quality.tasks.all"
+# 	],
+# 	"daily": [
+# 		"edu_quality.tasks.daily"
+# 	],
+# 	"hourly": [
+# 		"edu_quality.tasks.hourly"
+# 	],
+# 	"weekly": [
+# 		"edu_quality.tasks.weekly"
+# 	],
+# 	"monthly": [
+# 		"edu_quality.tasks.monthly"
+# 	],
 # }
 
 # Testing
@@ -190,14 +177,14 @@ scheduler_events = {
 # ------------------------------
 #
 # override_whitelisted_methods = {
-#	"frappe.desk.doctype.event.event.get_events": "edu_quality.event.get_events"
+# 	"frappe.desk.doctype.event.event.get_events": "edu_quality.event.get_events"
 # }
 #
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,
 # along with any modifications made in other Frappe apps
 # override_doctype_dashboards = {
-#	"Task": "edu_quality.task.get_dashboard_data"
+# 	"Task": "edu_quality.task.get_dashboard_data"
 # }
 
 # exempt linked doctypes from being automatically cancelled
@@ -223,104 +210,77 @@ scheduler_events = {
 # --------------------
 
 # user_data_fields = [
-#	{
-#		"doctype": "{doctype_1}",
-#		"filter_by": "{filter_by}",
-#		"redact_fields": ["{field_1}", "{field_2}"],
-#		"partial": 1,
-#	},
-#	{
-#		"doctype": "{doctype_2}",
-#		"filter_by": "{filter_by}",
-#		"partial": 1,
-#	},
-#	{
-#		"doctype": "{doctype_3}",
-#		"strict": False,
-#	},
-#	{
-#		"doctype": "{doctype_4}"
-#	}
+# 	{
+# 		"doctype": "{doctype_1}",
+# 		"filter_by": "{filter_by}",
+# 		"redact_fields": ["{field_1}", "{field_2}"],
+# 		"partial": 1,
+# 	},
+# 	{
+# 		"doctype": "{doctype_2}",
+# 		"filter_by": "{filter_by}",
+# 		"partial": 1,
+# 	},
+# 	{
+# 		"doctype": "{doctype_3}",
+# 		"strict": False,
+# 	},
+# 	{
+# 		"doctype": "{doctype_4}"
+# 	}
 # ]
 
 # Authentication and authorization
 # --------------------------------
 
 # auth_hooks = [
-#	"edu_quality.auth.validate"
+# 	"edu_quality.auth.validate"
 # ]
 
 fixtures = [
-    {"dt": "Server Script", "filters": [
-        ["module","in",["Edu Quality","Fees"]]
-    ]},
-    {"dt": "Property Setter", "filters": [
-        ["module","in",["Edu Quality","Fees"]]
-    ]},
-    {"dt": "Client Script", "filters": [
-        ["module","in",["Edu Quality","Fees"]]
-    ]},    
-    {"dt":"DocType Layout"},
-    {"dt":"Lead Source"}, {"dt":"Student Batch Name"},
-    {"dt": "Custom Field", "filters": [["module","=","Edu Quality"]]},   
+    {"dt": "Server Script", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
+    {"dt": "Property Setter", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
+    {"dt": "Client Script", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
+    {"dt": "DocType Layout"},
+    {"dt": "Lead Source"},
+    {"dt": "Student Batch Name"},
+    {"dt": "Custom Field", "filters": [["module", "=", "Edu Quality"]]},
     {"dt": "Web Page"},
-    {"dt":"Accounting Dimension"},
+    {"dt": "Accounting Dimension"},
     {
         "dt": "Role",
+        "filters": [["name", "in", ["Head Administration", "Councellor", "Teacher"]]],
+    },
+    {"dt": "Custom DocPerm", "filters": [["module", "=", "Edu Quality"]]},
+    {"dt": "Program"},
+    {"dt": "Lead Sub Status"},
+    {"dt": "School"},
+    {"dt": "Academic Year"},
+    {"dt": "Funnel Node", "filters": [["class_name", "=", "edu_quality"]]},
+    {"dt": "Funnel"},
+    {"dt": "Email Template"},
+    {"dt": "Letter Head"},
+    {
+        "dt": "Workspace",
         "filters": [
             [
                 "name",
                 "in",
-                ["Head Administration",
-                 "Councellor",
-                 "Teacher"
-                ]
+                [
+                    "Home",
+                    "Walnut Accounts",
+                    "Student Management",
+                    "Fees Setup",
+                    "Walnut Analytics Dashboard",
+                ],
             ]
-        ]
+        ],
     },
     {
-        "dt": "Custom DocPerm",
-        "filters": [["module","=","Edu Quality"]]
-    }, {"dt":"Program"},    {"dt":"Lead Sub Status"},{"dt":"School"},{"dt":"Academic Year"},
-    {"dt": "Funnel Node", "filters": [["class_name","=","edu_quality"]]}, 
-    {"dt": "Funnel"}, 
-    {"dt":"Email Template"},
-    {"dt":"Letter Head"},
-    {'dt':"Workspace",
-     "filters": [
-            [
-                "name",
-                "in",
-                ["Home","Walnut Accounts",
-                 "Student Management",
-                 "Fees Setup",
-                 "Walnut Analytics Dashboard"
-                ]
-            ]
-        ]
+        "dt": "Custom HTML Block",
     },
-       {'dt':"Custom HTML Block",
-
-    },
-    {'dt':"Module Profile",
-     "filters": [
-            [
-                "name",
-                "in",
-                ["Councellor"
-                ]
-            ]
-        ]
-    },
-    {'dt':"Role Profile",
-     "filters": [
-            [
-                "name",
-                "in",
-                ["Councellor"]
-            ]
-        ]
-    }
+    {"dt": "Module Profile", "filters": [["name", "in", ["Councellor"]]]},
+    {"dt": "Role Profile", "filters": [["name", "in", ["Councellor"]]]},
 ]
 
 
