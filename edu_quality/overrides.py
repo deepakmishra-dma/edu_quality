@@ -46,12 +46,21 @@ class CustomPaymentRequest(PaymentRequest):
             paid_from = frappe.get_value(
                 "Account", {"company": company, "account_type": "Receivable"}, ["name"]
             )
-            amount = component.custom_amount_after_discount
-            amount = amount if amount else component.amount
+            amount = component.custom_amount_after_discount or component.amount
             if self.payment_term:
+                is_deposit = False
                 for schedule in fees.payment_schedule:
                     if schedule.payment_term == self.payment_term:
-                        amount = flt((schedule.invoice_portion/100) * amount,2)
+                        if "deposit" in schedule.description and fee_type != "Regular":
+                            amount = flt(amount, 2)
+                        elif fee_type == "Regular":
+                            amount = flt((schedule.invoice_portion/100) * amount,2)
+                        elif fee_type != "Regular":
+                            is_deposit = True
+
+                # flag for deposit, if it is not 1st term
+                if is_deposit:
+                    continue
 
                 if paid_from_dict.get(paid_from) is not None:
                     paid_from_dict[paid_from] += amount
