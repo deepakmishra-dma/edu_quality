@@ -134,6 +134,7 @@ def create_student_application(**args):
         student_application.lms_id = created_mgr_lead.get("ID")
         # lead_application.lead_status = "Enrolled"
         lead_application.status = "Enrolled"
+        lead_application.flags.ignore_mandatory = True
         lead_application.save()
         student_application.insert()
         frappe.msgprint(("Upload to MGR successful"))
@@ -609,7 +610,7 @@ def create_student_lead(**kwargs):
         "Lead",
         filters={
             "first_name": student_name.get("first_name"),
-            "fathers_name": kwargs.get("fathers_name"),
+            # "fathers_name": kwargs.get("fathers_name"),
             "fathers_phone": remove_indian_country_code(
                 str(kwargs.get("fathers_phone"))
             ),
@@ -686,7 +687,7 @@ def create_student_lead(**kwargs):
             "note": f'<div class="ql-editor read-mode"><p>Lead Registered from <b>{kwargs.get("source",source).capitalize()} {("at location " + kwargs.get("page_location")) if kwargs.get("page_location") else ""}</b> at <b>{datetime.datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%d-%m-%Y , %H:%M IST")}</b> </p></div>'
         },
     )
-    lead_doc = lead_doc.insert(ignore_permissions=True)
+    lead_doc = lead_doc.insert(ignore_permissions=True,ignore_mandatory=True)
     return lead_doc
 
 
@@ -716,7 +717,7 @@ def create_student_lead_fb(**kwargs):
         "Lead",
         filters={
             "first_name": student_name.get("first_name"),
-            "fathers_name": kwargs.get("fathers_name"),
+            # "fathers_name": kwargs.get("fathers_name"),
             "fathers_phone": remove_indian_country_code(kwargs.get("fathers_phone")),
         },
         ignore_permissions=True,
@@ -787,7 +788,7 @@ def create_student_lead_fb(**kwargs):
             "note": f'<div class="ql-editor read-mode"><p>Lead Registered from <b>{kwargs.get("source",source).capitalize()}{("at location " + kwargs.get("page_location")) if kwargs.get("page_location") else ""}</b> at <b>{datetime.datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%d-%m-%Y , %H:%M IST")}</b> </p></div>'
         },
     )
-    lead_doc = lead_doc.insert(ignore_permissions=True)
+    lead_doc = lead_doc.insert(ignore_permissions=True,ignore_mandatory=True)
     return lead_doc
 
 
@@ -812,6 +813,7 @@ def process_lead(source, lead, page_location,detail=""):
         },
     )
     lead.custom_re_enquired_count += 1
+    lead.flags.ignore_mandatory = True
     lead.save(ignore_permissions=True)
     return lead
 
@@ -983,6 +985,7 @@ def send_feedback_after_walkout(name, school, phone_number):
     requests.post(
         botpress_url, headers={"Content-Type": "application/json"}, json=json.loads(json.dumps(payload,default=default))
     )
+    lead_doc.flags.ignore_mandatory = True
     lead_doc.save(ignore_permissions=True)
 
 @frappe.whitelist()
