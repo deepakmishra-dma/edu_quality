@@ -18,5 +18,82 @@ frappe.listview_settings['Student'] = {
             document.execCommand('copy');
             document.body.removeChild(tempTextarea);
         }
+    },
+
+    refresh: function (listview) {
+        listview.page.add_menu_item(__("Import Student"), function () {
+            let d = new frappe.ui.Dialog({
+                title: 'Import Students',
+                fields: [
+                    {
+                        label: 'School',
+                        fieldname: 'school',
+                        fieldtype: 'Link',
+                        options: "School",
+                        reqd: true
+                    },
+                    {
+                        label: 'Academic Year',
+                        fieldname: 'academic_year',
+                        fieldtype: 'Link',
+                        options: "Academic Year",
+                        reqd: true
+                    },
+                    {
+                        label: 'Class',
+                        fieldname: 'program',
+                        fieldtype: 'Link',
+                        options: "Program"
+                    },
+                    {
+                        label: 'Division',
+                        fieldname: 'division',
+                        fieldtype: 'Link',
+                        options: "Student Group"
+                    },
+                    {
+                        label: 'No of Students',
+                        fieldname: 'no_of_students',
+                        fieldtype: 'Select',
+                        options: ['5', '10', '20'],
+                        default: '5'
+                    },
+                ],
+                size: 'large',
+                primary_action_label: 'Submit',
+                primary_action(values) {
+                    frappe.call({
+                        method: "edu_quality.public.py.student.import_student",
+                        type: "POST",
+                        args: {
+                            school: values.school,
+                            program: values.program,
+                            division: values.division,
+                            academic_year: values.academic_year,
+                            no_of_students: values.no_of_students
+                        },
+                        callback: function (response) {
+                            console.log(response);
+                            if (response.message.status == 'success'){
+                                frappe.show_alert({
+                                    message: __(response.message.res),
+                                    indicator: 'green'
+                                });
+                            }else if (response.message.status == 'error'){
+                                frappe.show_alert({
+                                    message: __(response.message.res),
+                                    indicator: 'red'
+                                });
+                            }
+
+                        }
+                    });
+                    d.hide();
+                }
+            });
+
+            d.show();
+            frappe.set_route("List", "Student");
+        });
     }
 }
