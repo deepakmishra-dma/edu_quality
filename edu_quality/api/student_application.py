@@ -586,9 +586,45 @@ id_to_location_map_fb = {
 }
 
 
-@frappe.whitelist(allow_guest=True)
-def create_student_lead(**kwargs):
-    # return kwargs
+def get_existing_leads(first_name, fathers_phone):
+    return frappe.db.get_list(
+        "Lead",
+        filters={
+            "first_name": first_name,
+            # "fathers_name": kwargs.get("fathers_name"),
+            "fathers_phone": remove_indian_country_code(str(fathers_phone)),
+        },
+        ignore_permissions=True,
+    ) or frappe.db.get_list(
+        "Lead",
+        filters={
+            "first_name": "Partial_Lead",
+            "fathers_phone": remove_indian_country_code(str(fathers_phone)),
+        },
+        ignore_permissions=True,
+    )
+
+
+def get_school(location):
+    return frappe.db.get_value(
+        "School",
+        {"location": id_to_location_map_fb.get(str(location).lower(), "")},
+        "name",
+    )
+
+
+def get_class(school_name, class_name):
+    return frappe.db.get_value(
+        "Program",
+        {
+            "school": school_name,
+            "program_name": get_class_without_std(str(class_name)),
+        },
+        "name",
+    )
+
+
+def create_lead(kwargs):
     kwargs["fathers_name"] = kwargs.get("fathers_name", "").strip()
     kwargs["first_name"] = kwargs.get("first_name", "").strip()
 
@@ -606,23 +642,19 @@ def create_student_lead(**kwargs):
             "First Name , Fathers Name or Fathers phone is required"
         )
     student_name = separate_name(kwargs.get("first_name"))
-    existing_leads = frappe.db.get_list(
-        "Lead",
-        filters={
-            "first_name": student_name.get("first_name"),
-            # "fathers_name": kwargs.get("fathers_name"),
-            "fathers_phone": remove_indian_country_code(
-                str(kwargs.get("fathers_phone"))
-            ),
-        },
-        ignore_permissions=True,
+    existing_leads = get_existing_leads(
+        student_name.get("first_name"), kwargs.get("fathers_phone")
     )
+
     if len(existing_leads):
         return process_lead(
             kwargs.get("source"),
             frappe.get_doc("Lead", existing_leads[0].get("name")),
             kwargs.get("page_location", ""),
+            "",
+            kwargs,
         )
+
     source = "Website"
     if source:
         source_doc = frappe.db.get_list(
@@ -635,27 +667,9 @@ def create_student_lead(**kwargs):
         else:
             source = "Others"
 
-    school_name = (
-        frappe.db.get_value(
-            "School",
-            {"location": id_to_location_map_fb.get(str(kwargs.get("school")).lower())},
-            "name",
-        )
-        or kwargs.get("school")
-        or kwargs.get("school")
-    )
-
-    class_name = (
-        frappe.db.get_value(
-            "Program",
-            {
-                "school": school_name,
-                "program_name": get_class_without_std(str(kwargs.get("class"))),
-            },
-            "name",
-        )
-        or kwargs.get("class")
-        or kwargs.get("class")
+    school_name = get_school(kwargs.get("school")) or kwargs.get("school", "")
+    class_name = get_class(school_name, kwargs.get("class", "")) or kwargs.get(
+        "class", ""
     )
 
     lead_doc = frappe.get_doc(
@@ -681,119 +695,35 @@ def create_student_lead(**kwargs):
             "source": source or "Website" or "Others",
         }
     )
+
     lead_doc.append(
         "notes",
         {
             "note": f'<div class="ql-editor read-mode"><p>Lead Registered from <b>{kwargs.get("source",source).capitalize()} {("at location " + kwargs.get("page_location")) if kwargs.get("page_location") else ""}</b> at <b>{datetime.datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%d-%m-%Y , %H:%M IST")}</b> </p></div>'
         },
     )
-    lead_doc = lead_doc.insert(ignore_permissions=True,ignore_mandatory=True)
+
+    lead_doc = lead_doc.insert(ignore_permissions=True, ignore_mandatory=True)
     return lead_doc
 
 
-# to remove
+@frappe.whitelist(allow_guest=True)
+def create_student_lead(**kwargs):
+    # return kwargs
+    return create_lead(kwargs)
+
+
+# to remove just there for backward compatibility to existing places where it is used
 @frappe.whitelist(allow_guest=True)
 def create_student_lead_fb(**kwargs):
-    # return kwargs
-    kwargs["fathers_name"] = kwargs.get("fathers_name", "").strip()
-    kwargs["first_name"] = kwargs.get("first_name", "").strip()
-
-    kwargs["fathers_name"] = (
-        "father of " + kwargs.get("first_name")
-        if kwargs.get("fathers_name") == kwargs.get("first_name")
-        else kwargs.get("fathers_name") or " "
-    )
-
-    if (
-        not kwargs.get("first_name")
-        or not kwargs.get("fathers_name")
-        or not kwargs.get("fathers_phone")
-    ):
-        raise frappe.exceptions.MandatoryError(
-            "First Name , Fathers Name or Fathers phone is required"
-        )
-    student_name = separate_name(kwargs.get("first_name"))
-    existing_leads = frappe.db.get_list(
-        "Lead",
-        filters={
-            "first_name": student_name.get("first_name"),
-            # "fathers_name": kwargs.get("fathers_name"),
-            "fathers_phone": remove_indian_country_code(kwargs.get("fathers_phone")),
-        },
-        ignore_permissions=True,
-    )
-    if len(existing_leads):
-        return process_lead(
-            kwargs.get("source"),
-            frappe.get_doc("Lead", existing_leads[0].get("name")),
-            kwargs.get("page_location", ""),
-        )
-    source = "Facebook"
-    if source:
-        source_doc = frappe.db.get_list(
-            "Lead Source",
-            filters={"source_name": kwargs.get("source", "Facebook")},
-            ignore_permissions=True,
-        )
-        if len(source_doc):
-            source = source_doc[0].get("name", None)
-        else:
-            source = "Others"
-    school_name = (
-        frappe.db.get_value(
-            "School",
-            {"location": id_to_location_map_fb.get(str(kwargs.get("school")).lower())},
-            "name",
-        )
-        or kwargs.get("school")
-        or kwargs.get("school")
-    )
-
-    class_name = (
-        frappe.db.get_value(
-            "Program",
-            {
-                "school": school_name,
-                "program_name": get_class_without_std(str(kwargs.get("class"))),
-            },
-            "name",
-        )
-        or kwargs.get("class")
-        or kwargs.get("class")
-    )
-
-    lead_doc = frappe.get_doc(
-        {
-            "doctype": "Lead",
-            "first_name": student_name.get("first_name"),
-            "last_name": student_name.get("last_name"),
-            "middle_name": student_name.get("middle_name"),
-            "fathers_name": kwargs.get("fathers_name"),
-            "fathers_email": kwargs.get("father_email_id")
-            or kwargs.get("fathers_email"),
-            "fathers_phone": remove_indian_country_code(kwargs.get("fathers_phone")),
-            "mothers_name": " ",
-            "academic_year": kwargs.get("academic_year") or "2024-2025",
-            "school_from_lead_source": kwargs.get("school"),
-            "center": school_name,
-            "class": class_name,
-            "class_from_lead_source": kwargs.get("class"),
-            "custom_previous_school": kwargs.get("current_school", ""),
-            "source": source or "Facebook",
-        }
-    )
-    lead_doc.append(
-        "notes",
-        {
-            "note": f'<div class="ql-editor read-mode"><p>Lead Registered from <b>{kwargs.get("source",source).capitalize()}{("at location " + kwargs.get("page_location")) if kwargs.get("page_location") else ""}</b> at <b>{datetime.datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%d-%m-%Y , %H:%M IST")}</b> </p></div>'
-        },
-    )
-    lead_doc = lead_doc.insert(ignore_permissions=True,ignore_mandatory=True)
-    return lead_doc
+    return create_lead(kwargs)
 
 
-def process_lead(source, lead, page_location,detail=""):
-    lead.status = "Hot"
+def process_lead(source, lead, page_location, detail="", kwargs={}):
+    if lead.first_name != "Partial Lead":
+        lead.status = "Hot"
+        lead.custom_re_enquired_count += 1
+
     source = source if source else "Not Known"
     if source.lower() == "school" or id_to_location_map_fb.get(
         str(source).lower(), None
@@ -805,6 +735,41 @@ def process_lead(source, lead, page_location,detail=""):
         lead.append("custom_lead_sub_status", {"sub_status": "Hot-School Visit Done"})
         insert_walk_in_date(lead)
         # if lead 3 there replace it otherwise find first empty and put there
+    if lead.first_name == "Partial_Lead":
+        query = f"""SELECT c.name from `tabContact` c join `tabDynamic Link` dl
+on c.name = dl.parent
+where dl.link_name like "{lead.name}"
+and dl.link_doctype = "Lead"
+and dl.parenttype = "Contact"
+"""
+
+        existing_contacts = frappe.db.sql(query)
+        if len(existing_contacts):
+            existing_contacts = existing_contacts[0]
+            contact = frappe.get_doc("Contact", existing_contacts[0])
+            contact.first_name = kwargs.get("first_name")
+
+        school_name = get_school(kwargs.get("school")) or kwargs.get("school", "")
+        class_name = get_class(school_name, kwargs.get("class", "")) or kwargs.get(
+            "class", ""
+        )
+        student_name = separate_name(kwargs.get("first_name"))
+
+        lead.first_name = student_name.get("first_name")
+        lead.last_name = student_name.get("last_name")
+        lead.middle_name = student_name.get("middle_name")
+        lead.fathers_name = kwargs.get("fathers_name")
+        lead.fathers_email = kwargs.get("father_email_id") or kwargs.get(
+            "fathers_email"
+        )
+        lead.fathers_phone = remove_indian_country_code(kwargs.get("fathers_phone"))
+        lead.mothers_name = " "
+        lead.academic_year = kwargs.get("academic_year") or "2024-2025"
+        lead.school_from_lead_source = kwargs.get("school")
+        lead.center = school_name
+        setattr(lead, "class", class_name)
+        lead.class_from_lead_source = kwargs.get("class")
+        lead.custom_previous_school = kwargs.get("current_school", "")
 
     lead.append(
         "notes",
@@ -812,9 +777,11 @@ def process_lead(source, lead, page_location,detail=""):
             "note": f'<div class="ql-editor read-mode"><p>Lead Re-Registered from <b>{source.capitalize()}  {("at location " + page_location.lower()) if page_location else ""}</b> at <b>{datetime.datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%d-%m-%Y , %H:%M IST")}</b> </p>{ " "+detail if detail else ""}</div>'
         },
     )
-    lead.custom_re_enquired_count += 1
     lead.flags.ignore_mandatory = True
     lead.save(ignore_permissions=True)
+    if lead.first_name == "Partial_Lead":
+        if len(existing_contacts):
+            contact.save(ignore_permissions=True)
     return lead
 
 
@@ -839,11 +806,7 @@ def insert_walk_in_date(lead):
 # api for only updating all leads belonging to phone number and processing them
 @frappe.whitelist(allow_guest=True)
 def handle_school_visit(**kwargs):
-    school_visited = frappe.db.get_value(
-        "School",
-        {"location": id_to_location_map_fb.get(str(kwargs.get("location")).lower())},
-        "name",
-    )
+    school_visited = get_school(kwargs.get("location", ""))
     existing_leads = frappe.db.get_list(
         "Lead",
         filters=[
@@ -983,18 +946,18 @@ def send_feedback_after_walkout(name, school, phone_number):
     }
 
     requests.post(
-        botpress_url, headers={"Content-Type": "application/json"}, json=json.loads(json.dumps(payload,default=default))
+        botpress_url,
+        headers={"Content-Type": "application/json"},
+        json=json.loads(json.dumps(payload, default=default)),
     )
     lead_doc.flags.ignore_mandatory = True
     lead_doc.save(ignore_permissions=True)
 
+
 @frappe.whitelist()
 def handle_feedback(**kwargs):
-    school_visited = frappe.db.get_value(
-        "School",
-        {"location": id_to_location_map_fb.get(str(kwargs.get("location")).lower())},
-        "name",
-    )
+    school_visited = get_school(kwargs.get("location", ""))
+
     existing_leads = frappe.db.get_list(
         "Lead",
         filters=[
@@ -1014,12 +977,40 @@ def handle_feedback(**kwargs):
         for lead in existing_leads:
             lead_doc = frappe.get_doc("Lead", lead.get("name"))
             process_lead(
-                "feedback from whatsapp", lead_doc, f"whatsapp {kwargs.get('location')}",f"""
+                "feedback from whatsapp",
+                lead_doc,
+                f"whatsapp {kwargs.get('location')}",
+                f"""
 <div>
 <b>Feedback: {kwargs.get("feedback_choice")}</b>
 <p>
 {kwargs.get('call_me_time',"No call time specified")},<br/>{kwargs.get("no_admission_reason","Not selected")},<br/>{kwargs.get("visiting_date","No visiting date specified")}
 </p>
-</div>"""
-
+</div>""",
             )
+
+
+@frappe.whitelist(allow_guest=True)
+def create_partial_whatsapp_lead(**kwargs):
+    if not kwargs.get("fathers_phone"):
+        return "Error Creating lead"
+    lead_doc_name = frappe.db.get_value(
+        "Lead",
+        {"fathers_phone": remove_indian_country_code(kwargs.get("fathers_phone"))},
+        "name",
+    )
+    if lead_doc_name:
+        return lead_doc_name
+
+    new_lead_doc = frappe.get_doc(
+        {
+            "doctype": "Lead",
+            "first_name": "Partial_Lead",
+            "fathers_name": "Partial_Lead_Father_Name_Placeholder",
+            "fathers_phone": remove_indian_country_code(
+                str(kwargs.get("fathers_phone"))
+            ),
+            "source": "Whatsapp",
+        }
+    )
+    new_lead_doc.insert(ignore_permissions=True, ignore_mandatory=True)
