@@ -1,8 +1,7 @@
 import frappe 
 from frappe.model.naming import make_autoname
-from erpnext.accounts.doctype.payment_request.payment_request import (
-    make_payment_request,
-)
+from edu_quality.overrides import make_payment_request
+import time 
 
 def autoname(doc,method=None):
     if doc.custom_imported and doc.custom_reference_number:
@@ -75,6 +74,7 @@ def create_payment_request(fee,term=None):
             "Payment Request",
             {"reference_doctype": "Fees", "reference_docname": fee.name},
         ):
+            time.sleep(30)
             make_payment_request(
                 party_type="Student",
                 party=fee.student,
