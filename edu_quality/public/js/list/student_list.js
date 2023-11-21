@@ -10,7 +10,7 @@ frappe.listview_settings['Student'] = {
         get_description(doc) {
             return __('Copy {0}', [`${doc.student_mobile_number}`])
         },
-        action(doc) { 
+        action(doc) {
             var tempTextarea = document.createElement('textarea');
             tempTextarea.value = doc.student_mobile_number;
             document.body.appendChild(tempTextarea);
@@ -43,21 +43,16 @@ frappe.listview_settings['Student'] = {
                         label: 'Class',
                         fieldname: 'program',
                         fieldtype: 'Link',
-                        options: "Program"
+                        options: "Program",
+                        reqd: true
                     },
                     {
                         label: 'Division',
                         fieldname: 'division',
                         fieldtype: 'Link',
-                        options: "Student Group"
-                    },
-                    {
-                        label: 'No of Students',
-                        fieldname: 'no_of_students',
-                        fieldtype: 'Select',
-                        options: ['5', '10', '20'],
-                        default: '5'
-                    },
+                        options: "Student Group",
+                        reqd: true
+                    }
                 ],
                 size: 'large',
                 primary_action_label: 'Submit',
@@ -69,23 +64,16 @@ frappe.listview_settings['Student'] = {
                             school: values.school,
                             program: values.program,
                             division: values.division,
-                            academic_year: values.academic_year,
-                            no_of_students: values.no_of_students
+                            academic_year: values.academic_year
                         },
                         callback: function (response) {
                             console.log(response);
-                            if (response.message.status == 'success'){
+                            if (response.message.status == 'success') {
                                 frappe.show_alert({
                                     message: __(response.message.res),
                                     indicator: 'green'
                                 });
-                            }else if (response.message.status == 'error'){
-                                frappe.show_alert({
-                                    message: __(response.message.res),
-                                    indicator: 'red'
-                                });
                             }
-
                         }
                     });
                     d.hide();

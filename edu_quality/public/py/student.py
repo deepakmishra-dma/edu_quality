@@ -96,7 +96,6 @@ def import_student(**kwargs):
     program = kwargs.get("program")
     division = kwargs.get("division")
     academic_year = kwargs.get("academic_year")
-    no_of_students = kwargs.get("no_of_students")
     if school == "Walnut School at Fursungi":
         database = "test_wal_db_WSF"
     elif school == "Walnut School at Shivane":
@@ -104,55 +103,58 @@ def import_student(**kwargs):
     elif school == "Walnut School at Wakad":
         database = "test_wal_db_WSW"
 
-    res = import_handler(database, school, program, division, academic_year, no_of_students)
-    
-    if res:
-        frappe.response['message'] = {
-            "status": "success",
-            "res": "Imported Successfully",
-        
-        }
+    data = {
+        "database": database,  # "test_wal_db_WSF",
+        "school": school,
+        "program": program,
+        "division": division,
+        "academic_year": academic_year,
+    }
+    frappe.enqueue(import_handler, queue="long", timeout=1500, **data)
+    frappe.response['message'] = {
+        "status": "success",
+        "res": "Student Import Scheduled Successfully",
+    }
+
+def get_connection(database):
+    mgr = frappe.get_single("MGR DB Details")
+    host = mgr.host
+    user = mgr.username
+    password = mgr.get_password("password")
+    connection = mysql.connector.connect(
+        host=host, user=user, password=password, database=database
+    )
+    return connection
 
 
-def import_handler(database, school, program=None, division=None, academic_year=None, no_of_students=0):
+def import_handler(database, school, program=None, division=None, academic_year=None):
     try:
         academic_year = academic_year or ""
         div = division.split("-")[0] if division else ""
         div = get_division(div)
         class_admitted_to = program.split("-")[0] if program else ""
-        mgr = frappe.get_single("MGR DB Details")
-        host = mgr.host
-        user = mgr.username
-        password = mgr.get_password("password")
-        mysql_connection = mysql.connector.connect(
-            host=host, user=user, password=password, database=database
-        )
 
-        mysql_query = f"SELECT * FROM walnut_student_info where academic_year='{academic_year}'"
+        connection = get_connection(database)
+
+
+        query = f"SELECT * FROM walnut_student_info where academic_year='{academic_year}'"
         if program:
-            mysql_query += f" and class_admitted_to='{class_admitted_to}'"
+            query += f" and class_admitted_to='{class_admitted_to}'"
         if division:
-            mysql_query += f" and division='{div}'"
+            query += f" and division='{div}'"
             
-        mysql_cursor = mysql_connection.cursor()
-        mysql_cursor.execute(mysql_query)
+        cursor = connection.cursor()
+        cursor.execute(query)
 
         # fetach only no_of_students number of rows
-        mysql_rows = mysql_cursor.fetchmany(int(no_of_students))
+        rows = cursor.fetchall()
         # Iterate over the rows and create Frappe records
 
-        for row in mysql_rows:
-            insert_student(row, mysql_cursor.column_names, "Student", school, program, division, academic_year)
-
-        return True
-
+        for row in rows:
+            insert_student(row, cursor.column_names, "Student", school, program, division, academic_year)
+            
     except Exception as e:
-        frappe.response['message'] = {
-            "status": "error",
-            "res": "Error in Importing",
-        }
         frappe.logger("student_import").exception(e)
-        return False
     
 
 def insert_student(row, column_names, doctype, school, program, division, academic_year):
@@ -178,7 +180,7 @@ def insert_student(row, column_names, doctype, school, program, division, academ
     country = "India" if get_data("country") not in countries else get_data("country")
 
     date_of_leaving = get_data("leaving_date")
-    joining_date = date_of_leaving - frappe.utils.datetime.timedelta(days=365) if date_of_leaving else ""
+    joining_date = date_of_leaving - frappe.utils.datetime.timedelta(days=365) if date_of_leaving else None
 
     address_line_2 = f"{get_data('survey_number')}, {get_data('sub_area')}, {get_data('road')}, {get_data('area')}"
 
@@ -203,6 +205,7 @@ def insert_student(row, column_names, doctype, school, program, division, academ
         "city": get_data("city"),
         "state": get_data("state"),
         "country": country,
+        "custom_landmark": get_data("landmark"),
         "student_email_id": student_email_id,
         "joining_date": joining_date,
         "date_of_leaving": date_of_leaving,
@@ -214,6 +217,23 @@ def insert_student(row, column_names, doctype, school, program, division, academ
         "custom_category": category,
         "school": school,
         "custom_seeking_admission_in_class": program,
+        "custom_caste": get_data("caste"),
+        "custom_subcaste": get_data("subcaste"),
+        "custom_student_referral_number": get_data("student_referral_refno"),
+        "custom_is_existing_student": get_data("student_isexistingstudent"),
+        "custom_is_student_disabled": get_data("student_isdisability"),
+        "custom_existing_student_ref_number": get_data("student_existing_ref_number"),
+        "custom_student_disability_name": get_data("student_disability_name"),
+        "custom_is_sibling_in_school": get_data("student_bro_sis_inschool"),
+        "custom_is_rte_student": get_data("stud_rte"),
+        "custom_single_parent_reason": get_data("single_parent_reason"),
+        "custom_religion": get_data("religion"),
+        "custom_reference_number": get_data("refno"),
+        "custom_referrer_school": get_data("referral_school_id"),
+        "custom_referred_by": get_data("refer_by"),
+        "custom_day_care_contact": get_data("day_care_contact"),
+        "custom_bus_service_required": get_data("bus_service_required"),
+        "custom_allergies": get_data("allergies"),
         "doctype": doctype,
     }
     frappe_data['division'] = division
@@ -222,7 +242,7 @@ def insert_student(row, column_names, doctype, school, program, division, academ
     if not frappe.db.exists(doctype, docname):
         new_doc = frappe.get_doc(new_doc_data)
         new_doc.insert(ignore_permissions=True)
-        insert_program_enrollment(new_doc, frappe_data, )
+        insert_program_enrollment(new_doc, frappe_data)
     frappe.flags.in_import = False
 
 
