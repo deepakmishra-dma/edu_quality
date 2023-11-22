@@ -32,7 +32,7 @@
     "type": "Send Whatsapp"
    },
    {
-    "data": "{\"emailTemplate\":\"Payment Link\",\"emailAccount\":\"Badal\",\"sendToAssignedUsersAlso\":false,\"recepients\":[{\"recepientField\":\"email_to\",\"cc\":\"\"}],\"submit\":true,\"trigger_doc\":\"Payment Request\"}",
+    "data": "{\"emailTemplate\":\"Payment Link\",\"emailAccount\":\"Notifications\",\"sendToAssignedUsersAlso\":false,\"recepients\":[{\"recepientField\":\"email_to\",\"cc\":\"\"}],\"submit\":true,\"trigger_doc\":\"Payment Request\"}",
     "element_type": "Action",
     "id": "8RqmxpzLKi4-nEmujpx9R",
     "parent": "Payment Link",
@@ -104,7 +104,7 @@
   ],
   "funnel_name": "Payment Link",
   "funnel_preview_image": "/files/thumbnail-funnel-preview-Payment Link.png",
-  "modified": "2023-10-25 16:56:45.780685",
+  "modified": "2023-11-07 14:33:01.713484",
   "name": "Payment Link",
   "viewport": "{\"x\":96.41872121071259,\"y\":208.71834886550553,\"zoom\":0.8470465111314821}"
  },
@@ -141,7 +141,7 @@
     "type": "Get Email Arguments Action"
    },
    {
-    "data": "{\"emailTemplate\":\"Rules and Regulations\",\"emailAccount\":\"Badal\",\"sendToAssignedUsersAlso\":false,\"recepients\":[{\"recepientField\":\"otp_sent_to_email_id\",\"cc\":\"\"}],\"submit\":true,\"trigger_doc\":\"Rules and Regulation Submission\"}",
+    "data": "{\"emailTemplate\":\"Rules and Regulations\",\"emailAccount\":\"Notifications\",\"sendToAssignedUsersAlso\":false,\"recepients\":[{\"recepientField\":\"otp_sent_to_email_id\",\"cc\":\"\"}],\"submit\":true,\"trigger_doc\":\"Rules and Regulation Submission\"}",
     "element_type": "Action",
     "id": "4cwC80mJBscZBzBt-L2Sy",
     "parent": "Undertaking Submission",
@@ -185,7 +185,7 @@
   ],
   "funnel_name": "Undertaking Submission",
   "funnel_preview_image": "/files/thumbnail-funnel-preview-Payment Link.png",
-  "modified": "2023-10-25 16:56:04.865753",
+  "modified": "2023-11-07 14:33:38.982761",
   "name": "Undertaking Submission",
   "viewport": "{\"x\":10,\"y\":200,\"zoom\":1}"
  },
@@ -261,7 +261,7 @@
     "type": "Student Referral Trigger"
    },
    {
-    "data": "{\"emailTemplate\":\"1 to 5 lead email Shivane\",\"emailAccount\":\"Badal\",\"sendToAssignedUsersAlso\":false,\"recepients\":[{\"recepientField\":\"student_email_id\",\"cc\":\"\"}],\"submit\":true,\"trigger_doc\":\"Referral Log\"}",
+    "data": "{\"emailTemplate\":\"1 to 5 lead email Shivane\",\"emailAccount\":\"Notifications\",\"sendToAssignedUsersAlso\":false,\"recepients\":[{\"recepientField\":\"student_email_id\",\"cc\":\"\"}],\"submit\":true,\"trigger_doc\":\"Referral Log\"}",
     "element_type": "Action",
     "id": "H-d4mQyOJ2aoFpPRd2J5H",
     "parent": "Student Referral",
@@ -319,7 +319,7 @@
   ],
   "funnel_name": "Student Referral",
   "funnel_preview_image": "/files/thumbnail-funnel-preview-Payment Link.png",
-  "modified": "2023-10-26 14:52:51.814382",
+  "modified": "2023-11-07 14:33:21.863438",
   "name": "Student Referral",
   "viewport": "{\"x\":10,\"y\":200,\"zoom\":1}"
  }
