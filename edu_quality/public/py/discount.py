@@ -214,7 +214,6 @@ def payment_plan(doc, method=None):
             if fee_type and fee_type!= "Regular":
                 initial_payment = initial_payment +  component.amount
         i=0
-        frappe.logger('initial').exception("initial_payment"+str(initial_payment))
         for schedule in pp.payment_schedule:
             payment_amount = schedule.payment_amount
             description = "Installment - " + str(i+1)
@@ -223,10 +222,8 @@ def payment_plan(doc, method=None):
                 today = datetime.today().date()
                 difference = schedule.due_date - today
                 if difference.days > before_days:
-                        frappe.logger('initial').exception("only deposit")
                         only_deposit(doc)
                 else:
-                    frappe.logger('initial').exception("combination"+str(initial_payment))
                     payment_amount = payment_amount + initial_payment
                     description = description + " and deposit/application fee"
                     frappe.enqueue(

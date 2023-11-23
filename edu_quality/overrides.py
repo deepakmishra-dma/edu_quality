@@ -98,6 +98,14 @@ class CustomPaymentRequest(PaymentRequest):
 
         send_receipt_over_email(self)
 
+    def set_payment_request_url(self):
+        hash = frappe.utils.generate_hash(self.name,length=20) 
+        self.db_set('payment_hash',hash)
+        url = frappe.utils.get_url() + "/payment?payment_request=" + hash 
+        self.db_set('payment_url',url) 
+        frappe.call('edu_quality.public.py.utils.trigger_funnel_event', doc=self, event_name="payment_link")
+        self.db_set("status", "Initiated")
+
     def get_payment_url(self, **kwargs):
         if self.reference_doctype != "Fees":
             data = frappe.db.get_value(
@@ -334,9 +342,7 @@ def make_payment_request(**args):
 
     ref_doc = frappe.get_doc(args.dt, args.dn)
     gateway_account = get_gateway_details(args) or frappe._dict()
-    frappe.logger('pr').exception(args.is_deposit)
     grand_total = get_amount(ref_doc, gateway_account.get("payment_account"), args.is_deposit, args.payment_term)
-    frappe.logger('pr').exception(grand_total)
     if args.loyalty_points and args.dt == "Sales Order":
         from erpnext.accounts.doctype.loyalty_program.loyalty_program import validate_loyalty_points
 
