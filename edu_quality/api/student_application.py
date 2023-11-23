@@ -786,7 +786,9 @@ and dl.parenttype = "Contact"
 
 
 def insert_walk_in_date(lead):
-    if not lead.get("custom_walk_in_3_action_date"):
+    if lead.get("custom_walk_in_3_action_date") and lead.get(
+        "custom_walk_in_2_action_date"
+    ) and lead.get("custom_walk_in_1_action_date"):
         lead.custom_walk_in_3_action_date = datetime.datetime.now(
             pytz.timezone("Asia/Kolkata")
         ).strftime("%Y-%m-%d")
