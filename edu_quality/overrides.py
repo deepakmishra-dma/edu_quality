@@ -138,11 +138,26 @@ class CustomPaymentRequest(PaymentRequest):
             }
         )
     
+
     def on_payment_authorized(self, status=None):
         if not status:
             return
         if status in ["Authorized", "Completed"]:
             self.set_as_paid()
+
+    def on_submit(self):
+        if self.payment_request_type == "Outward":
+            self.db_set("status", "Initiated")
+            return
+        elif self.payment_request_type == "Inward":
+            self.db_set("status", "Requested")
+
+        if self.payment_channel != "Phone":
+            self.set_payment_request_url()
+            self.make_communication_entry()
+            
+        elif self.payment_channel == "Phone":
+            self.request_phone_payment()
 
 
 def payment_entry(doc, ref_doc, party_amount, paid_from, paid_to, company, cost_center, fee_categories=None):

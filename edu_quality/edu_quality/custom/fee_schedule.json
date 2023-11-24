@@ -184,41 +184,7 @@
    "width": null
   }
  ],
- "custom_perms": [
-  {
-   "_assign": null,
-   "_comments": null,
-   "_liked_by": null,
-   "_user_tags": null,
-   "amend": 1,
-   "cancel": 1,
-   "create": 1,
-   "creation": "2023-09-20 09:18:26.734945",
-   "delete": 1,
-   "docstatus": 0,
-   "email": 0,
-   "export": 1,
-   "idx": 0,
-   "if_owner": 0,
-   "import": 0,
-   "modified": "2023-09-17 19:52:09.606948",
-   "modified_by": "Administrator",
-   "module": "Edu Quality",
-   "name": "941375fd53",
-   "owner": null,
-   "parent": "Fee Schedule",
-   "permlevel": 0,
-   "print": 0,
-   "read": 1,
-   "report": 0,
-   "role": "Walnut Admin",
-   "select": 1,
-   "set_user_permissions": 0,
-   "share": 0,
-   "submit": 1,
-   "write": 1
-  }
- ],
+ "custom_perms": [],
  "doctype": "Fee Schedule",
  "links": [],
  "property_setters": [

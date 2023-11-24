@@ -51,26 +51,28 @@ def send_otp(fee, otp):
         email = get_email_id(student)
         if mobile:
             sms_otp(mobile, otp)
+            if frappe.db.exists("Contact", {"whatsapp_id": mobile}):
+                contact = frappe.get_doc("Contact", {"whatsapp_id": mobile})
+                whatsapp_otp(contact, otp)
+
         if email:
             email_otp(email, otp)
-        # whatsapp message
-        if mobile and frappe.db.exists("Contact", {"whatsapp_id": mobile}):
-            contact = frappe.get_doc("Contact", {"whatsapp_id": mobile})
-            whatsapp_otp(contact, otp)
+
         return True
     except Exception as e:
+        frappe.logger("OTP").exception(e)
         return False
 
 
 def get_mobile_number(student):
     if student.student_mobile_number:
         return student.student_mobile_number
-    elif student.custom_fathers_mobile_number:
-        return student.custom_fathers_mobile_number
-    elif student.custom_mothers_mobile_number:
-        return student.custom_mothers_mobile_number
-    elif student.custom_guardians_mobile_number:
-        return student.custom_guardians_mobile_number
+    elif student.custom_fathers_mobile_no:
+        return student.custom_fathers_mobile_no
+    elif student.custom_mothers_mobile_no:
+        return student.custom_mothers_mobile_no
+    elif student.custom_guardians_mobile_no:
+        return student.custom_guardians_mobile_no
     else:
         return False
 
