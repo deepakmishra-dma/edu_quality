@@ -5,9 +5,13 @@ import frappe
 def manual_payment(fee,term,data):
     try:
         data = frappe.parse_json(data)
-        if frappe.db.exists("Payment Request",{'reference_name':fee,'payment_term':term}):
-            frappe.db.set_value("Payment Request",{'reference_name':fee,'payment_term':term},'mode_of_payment',"Cheque")
-            pr = frappe.get_doc("Payment Request",{'reference_name':fee,'payment_term':term})
+        if term == "Deposit":
+            filter = [["Payment Request","payment_term","is","not set"],["Payment Request","reference_name","=",fee]]
+        else:
+            filter = {'reference_name':fee,'payment_term':term}
+        if frappe.db.exists("Payment Request",filter):
+            frappe.db.set_value("Payment Request",filter,'mode_of_payment',"Cheque")
+            pr = frappe.get_doc("Payment Request",filter)
             pr.set_as_paid()
             entries = frappe.get_all("Payment Entry", {"reference_no": pr.name},['name','company', 'party', 'paid_amount'])
             for entry in entries:
@@ -16,7 +20,7 @@ def manual_payment(fee,term,data):
                         reference_no = i.get("reference_number")
                         update_reference(reference_no, entry)
 
-        frappe.response["message"] = "Manual Payment Done"
+            frappe.response["message"] = "Manual Payment Done"
     except Exception as e:
         frappe.logger("manual").exception(e)
         frappe.response["message"] = "Manual Payment Failed"
