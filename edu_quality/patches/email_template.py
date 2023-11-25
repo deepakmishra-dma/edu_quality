@@ -194,9 +194,9 @@ data = [
  {
   "docstatus": 0,
   "doctype": "Email Template",
-  "modified": "2023-11-06 15:43:59.592579",
+  "modified": "2023-11-08 11:13:09.754378",
   "name": "Payment Link",
-  "response": None,
+  "response": "<div class=\"ql-editor read-mode\"><p><span style=\"font-size: 15px; color: rgb(0, 0, 0); background-color: transparent;\">Dear Parents of </span><span style=\"font-size: 15px;\">{{ context.first_name }}</span><span style=\"font-size: 15px; color: rgb(0, 0, 0); background-color: transparent;\">,</span></p><p><br></p><p><span style=\"font-size: 15px; color: rgb(0, 0, 0); background-color: transparent;\">Please find the fee link to pay fees for </span><span style=\"font-size: 15px;\">{{ context.acad_year }}</span><span style=\"font-size: 15px; color: rgb(0, 0, 0); background-color: transparent;\"> here:</span><strong style=\"font-size: 15px; color: rgb(0, 0, 0); background-color: transparent;\"><a href=\"{{ context.link }}\" rel=\"noopener noreferrer\"> Link\ufeff</a></strong></p><p><br></p><p><span style=\"font-size: 15px; color: rgb(0, 0, 0); background-color: transparent;\">If you cannot tap on the link, please copy and paste the following text into the browser:</span></p><p><span style=\"font-size: 15px; color: rgb(0, 0, 0); background-color: transparent;\">{{ context.link }}</span></p><p><br></p><p><span style=\"font-size: 15px; color: rgb(0, 0, 0); background-color: transparent;\">You can check details of the fee link and how to proceed from the email that has been sent on the registered email address.</span></p><p><br></p><p><span style=\"font-size: 15px; color: rgb(0, 0, 0); background-color: transparent;\">Warm Regards,</span></p><p><span style=\"font-size: 15px; color: rgb(0, 0, 0); background-color: transparent;\">The Walnut School Administration Team.</span></p></div>",
   "response_html": None,
   "subject": "Payment Link",
   "use_html": 0
