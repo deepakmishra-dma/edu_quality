@@ -9,7 +9,8 @@
  "field_order": [
   "class_name",
   "academic_year",
-  "application_fees"
+  "application_fees",
+  "fee_category"
  ],
  "fields": [
   {
@@ -33,12 +34,19 @@
    "label": "Class",
    "options": "Program",
    "reqd": 1
+  },
+  {
+   "default": "Application fee",
+   "fieldname": "fee_category",
+   "fieldtype": "Link",
+   "label": "Fee Category",
+   "options": "Fee Category"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2023-09-12 07:25:51.506860",
+ "modified": "2023-11-08 08:25:42.638887",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Application Fees List",
