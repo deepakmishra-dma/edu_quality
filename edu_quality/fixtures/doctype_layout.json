@@ -13,8 +13,8 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "last_name",
-    "label": "Last Name",
+    "fieldname": "fathers_phone",
+    "label": "Fathers Phone",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
@@ -55,15 +55,15 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "custom_column_break_fmsgl",
-    "label": null,
+    "fieldname": "last_name",
+    "label": "Last Name",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "middle_name",
-    "label": "Middle Name",
+    "fieldname": "custom_column_break_fmsgl",
+    "label": null,
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
@@ -76,8 +76,8 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "campaign_name",
-    "label": "Campaign Name",
+    "fieldname": "fathers_email",
+    "label": "Fathers Email",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
@@ -113,6 +113,20 @@
    {
     "fieldname": "custom_previous_school",
     "label": "Previous School",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "middle_name",
+    "label": "Middle Name",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "campaign_name",
+    "label": "Campaign Name",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
@@ -188,13 +202,6 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "fathers_email",
-    "label": "Fathers Email",
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
     "fieldname": "mothers_email",
     "label": "Mothers Email",
     "parent": "Lead",
@@ -204,13 +211,6 @@
    {
     "fieldname": "custom_column_break_bryqy",
     "label": null,
-    "parent": "Lead",
-    "parentfield": "fields",
-    "parenttype": "DocType Layout"
-   },
-   {
-    "fieldname": "fathers_phone",
-    "label": "Fathers Phone",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
@@ -993,7 +993,7 @@
     "parenttype": "DocType Layout"
    }
   ],
-  "modified": "2023-10-17 18:46:15.890689",
+  "modified": "2023-11-08 14:00:58.547932",
   "name": "Lead",
   "route": "/app/lead"
  }

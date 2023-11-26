@@ -33,7 +33,11 @@ frappe.ui.form.on("Lead", {
         if (frm.doc.status === "Hot" && frm.doc.custom_re_enquired_count) {
             frm.page.set_indicator('Hot ' + frm.doc.custom_re_enquired_count, "orange")
         }
-
+        frm.set_intro(`
+        <p class="text-dark my-0">
+            Pushing to MGR requires these fields:<ul><li>Academic Year</li><li> School</li><li>First Name</li><li>Fathers Phone</li><li>Class</li><li>Fathers Email</li><li>Gender</li>
+      
+      `, 'orange')
         setTimeout(() => {
             frm.clear_custom_buttons()
 
