@@ -1,19 +1,18 @@
 import frappe, random
 import mysql.connector
-from frappe.model.naming import make_autoname
 from edu_quality.overrides import make_payment_request
 import time 
 
-def autoname(doc,method=None):
-    if doc.custom_imported and doc.custom_reference_number:
-        prefix = ''
-        if doc.school == "Walnut School at Fursungi":
-            prefix = "FU"
-        elif doc.school == "Walnut School Shivane":
-            prefix = "SH"
-        elif doc.school == "Walnut School at Wakad":
-            prefix = "WA" 
-        doc_name = prefix + doc.custom_reference_number
+def autoname(doc, method=None):
+    school_prefixes = {
+        "Walnut School at Fursungi": "FU",
+        "Walnut School at Shivane": "SH",
+        "Walnut School at Wakad": "WA"
+    }
+
+    if doc.imported and doc.reference_number:
+        prefix = school_prefixes.get(doc.school, '')
+        doc_name = prefix + doc.reference_number
         doc.name = doc_name
 
     if doc.student_applicant:
@@ -173,6 +172,8 @@ def insert_student(row, column_names, doctype, school, program, division, academ
     school_prefixes = {"Walnut School at Fursungi": "FU", "Walnut School at Shivane": "SH", "Walnut School at Wakad": "WA"}
     school_ids = {4: "Walnut School at Fursungi", 2: "Walnut School at Shivane", 5: "Walnut School at Wakad"}
     school_id = get_data("school_id")
+    referral_school_id = get_data("referral_school_id")
+    referral_school = school_ids.get(referral_school_id)
     school = school_ids.get(school_id)
     docname = school_prefixes.get(school, "") + get_data("refno")
 
@@ -187,13 +188,15 @@ def insert_student(row, column_names, doctype, school, program, division, academ
     category = get_data("category")
 
     new_doc_data = {
-        "custom_reference_number": get_data("refno"),
-        "custom_imported": 1,
-        "form_code": get_data("form_code"),
         "enabled": 1,
+        "imported": 1,
+        "form_code": get_data("form_code"),
+        "form_id": get_data("form_id"),
         "first_name": first_name,
         "middle_name": middle_name,
         "last_name": last_name,
+        "first_name_marathi": get_data("fname_marathi"),
+        "last_name_marathi": get_data("lname_marathi"),
         "date_of_birth": get_data("b_date"),
         "blood_group": get_data("blood_group", ""),
         "student_mobile_number": get_data("student_primary_contact_number"),
@@ -205,35 +208,46 @@ def insert_student(row, column_names, doctype, school, program, division, academ
         "city": get_data("city"),
         "state": get_data("state"),
         "country": country,
-        "custom_landmark": get_data("landmark"),
+        "landmark": get_data("landmark"),
         "student_email_id": student_email_id,
         "joining_date": joining_date,
         "date_of_leaving": date_of_leaving,
         "student_name": student_name,
         "school": school,
-        "custom_fathers_name": capitalize_name("father_f_name"),
-        "custom_mothers_first_name": capitalize_name("mother_f_name"),
-        "custom_aadhaar_card_number": get_data("aadhaar_card_number"),
-        "custom_category": category,
+        "aadhaar_card_number": get_data("aadhaar_card_number"),
+        "category": category,
         "school": school,
-        "custom_seeking_admission_in_class": program,
-        "custom_caste": get_data("caste"),
-        "custom_subcaste": get_data("subcaste"),
-        "custom_student_referral_number": get_data("student_referral_refno"),
-        "custom_is_existing_student": get_data("student_isexistingstudent"),
-        "custom_is_student_disabled": get_data("student_isdisability"),
-        "custom_existing_student_ref_number": get_data("student_existing_ref_number"),
-        "custom_student_disability_name": get_data("student_disability_name"),
-        "custom_is_sibling_in_school": get_data("student_bro_sis_inschool"),
-        "custom_is_rte_student": get_data("stud_rte"),
-        "custom_single_parent_reason": get_data("single_parent_reason"),
-        "custom_religion": get_data("religion"),
-        "custom_reference_number": get_data("refno"),
-        "custom_referrer_school": get_data("referral_school_id"),
+        "seeking_admission_in_class": program,
+        "admission_to": program,
+        "school_house": get_data("stud_house"),
+        "saral_id": get_data("saral_id"),
+        "cancel_photo_id": get_data("cancel_photo_id"),
+        "tiffin_rack_no": get_data("tiffin_rack_no"),
+        "catering": get_data("catering"),
+        "caste": get_data("caste"),
+        "subcaste": get_data("subcaste"),
+        "minority": get_data("minority"),
+        "mother_tongue": get_data("mother_tongue"),
+        "student_referral_number": get_data("student_referral_refno"),
+        "is_existing_student": get_data("student_isexistingstudent"),
+        "existing_student_ref_number": get_data("student_existing_ref_number"),
+        "is_handicap": 1 if get_data("handicap") else 0,
+        "handicap": get_data("handicap"),
+        "is_student_disabled": 1 if get_data("student_isdisability") else 0,
+        "student_disability_name": get_data("student_disability_name"),
+        "is_sibling_in_school": get_data("student_bro_sis_inschool"),
+        "is_rte_student": get_data("stud_rte"),
+        "single_parent_reason": get_data("single_parent_reason"),
+        "religion": get_data("religion"),
+        "reference_number": get_data("refno"),
+        "custom_referrer_school": referral_school,
         "custom_referred_by": get_data("refer_by"),
-        "custom_day_care_contact": get_data("day_care_contact"),
-        "custom_bus_service_required": get_data("bus_service_required"),
-        "custom_allergies": get_data("allergies"),
+        "day_care_contact": get_data("day_care_contact"),
+        "bus_service_required": get_data("bus_service_required"),
+        "has_allergies": 1 if get_data("allergies") else 0,
+        "allergies": get_data("allergies"),
+        "parent_divorced": get_data("if_divorced"),
+        "single_parent_reason": get_data("single_parent_reason"),
         "doctype": doctype,
     }
     frappe_data['division'] = division
@@ -247,13 +261,13 @@ def insert_student(row, column_names, doctype, school, program, division, academ
 
 
 def insert_program_enrollment(student, data=None):
-    program = student.custom_seeking_admission_in_class
+    program = student.seeking_admission_in_class
     academic_year = data.get("academic_year")
     academic_term = frappe.get_value("Academic Term", {"academic_year": academic_year})
     student_group = data.get('division')
     program_enrollment = frappe.new_doc("Program Enrollment")
     program_enrollment.student = student.name
-    program_enrollment.student_category = student.custom_category
+    program_enrollment.student_category = student.category
     program_enrollment.student_name = student.student_name
     program_enrollment.school = student.school
     program_enrollment.program = program
