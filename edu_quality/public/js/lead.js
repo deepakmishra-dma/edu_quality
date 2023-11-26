@@ -35,7 +35,7 @@ frappe.ui.form.on("Lead", {
         }
         frm.set_intro(`
         <p class="text-dark my-0">
-            Pushing to MGR requires these fields:<ul><li>Academic Year</li><li> School</li><li>First Name</li><li>Fathers Phone</li><li>Class</li><li>Fathers Email</li><li>Gender</li>
+            Pushing to MGR requires these fields:<ul><li>Academic Year</li><li> School</li><li>First Name</li><li>Date of Birth</li><li>Fathers Phone</li><li>Class</li><li>Fathers Email</li><li>Gender</li>
       
       `, 'orange')
         setTimeout(() => {
@@ -97,6 +97,17 @@ frappe.ui.form.on("Lead", {
         const re = /^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/
         if (!re.test(frm.doc.fathers_phone)) {
             frappe.validated = false
+        }
+        if (frm.doc.next_action_date) {
+            const date = new Date(frm.doc.next_action_date)
+            if (date !== "Invalid Date" && date.getDay() === 0) {
+                frappe.validated = false
+                frappe.msgprint({
+                    message: __("Next Action Date cannot be set to fall on Sunday"),
+                    indicator: "red",
+                    title: __("Incorrect Field")
+                });
+            }
         }
         return true
     },
