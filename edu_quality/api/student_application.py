@@ -786,9 +786,11 @@ and dl.parenttype = "Contact"
 
 
 def insert_walk_in_date(lead):
-    if lead.get("custom_walk_in_3_action_date") and lead.get(
-        "custom_walk_in_2_action_date"
-    ) and lead.get("custom_walk_in_1_action_date"):
+    if (
+        lead.get("custom_walk_in_3_action_date")
+        and lead.get("custom_walk_in_2_action_date")
+        and lead.get("custom_walk_in_1_action_date")
+    ):
         lead.custom_walk_in_3_action_date = datetime.datetime.now(
             pytz.timezone("Asia/Kolkata")
         ).strftime("%Y-%m-%d")
@@ -868,15 +870,20 @@ def get_and_schedule_pending_walkouts():
         )
 
         leads = query.run(as_dict=True)
-        for i in leads:
+        # enqueue only once to same phone number
+        if(len(leads)):
             frappe.enqueue(
                 "edu_quality.api.student_application.send_feedback_after_walkout",
-                name=i.get("name"),
-                school=i.get("center"),
-                phone_number=i.get("fathers_phone"),
+                name=leads[0].get("name"),
+                school=leads[0].get("center"),
+                phone_number=leads[0].get("fathers_phone"),
                 queue="long",
                 timeout=4000,
             )
+            
+        # set to none in all leads
+        for i in leads:
+            set_walked_out_fields_none(i.get("name"))
 
         return "Queuing"
     except Exception as e:
@@ -884,11 +891,16 @@ def get_and_schedule_pending_walkouts():
 
 
 @frappe.whitelist(allow_guest=True)
-def send_feedback_after_walkout(name, school, phone_number):
+def set_walked_out_fields_none(name):
     lead_doc = frappe.get_doc("Lead", name)
     lead_doc.custom_walked_out_time = None
     lead_doc.custom_lead_scheduled = 0
 
+    lead_doc.flags.ignore_mandatory = True
+    lead_doc.save(ignore_permissions=True)
+
+
+def send_feedback_after_walkout(name, school, phone_number):
     botpress_url = frappe.db.get_single_value(
         "Whatsapp Settings", "botpress_webhook_url"
     )
@@ -952,8 +964,6 @@ def send_feedback_after_walkout(name, school, phone_number):
         headers={"Content-Type": "application/json"},
         json=json.loads(json.dumps(payload, default=default)),
     )
-    lead_doc.flags.ignore_mandatory = True
-    lead_doc.save(ignore_permissions=True)
 
 
 @frappe.whitelist()
