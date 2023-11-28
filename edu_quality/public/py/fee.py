@@ -1,3 +1,4 @@
+import json
 from edu_quality.public.py.discount import payment_plan, referal_discount, time_based_discount, update_payment_schedule
 import frappe 
 from erpnext.accounts.utils import get_account_currency
@@ -21,6 +22,7 @@ def before_submit(doc,method=None):
     time_based_discount(doc)
     referal_discount(doc)
     update_payment_schedule(doc)
+    payment_split(doc)
 
 
 def verify_invoice_portion(payment_schedule):
@@ -260,4 +262,131 @@ def get_due_date(fee):
             due_date = term.due_date
     return due_date
 
+
+def payment_split(doc):
+    split_payments = dict()
+    company_wise_split = dict()
+    component_wise_split = dict()
+    if doc.payment_schedule:
+        for schedule in doc.payment_schedule:
+            term = schedule.payment_term
+            if "deposit" in schedule.description:
+                split_payments[term] = get_split_payment(doc, schedule.invoice_portion, 1)
+                company_wise_split[term] = company_wise(doc, term, 1)
+                component_wise_split[term] = component_wise(doc, schedule.invoice_portion, 1)
+            else:
+                split_payments[schedule.payment_term] = get_split_payment(doc, schedule.invoice_portion)
+                company_wise_split[term] = company_wise(doc, term)
+                component_wise_split[term] = component_wise(doc, schedule.invoice_portion)
+
+    doc.split_payments = json.dumps(split_payments)
+    doc.company_split = json.dumps(company_wise_split)
+    doc.component_split = json.dumps(component_wise_split)
+
+
+def get_split_payment(doc, portion, combination=0):
+    split_payment = dict()
+    remaining_amount = 0
+    for component in doc.components:
+        invoice_portion = portion
+        fee_type = frappe.db.get_value("Fee Category",component.fees_category,"type")
+        if invoice_portion==100 and fee_type == 'Regular':
+            continue
+        elif fee_type != 'Regular' and invoice_portion !=100:
+            if combination:
+                invoice_portion = 100
+        fees_category = component.fees_category
+        discounted_amount = component.custom_amount_after_discount
+        amount = discounted_amount if discounted_amount else component.amount
+        label = None
+        try:
+            label = frappe.get_value(
+                "Fee Category", {"name": fees_category}, "custom_label"
+            )
+            if label:
+                label = label.split("-")[0].strip()
+                if split_payment.get(label) is not None:
+                    amount = flt((invoice_portion / 100) * amount, 2)
+                    split_payment[label] += amount
+                else:
+                    amount = flt((invoice_portion / 100) * amount, 2)
+                    split_payment[label] = amount
+        except Exception as e:
+            frappe.logger("payment_split").exception(e)
+
+        if label is None:
+            amount = flt((invoice_portion / 100) * amount, 2)
+            remaining_amount += amount
+    fees_settings = frappe.get_single("Fees Settings")
+    default_account = fees_settings.default_account.split("-")[0].strip()
+    if split_payment.get(default_account) is not None:
+        split_payment[default_account] += remaining_amount
+    else:
+        split_payment[default_account] = remaining_amount
+    frappe.logger('split').exception(split_payment)
+    return split_payment
+
+
+def company_wise(fees, term, combination=0):
+    paid_from_dict = {}
+    paid_to_dict = {}
+    companies = {}
+    fee_categories = {}
+    for component in fees.components:
+        fee_type = frappe.db.get_value("Fee Category",component.fees_category,"type")
+        doc = frappe.get_doc("Fee Category", component.fees_category)
+        paid_to = doc.custom_account
+        company = doc.custom_company
+        paid_from = frappe.get_value(
+            "Account", {"company": company, "account_type": "Receivable"}, ["name"]
+        )
+        amount = component.custom_amount_after_discount or component.amount
+        # is_deposit = False
+        for schedule in fees.payment_schedule:
+            if schedule.payment_term == term and combination == 1:
+                amount = flt(schedule.payment_amount, 2)
+            elif schedule.payment_term == term and combination == 0:
+                amount = flt((schedule.invoice_portion/100) * amount,2)
+
+        if paid_from_dict.get(paid_from) is not None:
+            paid_from_dict[paid_from] += amount
+            fee_categories[paid_from].append({component.fees_category:amount})
+        else: 
+            paid_from_dict[paid_from] = amount
+            fee_categories[paid_from] = [{component.fees_category:amount}]
+        paid_to_dict[paid_from] = paid_to
+        companies[paid_from] = company
+
+    company_wise_split = []
+    for paid_from, amount in paid_from_dict.items():
+        cost_center = frappe.get_value(
+            "Cost Center", {"company": companies[paid_from]}, ["name"]
+        )
+        company_wise_split.append({
+            "amount": amount,
+            "paid_from": paid_from,
+            "paid_to": paid_to_dict[paid_from],
+            "company": companies[paid_from],
+            "cost_center": cost_center,
+            "fee_categories": fee_categories[paid_from]
+        })
+    return company_wise_split
+
+
+def component_wise(doc, invoice_portion, combination=0):
+    component_wise_split = []
+    for component in doc.components:
+        fee_type = frappe.db.get_value("Fee Category",component.fees_category,"type")
+        amount = component.custom_amount_after_discount or component.amount
+        if fee_type != 'Regular' and combination == 1:
+            component_wise_split.append({
+                "fee_categories": component.fees_category,
+                "amount": amount
+            })
+        else:
+            component_wise_split.append({
+                "fee_categories": component.fees_category,
+                "amount": flt((invoice_portion / 100) * amount, 2)
+            })
+    return component_wise_split
 
