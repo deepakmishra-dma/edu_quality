@@ -48,6 +48,8 @@ def before_save(doc,method=None):
         fee_structure = frappe.get_doc("Fee Structure", doc.fee_structure)
         if frappe.db.get_single_value("Fees Settings",'apply_fees'):
             for component in fee_structure.components:
+                if doc.is_rte and component.rte_excempt:
+                    continue
                 doc.append('fee_components',{
                     'fees_category':component.fees_category,
                     'amount':component.amount,

@@ -16,11 +16,12 @@ from edu_quality.public.py.payment_request import update_payment_request_after_d
 
 def after_insert(doc,method=None):
     payment_plan(doc)
-    update_payment_schedule(doc)
 
 def before_submit(doc,method=None):
     time_based_discount(doc)
     referal_discount(doc)
+    update_payment_schedule(doc)
+
 
 
 def verify_invoice_portion(payment_schedule):
@@ -117,15 +118,6 @@ def update_payment_plan(payment_plan, fee_name):
     doc.save(ignore_permissions=True)
     frappe.response['message'] = "Payment Plan Updated Successfully!"
 
-
-
-def before_save(doc,method=None):
-    try:
-        if not doc.get("school"):
-            doc.school = frappe.db.get_value("Student",doc.student,"school")
-        old = doc.get_doc_before_save()
-    except Exception as e:
-        frappe.logger("fee").exception(e)
 
 def create_fees(doc,method=None):
     try:
