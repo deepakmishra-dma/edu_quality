@@ -2,7 +2,7 @@ import frappe
 from frappe.utils.data import flt
 
 @frappe.whitelist()
-def manual_payment(fee,term,data):
+def manual_payment(fee,term,data,payment_mode):
     try:
         data = frappe.parse_json(data)
         if term == "Deposit":
@@ -10,7 +10,7 @@ def manual_payment(fee,term,data):
         else:
             filter = {'reference_name':fee,'payment_term':term}
         if frappe.db.exists("Payment Request",filter):
-            frappe.db.set_value("Payment Request",filter,'mode_of_payment',"Cheque")
+            frappe.db.set_value("Payment Request",filter,'mode_of_payment',payment_mode)
             pr = frappe.get_doc("Payment Request",filter)
             pr.set_as_paid()
             entries = frappe.get_all("Payment Entry", {"reference_no": pr.name},['name','company', 'party', 'paid_amount'])
@@ -50,25 +50,24 @@ def get_payment_details(fee,term):
                     break 
             
         for component in fee.components:
-            fee_type = frappe.db.get_value("Fee Category",component.fees_category,"type")
             amount = component.custom_amount_after_discount or component.amount
             company = frappe.db.get_value("Fee Category",component.fees_category,"custom_company")
             if not company:
                 company = "Unique Educational and Sports Foundation"
-            if fee_type !='Regular' and term == 'Deposit':
+            if component.fee_type !='Regular' and term == 'Deposit':
                 entry ={
                     "company": company,
                     "amount": flt(amount,2),
                     "reference":""
                 }
             elif term != 'Deposit':
-                if fee_type!='Regular' and 'deposit' in description:
+                if component.fee_type!='Regular' and 'deposit' in description:
                     entry ={
                     "company": company,
                     "amount": flt(amount,2),
                     "reference":""
                     }
-                elif fee_type == "Regular":
+                elif component.fee_type == "Regular":
                     entry = {
                     "company": company,
                     "amount": flt(amount *(portion/100),2),

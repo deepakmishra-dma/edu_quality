@@ -37,8 +37,7 @@ class CustomPaymentRequest(PaymentRequest):
         companies = {}
         fee_categories = {}
         for component in fees.components:
-            fee_type = frappe.db.get_value("Fee Category",component.fees_category,"type")
-            if not self.payment_term and fee_type != "Regular":
+            if not self.payment_term and component.fee_type != "Regular":
                 continue
             doc = frappe.get_doc("Fee Category", component.fees_category)
             paid_to = doc.custom_account
@@ -51,11 +50,11 @@ class CustomPaymentRequest(PaymentRequest):
                 is_deposit = False
                 for schedule in fees.payment_schedule:
                     if schedule.payment_term == self.payment_term:
-                        if "deposit" in schedule.description and fee_type != "Regular":
+                        if "deposit" in schedule.description and component.fee_type != "Regular":
                             amount = flt(amount, 2)
-                        elif fee_type == "Regular":
+                        elif component.fee_type == "Regular":
                             amount = flt((schedule.invoice_portion/100) * amount,2)
-                        elif fee_type != "Regular":
+                        elif component.fee_type != "Regular":
                             is_deposit = True
 
                 # flag for deposit, if it is not 1st term
@@ -259,8 +258,7 @@ def get_amount(ref_doc, payment_account=None, is_deposit=False, payment_term=Non
     elif dt == "Fees" and is_deposit:
         grand_total = 0
         for f in ref_doc.components:
-            fee_type = frappe.db.get_value("Fee Category",f.fees_category,"type")
-            if fee_type and fee_type!= "Regular":
+            if f.fee_type and f.fee_type!= "Regular":
                 grand_total += f.amount
 
     elif dt == "Fees" and payment_term:

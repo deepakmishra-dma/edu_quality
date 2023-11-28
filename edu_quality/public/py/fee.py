@@ -16,11 +16,11 @@ from edu_quality.public.py.payment_request import update_payment_request_after_d
 
 def after_insert(doc,method=None):
     payment_plan(doc)
+    update_payment_schedule(doc)
 
 def before_submit(doc,method=None):
     time_based_discount(doc)
     referal_discount(doc)
-    update_payment_schedule(doc)
 
 
 def verify_invoice_portion(payment_schedule):
