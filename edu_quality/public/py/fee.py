@@ -271,7 +271,7 @@ def payment_split(doc):
         for schedule in doc.payment_schedule:
             term = schedule.payment_term
             if "deposit" in schedule.description:
-                split_payments[term] = get_split_payment(doc, schedule.invoice_portion, 1)
+                split_payments[term] = get_split_payment(doc, schedule.invoice_portion, True)
                 company_wise_split[term] = company_wise(doc, term, 1)
                 component_wise_split[term] = component_wise(doc, schedule.invoice_portion, 1)
             else:
@@ -284,46 +284,32 @@ def payment_split(doc):
     doc.component_split = json.dumps(component_wise_split)
 
 
-def get_split_payment(doc, portion, combination=0):
-    split_payment = dict()
+def get_split_payment(doc, portion, combination=False):
+    split_payment = {}
     remaining_amount = 0
+    default_account = frappe.get_value("Fees Settings", None, "default_account").split("-")[0].strip()
+    invoice_portion = portion
     for component in doc.components:
-        invoice_portion = portion
-        fee_type = frappe.db.get_value("Fee Category",component.fees_category,"type")
-        if invoice_portion==100 and fee_type == 'Regular':
+        fee_type = frappe.db.get_value("Fee Category", component.fees_category, "type")
+        if fee_type != 'Regular' and invoice_portion != 100 and combination:
+            amount = component.amount
+            label = frappe.get_value("Fee Category", component.fees_category, "custom_label")
+        elif fee_type == 'Regular' and invoice_portion != 100 and combination:
+            amount = (invoice_portion / 100) * component.amount
+            label = frappe.get_value("Fee Category", component.fees_category, "custom_label")
+        elif fee_type == 'Regular' and not combination:
+            amount = (invoice_portion / 100) * component.amount
+            label = frappe.get_value("Fee Category", component.fees_category, "custom_label")
+        else:
             continue
-        elif fee_type != 'Regular' and invoice_portion !=100:
-            if combination:
-                invoice_portion = 100
-        fees_category = component.fees_category
-        discounted_amount = component.custom_amount_after_discount
-        amount = discounted_amount if discounted_amount else component.amount
-        label = None
-        try:
-            label = frappe.get_value(
-                "Fee Category", {"name": fees_category}, "custom_label"
-            )
-            if label:
-                label = label.split("-")[0].strip()
-                if split_payment.get(label) is not None:
-                    amount = flt((invoice_portion / 100) * amount, 2)
-                    split_payment[label] += amount
-                else:
-                    amount = flt((invoice_portion / 100) * amount, 2)
-                    split_payment[label] = amount
-        except Exception as e:
-            frappe.logger("payment_split").exception(e)
 
-        if label is None:
-            amount = flt((invoice_portion / 100) * amount, 2)
+        if label:
+            label = label.split("-")[0].strip()
+            split_payment[label] = split_payment.get(label, 0) + amount
+        else:
             remaining_amount += amount
-    fees_settings = frappe.get_single("Fees Settings")
-    default_account = fees_settings.default_account.split("-")[0].strip()
-    if split_payment.get(default_account) is not None:
-        split_payment[default_account] += remaining_amount
-    else:
-        split_payment[default_account] = remaining_amount
-    frappe.logger('split').exception(split_payment)
+
+    split_payment[default_account] = split_payment.get(default_account, 0) + remaining_amount
     return split_payment
 
 
