@@ -21,8 +21,8 @@ def after_insert(doc,method=None):
 def before_submit(doc,method=None):
     time_based_discount(doc)
     referal_discount(doc)
-    update_payment_schedule(doc)
-    payment_split(doc)
+    payplan_discount = update_payment_schedule(doc)
+    payment_split(doc, payplan_discount)
 
 
 def verify_invoice_portion(payment_schedule):
@@ -263,7 +263,7 @@ def get_due_date(fee):
     return due_date
 
 
-def payment_split(doc):
+def payment_split(doc, payplan_discount=0):
     split_payments = dict()
     company_wise_split = dict()
     component_wise_split = dict()
@@ -279,9 +279,28 @@ def payment_split(doc):
                 company_wise_split[term] = company_wise(doc, term)
                 component_wise_split[term] = component_wise(doc, schedule.invoice_portion)
 
+    split_payments = update_splits(doc, split_payments, payplan_discount)
     doc.split_payments = json.dumps(split_payments)
     doc.company_split = json.dumps(company_wise_split)
     doc.component_split = json.dumps(component_wise_split)
+
+
+def update_splits(doc, split_payments, discount_amount):
+    """subtract discount amount from split payment in the last term from the respected account"""
+    try:
+        dis_filter = {"payment_plan": doc.payment_plan, "fee_structure":doc.fee_structure}
+        fees_category = frappe.db.get_value("Discount Configuration", dis_filter, "fee_category")
+        label = frappe.get_value("Fee Category", fees_category, "custom_label")
+        label = label.split("-")[0].strip()
+
+        last_term = list(split_payments.keys())[-1]
+        last_term_split = split_payments[last_term]
+        last_term_split[label] -= discount_amount
+        split_payments[last_term] = last_term_split
+        return split_payments
+    except Exception as e:
+        frappe.logger("update_splits").exception(e)
+        return split_payments
 
 
 def get_split_payment(doc, portion, combination=False):

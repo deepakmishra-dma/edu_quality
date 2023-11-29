@@ -272,8 +272,7 @@ def get_payment_plan_discount(payment_plan, doc):
                 doc.grand_total_in_words = grand_total_in_words
                 doc.outstanding_amount = grand_total
                 return (discount_amount, "Percentage", dis.discount)
-        else:
-            return None
+    return None
 
 def only_deposit(doc):    
     make_payment_request(
@@ -381,37 +380,6 @@ def update_payment_plan_after_discount_before_submit(doc, total_discount):
                 schedule.outstanding = amount
                 break
 
-
-def get_payment_plan_discount(payment_plan, doc):
-    for component in doc.components:
-        dis_filter = {"payment_plan": payment_plan, "fee_structure":doc.fee_structure, "fee_category": component.fees_category}
-        if frappe.db.exists("Discount Configuration", dis_filter):
-            dis = frappe.get_doc("Discount Configuration", dis_filter)
-            if dis.discount_amount:
-                component.custom_discounts = dis.name
-                component.custom_discount_percentage = calculate_discount(component.amount, dis.discount_amount)
-                component.custom_discount_amount = dis.discount_amount
-                component.custom_amount_after_discount = component.amount - dis.discount_amount
-                grand_total = doc.grand_total - dis.discount_amount
-                grand_total_in_words = str(frappe.utils.in_words(grand_total)).title()
-                doc.grand_total = grand_total
-                doc.grand_total_in_words = grand_total_in_words
-                doc.outstanding_amount = grand_total
-                return (dis.discount_amount, "Amount", 0)
-            else:
-                discount_amount = (component.amount * float(dis.discount)) / 100
-                component.custom_discounts = dis.name
-                component.custom_discount_percentage = dis.discount
-                component.custom_discount_amount = discount_amount
-                component.custom_amount_after_discount = component.amount - discount_amount
-                grand_total = doc.grand_total - discount_amount
-                grand_total_in_words = str(frappe.utils.in_words(grand_total)).title()
-                doc.grand_total = grand_total
-                doc.grand_total_in_words = grand_total_in_words
-                doc.outstanding_amount = grand_total
-                return (discount_amount, "Percentage", dis.discount)
-        else:
-            return None
         
 @frappe.whitelist()
 def remove_payment_plan_discount(payment_plan, doc):
@@ -429,7 +397,7 @@ def remove_payment_plan_discount(payment_plan, doc):
 
 def update_payment_schedule(doc):
     payment_plan_discount = get_payment_plan_discount(doc.payment_plan, doc)
-    other_discount = 0
+    other_discount = discount_amount = 0
     for component in doc.components:
         if component.custom_discounts:
             discount_name = component.custom_discounts.lower()
@@ -450,16 +418,19 @@ def update_payment_schedule(doc):
 
         elif i == len(doc.payment_schedule) - 1:
             if payment_plan_discount and payment_plan_discount[1] == "Amount":
+                discount_amount = payment_plan_discount[0]
                 amount = schedule.outstanding - payment_plan_discount[0]
                 schedule.payment_amount = amount
                 schedule.outstanding = amount
-                schedule.discount = payment_plan_discount[0]
+                schedule.discount = discount_amount
                 schedule.discount_type = payment_plan_discount[1]
                 schedule.discount_date = schedule.due_date
             elif payment_plan_discount and payment_plan_discount[1] == "Percentage":
+                discount_amount = payment_plan_discount[0]
                 amount = schedule.outstanding - payment_plan_discount[0]
                 schedule.payment_amount = amount
                 schedule.outstanding = amount
-                schedule.discount = payment_plan_discount[2]
+                schedule.discount = discount_amount
                 schedule.discount_type = payment_plan_discount[1]
                 schedule.discount_date = schedule.due_date
+    return other_discount or discount_amount
