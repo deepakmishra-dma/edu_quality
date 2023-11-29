@@ -25,6 +25,7 @@ def before_submit(doc,method=None):
     payment_split(doc, payplan_discount)
 
 
+
 def verify_invoice_portion(payment_schedule):
     total_portion = sum([ps.invoice_portion for ps in payment_schedule])
     if total_portion != 100:
@@ -119,15 +120,6 @@ def update_payment_plan(payment_plan, fee_name):
     doc.save(ignore_permissions=True)
     frappe.response['message'] = "Payment Plan Updated Successfully!"
 
-
-
-def before_save(doc,method=None):
-    try:
-        if not doc.get("school"):
-            doc.school = frappe.db.get_value("Student",doc.student,"school")
-        old = doc.get_doc_before_save()
-    except Exception as e:
-        frappe.logger("fee").exception(e)
 
 def create_fees(doc,method=None):
     try:
