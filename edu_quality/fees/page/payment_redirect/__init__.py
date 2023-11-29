@@ -1,3 +1,4 @@
+import json
 import frappe 
 import pickle
 from frappe.utils.print_format import download_pdf
@@ -23,64 +24,10 @@ def get_payment_details(**kwargs):
     payment_request = frappe.get_value("Payment Request",{'payment_hash': kwargs.get('doc')})
     payment_request = frappe.get_doc("Payment Request",payment_request)
     fees = frappe.get_doc("Fees",payment_request.reference_name)
-    due_date = ""
-    breakup = []
-    portion = 100
-    is_deposit = False
-    if payment_request.payment_term:
-        description = ""
-        for schedule in fees.payment_schedule:
-            if schedule.payment_term == payment_request.payment_term:
-                due_date = schedule.due_date
-                portion = schedule.invoice_portion 
-                description = schedule.description
-        for fee in fees.components:
-            discounted_amount = fee.custom_amount_after_discount
-            amount = discounted_amount if discounted_amount else fee.amount
-            if frappe.db.exists("Fee Category",fee.fees_category):
-                company = frappe.db.get_value("Fee Category",fee.fees_category,"custom_company")
-            else:
-                company = fees.company
-            if "deposit" in description and description != "":
-                fee_type = frappe.db.get_value("Fee Category",fee.fees_category,"type")
-                if fee_type and fee_type!= "Regular":
-                    breakup.append({
-                        'fees_category': fee.fees_category,
-                        'amount':  frappe.utils.fmt_money(amount, currency="INR"),
-                        'company': company
-                    })
-                    is_deposit = True
-                else:
-                    breakup.append({
-                        'fees_category': fee.fees_category,
-                        'amount':  frappe.utils.fmt_money(amount *(portion/100), currency="INR"),
-                        'company': company
-                    })
-            else:
-            
-                breakup.append({
-                    'fees_category': fee.fees_category,
-                    'amount':  frappe.utils.fmt_money(amount *(portion/100), currency="INR"),
-                    'company': company
-                    })
-    else:
-        for fee in fees.components:
-            fee_type = frappe.db.get_value("Fee Category",fee.fees_category,"type")
-            discounted_amount = fee.custom_amount_after_discount
-            amount = discounted_amount if discounted_amount else fee.amount
-            if frappe.db.exists("Fee Category",fee.fees_category):
-                company = frappe.db.get_value("Fee Category",fee.fees_category,"custom_company")
-            else:
-                company = fees.company
-                
-            if fee_type != "Regular":
-                breakup.append({
-                    'fees_category': fee.fees_category,
-                    'amount':  frappe.utils.fmt_money(amount, currency="INR"),
-                    'company': company
-                })
-                is_deposit = True
-
+    component = json.loads(fees.component_split)[payment_request.payment_term]
+    breakup = component['breakup']
+    due_date = component['due_date']
+    is_deposit = component['is_deposit']
     return {
         'student_name': fees.student_name,
         'institution': fees.company,
