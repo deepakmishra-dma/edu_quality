@@ -1,3 +1,4 @@
+import json
 import frappe
 from frappe import _
 from frappe.utils import nowdate
@@ -29,63 +30,22 @@ except ImportError:
 
 class CustomPaymentRequest(PaymentRequest):
     def create_payment_entry(self):
-        fee_doctype = self.reference_doctype
-        fee_docname = self.reference_name
-        fees = frappe.get_doc(fee_doctype, fee_docname)
-        paid_from_dict = {}
-        paid_to_dict = {}
-        companies = {}
-        fee_categories = {}
-        for component in fees.components:
-            if not self.payment_term and component.fee_type != "Regular":
-                continue
-            doc = frappe.get_doc("Fee Category", component.fees_category)
-            paid_to = doc.custom_account
-            company = doc.custom_company
-            paid_from = frappe.get_value(
-                "Account", {"company": company, "account_type": "Receivable"}, ["name"]
-            )
-            amount = component.custom_amount_after_discount or component.amount
-            if self.payment_term:
-                is_deposit = False
-                for schedule in fees.payment_schedule:
-                    if schedule.payment_term == self.payment_term:
-                        if "deposit" in schedule.description and component.fee_type != "Regular":
-                            amount = flt(amount, 2)
-                        elif component.fee_type == "Regular":
-                            amount = flt((schedule.invoice_portion/100) * amount,2)
-                        elif component.fee_type != "Regular":
-                            is_deposit = True
-
-                # flag for deposit, if it is not 1st term
-                if is_deposit:
-                    continue
-
-                if paid_from_dict.get(paid_from) is not None:
-                    paid_from_dict[paid_from] += amount
-                    fee_categories[paid_from].append({component.fees_category:amount})
-                else: 
-                    paid_from_dict[paid_from] = amount
-                    fee_categories[paid_from] = [{component.fees_category:amount}]
-                paid_to_dict[paid_from] = paid_to
-                companies[paid_from] = company
-
-        for paid_from, amount in paid_from_dict.items():
-            cost_center = frappe.get_value(
-                "Cost Center", {"company": companies[paid_from]}, ["name"]
-            )
-            payment_entry(
-                self,
-                fees,
-                amount,
-                paid_from,
-                paid_to_dict[paid_from],
-                companies[paid_from],
-                cost_center,
-                fee_categories[paid_from]
-            )
+        fees = frappe.get_doc(self.reference_doctype, self.reference_name)
         if self.payment_term:
+            company_split = json.loads(fees.company_split)[self.payment_term]
+            for split in company_split:
+                payment_entry(
+                    self,
+                    fees,
+                    split["amount"],
+                    split["paid_from"],
+                    split["paid_to"],
+                    split["company"],
+                    split["cost_center"],
+                    split["fee_categories"]
+                )
             mark_payment_term_paid(fees, self.payment_term, self.grand_total)
+            
         paid_amount = fees.outstanding_amount - self.grand_total
         frappe.db.set_value(fees.doctype, fees.name, "outstanding_amount", paid_amount)
         self.db_set("status", "Paid")
