@@ -159,6 +159,26 @@ def create_fees(doc,method=None):
         frappe.throw(str(e))
 
 
+def append_program_enrollment(doc, method=None):
+    student = frappe.get_doc("Student", doc.student)
+    student.append("class_details",{
+        'program_enrollment': doc.name,
+        'payment_plan': doc.custom_payment_plan,
+    })
+    student.save()
+
+
+def remove_program_enrollment(doc, method=None):
+    try:
+        student = frappe.get_doc("Student", doc.student)
+        for i, program_enrollment in enumerate(student.class_details):
+            if program_enrollment.program_enrollment == doc.name:
+                student.class_details.remove(student.class_details[i])
+                student.save()
+                return
+    except Exception as e:
+        frappe.throw(str(e))
+        
 
 class CustomPaymentRequest(PaymentRequest):
     def create_payment_entry(self,submit=True):

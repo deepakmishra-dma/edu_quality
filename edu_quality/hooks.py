@@ -121,7 +121,11 @@ doc_events = {
         "after_insert": "edu_quality.public.py.application.after_insert",
         "autoname": "edu_quality.public.py.application.autoname",
     },
-    "Program Enrollment": {"on_submit": "edu_quality.public.py.fee.create_fees"},
+    "Program Enrollment": {
+        "on_submit": "edu_quality.public.py.fee.create_fees",
+        "after_insert": "edu_quality.public.py.fee.append_program_enrollment",
+        "before_cancel": "edu_quality.public.py.fee.remove_program_enrollment"
+    },
     "Fees": {
         "after_insert": "edu_quality.public.py.fee.after_insert",
         "before_submit": "edu_quality.public.py.fee.before_submit",
