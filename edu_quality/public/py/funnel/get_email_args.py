@@ -3,23 +3,30 @@ import frappe
 from nextai.funnel.doctype.funnel_task import action_return_keys
 from edu_quality.public.py.utils import is_deposit
 
+
 # task data -> output from previous action or trigger
 # action_node -> action node from funnel definition
 def get_email_args(action_node, task_data):
-    src_doc = task_data['doc']
+    src_doc = task_data["doc"]
     doctype = src_doc.get("doctype")
     docname = src_doc.get("name")
 
     # do your things -- start
     # get payment request doctyp
     context = get_arguments(doctype, docname)
+    if context.get("attach_pdf"):
+        attachments = [
+            {
+                "doctype": doctype,
+                "name": docname,
+                "print_format": "Standard",
+            }
+        ]
+    else:
+        attachments = []
 
     extra_email_args = {
-        "attachments": [{
-            "doctype": doctype,
-            "name": docname,
-            "print_format": "Standard",
-        }],
+        "attachments": attachments,
         "delayed": False,
     }
 
@@ -27,16 +34,16 @@ def get_email_args(action_node, task_data):
         "task": "email sent",
         "docname": src_doc.get("name"),
         "extra_email_args": extra_email_args,
-        "context": context
+        "context": context,
     }
-    
+
     # do your things -- end
 
     return {
         # result is to be used as inout of next action(s) in the chain
         action_return_keys.result: {  # or simply "result"
             **task_data,
-            **result_overrides
+            **result_overrides,
         }
     }
 
@@ -45,7 +52,11 @@ def get_arguments(doctype, docname):
     if doctype == "Rules and Regulation Submission":
         undertaking_doc = frappe.get_doc(doctype, docname)
         student_doc = frappe.get_doc("Student", undertaking_doc.student)
-        pdf = frappe.get_value("Rules and Regulation Template", undertaking_doc.rules_and_regulation_template, "pdf")
+        pdf = frappe.get_value(
+            "Rules and Regulation Template",
+            undertaking_doc.rules_and_regulation_template,
+            "pdf",
+        )
 
         site_url = frappe.utils.get_url()
         pdf_url = site_url + pdf
@@ -67,9 +78,10 @@ def get_arguments(doctype, docname):
             "ip_address": undertaking_doc.ip_address,
             "user_info": undertaking_doc.user_info,
             "link": pdf_url,
+            "attach_pdf": True,
         }
         return context
-    
+
     elif doctype == "Payment Request":
         doc = frappe.get_doc(doctype, docname)
 
@@ -81,6 +93,7 @@ def get_arguments(doctype, docname):
             "first_name": first_name.capitalize(),
             "acad_year": academic_year,
             "link": doc.payment_url,
+            "attach_pdf": False,
         }
         return context
     return {}
