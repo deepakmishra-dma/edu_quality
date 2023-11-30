@@ -2,7 +2,7 @@ from datetime import datetime
 from edu_quality.overrides import make_payment_request
 from edu_quality.public.py.payment_request import update_payment_request_after_discount
 import frappe
-from frappe.utils import today, getdate
+from frappe.utils import today, getdate, flt
 
 
 @frappe.whitelist()
@@ -209,12 +209,15 @@ def payment_plan(doc, method=None):
         pp = frappe.get_doc("Payment Plan",doc.payment_plan)
         doc.payment_schedule = []
         initial_payment = 0
+        regular_amount = 0
         for component in doc.components:
             if component.fee_type and component.fee_type!= "Regular":
                 initial_payment = initial_payment +  component.amount
+            else:
+                regular_amount += component.amount
         i=0
         for schedule in pp.payment_schedule:
-            payment_amount = schedule.payment_amount
+            payment_amount = flt(regular_amount * schedule.invoice_portion/100,2)
             description = "Installment - " + str(i+1)
             if i==0 and initial_payment>0:
                 before_days = frappe.db.get_value("Fee Schedule",doc.fee_schedule,"create_payment_request_before")
