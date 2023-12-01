@@ -1,5 +1,11 @@
 import json
-from edu_quality.public.py.discount import payment_plan, referal_discount, time_based_discount, update_payment_schedule
+from edu_quality.public.py.discount import (
+    payment_plan,
+    referal_discount,
+    time_based_discount,
+    update_payment_schedule,
+    get_label,
+)
 import frappe 
 from erpnext.accounts.utils import get_account_currency
 from erpnext.accounts.doctype.payment_request.payment_request import PaymentRequest
@@ -19,11 +25,10 @@ def after_insert(doc,method=None):
     payment_plan(doc)
 
 def before_submit(doc,method=None):
-    time_based_discount(doc)
-    referal_discount(doc)
+    time_dis = time_based_discount(doc)
+    ref_dis = referal_discount(doc)
     payplan_discount = update_payment_schedule(doc)
-    payment_split(doc, payplan_discount)
-
+    payment_split(doc, ref_dis, time_dis, payplan_discount)
 
 
 def verify_invoice_portion(payment_schedule):
@@ -275,7 +280,12 @@ def get_due_date(fee):
     return due_date
 
 
-def payment_split(doc, payplan_discount=0):
+def payment_split(doc, ref_dis, time_dis, payplan_discount=0):
+    """
+    ref_dis: referal discount
+    time_dis: time based discount
+    payplan_discount: discount from payment plan
+    """
     split_payments = dict()
     company_wise_split = dict()
     component_wise_split = dict()
@@ -292,25 +302,48 @@ def payment_split(doc, payplan_discount=0):
                 split_payments[schedule.payment_term] = get_split_payment(doc, invoice_portion)
                 company_wise_split[term] = company_wise(doc, invoice_portion)
                 component_wise_split[term] = component_wise(doc, due_date, invoice_portion)
+    
+    if ref_dis:
+        split_payments = update_first_term_in_splits(split_payments, ref_dis)
+    if time_dis:
+        split_payments = update_first_term_in_splits(split_payments, time_dis)
+    if payplan_discount:
+        split_payments = update_last_term_in_splits(doc, split_payments, payplan_discount)
 
-    split_payments = update_splits(doc, split_payments, payplan_discount)
     doc.split_payments = json.dumps(split_payments)
     doc.company_split = json.dumps(company_wise_split)
     doc.component_split = json.dumps(component_wise_split)
 
 
-def update_splits(doc, split_payments, discount_amount):
+def update_last_term_in_splits(doc, split_payments, discount_amount):
     """subtract discount amount from split payment in the last term from the respected account"""
     try:
-        dis_filter = {"payment_plan": doc.payment_plan, "fee_structure":doc.fee_structure}
-        fees_category = frappe.db.get_value("Discount Configuration", dis_filter, "fee_category")
-        label = frappe.get_value("Fee Category", fees_category, "custom_label")
-        label = label.split("-")[0].strip()
+        for component in doc.components:
+            dis_filter = {"payment_plan": doc.payment_plan, "fee_structure":doc.fee_structure, "enabled": 1, "fee_category": component.fees_category}
+            fees_category = frappe.db.get_value("Discount Configuration", dis_filter, "fee_category")
+            label = get_label(fees_category)
 
-        last_term = list(split_payments.keys())[-1]
-        last_term_split = split_payments[last_term]
-        last_term_split[label] -= discount_amount
-        split_payments[last_term] = last_term_split
+            last_term = list(split_payments.keys())[-1]
+            last_term_split = split_payments[last_term]
+            last_term_split[label] -= discount_amount
+            split_payments[last_term] = last_term_split
+            return split_payments
+    except Exception as e:
+        frappe.logger("update_splits").exception(e)
+        return split_payments
+    
+    
+def update_first_term_in_splits(split_payments, dis):
+    """subtract discount amount from split payment in the First term from the respected account"""
+    try:
+        label = list(dis.keys())[0]
+        label = label.split("-")[0].strip()
+        discount_amount = dis[label]
+
+        first_term = list(split_payments.keys())[0]
+        first_term_split = split_payments[first_term]
+        first_term_split[label] -= discount_amount
+        split_payments[first_term] = first_term_split
         return split_payments
     except Exception as e:
         frappe.logger("update_splits").exception(e)
@@ -398,7 +431,7 @@ def company_wise(fees, invoice_portion, combination=False):
     return company_wise_split
 
 
-def component_wise(doc,due_date, invoice_portion, combination=False):
+def component_wise(doc, due_date, invoice_portion, combination=False):
     component_wise_split = dict()
     breakup = []
     for component in doc.components:
