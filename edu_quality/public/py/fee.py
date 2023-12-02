@@ -304,50 +304,121 @@ def payment_split(doc, ref_dis, time_dis, payplan_discount=0):
                 component_wise_split[term] = component_wise(doc, due_date, invoice_portion)
     
     if ref_dis:
-        split_payments = update_first_term_in_splits(split_payments, ref_dis)
+        split_payments, company_wise_split, component_wise_split = update_splits(
+            split_payments, company_wise_split, component_wise_split, dis=ref_dis, term=1
+        )
     if time_dis:
-        split_payments = update_first_term_in_splits(split_payments, time_dis)
+        split_payments, company_wise_split, component_wise_split = update_splits(
+            split_payments, company_wise_split, component_wise_split, dis=time_dis, term=1
+        )
     if payplan_discount:
-        split_payments = update_last_term_in_splits(doc, split_payments, payplan_discount)
-
+        split_payments, company_wise_split, component_wise_split = update_splits(
+            split_payments, company_wise_split, component_wise_split, doc, payplan_discount, term=-1
+        )
     doc.split_payments = json.dumps(split_payments)
     doc.company_split = json.dumps(company_wise_split)
     doc.component_split = json.dumps(component_wise_split)
 
 
-def update_last_term_in_splits(doc, split_payments, discount_amount):
-    """subtract discount amount from split payment in the last term from the respected account"""
+def update_splits(split_payments, company_wise_split=None, component_wise_split=None,  doc=None, payplan_discount=None, dis=None, term=None):
+    """
+    subtract payplan_discount amount from split payment in the last term from the respected account
+    if the time or referral discount then substract from 1st term
+    """
     try:
-        for component in doc.components:
-            dis_filter = {"payment_plan": doc.payment_plan, "fee_structure":doc.fee_structure, "enabled": 1, "fee_category": component.fees_category}
-            fees_category = frappe.db.get_value("Discount Configuration", dis_filter, "fee_category")
-            label = get_label(fees_category)
+        if payplan_discount and doc and term == -1:
+            for component in doc.components:
+                dis_filter = {"payment_plan": doc.payment_plan, "fee_structure":doc.fee_structure, "enabled": 1, "fee_category": component.fees_category}
+                fees_category = frappe.db.get_value("Discount Configuration", dis_filter, "fee_category")
+                if fees_category:
+                    label = get_label(fees_category)
 
-            last_term = list(split_payments.keys())[-1]
-            last_term_split = split_payments[last_term]
-            last_term_split[label] -= discount_amount
-            split_payments[last_term] = last_term_split
-            return split_payments
+                    last_term = list(split_payments.keys())[-1]
+                    last_term_split = split_payments[last_term]
+                    last_term_split[label] -= payplan_discount
+                    split_payments[last_term] = last_term_split
+                    company_wise_split = update_company_wise_split(company_wise_split=company_wise_split, fee_category=fees_category, payplan_discount=payplan_discount)
+                    component_wise_split = update_component_wise_split(component_wise_split=component_wise_split, fee_category=fees_category, payplan_discount=payplan_discount)
+
+                    return split_payments, company_wise_split, component_wise_split
+                
+        elif dis and term == 1 and company_wise_split:
+            label = next(iter(dis)).split("-")[0].strip()
+            discount_amount = list(dis.get(label).values())[0]
+
+            first_term = next(iter(split_payments))
+            first_term_split = split_payments.get(first_term, {})
+            first_term_split[label] = first_term_split.get(label, 0) - discount_amount
+            split_payments[first_term] = first_term_split
+            company_wise_split = update_company_wise_split(company_wise_split=company_wise_split, dis=dis)
+            component_wise_split = update_component_wise_split(component_wise_split=component_wise_split, dis=dis)
+            return split_payments, company_wise_split, component_wise_split
+
     except Exception as e:
         frappe.logger("update_splits").exception(e)
-        return split_payments
-    
-    
-def update_first_term_in_splits(split_payments, dis):
-    """subtract discount amount from split payment in the First term from the respected account"""
-    try:
-        label = list(dis.keys())[0]
-        label = label.split("-")[0].strip()
-        discount_amount = dis[label]
+        return split_payments, company_wise_split, component_wise_split
 
-        first_term = list(split_payments.keys())[0]
-        first_term_split = split_payments[first_term]
-        first_term_split[label] -= discount_amount
-        split_payments[first_term] = first_term_split
-        return split_payments
-    except Exception as e:
-        frappe.logger("update_splits").exception(e)
-        return split_payments
+    
+def update_company_wise_split(company_wise_split, fee_category=None, payplan_discount=None, dis=None):
+    """
+    subtract payplan discount amount from company split in the Last term from the respected account from fee category,
+    if the time or referral discount then substract from 1st term
+    """
+    if not company_wise_split:
+        return company_wise_split
+
+    term_keys = list(company_wise_split.keys())
+    last_term, first_term = term_keys[-1], term_keys[0]
+
+    if payplan_discount and fee_category:
+        term_split = company_wise_split[last_term]
+    elif dis:
+        label = next(iter(dis)).split("-")[0].strip()
+        fee_dis = dis.get(label)
+        fee_category, payplan_discount = list(fee_dis.keys())[0], list(fee_dis.values())[0]
+        term_split = company_wise_split.get(first_term, {})
+    else:
+        return company_wise_split
+
+    for split in term_split:
+        for fee in split.get("fee_categories"):
+            if fee_category in fee:
+                split["amount"] -= payplan_discount
+                fee[fee_category] -= payplan_discount
+                return company_wise_split
+
+    return company_wise_split
+
+
+def update_component_wise_split(component_wise_split, fee_category=None, payplan_discount=None, dis=None):
+    """
+    subtract payplan discount amount from component split in the Last term from the respected account from fee category,
+    if the time or referral discount then substract from 1st term
+    """
+    if not component_wise_split:
+        return component_wise_split    
+
+    term_keys = list(component_wise_split.keys())
+    last_term, first_term = term_keys[-1], term_keys[0]
+
+    if payplan_discount and fee_category:
+        term_split = component_wise_split[last_term]
+    elif dis:
+        label = next(iter(dis)).split("-")[0].strip()
+        fee_dis = dis.get(label)
+        fee_category, payplan_discount = list(fee_dis.keys())[0], list(fee_dis.values())[0]
+        term_split = component_wise_split.get(first_term, {})
+    else:
+        return component_wise_split
+    
+    for item in term_split['breakup']:
+        if fee_category in item.values():
+            amount = frappe.utils.flt(item['amount'].split(" ")[1])
+            amount -= payplan_discount
+            item['amount'] = frappe.utils.fmt_money(amount, currency="INR")
+            return component_wise_split
+            
+    return component_wise_split
 
 
 def get_split_payment(doc, portion, combination=False):

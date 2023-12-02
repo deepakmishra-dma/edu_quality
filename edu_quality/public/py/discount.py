@@ -192,7 +192,7 @@ def referal_discount(doc, method=None):
                     doc.components[i].custom_amount_after_discount = amount - discount
                     grand_total = doc.grand_total - discount
                     label = get_label(component.fees_category)
-                    ref_dis[label] = discount
+                    ref_dis[label] = {component.fees_category:discount}
                     break;
                 
         doc.grand_total = grand_total
@@ -293,7 +293,8 @@ def time_based_discount(doc):
             if dis.start_date <= getdate(today()) <= dis.end_date:
                 discount_amount = apply_time_based_discount(dis, component, doc)
                 label = get_label(component.fees_category)
-                return {label: discount_amount}
+                return {label:{component.fees_category:discount_amount}
+}
 
 
 def apply_time_based_discount(dis, component, fees):
