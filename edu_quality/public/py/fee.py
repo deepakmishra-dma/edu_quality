@@ -1,3 +1,4 @@
+import json
 from edu_quality.public.py.discount import payment_plan, referal_discount, time_based_discount, update_payment_schedule
 import frappe 
 from erpnext.accounts.utils import get_account_currency
@@ -20,7 +21,8 @@ def after_insert(doc,method=None):
 def before_submit(doc,method=None):
     time_based_discount(doc)
     referal_discount(doc)
-    update_payment_schedule(doc)
+    payplan_discount = update_payment_schedule(doc)
+    payment_split(doc, payplan_discount)
 
 
 
@@ -157,6 +159,26 @@ def create_fees(doc,method=None):
         frappe.throw(str(e))
 
 
+def append_program_enrollment(doc, method=None):
+    student = frappe.get_doc("Student", doc.student)
+    student.append("class_details",{
+        'program_enrollment': doc.name,
+        'payment_plan': doc.custom_payment_plan,
+    })
+    student.save()
+
+
+def remove_program_enrollment(doc, method=None):
+    try:
+        student = frappe.get_doc("Student", doc.student)
+        for i, program_enrollment in enumerate(student.class_details):
+            if program_enrollment.program_enrollment == doc.name:
+                student.class_details.remove(student.class_details[i])
+                student.save()
+                return
+    except Exception as e:
+        frappe.throw(str(e))
+        
 
 class CustomPaymentRequest(PaymentRequest):
     def create_payment_entry(self,submit=True):
@@ -252,4 +274,152 @@ def get_due_date(fee):
             due_date = term.due_date
     return due_date
 
+
+def payment_split(doc, payplan_discount=0):
+    split_payments = dict()
+    company_wise_split = dict()
+    component_wise_split = dict()
+    if doc.payment_schedule:
+        for schedule in doc.payment_schedule:
+            term = schedule.payment_term
+            due_date = schedule.due_date
+            invoice_portion = schedule.invoice_portion
+            if "deposit" in schedule.description:
+                split_payments[term] = get_split_payment(doc, invoice_portion, True)
+                company_wise_split[term] = company_wise(doc, invoice_portion, True)
+                component_wise_split[term] = component_wise(doc, due_date, invoice_portion, True)
+            else:
+                split_payments[schedule.payment_term] = get_split_payment(doc, invoice_portion)
+                company_wise_split[term] = company_wise(doc, invoice_portion)
+                component_wise_split[term] = component_wise(doc, due_date, invoice_portion)
+
+    split_payments = update_splits(doc, split_payments, payplan_discount)
+    doc.split_payments = json.dumps(split_payments)
+    doc.company_split = json.dumps(company_wise_split)
+    doc.component_split = json.dumps(component_wise_split)
+
+
+def update_splits(doc, split_payments, discount_amount):
+    """subtract discount amount from split payment in the last term from the respected account"""
+    try:
+        dis_filter = {"payment_plan": doc.payment_plan, "fee_structure":doc.fee_structure}
+        fees_category = frappe.db.get_value("Discount Configuration", dis_filter, "fee_category")
+        label = frappe.get_value("Fee Category", fees_category, "custom_label")
+        label = label.split("-")[0].strip()
+
+        last_term = list(split_payments.keys())[-1]
+        last_term_split = split_payments[last_term]
+        last_term_split[label] -= discount_amount
+        split_payments[last_term] = last_term_split
+        return split_payments
+    except Exception as e:
+        frappe.logger("update_splits").exception(e)
+        return split_payments
+
+
+def get_split_payment(doc, portion, combination=False):
+    split_payment = {}
+    remaining_amount = 0
+    default_account = frappe.get_value("Fees Settings", None, "default_account").split("-")[0].strip()
+    invoice_portion = portion
+    for component in doc.components:
+        fee_type = frappe.db.get_value("Fee Category", component.fees_category, "type")
+        if fee_type != 'Regular' and invoice_portion != 100 and combination:
+            amount = component.amount
+            label = frappe.get_value("Fee Category", component.fees_category, "custom_label")
+        elif fee_type == 'Regular' and invoice_portion != 100 and combination:
+            amount = (invoice_portion / 100) * component.amount
+            label = frappe.get_value("Fee Category", component.fees_category, "custom_label")
+        elif fee_type == 'Regular' and not combination:
+            amount = (invoice_portion / 100) * component.amount
+            label = frappe.get_value("Fee Category", component.fees_category, "custom_label")
+        else:
+            continue
+
+        if label:
+            label = label.split("-")[0].strip()
+            split_payment[label] = split_payment.get(label, 0) + amount
+        else:
+            remaining_amount += amount
+
+    split_payment[default_account] = split_payment.get(default_account, 0) + remaining_amount
+    return split_payment
+
+
+def company_wise(fees, invoice_portion, combination=False):
+    paid_from_dict = {}
+    paid_to_dict = {}
+    companies = {}
+    fee_categories = {}
+    for component in fees.components:
+        doc = frappe.get_doc("Fee Category", component.fees_category)
+        paid_to = doc.custom_account
+        company = doc.custom_company
+        paid_from = frappe.get_value(
+            "Account", {"company": company, "account_type": "Receivable"}, ["name"]
+        )
+        fee_type = frappe.db.get_value("Fee Category", component.fees_category, "type")
+        amount = component.amount
+        if fee_type != 'Regular' and combination == True:
+            amount = flt(amount, 2)
+        elif fee_type == 'Regular':
+            amount = flt((invoice_portion / 100) * amount, 2)
+        
+        if paid_from_dict.get(paid_from):
+            if fee_type != 'Regular' and combination == True:
+                paid_from_dict[paid_from] += amount
+                fee_categories[paid_from].append({component.fees_category:amount})
+            elif fee_type == 'Regular':
+                paid_from_dict[paid_from] += amount
+                fee_categories[paid_from].append({component.fees_category:amount})
+        else: 
+            if fee_type != 'Regular' and combination == True:
+                paid_from_dict[paid_from] = amount
+                fee_categories[paid_from] = [{component.fees_category:amount}]
+            elif fee_type == 'Regular':
+                paid_from_dict[paid_from] = amount
+                fee_categories[paid_from] = [{component.fees_category:amount}]
+        paid_to_dict[paid_from] = paid_to
+        companies[paid_from] = company
+
+    company_wise_split = []
+    for paid_from, amount in paid_from_dict.items():
+        cost_center = frappe.get_value(
+            "Cost Center", {"company": companies[paid_from]}, ["name"]
+        )
+        company_wise_split.append({
+            "amount": amount,
+            "paid_from": paid_from,
+            "paid_to": paid_to_dict[paid_from],
+            "company": companies[paid_from],
+            "cost_center": cost_center,
+            "fee_categories": fee_categories[paid_from]
+        })
+    return company_wise_split
+
+
+def component_wise(doc,due_date, invoice_portion, combination=False):
+    component_wise_split = dict()
+    breakup = []
+    for component in doc.components:
+        fee_type = frappe.db.get_value("Fee Category", component.fees_category, "type")
+        amount = component.amount
+        if fee_type != 'Regular' and combination == True:
+            amount = frappe.utils.fmt_money(amount, currency="INR"),
+            breakup.append({
+                "fees_category": component.fees_category,
+                "company": component.custom_company,
+                "amount": amount
+            })
+        elif fee_type == 'Regular':
+            amount = flt((invoice_portion / 100) * amount, 2)
+            breakup.append({
+                "fees_category": component.fees_category,
+                "company": component.custom_company,
+                "amount": frappe.utils.fmt_money(amount, currency="INR"),
+            })
+    component_wise_split['due_date'] = due_date
+    component_wise_split['breakup'] = breakup
+    component_wise_split['is_deposit'] = combination
+    return component_wise_split
 

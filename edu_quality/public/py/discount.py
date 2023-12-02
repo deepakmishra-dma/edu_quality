@@ -246,6 +246,7 @@ def payment_plan(doc, method=None):
                 'outstanding': payment_amount,
             })
 
+
 def only_deposit(doc):    
     make_payment_request(
         party_type="Student",
@@ -382,6 +383,7 @@ def get_payment_plan_discount(payment_plan, doc):
                 doc.outstanding_amount = grand_total
                 return (discount_amount, "Percentage", dis.discount)
     return None
+
         
 @frappe.whitelist()
 def remove_payment_plan_discount(payment_plan, doc):
@@ -421,19 +423,23 @@ def update_payment_schedule(doc):
 
             elif i == len(doc.payment_schedule) - 1:
                 if payment_plan_discount and payment_plan_discount[1] == "Amount":
+                    discount_amount = payment_plan_discount[0]
                     amount = schedule.outstanding - payment_plan_discount[0]
                     schedule.payment_amount = amount
                     schedule.outstanding = amount
-                    schedule.discount = payment_plan_discount[0]
+                    schedule.discount = discount_amount
                     schedule.discount_type = payment_plan_discount[1]
                     schedule.discount_date = schedule.due_date
                 elif payment_plan_discount and payment_plan_discount[1] == "Percentage":
+                    discount_amount = payment_plan_discount[0]
                     amount = schedule.outstanding - payment_plan_discount[0]
                     schedule.payment_amount = amount
                     schedule.outstanding = amount
-                    schedule.discount = payment_plan_discount[2]
+                    schedule.discount = discount_amount
                     schedule.discount_type = payment_plan_discount[1]
                     schedule.discount_date = schedule.due_date
         doc.save()
+        return other_discount or discount_amount
     except Exception as e:
         frappe.logger('pp_discount').exception(e)
+        return 0
