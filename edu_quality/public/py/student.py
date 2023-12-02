@@ -91,25 +91,15 @@ def create_payment_request(fee,term=None):
 
 @frappe.whitelist()
 def import_student(**kwargs):
-    school = kwargs.get("school")
-    program = kwargs.get("program")
-    division = kwargs.get("division")
-    academic_year = kwargs.get("academic_year")
-    if school == "Walnut School at Fursungi":
-        database = "test_wal_db_WSF"
-    elif school == "Walnut School at Shivane":
-        database = "test_wal_db_WSS"
-    elif school == "Walnut School at Wakad":
-        database = "test_wal_db_WSW"
-
-    data = {
-        "database": database,  # "test_wal_db_WSF",
-        "school": school,
-        "program": program,
-        "division": division,
-        "academic_year": academic_year,
+    schools = frappe.get_list("School")
+    school_db = {
+        "Walnut School at Fursungi": "test_wal_db_WSF",
+        "Walnut School at Shivane": "test_wal_db_WSS",
+        "Walnut School at Wakad": "test_wal_db_WSW",
     }
-    frappe.enqueue(import_handler, queue="long", timeout=1500, **data)
+    for school in schools:
+        database = school_db.get(school.name)
+        frappe.enqueue(import_handler, queue="long", timeout=1500, database=database)
     frappe.response['message'] = {
         "status": "success",
         "res": "Student Import Scheduled Successfully",
@@ -126,22 +116,12 @@ def get_connection(database):
     return connection
 
 
-def import_handler(database, school, program=None, division=None, academic_year=None):
+def import_handler(database):
     try:
-        academic_year = academic_year or ""
-        div = division.split("-")[0] if division else ""
-        div = get_division(div)
-        class_admitted_to = program.split("-")[0] if program else ""
-
         connection = get_connection(database)
 
+        query = f"SELECT * FROM walnut_student_info"
 
-        query = f"SELECT * FROM walnut_student_info where academic_year='{academic_year}'"
-        if program:
-            query += f" and class_admitted_to='{class_admitted_to}'"
-        if division:
-            query += f" and division='{div}'"
-            
         cursor = connection.cursor()
         cursor.execute(query)
 
@@ -150,13 +130,13 @@ def import_handler(database, school, program=None, division=None, academic_year=
         # Iterate over the rows and create Frappe records
 
         for row in rows:
-            insert_student(row, cursor.column_names, "Student", school, program, division, academic_year)
+            insert_student(row, cursor.column_names, "Student")
             
     except Exception as e:
         frappe.logger("student_import").exception(e)
     
 
-def insert_student(row, column_names, doctype, school, program, division, academic_year):
+def insert_student(row, column_names, doctype):
     frappe_data = dict(zip(column_names, row))
 
     def get_data(key, default=None):
@@ -186,6 +166,12 @@ def insert_student(row, column_names, doctype, school, program, division, academ
     address_line_2 = f"{get_data('survey_number')}, {get_data('sub_area')}, {get_data('road')}, {get_data('area')}"
 
     category = get_data("category")
+
+    class_admitted_to = get_data("class_admitted_to")
+    program = frappe.get_value("Program", {"program_name": class_admitted_to})
+    division = get_division(class_admitted_to)
+    division = frappe.get_value("Student Group", {"student_group_name": division})
+    academic_year = get_data("academic_year")
 
     new_doc_data = {
         "enabled": 1,
@@ -261,21 +247,24 @@ def insert_student(row, column_names, doctype, school, program, division, academ
 
 
 def insert_program_enrollment(student, data=None):
-    program = student.seeking_admission_in_class
-    academic_year = data.get("academic_year")
-    academic_term = frappe.get_value("Academic Term", {"academic_year": academic_year})
-    student_group = data.get('division')
-    program_enrollment = frappe.new_doc("Program Enrollment")
-    program_enrollment.student = student.name
-    program_enrollment.student_category = student.category
-    program_enrollment.student_name = student.student_name
-    program_enrollment.school = student.school
-    program_enrollment.program = program
-    program_enrollment.academic_year = academic_year
-    program_enrollment.academic_term = academic_term
-    program_enrollment.student_group = student_group
-    program_enrollment.save()
-    program_enrollment.submit()
+    try:
+        program = student.seeking_admission_in_class
+        academic_year = data.get("academic_year")
+        academic_term = frappe.get_value("Academic Term", {"academic_year": academic_year})
+        student_group = data.get('division')
+        program_enrollment = frappe.new_doc("Program Enrollment")
+        program_enrollment.student = student.name
+        program_enrollment.student_category = student.category
+        program_enrollment.student_name = student.student_name
+        program_enrollment.school = student.school
+        program_enrollment.program = program
+        program_enrollment.academic_year = academic_year
+        program_enrollment.academic_term = academic_term
+        program_enrollment.student_group = student_group
+        program_enrollment.save()
+        program_enrollment.submit()
+    except Exception as e:
+        frappe.logger("program_enrollment").exception(e)
 
 
 def get_division(grade):
