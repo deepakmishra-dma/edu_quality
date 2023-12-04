@@ -230,6 +230,9 @@ def get_amount(ref_doc, payment_account=None, is_deposit=False, payment_term=Non
     elif dt == "Fees":
         grand_total = ref_doc.outstanding_amount
 
+    elif dt == "Fee Advance":
+        grand_total = ref_doc.amount
+
     if grand_total > 0:
         return grand_total
     else:

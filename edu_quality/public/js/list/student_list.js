@@ -83,5 +83,22 @@ frappe.listview_settings['Student'] = {
             d.show();
             frappe.set_route("List", "Student");
         });
+
+        listview.page.add_menu_item(__('Create Fee Advance'), function() {
+            let students = listview.get_checked_items();
+            if (students.length > 0) {
+                frappe.call({
+                    method: 'edu_quality.fees.doctype.fee_advance.fee_advance.fee_advance',
+                    args: {
+                        students: students
+                    },
+                    callback: function(response) {
+                        console.log(response);
+                    }
+                });
+            } else {
+                frappe.msgprint(__('Please select at least one Students.'));
+            }
+        });
     }
 }
