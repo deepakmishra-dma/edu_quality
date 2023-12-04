@@ -280,7 +280,7 @@ def get_due_date(fee):
     return due_date
 
 
-def payment_split(doc, ref_dis, time_dis, payplan_discount=0):
+def payment_split(doc, ref_dis=None, time_dis=None, payplan_discount=0):
     """
     ref_dis: referal discount
     time_dis: time based discount
@@ -289,20 +289,26 @@ def payment_split(doc, ref_dis, time_dis, payplan_discount=0):
     split_payments = dict()
     company_wise_split = dict()
     component_wise_split = dict()
-    if doc.payment_schedule:
-        for schedule in doc.payment_schedule:
-            term = schedule.payment_term
-            due_date = schedule.due_date
-            invoice_portion = schedule.invoice_portion
-            if "deposit" in schedule.description:
-                split_payments[term] = get_split_payment(doc, invoice_portion, True)
-                company_wise_split[term] = company_wise(doc, invoice_portion, True)
-                component_wise_split[term] = component_wise(doc, due_date, invoice_portion, True)
-            else:
-                split_payments[schedule.payment_term] = get_split_payment(doc, invoice_portion)
-                company_wise_split[term] = company_wise(doc, invoice_portion)
-                component_wise_split[term] = component_wise(doc, due_date, invoice_portion)
-    
+    if doc.doctype == "Fees":
+        if doc.payment_schedule:
+            for schedule in doc.payment_schedule:
+                term = schedule.payment_term
+                due_date = schedule.due_date
+                invoice_portion = schedule.invoice_portion
+                if "deposit" in schedule.description:
+                    split_payments[term] = get_split_payment(doc, invoice_portion, True)
+                    company_wise_split[term] = company_wise(doc, invoice_portion, True)
+                    component_wise_split[term] = component_wise(doc, due_date, invoice_portion, True)
+                else:
+                    split_payments[schedule.payment_term] = get_split_payment(doc, invoice_portion)
+                    company_wise_split[term] = company_wise(doc, invoice_portion)
+                    component_wise_split[term] = component_wise(doc, due_date, invoice_portion)
+
+    elif doc.doctype == "Fee Advance":
+        split_payments[doc.payment_term] = get_split_payment(doc, 100)
+        company_wise_split[doc.payment_term] = company_wise(doc, 100)
+        component_wise_split[doc.payment_term] = component_wise(doc, doc.due_date, 100)
+        
     if ref_dis:
         split_payments, company_wise_split, component_wise_split = update_splits(
             split_payments, company_wise_split, component_wise_split, dis=ref_dis, term=1
@@ -425,26 +431,29 @@ def get_split_payment(doc, portion, combination=False):
     split_payment = {}
     remaining_amount = 0
     default_account = frappe.get_value("Fees Settings", None, "default_account").split("-")[0].strip()
-    invoice_portion = portion
-    for component in doc.components:
-        fee_type = frappe.db.get_value("Fee Category", component.fees_category, "type")
-        if fee_type != 'Regular' and invoice_portion != 100 and combination:
-            amount = component.amount
-            label = frappe.get_value("Fee Category", component.fees_category, "custom_label")
-        elif fee_type == 'Regular' and invoice_portion != 100 and combination:
-            amount = (invoice_portion / 100) * component.amount
-            label = frappe.get_value("Fee Category", component.fees_category, "custom_label")
-        elif fee_type == 'Regular' and not combination:
-            amount = (invoice_portion / 100) * component.amount
-            label = frappe.get_value("Fee Category", component.fees_category, "custom_label")
-        else:
-            continue
+    if doc.components:
+        invoice_portion = portion
+        for component in doc.components:
+            fee_type = frappe.db.get_value("Fee Category", component.fees_category, "type")
+            if fee_type != 'Regular' and invoice_portion != 100 and combination:
+                amount = component.amount
+                label = frappe.get_value("Fee Category", component.fees_category, "custom_label")
+            elif fee_type == 'Regular' and invoice_portion != 100 and combination:
+                amount = (invoice_portion / 100) * component.amount
+                label = frappe.get_value("Fee Category", component.fees_category, "custom_label")
+            elif fee_type == 'Regular' and not combination:
+                amount = (invoice_portion / 100) * component.amount
+                label = frappe.get_value("Fee Category", component.fees_category, "custom_label")
+            else:
+                continue
 
-        if label:
-            label = label.split("-")[0].strip()
-            split_payment[label] = split_payment.get(label, 0) + amount
-        else:
-            remaining_amount += amount
+            if label:
+                label = label.split("-")[0].strip()
+                split_payment[label] = split_payment.get(label, 0) + amount
+            else:
+                remaining_amount += amount
+    elif doc.doctype == "Fee Advance":
+        remaining_amount = doc.amount
 
     split_payment[default_account] = split_payment.get(default_account, 0) + remaining_amount
     return split_payment

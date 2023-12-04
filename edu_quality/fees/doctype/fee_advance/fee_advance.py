@@ -1,6 +1,7 @@
 # Copyright (c) 2023, Hybrowlabs Technologies and contributors
 # For license information, please see license.txt
 
+from edu_quality.public.py.fee import payment_split
 import frappe
 from frappe.model.document import Document
 from frappe import _
@@ -17,9 +18,9 @@ class FeeAdvance(Document):
             fee_structure = frappe.get_doc("Fee Structure", self.fee_structure)
             self.components = []
             percent = get_percent(self.payment_term, self.payment_plan)
-            self.amount = 0
+            amount = 0
             for component in fee_structure.components:
-                self.amount += component.amount * percent / 100
+                amount += component.amount * percent / 100
                 self.append(
                     "components",
                     {
@@ -28,13 +29,21 @@ class FeeAdvance(Document):
                         "amount": component.amount * percent / 100,
                     },
                 )
+            self.amount = amount
+            self.outstanding_amount = amount
         else:
             fee_structure = frappe.get_doc("Fee Structure", self.fee_structure)
             percent = get_percent(self.payment_term, self.payment_plan)
-            self.amount = 0
+            amount = 0
             self.components = []
             for component in fee_structure.components:
-                self.amount += component.amount * percent / 100
+                amount += component.amount * percent / 100
+            self.amount = amount
+            self.outstanding_amount = amount
+
+    def before_submit(self):
+        payment_split(self)
+
     
     
     def on_submit(self):
@@ -50,13 +59,11 @@ class FeeAdvance(Document):
 
 
 def get_percent(term, payment_plan):
-    percent = 0
     doc = frappe.get_doc("Payment Plan", payment_plan)
     for d in doc.payment_schedule:
         if d.payment_term == term:
-            percent = d.invoice_portion
-            break
-    return percent
+            return d.invoice_portion
+    return 100
 
     
 @frappe.whitelist()
@@ -78,7 +85,8 @@ def create_fee_advance(student, program_enrollment):
     """
     program_enrollment: Previous Program Enrollment Doc
     """
-    school, institution = frappe.get_value("School", program_enrollment.custom_school, ["school", "institution"])
+    school = frappe.get_value("Program", program_enrollment.program, ["school"])
+    institution = frappe.get_value("School", school, ["institution"])
     next_program = get_next_program(program_enrollment.program, school)
     academic_year = get_current_academic_year()
     fee_structure = get_fee_structure(academic_year, school, next_program)
@@ -87,7 +95,7 @@ def create_fee_advance(student, program_enrollment):
     fee_advance = frappe.new_doc("Fee Advance")
     fee_advance.student = program_enrollment.student
     fee_advance.academic_year = academic_year
-    fee_advance.school = program_enrollment.custom_school
+    fee_advance.school = school
     fee_advance.fee_structure = fee_structure
     fee_advance.institution = institution
     fee_advance.program = program_enrollment.program
@@ -98,7 +106,7 @@ def create_fee_advance(student, program_enrollment):
     fee_advance.posting_date = today()
     fee_advance.due_date = frappe.utils.add_days(today(), 30)
     fee_advance.save()
-    # fee_advance.submit()
+    fee_advance.submit()
     frappe.msgprint(
         f"Fee Advance created for student <b>{student.first_name}</b>."
     )

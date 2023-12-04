@@ -24,7 +24,13 @@
   "section_break_q6c2a",
   "components",
   "amount",
-  "amended_from"
+  "outstanding_amount",
+  "amended_from",
+  "splits_tab",
+  "split_payments",
+  "component_split",
+  "column_break_xjtbl",
+  "company_split"
  ],
  "fields": [
   {
@@ -136,12 +142,42 @@
    "fieldname": "is_rte",
    "fieldtype": "Check",
    "label": "Is RTE"
+  },
+  {
+   "fieldname": "splits_tab",
+   "fieldtype": "Tab Break",
+   "label": "Splits"
+  },
+  {
+   "fieldname": "split_payments",
+   "fieldtype": "JSON",
+   "label": "Split Payments"
+  },
+  {
+   "fieldname": "company_split",
+   "fieldtype": "JSON",
+   "label": "Company Split"
+  },
+  {
+   "fieldname": "component_split",
+   "fieldtype": "JSON",
+   "label": "Component Split"
+  },
+  {
+   "fieldname": "column_break_xjtbl",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "outstanding_amount",
+   "fieldtype": "Currency",
+   "label": "Outstanding Amount",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-11-16 16:27:50.314480",
+ "modified": "2023-11-17 11:55:16.629939",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Fee Advance",
