@@ -23,14 +23,21 @@ def cache_data(ttl):
 def get_payment_details(**kwargs):
     payment_request = frappe.get_value("Payment Request",{'payment_hash': kwargs.get('doc')})
     payment_request = frappe.get_doc("Payment Request",payment_request)
-    fees = frappe.get_doc("Fees",payment_request.reference_name)
+    fees = frappe.get_doc(payment_request.reference_doctype, payment_request.reference_name)
     component = json.loads(fees.component_split)[payment_request.payment_term]
     breakup = component['breakup']
     due_date = component['due_date']
     is_deposit = component['is_deposit']
+    if fees.doctype == "Fees":
+        student_name = fees.student_name
+        company = fees.company
+    elif fees.doctype == "Fee Advance":
+        student_name = frappe.db.get_value("Student", fees.student, "student_name")
+        company = fees.institution
+
     return {
-        'student_name': fees.student_name,
-        'institution': fees.company,
+        'student_name': student_name,
+        'institution': company,
         'due_date': due_date,
         'class': fees.program,
         'student_id': fees.student,
