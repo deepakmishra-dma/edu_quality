@@ -144,28 +144,36 @@ def create_student_application(**args):
         frappe.msgprint(msg=str(e), title="Error", indicator="red")
         raise e
 
+
 school_id_map = {
-    "2":"Walnut School at Shivane",
-    "4":"Walnut School at Fursungi",
-    "5":"Walnut School at Wakad"
+    "2": "Walnut School at Shivane",
+    "4": "Walnut School at Fursungi",
+    "5": "Walnut School at Wakad",
 }
+
 
 @frappe.whitelist(allow_guest=True)
 def update_stud_data(**data):
     data = data.get("Student").get("StudentInfoChange")
-    ref_no = data.get("Student").get("refNo",None)
-    school_id = data.get("Student").get("school_id",None)
+    ref_no = data.get("Student").get("refNo", None)
+    school_id = data.get("Student").get("school_id", None)
     # applicant
     existing_student_doc = None
-    if(not ref_no or not school_id):
+    if not ref_no or not school_id:
         existing_student_doc = frappe.get_list(
             "Student Applicant",
             {"lms_id": data.get("lms_id"), "school": data.get("school_name")},
             ignore_permissions=True,
         )
     else:
-        existing_student_doc = frappe.get_list("Student",{"custom_reference_number":ref_no,"school":school_id_map.get(str(school_id),'')})
-        
+        existing_student_doc = frappe.get_list(
+            "Student",
+            {
+                "custom_reference_number": ref_no,
+                "school": school_id_map.get(str(school_id), ""),
+            },
+        )
+
     if not existing_student_doc or len(existing_student_doc) == 0:
         raise Exception("Student Doesnt exist")
     name = existing_student_doc[0].get("name")
@@ -567,13 +575,14 @@ def serialize_lead_to_application(doc: dict):
         "last_name": doc.get("last_name"),
         "mother_f_name": doc.get("mothers_name"),
         "date_of_birth": doc.get("date_of_birth"),
+        "student_mobile_number": doc.get("fathers_phone") or doc.get("mothers_phone"),
         "father_email": doc.get("fathers_email"),
         "mother_mobile_number": doc.get("mothers_phone"),
         "father_mobile_no": doc.get("fathers_phone"),
         "bus_service_required": doc.get("bus_service_required"),
         "is_sibling_in_school": doc.get("is_sibling_already_at_walnut"),
         "rte_student": doc.get("stud_rte"),
-        "is_rte":doc.get("stud_rte"),
+        "is_rte": doc.get("stud_rte"),
         "stud_rte": doc.get("rte_student"),
         "catering": doc.get("catering"),
         "siblings": siblings or [],
@@ -884,7 +893,7 @@ def get_and_schedule_pending_walkouts():
 
         leads = query.run(as_dict=True)
         # enqueue only once to same phone number
-        if(len(leads)):
+        if len(leads):
             frappe.enqueue(
                 "edu_quality.api.student_application.send_feedback_after_walkout",
                 name=leads[0].get("name"),
@@ -893,7 +902,7 @@ def get_and_schedule_pending_walkouts():
                 queue="long",
                 timeout=4000,
             )
-            
+
         # set to none in all leads
         for i in leads:
             set_walked_out_fields_none(i.get("name"))
