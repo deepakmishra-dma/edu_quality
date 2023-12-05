@@ -42,7 +42,7 @@ class CustomPaymentRequest(PaymentRequest):
                     split["paid_to"],
                     split["company"],
                     split["cost_center"],
-                    split["fee_categories"]
+                    split.get("fee_categories")
                 )
             mark_payment_term_paid(fees, self.payment_term, self.grand_total)
             

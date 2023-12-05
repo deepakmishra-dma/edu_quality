@@ -303,24 +303,25 @@ def payment_split(doc, ref_dis=None, time_dis=None, payplan_discount=0):
                     split_payments[schedule.payment_term] = get_split_payment(doc, invoice_portion)
                     company_wise_split[term] = company_wise(doc, invoice_portion)
                     component_wise_split[term] = component_wise(doc, due_date, invoice_portion)
+        
+        if ref_dis:
+            split_payments, company_wise_split, component_wise_split = update_splits(
+                split_payments, company_wise_split, component_wise_split, dis=ref_dis, term=1
+            )
+        if time_dis:
+            split_payments, company_wise_split, component_wise_split = update_splits(
+                split_payments, company_wise_split, component_wise_split, dis=time_dis, term=1
+            )
+        if payplan_discount:
+            split_payments, company_wise_split, component_wise_split = update_splits(
+                split_payments, company_wise_split, component_wise_split, doc, payplan_discount, term=-1
+            )
 
     elif doc.doctype == "Fee Advance":
         split_payments[doc.payment_term] = get_split_payment(doc, 100)
         company_wise_split[doc.payment_term] = company_wise(doc, 100)
         component_wise_split[doc.payment_term] = component_wise(doc, doc.due_date, 100)
-        
-    if ref_dis:
-        split_payments, company_wise_split, component_wise_split = update_splits(
-            split_payments, company_wise_split, component_wise_split, dis=ref_dis, term=1
-        )
-    if time_dis:
-        split_payments, company_wise_split, component_wise_split = update_splits(
-            split_payments, company_wise_split, component_wise_split, dis=time_dis, term=1
-        )
-    if payplan_discount:
-        split_payments, company_wise_split, component_wise_split = update_splits(
-            split_payments, company_wise_split, component_wise_split, doc, payplan_discount, term=-1
-        )
+
     doc.split_payments = json.dumps(split_payments)
     doc.company_split = json.dumps(company_wise_split)
     doc.component_split = json.dumps(component_wise_split)
@@ -460,6 +461,8 @@ def get_split_payment(doc, portion, combination=False):
 
 
 def company_wise(fees, invoice_portion, combination=False):
+    if fees.doctype == "Fee Advance":
+        return company_wise_advance(fees.institution, fees.amount)
     paid_from_dict = {}
     paid_to_dict = {}
     companies = {}
@@ -508,6 +511,22 @@ def company_wise(fees, invoice_portion, combination=False):
             "cost_center": cost_center,
             "fee_categories": fee_categories[paid_from]
         })
+    return company_wise_split
+
+
+def company_wise_advance(company, amount, invoice_portion=100):
+    paid_to = frappe.get_value("Company", company, "default_receivable_account")
+    paid_from = frappe.get_value("Company", company, "default_payable_account")
+    cost_center = frappe.get_value("Company", company, "cost_center")
+    company_wise_split = [
+        {
+            "amount": amount,
+            "paid_from": paid_from,
+            "paid_to": paid_to,
+            "company": company,
+            "cost_center": cost_center,
+        }
+    ]
     return company_wise_split
 
 
