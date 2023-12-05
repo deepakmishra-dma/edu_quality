@@ -1,5 +1,6 @@
 import json
 from edu_quality.public.py.discount import (
+    add_discount,
     payment_plan,
     referal_discount,
     time_based_discount,
@@ -46,7 +47,9 @@ def verify_payment_term(payment_schedule):
 
 
 def before_update(doc,method=None):   
-    if doc.parent_otp == 0:
+    old_doc = doc.get_doc_before_save()
+
+    if doc.parent_otp == 0 and old_doc.payment_schedule != doc.payment_schedule:
         doc.need_otp = 1
         frappe.msgprint(title="Payment Schedule", msg="Please Verify parent OTP to Update Payment Schedule")
         return
@@ -54,7 +57,6 @@ def before_update(doc,method=None):
     verify_invoice_portion(doc.payment_schedule)
     verify_payment_term(doc.payment_schedule)
     
-    old_doc = doc.get_doc_before_save()
     if old_doc.payment_plan != doc.payment_plan:
         return
     elif old_doc.payment_schedule != doc.payment_schedule:
@@ -100,11 +102,17 @@ def update_payment_plan(payment_plan, fee_name):
     doc = frappe.get_doc("Fees", fee_name)
     for ps in doc.payment_schedule:
         if ps.outstanding == 0:
-            frappe.throw(f"Cannot Change Payment Plan As {ps.term} is already Paid!")
+            frappe.throw(f"Cannot Change Payment Plan As {ps.payment_term} is already Paid!")
 
     old_payment_plan = frappe.get_doc("Payment Plan", doc.payment_plan)
     deposit = get_deposit(doc.payment_schedule, old_payment_plan.payment_schedule)
     payment_plan = frappe.get_doc("Payment Plan", payment_plan)
+    discount = update_payplan_discount(doc, payment_plan)
+    if discount:
+        add_discount(fee_name, discount[1])
+        discount_amount = discount[0]
+
+    doc = frappe.get_doc("Fees", fee_name)
     doc.payment_schedule = []
 
     for i, ps in enumerate(payment_plan.payment_schedule):
@@ -113,6 +121,8 @@ def update_payment_plan(payment_plan, fee_name):
         if i == 0 and deposit != 0:
             description += " and Deposit"
             amount += deposit
+        if i == len(payment_plan.payment_schedule)-1 and discount:
+            amount -= discount_amount
         doc.append("payment_schedule",{
             'payment_term':ps.payment_term,
             'description': description,
@@ -125,6 +135,27 @@ def update_payment_plan(payment_plan, fee_name):
     doc.save(ignore_permissions=True)
     frappe.response['message'] = "Payment Plan Updated Successfully!"
 
+
+def update_payplan_discount(doc, payment_plan):
+    """
+    update time based discount and referal discount in the payment schedule
+    """
+    for ps in payment_plan.payment_schedule:
+        if ps.due_date < datetime.today().date():
+            frappe.msgprint("Cannot Apply new Payment Plan Discount As Due Date is Passed!")
+            return
+        
+    for component in doc.components:
+        dis_filter = {"payment_plan": payment_plan.name, "fee_structure":doc.fee_structure, "fee_category": component.fees_category, "enabled":1}
+        if frappe.db.exists("Discount Configuration", dis_filter):
+            dis = frappe.get_doc("Discount Configuration", dis_filter)
+            if dis.discount_amount:
+                return dis.discount_amount, dis
+            else:
+                discount_amount = (component.amount * float(dis.discount)) / 100
+                return discount_amount, dis
+    return None
+    
 
 def create_fees(doc,method=None):
     try:

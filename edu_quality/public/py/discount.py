@@ -404,9 +404,11 @@ def remove_payment_plan_discount(payment_plan, doc):
                 break
             
 
-def update_payment_schedule(doc):
+def update_payment_schedule(doc, payment_plan=None):
     try:
-        payment_plan_discount = get_payment_plan_discount(doc.payment_plan, doc)
+        if not payment_plan:
+            payment_plan = doc.payment_plan
+        payment_plan_discount = get_payment_plan_discount(payment_plan, doc)
         other_discount = 0
         for component in doc.components:
             if component.custom_discounts:
