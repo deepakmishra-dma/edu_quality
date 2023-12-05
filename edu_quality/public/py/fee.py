@@ -20,8 +20,12 @@ from frappe.utils import flt, get_url, nowdate
 from edu_quality.overrides import make_payment_request
 from datetime import datetime
 from edu_quality.public.py.payment_request import update_payment_request_after_discount
+import qrcode
+from io import BytesIO
+import base64
 
-def after_insert(doc,method=None):
+
+def after_insert(doc, method=None):
     payment_plan(doc)
 
 def before_submit(doc,method=None):
@@ -30,11 +34,11 @@ def before_submit(doc,method=None):
     payplan_discount = update_payment_schedule(doc)
     payment_split(doc, ref_dis, time_dis, payplan_discount)
 
-
 def verify_invoice_portion(payment_schedule):
     total_portion = sum([ps.invoice_portion for ps in payment_schedule])
     if total_portion != 100:
         frappe.throw(title="Payment Schedule", msg="Total Invoice Portion must be 100%")
+
 
 def verify_payment_term(payment_schedule):
     terms = []
@@ -45,26 +49,33 @@ def verify_payment_term(payment_schedule):
             terms.append(ps.payment_term)
 
 
-def before_update(doc,method=None):   
+def before_update(doc, method=None):
     if doc.parent_otp == 0:
         doc.need_otp = 1
-        frappe.msgprint(title="Payment Schedule", msg="Please Verify parent OTP to Update Payment Schedule")
+        frappe.msgprint(
+            title="Payment Schedule",
+            msg="Please Verify parent OTP to Update Payment Schedule",
+        )
         return
-    
+
     verify_invoice_portion(doc.payment_schedule)
     verify_payment_term(doc.payment_schedule)
-    
+
     old_doc = doc.get_doc_before_save()
     if old_doc.payment_plan != doc.payment_plan:
         return
     elif old_doc.payment_schedule != doc.payment_schedule:
-        for term,old_term in zip(doc.payment_schedule,old_doc.payment_schedule):
+        for term, old_term in zip(doc.payment_schedule, old_doc.payment_schedule):
             if old_term.outstanding == 0 and term.outstanding != 0:
-                frappe.throw("Cannot Change term - " + term.payment_term + " As it is already Paid!")
+                frappe.throw(
+                    "Cannot Change term - "
+                    + term.payment_term
+                    + " As it is already Paid!"
+                )
             if term.invoice_portion:
-                term.payment_amount = (term.invoice_portion * doc.grand_total)/100
+                term.payment_amount = (term.invoice_portion * doc.grand_total) / 100
             elif term.payment_amount:
-                term.invoice_portion = (term.payment_amount/doc.grand_total)*100
+                term.invoice_portion = (term.payment_amount / doc.grand_total) * 100
 
         payment_schedule = doc.payment_schedule
         doc.payment_schedule = []
@@ -73,27 +84,34 @@ def before_update(doc,method=None):
         for i, ps in enumerate(payment_schedule):
             amount = (ps.invoice_portion * doc.grand_total) / 100
             description = f"Installment {i+1}"
-            deposit = get_deposit(old_doc.payment_schedule, old_payment_plan.payment_schedule)
+            deposit = get_deposit(
+                old_doc.payment_schedule, old_payment_plan.payment_schedule
+            )
 
             # if it is 1st term and deposit in previous payment schedule is not 0
             if i == 0 and deposit != 0:
                 description += " and Deposit"
                 amount += deposit
 
-            doc.append("payment_schedule",{
-                'payment_term':ps.payment_term,
-                'description': description,
-                'invoice_portion': ps.invoice_portion,
-                'payment_amount':amount,
-                'outstanding':amount,
-                'due_date':ps.due_date
-            })
+            doc.append(
+                "payment_schedule",
+                {
+                    "payment_term": ps.payment_term,
+                    "description": description,
+                    "invoice_portion": ps.invoice_portion,
+                    "payment_amount": amount,
+                    "outstanding": amount,
+                    "due_date": ps.due_date,
+                },
+            )
         update_payment_request_after_discount(doc)
+
 
 def get_deposit(doc_payment_plan, payment_plan):
     if "deposit" in doc_payment_plan[0].description.lower():
         return doc_payment_plan[0].payment_amount - payment_plan[0].payment_amount
     return 0
+
 
 @frappe.whitelist()
 def update_payment_plan(payment_plan, fee_name):
@@ -113,63 +131,95 @@ def update_payment_plan(payment_plan, fee_name):
         if i == 0 and deposit != 0:
             description += " and Deposit"
             amount += deposit
-        doc.append("payment_schedule",{
-            'payment_term':ps.payment_term,
-            'description': description,
-            'invoice_portion': ps.invoice_portion,
-            'payment_amount':amount,
-            'outstanding':amount,
-            'due_date':ps.due_date
-        })
+        doc.append(
+            "payment_schedule",
+            {
+                "payment_term": ps.payment_term,
+                "description": description,
+                "invoice_portion": ps.invoice_portion,
+                "payment_amount": amount,
+                "outstanding": amount,
+                "due_date": ps.due_date,
+            },
+        )
     doc.payment_plan = payment_plan.name
     doc.save(ignore_permissions=True)
-    frappe.response['message'] = "Payment Plan Updated Successfully!"
+    frappe.response["message"] = "Payment Plan Updated Successfully!"
 
 
-def create_fees(doc,method=None):
+def create_fees(doc, method=None):
     try:
-        doc = frappe.get_doc("Student",doc.student)
+        doc = frappe.get_doc("Student", doc.student)
         if doc.student_applicant:
-            student_applicant = frappe.get_doc("Student Applicant",doc.student_applicant)
-            fees = frappe.get_doc({
-                "doctype": "Fees",
-                "student": doc.name,
-                "program_enrollment": frappe.db.get_value("Program Enrollment",{'student': doc.name},'name'),
-                "fee_structure": student_applicant.fee_structure,
-                "fee_schedule": student_applicant.fee_schedule,
-                "academic_year": student_applicant.academic_year,
-                "custom_school": student_applicant.school,
-                "company": student_applicant.institution
-            })
+            student_applicant = frappe.get_doc(
+                "Student Applicant", doc.student_applicant
+            )
+            fees = frappe.get_doc(
+                {
+                    "doctype": "Fees",
+                    "student": doc.name,
+                    "program_enrollment": frappe.db.get_value(
+                        "Program Enrollment", {"student": doc.name}, "name"
+                    ),
+                    "fee_structure": student_applicant.fee_structure,
+                    "fee_schedule": student_applicant.fee_schedule,
+                    "academic_year": student_applicant.academic_year,
+                    "custom_school": student_applicant.school,
+                    "company": student_applicant.institution,
+                }
+            )
             if len(student_applicant.fee_components) > 0:
                 for component in student_applicant.fee_components:
-                    fees.append("components",{
-                        'fees_category':component.fees_category,
-                        'amount':component.amount,
-                        'description': component.description
-                    })
+                    fees.append(
+                        "components",
+                        {
+                            "fees_category": component.fees_category,
+                            "amount": component.amount,
+                            "description": component.description,
+                        },
+                    )
             else:
-                fee_structure = frappe.get_doc("Fee Structure",student_applicant.fee_structure) 
+                fee_structure = frappe.get_doc(
+                    "Fee Structure", student_applicant.fee_structure
+                )
                 for component in fee_structure.components:
-                    fees.append("components",{
-                        'fees_category':component.fees_category,
-                        'amount':component.amount,
-                        'description': component.description
-                    })
+                    fees.append(
+                        "components",
+                        {
+                            "fees_category": component.fees_category,
+                            "amount": component.amount,
+                            "description": component.description,
+                        },
+                    )
             fees.insert()
             fees.submit()
             from edu_quality.public.py.student import update_student_group
-            update_student_group(fees.program_enrollment,fee_structure=student_applicant.fee_structure)
+
+            update_student_group(
+                fees.program_enrollment, fee_structure=student_applicant.fee_structure
+            )
     except Exception as e:
         frappe.throw(str(e))
 
 
 def append_program_enrollment(doc, method=None):
     student = frappe.get_doc("Student", doc.student)
-    student.append("class_details",{
-        'program_enrollment': doc.name,
-        'payment_plan': doc.custom_payment_plan,
-    })
+    # create id card
+    qrcode_image = qrcode.make(f"{doc.get('academic_year')}/{doc.get('custom_school')}/{student.get('reference_number')}")
+   
+    doc.custom_id_card = (
+        frappe.get_doc({"doctype": "Student ID Card", "program_enrolled_in": doc.name,"qr_code": im_2_b64(qrcode_image)})
+        .insert()
+        .get("name")
+    )
+  
+    student.append(
+        "class_details",
+        {
+            "program_enrollment": doc.name,
+            "payment_plan": doc.custom_payment_plan,
+        },
+    )
     student.save()
 
 
@@ -183,11 +233,11 @@ def remove_program_enrollment(doc, method=None):
                 return
     except Exception as e:
         frappe.throw(str(e))
-        
+
 
 class CustomPaymentRequest(PaymentRequest):
-    def create_payment_entry(self,submit=True):
-        if not  self.reference_doctype == 'Fees':
+    def create_payment_entry(self, submit=True):
+        if not self.reference_doctype == "Fees":
             return
         frappe.flags.ignore_account_permission = True
 
@@ -198,36 +248,40 @@ class CustomPaymentRequest(PaymentRequest):
         deposits = 0
         fees = 0
         for component in ref_doc.components:
-            if frappe.db.exists("Security Deposit",component.fees_category):
-                        deposits += component.amount
+            if frappe.db.exists("Security Deposit", component.fees_category):
+                deposits += component.amount
             else:
                 fees += component.amount
         if deposits:
-            payment_entry(self,ref_doc,deposits,deposits,company.default_payable_account)
+            payment_entry(
+                self, ref_doc, deposits, deposits, company.default_payable_account
+            )
         if fees:
-            return payment_entry(self,ref_doc,fees,fees,company.default_receivable_account)
-        
+            return payment_entry(
+                self, ref_doc, fees, fees, company.default_receivable_account
+            )
 
-def payment_entry(doc,ref_doc,bank_amount,party_amount,paid_to):
+
+def payment_entry(doc, ref_doc, bank_amount, party_amount, paid_to):
     bank_amount = doc.grand_total
     party_amount = doc.grand_total
 
-    payment_entry = frappe.get_doc({
-        'doctytpe': "Payment Entry",
-        'payment_type': 'Receive',
-        'company': ref_doc.company,
-        'cost_center': doc.get("cost_center"),
-        'posting_date': nowdate(),
-        'reference_date': nowdate(),
-        'mode_of_payment': doc.get("mode_of_payment"),
-        'party_type': "Student",
-        'party': ref_doc.student,
-        'party_name': frappe.get_value("Student",ref_doc.student,'first_name'),
-        'paid_to': paid_to,
-        'paid_amount': party_amount,
-        
-
-    })
+    payment_entry = frappe.get_doc(
+        {
+            "doctytpe": "Payment Entry",
+            "payment_type": "Receive",
+            "company": ref_doc.company,
+            "cost_center": doc.get("cost_center"),
+            "posting_date": nowdate(),
+            "reference_date": nowdate(),
+            "mode_of_payment": doc.get("mode_of_payment"),
+            "party_type": "Student",
+            "party": ref_doc.student,
+            "party_name": frappe.get_value("Student", ref_doc.student, "first_name"),
+            "paid_to": paid_to,
+            "paid_amount": party_amount,
+        }
+    )
 
     payment_entry.update(
         {
@@ -270,12 +324,15 @@ def payment_entry(doc,ref_doc,bank_amount,party_amount,paid_to):
 
 @frappe.whitelist()
 def get_due_date(fee):
-    fee = frappe.get_doc("Fees",fee)
+    fee = frappe.get_doc("Fees", fee)
     due_date = ""
     for term in fee.payment_schedule:
         if not due_date:
             due_date = term.due_date
-        if frappe.db.exists("Payment Request",{'payment_term':term.payment_term,"reference_name":fee.name}):
+        if frappe.db.exists(
+            "Payment Request",
+            {"payment_term": term.payment_term, "reference_name": fee.name},
+        ):
             due_date = term.due_date
     return due_date
 
@@ -297,9 +354,13 @@ def payment_split(doc, ref_dis, time_dis, payplan_discount=0):
             if "deposit" in schedule.description:
                 split_payments[term] = get_split_payment(doc, invoice_portion, True)
                 company_wise_split[term] = company_wise(doc, invoice_portion, True)
-                component_wise_split[term] = component_wise(doc, due_date, invoice_portion, True)
+                component_wise_split[term] = component_wise(
+                    doc, due_date, invoice_portion, True
+                )
             else:
-                split_payments[schedule.payment_term] = get_split_payment(doc, invoice_portion)
+                split_payments[schedule.payment_term] = get_split_payment(
+                    doc, invoice_portion
+                )
                 company_wise_split[term] = company_wise(doc, invoice_portion)
                 component_wise_split[term] = component_wise(doc, due_date, invoice_portion)
     
@@ -424,19 +485,27 @@ def update_component_wise_split(component_wise_split, fee_category=None, payplan
 def get_split_payment(doc, portion, combination=False):
     split_payment = {}
     remaining_amount = 0
-    default_account = frappe.get_value("Fees Settings", None, "default_account").split("-")[0].strip()
+    default_account = (
+        frappe.get_value("Fees Settings", None, "default_account").split("-")[0].strip()
+    )
     invoice_portion = portion
     for component in doc.components:
         fee_type = frappe.db.get_value("Fee Category", component.fees_category, "type")
-        if fee_type != 'Regular' and invoice_portion != 100 and combination:
+        if fee_type != "Regular" and invoice_portion != 100 and combination:
             amount = component.amount
-            label = frappe.get_value("Fee Category", component.fees_category, "custom_label")
-        elif fee_type == 'Regular' and invoice_portion != 100 and combination:
+            label = frappe.get_value(
+                "Fee Category", component.fees_category, "custom_label"
+            )
+        elif fee_type == "Regular" and invoice_portion != 100 and combination:
             amount = (invoice_portion / 100) * component.amount
-            label = frappe.get_value("Fee Category", component.fees_category, "custom_label")
-        elif fee_type == 'Regular' and not combination:
+            label = frappe.get_value(
+                "Fee Category", component.fees_category, "custom_label"
+            )
+        elif fee_type == "Regular" and not combination:
             amount = (invoice_portion / 100) * component.amount
-            label = frappe.get_value("Fee Category", component.fees_category, "custom_label")
+            label = frappe.get_value(
+                "Fee Category", component.fees_category, "custom_label"
+            )
         else:
             continue
 
@@ -446,7 +515,9 @@ def get_split_payment(doc, portion, combination=False):
         else:
             remaining_amount += amount
 
-    split_payment[default_account] = split_payment.get(default_account, 0) + remaining_amount
+    split_payment[default_account] = (
+        split_payment.get(default_account, 0) + remaining_amount
+    )
     return split_payment
 
 
@@ -464,25 +535,25 @@ def company_wise(fees, invoice_portion, combination=False):
         )
         fee_type = frappe.db.get_value("Fee Category", component.fees_category, "type")
         amount = component.amount
-        if fee_type != 'Regular' and combination == True:
+        if fee_type != "Regular" and combination == True:
             amount = flt(amount, 2)
-        elif fee_type == 'Regular':
+        elif fee_type == "Regular":
             amount = flt((invoice_portion / 100) * amount, 2)
-        
+
         if paid_from_dict.get(paid_from):
-            if fee_type != 'Regular' and combination == True:
+            if fee_type != "Regular" and combination == True:
                 paid_from_dict[paid_from] += amount
-                fee_categories[paid_from].append({component.fees_category:amount})
-            elif fee_type == 'Regular':
+                fee_categories[paid_from].append({component.fees_category: amount})
+            elif fee_type == "Regular":
                 paid_from_dict[paid_from] += amount
-                fee_categories[paid_from].append({component.fees_category:amount})
-        else: 
-            if fee_type != 'Regular' and combination == True:
+                fee_categories[paid_from].append({component.fees_category: amount})
+        else:
+            if fee_type != "Regular" and combination == True:
                 paid_from_dict[paid_from] = amount
-                fee_categories[paid_from] = [{component.fees_category:amount}]
-            elif fee_type == 'Regular':
+                fee_categories[paid_from] = [{component.fees_category: amount}]
+            elif fee_type == "Regular":
                 paid_from_dict[paid_from] = amount
-                fee_categories[paid_from] = [{component.fees_category:amount}]
+                fee_categories[paid_from] = [{component.fees_category: amount}]
         paid_to_dict[paid_from] = paid_to
         companies[paid_from] = company
 
@@ -491,14 +562,16 @@ def company_wise(fees, invoice_portion, combination=False):
         cost_center = frappe.get_value(
             "Cost Center", {"company": companies[paid_from]}, ["name"]
         )
-        company_wise_split.append({
-            "amount": amount,
-            "paid_from": paid_from,
-            "paid_to": paid_to_dict[paid_from],
-            "company": companies[paid_from],
-            "cost_center": cost_center,
-            "fee_categories": fee_categories[paid_from]
-        })
+        company_wise_split.append(
+            {
+                "amount": amount,
+                "paid_from": paid_from,
+                "paid_to": paid_to_dict[paid_from],
+                "company": companies[paid_from],
+                "cost_center": cost_center,
+                "fee_categories": fee_categories[paid_from],
+            }
+        )
     return company_wise_split
 
 
@@ -508,22 +581,31 @@ def component_wise(doc, due_date, invoice_portion, combination=False):
     for component in doc.components:
         fee_type = frappe.db.get_value("Fee Category", component.fees_category, "type")
         amount = component.amount
-        if fee_type != 'Regular' and combination == True:
-            amount = frappe.utils.fmt_money(amount, currency="INR"),
-            breakup.append({
-                "fees_category": component.fees_category,
-                "company": component.custom_company,
-                "amount": amount
-            })
-        elif fee_type == 'Regular':
+        if fee_type != "Regular" and combination == True:
+            amount = (frappe.utils.fmt_money(amount, currency="INR"),)
+            breakup.append(
+                {
+                    "fees_category": component.fees_category,
+                    "company": component.custom_company,
+                    "amount": amount,
+                }
+            )
+        elif fee_type == "Regular":
             amount = flt((invoice_portion / 100) * amount, 2)
-            breakup.append({
-                "fees_category": component.fees_category,
-                "company": component.custom_company,
-                "amount": frappe.utils.fmt_money(amount, currency="INR"),
-            })
-    component_wise_split['due_date'] = due_date
-    component_wise_split['breakup'] = breakup
-    component_wise_split['is_deposit'] = combination
+            breakup.append(
+                {
+                    "fees_category": component.fees_category,
+                    "company": component.custom_company,
+                    "amount": frappe.utils.fmt_money(amount, currency="INR"),
+                }
+            )
+    component_wise_split["due_date"] = due_date
+    component_wise_split["breakup"] = breakup
+    component_wise_split["is_deposit"] = combination
     return component_wise_split
 
+def im_2_b64(image):
+    buff = BytesIO()
+    image.save(buff, format="JPEG")
+    img_str = base64.b64encode(buff.getvalue())
+    return 'data:image/jpg;base64,' +  img_str
