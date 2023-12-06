@@ -1,6 +1,7 @@
 import json
 from edu_quality.public.py.discount import (
     add_discount,
+    get_all_discounts,
     payment_plan,
     referal_discount,
     time_based_discount,
@@ -30,6 +31,7 @@ def before_submit(doc,method=None):
     ref_dis = referal_discount(doc)
     payplan_discount = update_payment_schedule(doc)
     payment_split(doc, ref_dis, time_dis, payplan_discount)
+    doc.total_discount = get_all_discounts(doc)
 
 
 def verify_invoice_portion(payment_schedule):
@@ -113,6 +115,7 @@ def update_payment_plan(payment_plan, fee_name):
         discount_amount = discount[0]
 
     doc = frappe.get_doc("Fees", fee_name)
+    doc.total_discount = get_all_discounts(doc)
     doc.payment_schedule = []
 
     for i, ps in enumerate(payment_plan.payment_schedule):
