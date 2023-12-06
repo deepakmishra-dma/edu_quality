@@ -111,7 +111,7 @@ def update_payment_plan(payment_plan, fee_name):
     payment_plan = frappe.get_doc("Payment Plan", payment_plan)
     discount = update_payplan_discount(doc, payment_plan)
     if discount:
-        add_discount(fee_name, discount[1])
+        add_discount(fee_name, discount[1].name)
         discount_amount = discount[0]
 
     doc = frappe.get_doc("Fees", fee_name)
