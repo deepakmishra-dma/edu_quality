@@ -2,6 +2,7 @@ import frappe, random
 import mysql.connector
 from edu_quality.overrides import make_payment_request
 import time 
+from frappe.utils import today
 
 def autoname(doc, method=None):
     school_prefixes = {
@@ -18,7 +19,7 @@ def autoname(doc, method=None):
     if doc.student_applicant:
         applicant = frappe.get_doc("Student Applicant",doc.student_applicant)
         prefix = frappe.get_value("School",applicant.school,'prefix')
-        series = frappe.get_value("Program",applicant.program,'reference_series')
+        series = get_reference(doc.program)
         prefix += series
         if frappe.db.count("Student",[["name","Like",prefix + "%"]])>=99:
             prefix = prefix[:-2] + chr(ord(prefix[-2]) + 1)
@@ -32,6 +33,17 @@ def autoname(doc, method=None):
         else:
             prefix += "0" + str(count)
         doc.name = prefix
+
+def get_reference(program):
+    if not frappe.db.get_value("Academic Year",[["Academic+Year","year_start_date","<=",today()],["Academic+Year","year_end_date",">=",today()]],"rolled_over"):
+        current_program = frappe.get_doc("Program",program)
+        series = frappe.db.get_value("Program",{'school':current_program.school,"sequence":current_program.sequence-1},'reference_series')
+        if not series:
+            series = current_program.reference_series
+            series = series[0] + chr(ord(series[1])+1) 
+    else: 
+        series = frappe.db.get_value("Program",program,'reference_series')
+    return series
 
 def update_student_group(p_e_doc,fee_structure=None):
     try:

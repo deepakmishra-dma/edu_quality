@@ -145,15 +145,34 @@ def create_student_application(**args):
         raise e
 
 
+school_id_map = {
+    "2": "Walnut School at Shivane",
+    "4": "Walnut School at Fursungi",
+    "5": "Walnut School at Wakad",
+}
+
+
 @frappe.whitelist(allow_guest=True)
 def update_stud_data(**data):
     data = data.get("Student").get("StudentInfoChange")
-
-    existing_student_doc = frappe.get_list(
-        "Student Applicant",
-        {"lms_id": data.get("lms_id"), "school": data.get("school_name")},
-        ignore_permissions=True,
-    )
+    ref_no = data.get("Student").get("refNo", None)
+    school_id = data.get("Student").get("school_id", None)
+    # applicant
+    existing_student_doc = None
+    if not ref_no or not school_id:
+        existing_student_doc = frappe.get_list(
+            "Student Applicant",
+            {"lms_id": data.get("lms_id"), "school": data.get("school_name")},
+            ignore_permissions=True,
+        )
+    else:
+        existing_student_doc = frappe.get_list(
+            "Student",
+            {
+                "custom_reference_number": ref_no,
+                "school": school_id_map.get(str(school_id), ""),
+            },
+        )
 
     if not existing_student_doc or len(existing_student_doc) == 0:
         raise Exception("Student Doesnt exist")
@@ -371,6 +390,7 @@ def update_stud_data(**data):
     existing_student_doc.admission_to = data.get("admission_to")
     existing_student_doc.academic_year = data.get("academic_year")
     existing_student_doc.stud_rte = data.get("stud_rte")
+    existing_student_doc.is_rte = data.get("stud_rte")
     existing_student_doc.caste = data.get("other_caste") or data.get("caste")
     existing_student_doc.religion = data.get("other_religion") or data.get("religion")
     existing_student_doc.subcaste = data.get("other_subcaste") or data.get("subcaste")
@@ -442,7 +462,7 @@ def upload_to_mgr(doc):
         "state": doc.get("state") or " ",
         "bus_service_required": "yes" if doc.get("bus_service_required") else "no",
         "class": program or " ",
-        "RTE_student": "yes" if doc.get("rte_student") else "no",
+        "RTE_student": "yes" if doc.get("rte_student") or doc.get("is_rte") else "no",
         "preferred_batch_time": doc.get("batch_time") or " ",
         "academic_year": doc.get("academic_year") or " ",
     }
@@ -555,12 +575,14 @@ def serialize_lead_to_application(doc: dict):
         "last_name": doc.get("last_name"),
         "mother_f_name": doc.get("mothers_name"),
         "date_of_birth": doc.get("date_of_birth"),
+        "student_mobile_number": doc.get("fathers_phone") or doc.get("mothers_phone"),
         "father_email": doc.get("fathers_email"),
         "mother_mobile_number": doc.get("mothers_phone"),
         "father_mobile_no": doc.get("fathers_phone"),
         "bus_service_required": doc.get("bus_service_required"),
         "is_sibling_in_school": doc.get("is_sibling_already_at_walnut"),
         "rte_student": doc.get("stud_rte"),
+        "is_rte": doc.get("stud_rte"),
         "stud_rte": doc.get("rte_student"),
         "catering": doc.get("catering"),
         "siblings": siblings or [],
@@ -786,9 +808,11 @@ and dl.parenttype = "Contact"
 
 
 def insert_walk_in_date(lead):
-    if lead.get("custom_walk_in_3_action_date") and lead.get(
-        "custom_walk_in_2_action_date"
-    ) and lead.get("custom_walk_in_1_action_date"):
+    if (
+        lead.get("custom_walk_in_3_action_date")
+        and lead.get("custom_walk_in_2_action_date")
+        and lead.get("custom_walk_in_1_action_date")
+    ):
         lead.custom_walk_in_3_action_date = datetime.datetime.now(
             pytz.timezone("Asia/Kolkata")
         ).strftime("%Y-%m-%d")
@@ -868,15 +892,20 @@ def get_and_schedule_pending_walkouts():
         )
 
         leads = query.run(as_dict=True)
-        for i in leads:
+        # enqueue only once to same phone number
+        if len(leads):
             frappe.enqueue(
                 "edu_quality.api.student_application.send_feedback_after_walkout",
-                name=i.get("name"),
-                school=i.get("center"),
-                phone_number=i.get("fathers_phone"),
+                name=leads[0].get("name"),
+                school=leads[0].get("center"),
+                phone_number=leads[0].get("fathers_phone"),
                 queue="long",
                 timeout=4000,
             )
+
+        # set to none in all leads
+        for i in leads:
+            set_walked_out_fields_none(i.get("name"))
 
         return "Queuing"
     except Exception as e:
@@ -884,11 +913,16 @@ def get_and_schedule_pending_walkouts():
 
 
 @frappe.whitelist(allow_guest=True)
-def send_feedback_after_walkout(name, school, phone_number):
+def set_walked_out_fields_none(name):
     lead_doc = frappe.get_doc("Lead", name)
     lead_doc.custom_walked_out_time = None
     lead_doc.custom_lead_scheduled = 0
 
+    lead_doc.flags.ignore_mandatory = True
+    lead_doc.save(ignore_permissions=True)
+
+
+def send_feedback_after_walkout(name, school, phone_number):
     botpress_url = frappe.db.get_single_value(
         "Whatsapp Settings", "botpress_webhook_url"
     )
@@ -952,8 +986,6 @@ def send_feedback_after_walkout(name, school, phone_number):
         headers={"Content-Type": "application/json"},
         json=json.loads(json.dumps(payload, default=default)),
     )
-    lead_doc.flags.ignore_mandatory = True
-    lead_doc.save(ignore_permissions=True)
 
 
 @frappe.whitelist()

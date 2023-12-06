@@ -2,7 +2,7 @@ from datetime import datetime
 from edu_quality.overrides import make_payment_request
 from edu_quality.public.py.payment_request import update_payment_request_after_discount
 import frappe
-from frappe.utils import today, getdate
+from frappe.utils import today, getdate, flt
 
 
 @frappe.whitelist()
@@ -172,7 +172,8 @@ def remove_and_update_component(component_name, discount_name, discount, discoun
 
 def referal_discount(doc, method=None):
     grand_total = doc.grand_total
-    filters = {"type": "Referral", "enabled": 1}
+    ref_dis = {}
+    filters = {"type": "Referral", "enabled": 1, "fee_structure": doc.fee_structure}
     if frappe.db.exists("Referral Log", {"student_id": doc.student}):
         ref = frappe.get_doc("Referral Log", {"student_id": doc.student})
         discount = float(ref.referral_amount)
@@ -180,23 +181,33 @@ def referal_discount(doc, method=None):
             if component.amount > discount and discount != 0:
                 if frappe.db.exists("Discount Configuration", filters):
                     dis = frappe.get_doc("Discount Configuration", filters)
-                    amount = component.custom_amount_after_discount
-                    amount = amount if amount else component.amount
+                    amount = component.custom_amount_after_discount or component.amount
                     total_discount = component.custom_discount_amount + discount
                     discount_percentage = calculate_discount(component.amount, total_discount)
 
                     discount_name = doc.components[i].custom_discounts
-                    doc.components[i].custom_discounts = f"{discount_name}, {dis.name}" if discount_name is not None else dis.name
+                    doc.components[i].custom_discounts = f"{discount_name}, {dis.name}" if discount_name else dis.name
                     doc.components[i].custom_discount_percentage = discount_percentage
                     doc.components[i].custom_discount_amount = total_discount
                     doc.components[i].custom_amount_after_discount = amount - discount
                     grand_total = doc.grand_total - discount
+                    label = get_label(component.fees_category)
+                    ref_dis[label] = {component.fees_category:discount}
                     break;
                 
         doc.grand_total = grand_total
         doc.grand_total_in_words = str(frappe.utils.in_words(doc.grand_total)).title()
         doc.outstanding_amount = doc.grand_total
-        update_payment_plan_after_discount_before_submit(doc, total_discount=discount)
+        return ref_dis
+
+
+def get_label(fee_category):
+    label = frappe.get_value("Fee Category", fee_category, "custom_label")
+    if label:
+        label = label.split("-")[0].strip()
+    else:
+        label = frappe.get_value("Fees Settings", None, "default_account").split("-")[0].strip()
+    return label
 
 
 def payment_plan(doc, method=None):
@@ -209,13 +220,15 @@ def payment_plan(doc, method=None):
         pp = frappe.get_doc("Payment Plan",doc.payment_plan)
         doc.payment_schedule = []
         initial_payment = 0
+        regular_amount = 0
         for component in doc.components:
-            fee_type = frappe.db.get_value("Fee Category",component.fees_category,"type")
-            if fee_type and fee_type!= "Regular":
+            if component.fee_type and component.fee_type!= "Regular":
                 initial_payment = initial_payment +  component.amount
+            else:
+                regular_amount += component.amount
         i=0
         for schedule in pp.payment_schedule:
-            payment_amount = schedule.payment_amount
+            payment_amount = flt(regular_amount * schedule.invoice_portion/100,2)
             description = "Installment - " + str(i+1)
             if i==0 and initial_payment>0:
                 before_days = frappe.db.get_value("Fee Schedule",doc.fee_schedule,"create_payment_request_before")
@@ -244,36 +257,6 @@ def payment_plan(doc, method=None):
                 'outstanding': payment_amount,
             })
 
-def get_payment_plan_discount(payment_plan, doc):
-    for component in doc.components:
-        dis_filter = {"payment_plan": payment_plan, "fee_structure":doc.fee_structure, "fee_category": component.fees_category}
-        if frappe.db.exists("Discount Configuration", dis_filter):
-            dis = frappe.get_doc("Discount Configuration", dis_filter)
-            if dis.discount_amount:
-                component.custom_discounts = dis.name
-                component.custom_discount_percentage = calculate_discount(component.amount, dis.discount_amount)
-                component.custom_discount_amount = dis.discount_amount
-                component.custom_amount_after_discount = component.amount - dis.discount_amount
-                grand_total = doc.grand_total - discount_amount
-                grand_total_in_words = str(frappe.utils.in_words(grand_total)).title()
-                doc.grand_total = grand_total
-                doc.grand_total_in_words = grand_total_in_words
-                doc.outstanding_amount = grand_total
-                return (dis.discount_amount, "Amount", 0)
-            else:
-                discount_amount = (component.amount * float(dis.discount)) / 100
-                component.custom_discounts = dis.name
-                component.custom_discount_percentage = dis.discount
-                component.custom_discount_amount = discount_amount
-                component.custom_amount_after_discount = component.amount - discount_amount
-                grand_total = doc.grand_total - discount_amount
-                grand_total_in_words = str(frappe.utils.in_words(grand_total)).title()
-                doc.grand_total = grand_total
-                doc.grand_total_in_words = grand_total_in_words
-                doc.outstanding_amount = grand_total
-                return (discount_amount, "Percentage", dis.discount)
-        else:
-            return None
 
 def only_deposit(doc):    
     make_payment_request(
@@ -308,7 +291,10 @@ def time_based_discount(doc):
                 },
             )
             if dis.start_date <= getdate(today()) <= dis.end_date:
-                apply_time_based_discount(dis, component, doc)
+                discount_amount = apply_time_based_discount(dis, component, doc)
+                label = get_label(component.fees_category)
+                return {label:{component.fees_category:discount_amount}
+}
 
 
 def apply_time_based_discount(dis, component, fees):
@@ -326,6 +312,7 @@ def apply_time_based_discount(dis, component, fees):
         fees.grand_total = grand_total
         fees.grand_total_in_words = grand_total_in_words
         fees.outstanding_amount = grand_total
+        return dis.discount_amount
     else:
         discount_amount = (component.amount * float(dis.discount)) / 100
         amount = component.amount - discount_amount
@@ -338,6 +325,7 @@ def apply_time_based_discount(dis, component, fees):
         fees.grand_total = grand_total
         fees.grand_total_in_words = grand_total_in_words
         fees.outstanding_amount = grand_total
+        return discount_amount
 
 def update_payment_plan_after_discount(doc, total_discount=0, apply_discount=False,dis={}):
     if doc.payment_plan:
@@ -370,21 +358,10 @@ def update_payment_plan_after_discount(doc, total_discount=0, apply_discount=Fal
                             frappe.db.set_value("Payment Schedule",schedule.name,"payment_amount",amount)
                             frappe.db.set_value("Payment Schedule",schedule.name,"outstanding",amount)
 
-def update_payment_plan_after_discount_before_submit(doc, total_discount):
-    if doc.payment_plan:
-        for i, schedule in enumerate(doc.payment_schedule):
-            if schedule.outstanding == 0:
-                pass
-            else:
-                amount = schedule.outstanding - total_discount
-                schedule.payment_amount = amount
-                schedule.outstanding = amount
-                break
-
 
 def get_payment_plan_discount(payment_plan, doc):
     for component in doc.components:
-        dis_filter = {"payment_plan": payment_plan, "fee_structure":doc.fee_structure, "fee_category": component.fees_category}
+        dis_filter = {"payment_plan": payment_plan, "fee_structure":doc.fee_structure, "fee_category": component.fees_category, "enabled":1}
         if frappe.db.exists("Discount Configuration", dis_filter):
             dis = frappe.get_doc("Discount Configuration", dis_filter)
             if dis.discount_amount:
@@ -410,8 +387,8 @@ def get_payment_plan_discount(payment_plan, doc):
                 doc.grand_total_in_words = grand_total_in_words
                 doc.outstanding_amount = grand_total
                 return (discount_amount, "Percentage", dis.discount)
-        else:
-            return None
+    return None
+
         
 @frappe.whitelist()
 def remove_payment_plan_discount(payment_plan, doc):
@@ -428,38 +405,47 @@ def remove_payment_plan_discount(payment_plan, doc):
             
 
 def update_payment_schedule(doc):
-    payment_plan_discount = get_payment_plan_discount(doc.payment_plan, doc)
-    other_discount = 0
-    for component in doc.components:
-        if component.custom_discounts:
-            discount_name = component.custom_discounts.lower()
-            discount_amount = component.custom_discount_amount
-            if discount_amount and "payment plan" not in discount_name:
-                other_discount = component.custom_discount_amount
-    
-    discount_applied = False
-    for i, schedule in enumerate(doc.payment_schedule):
-        if not discount_applied:
-            amount = schedule.outstanding - other_discount
-            schedule.payment_amount = amount
-            schedule.outstanding = amount
-            schedule.discount = other_discount
-            schedule.discount_type = "Amount"
-            schedule.discount_date = schedule.due_date
-            discount_applied = True
+    try:
+        payment_plan_discount = get_payment_plan_discount(doc.payment_plan, doc)
+        other_discount = 0
+        for component in doc.components:
+            if component.custom_discounts:
+                discount_name = component.custom_discounts.lower()
+                discount_amount = component.custom_discount_amount
+                if discount_amount and "payment plan" not in discount_name:
+                    other_discount += component.custom_discount_amount
+        
+        discount_applied = False
+        discount_amount = 0
+        for i, schedule in enumerate(doc.payment_schedule):
+            if not discount_applied:
+                amount = schedule.outstanding - other_discount
+                schedule.payment_amount = amount
+                schedule.outstanding = amount
+                schedule.discount = other_discount
+                schedule.discount_type = "Amount"
+                schedule.discount_date = schedule.due_date
+                discount_applied = True
 
-        elif i == len(doc.payment_schedule) - 1:
-            if payment_plan_discount and payment_plan_discount[1] == "Amount":
-                amount = schedule.outstanding - payment_plan_discount[0]
-                schedule.payment_amount = amount
-                schedule.outstanding = amount
-                schedule.discount = payment_plan_discount[0]
-                schedule.discount_type = payment_plan_discount[1]
-                schedule.discount_date = schedule.due_date
-            elif payment_plan_discount and payment_plan_discount[1] == "Percentage":
-                amount = schedule.outstanding - payment_plan_discount[0]
-                schedule.payment_amount = amount
-                schedule.outstanding = amount
-                schedule.discount = payment_plan_discount[2]
-                schedule.discount_type = payment_plan_discount[1]
-                schedule.discount_date = schedule.due_date
+            elif i == len(doc.payment_schedule) - 1:
+                if payment_plan_discount and payment_plan_discount[1] == "Amount":
+                    discount_amount = payment_plan_discount[0]
+                    amount = schedule.outstanding - payment_plan_discount[0]
+                    schedule.payment_amount = amount
+                    schedule.outstanding = amount
+                    schedule.discount = discount_amount
+                    schedule.discount_type = payment_plan_discount[1]
+                    schedule.discount_date = schedule.due_date
+                elif payment_plan_discount and payment_plan_discount[1] == "Percentage":
+                    discount_amount = payment_plan_discount[0]
+                    amount = schedule.outstanding - payment_plan_discount[0]
+                    schedule.payment_amount = amount
+                    schedule.outstanding = amount
+                    schedule.discount = discount_amount
+                    schedule.discount_type = payment_plan_discount[1]
+                    schedule.discount_date = schedule.due_date
+                return discount_amount
+        return 0
+    except Exception as e:
+        frappe.logger('pp_discount').exception(e)
+        return 0
