@@ -3,6 +3,7 @@ from education.education.doctype.fee_schedule.fee_schedule import FeeSchedule
 from frappe import _
 from frappe.utils.background_jobs import enqueue
 from frappe.model.mapper import get_mapped_doc
+from frappe.utils.data import cstr
 
 class CustomFeeSchedule(FeeSchedule):
     @frappe.whitelist()

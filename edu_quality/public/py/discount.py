@@ -71,6 +71,7 @@ def add_discount(fee_name, discount):
                     discount_applied = True
                     frappe.response['message'] = message
     if discount_applied:
+        update_total_discount_in_fees(fees.name)
         if dis.needs_admin_approval:
             frappe.db.set_value("Fees",fee_name,"workflow_state","Pending")
             update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=True,dis=dis)
@@ -119,10 +120,24 @@ def remove_discount(fee_name, discount, update_payment_request=True):
                 message = dis.name + " Discount does not present"
                 frappe.response['message'] = message
     if discount_removed:
+        update_total_discount_in_fees(fees.name)
         update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=False,dis=dis)
         if update_payment_request:
             update_payment_request_after_discount(fees)
 
+
+def update_total_discount_in_fees(fee_name):
+    fees = frappe.get_doc("Fees", fee_name)
+    fees.total_discount = get_all_discounts(fees)
+    fees.save(ignore_permissions=True)
+
+
+def get_all_discounts(doc,method=None):
+    discounts = 0
+    for component in doc.components:
+        if component.custom_discount_amount:
+            discounts += component.custom_discount_amount
+    return discounts
 
 def get_discount_list(input_string):
     if input_string is None:
@@ -389,7 +404,7 @@ def get_payment_plan_discount(payment_plan, doc):
                 return (discount_amount, "Percentage", dis.discount)
     return None
 
-        
+
 @frappe.whitelist()
 def remove_payment_plan_discount(payment_plan, doc):
     doc = frappe.get_doc("Fees", doc)
@@ -404,9 +419,11 @@ def remove_payment_plan_discount(payment_plan, doc):
                 break
             
 
-def update_payment_schedule(doc):
+def update_payment_schedule(doc, payment_plan=None):
     try:
-        payment_plan_discount = get_payment_plan_discount(doc.payment_plan, doc)
+        if not payment_plan:
+            payment_plan = doc.payment_plan
+        payment_plan_discount = get_payment_plan_discount(payment_plan, doc)
         other_discount = 0
         for component in doc.components:
             if component.custom_discounts:
