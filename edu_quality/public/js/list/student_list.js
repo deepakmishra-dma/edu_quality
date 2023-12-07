@@ -93,11 +93,17 @@ frappe.listview_settings['Student'] = {
                         students: students
                     },
                     callback: function(response) {
-                        console.log(response);
+                        frappe.show_alert({
+                            message: __('Fee Advance creation scheduled successfully.'),
+                            indicator: 'green'
+                        });
                     }
                 });
             } else {
-                frappe.msgprint(__('Please select at least one Students.'));
+                frappe.show_alert({
+                    message: __('Please select at least one Students.'),
+                    indicator: 'orange'
+                });
             }
         });
     }

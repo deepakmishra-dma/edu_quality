@@ -74,7 +74,7 @@ def fee_advance(**kwargs):
         student = frappe.get_doc("Student", s.get("name"))
         if frappe.db.exists("Program Enrollment", {"student": student.name}):
             program_enrollment = frappe.get_doc("Program Enrollment", {"student": student.name})
-            create_fee_advance(student, program_enrollment)
+            frappe.enqueue(create_fee_advance, student=student, program_enrollment=program_enrollment)
         else:
             frappe.msgprint(
                 f"Program Enrollment does not exists for student <b>{student.first_name}</b>. Fee Advance can only be created for old students."
@@ -85,31 +85,32 @@ def create_fee_advance(student, program_enrollment):
     """
     program_enrollment: Previous Program Enrollment Doc
     """
-    school = frappe.get_value("Program", program_enrollment.program, ["school"])
-    institution = frappe.get_value("School", school, ["institution"])
-    next_program = get_next_program(program_enrollment.program, school)
-    academic_year = get_current_academic_year()
-    fee_structure = get_fee_structure(academic_year, school, next_program)
-    payment_plan = get_payment_plan(fee_structure, program_enrollment)
+    try:
+        school = frappe.get_value("Program", program_enrollment.program, ["school"])
+        institution = frappe.get_value("School", school, ["institution"])
+        next_program = get_next_program(program_enrollment.program, school)
+        academic_year = get_current_academic_year()
+        fee_structure = get_fee_structure(academic_year, school, next_program)
+        payment_plan = get_payment_plan(fee_structure, program_enrollment)
 
-    fee_advance = frappe.new_doc("Fee Advance")
-    fee_advance.student = program_enrollment.student
-    fee_advance.academic_year = academic_year
-    fee_advance.school = school
-    fee_advance.fee_structure = fee_structure
-    fee_advance.institution = institution
-    fee_advance.program = program_enrollment.program
-    fee_advance.next_program = next_program
-    fee_advance.payment_plan = payment_plan
-    fee_advance.payment_term = get_first_payment_term(payment_plan)
-    fee_advance.is_rte = student.is_rte
-    fee_advance.posting_date = today()
-    fee_advance.due_date = frappe.utils.add_days(today(), 30)
-    fee_advance.save()
-    fee_advance.submit()
-    frappe.msgprint(
-        f"Fee Advance created for student <b>{student.first_name}</b>."
-    )
+        fee_advance = frappe.new_doc("Fee Advance")
+        fee_advance.student = program_enrollment.student
+        fee_advance.academic_year = academic_year
+        fee_advance.school = school
+        fee_advance.fee_structure = fee_structure
+        fee_advance.institution = institution
+        fee_advance.program = program_enrollment.program
+        fee_advance.next_program = next_program
+        fee_advance.payment_plan = payment_plan
+        fee_advance.payment_term = get_first_payment_term(payment_plan)
+        fee_advance.is_rte = student.is_rte
+        fee_advance.posting_date = today()
+        fee_advance.due_date = frappe.utils.add_days(today(), 30)
+        fee_advance.save()
+        fee_advance.submit()
+    except Exception as e:
+        frappe.logger('fee_advance').exception(e)
+
 
 def get_next_program(program, school):
     program_name = frappe.get_value("Program", program, "program_name")
