@@ -36,5 +36,28 @@ frappe.listview_settings['Student'] = {
                 }
             });
         });
+
+        listview.page.add_menu_item(__('Create Fee Advance'), function() {
+            let students = listview.get_checked_items();
+            if (students.length > 0) {
+                frappe.call({
+                    method: 'edu_quality.fees.doctype.fee_advance.fee_advance.fee_advance',
+                    args: {
+                        students: students
+                    },
+                    callback: function(response) {
+                        frappe.show_alert({
+                            message: __('Fee Advance creation scheduled successfully.'),
+                            indicator: 'green'
+                        });
+                    }
+                });
+            } else {
+                frappe.show_alert({
+                    message: __('Please select at least one Students.'),
+                    indicator: 'orange'
+                });
+            }
+        });
     }
 }

@@ -42,7 +42,7 @@ class CustomPaymentRequest(PaymentRequest):
                     split["paid_to"],
                     split["company"],
                     split["cost_center"],
-                    split["fee_categories"]
+                    split.get("fee_categories")
                 )
             mark_payment_term_paid(fees, self.payment_term, self.grand_total)
             
@@ -66,15 +66,20 @@ class CustomPaymentRequest(PaymentRequest):
         self.db_set("status", "Initiated")
 
     def get_payment_url(self, **kwargs):
-        if self.reference_doctype != "Fees":
-            data = frappe.db.get_value(
-                self.reference_doctype, self.reference_name, ["company", "customer_name"], as_dict=1
-            )
-        else:
+        if self.reference_doctype == "Fees":
             data = frappe.db.get_value(
                 self.reference_doctype, self.reference_name, ["student_name"], as_dict=1
             )
             data.update({"company": frappe.defaults.get_defaults().company})
+        elif self.reference_doctype == "Fee Advance":
+            data = frappe.db.get_value(
+                self.reference_doctype, self.reference_name, ["student"], as_dict=1
+            )
+            data.update({"company": frappe.defaults.get_defaults().company})
+        else:
+            data = frappe.db.get_value(
+                self.reference_doctype, self.reference_name, ["company", "customer_name"], as_dict=1
+            )
         controller = _get_payment_gateway_controller(self.payment_gateway)
         
         controller.validate_transaction_currency(self.currency)
@@ -117,6 +122,10 @@ class CustomPaymentRequest(PaymentRequest):
             
         elif self.payment_channel == "Phone":
             self.request_phone_payment()
+            
+    def validate(self):
+        if self.get("__islocal"):
+            self.status = "Draft"
 
 
 def payment_entry(doc, ref_doc, party_amount, paid_from, paid_to, company, cost_center, fee_categories=None):
@@ -230,6 +239,9 @@ def get_amount(ref_doc, payment_account=None, is_deposit=False, payment_term=Non
     elif dt == "Fees":
         grand_total = ref_doc.outstanding_amount
 
+    elif dt == "Fee Advance":
+        grand_total = ref_doc.amount
+
     if grand_total > 0:
         return grand_total
     else:
@@ -302,6 +314,8 @@ def company_wise_split(fees, categories, due_date, payment_term=None, transactio
 
 
 def mark_payment_term_paid(fees, term, paid_amount):
+    if fees.doctype != "Fees":
+        return
     for schedule in fees.payment_schedule:
         if schedule.payment_term == term:
             if schedule.outstanding == paid_amount:

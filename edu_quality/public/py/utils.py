@@ -220,9 +220,9 @@ def verify_otp(fee, otp):
 
 
 def get_undertaking_template(doc, is_deposit=False):
-    fee = frappe.get_value("Payment Request", doc.name, "reference_name")
+    doctype, docname = frappe.get_value("Payment Request", doc.name, ["reference_doctype", "reference_name"])
     class_name, academic_year, student = frappe.get_value(
-        "Fees", fee, ["program", "academic_year", "student"]
+        doctype, docname, ["program", "academic_year", "student"]
     )
     status = is_old_student(student, academic_year)
     filter_dict = {"class": class_name, "academic_year": academic_year}
