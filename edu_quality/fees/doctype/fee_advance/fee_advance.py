@@ -10,8 +10,8 @@ from edu_quality.overrides import make_payment_request
 
 
 class FeeAdvance(Document):
-    def autoname(self):
-        self.name = self.student + " - " + self.fee_structure
+    # def autoname(self):
+    #     self.name = self.student + " - " + self.fee_structure
 
     def before_save(self):
         if self.is_rte:
@@ -74,7 +74,8 @@ def fee_advance(**kwargs):
         student = frappe.get_doc("Student", s.get("name"))
         if frappe.db.exists("Program Enrollment", {"student": student.name}):
             program_enrollment = frappe.get_doc("Program Enrollment", {"student": student.name})
-            frappe.enqueue(create_fee_advance, student=student, program_enrollment=program_enrollment)
+            create_fee_advance(student,program_enrollment)
+            # frappe.enqueue(create_fee_advance, student=student, program_enrollment=program_enrollment)
         else:
             frappe.msgprint(
                 f"Program Enrollment does not exists for student <b>{student.first_name}</b>. Fee Advance can only be created for old students."
