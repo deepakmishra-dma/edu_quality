@@ -54,6 +54,11 @@ def get_payment_details(fee,term):
             company = frappe.db.get_value("Fee Category",component.fees_category,"custom_company")
             if not company:
                 company = "Unique Educational and Sports Foundation"
+            entry = {
+                "company": company,
+                "amount": flt(0,2),
+                "reference":""
+            }
             if component.fee_type !='Regular' and term == 'Deposit':
                 entry ={
                     "company": company,
