@@ -195,6 +195,7 @@ def create_fees(doc,method=None):
             from edu_quality.public.py.student import update_student_group
             update_student_group(fees.program_enrollment,fee_structure=student_applicant.fee_structure)
     except Exception as e:
+        frappe.logger('fee').exception(e)
         frappe.throw(str(e))
 
 
@@ -358,6 +359,7 @@ def payment_split(doc, ref_dis=None, time_dis=None, payplan_discount=0):
 
     doc.split_payments = json.dumps(split_payments)
     doc.company_split = json.dumps(company_wise_split)
+    frappe.logger('fee').exception(component_wise_split)
     doc.component_split = json.dumps(component_wise_split)
 
 
@@ -584,7 +586,7 @@ def component_wise(doc, due_date, invoice_portion, combination=False):
                 "company": component.custom_company,
                 "amount": frappe.utils.fmt_money(amount, currency="INR"),
             })
-    component_wise_split['due_date'] = due_date
+    component_wise_split['due_date'] = due_date.strftime("%Y-%m-%d")
     component_wise_split['breakup'] = breakup
     component_wise_split['is_deposit'] = combination
     return component_wise_split
