@@ -34,6 +34,7 @@ def remove_indian_country_code(number):
         return ""
     try:
         phone_pattern = r"^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$"
+        number = re.sub(r"\s", "", str(number))
         re_groups = re.findall(phone_pattern, str(number))
 
         if len(re_groups) == 0:
@@ -41,7 +42,7 @@ def remove_indian_country_code(number):
 
         is_91 = re_groups[0][0]
 
-        if is_91 == "+91" or is_91 == "91":
+        if is_91 == "+91" or is_91 == "91" or is_91 == "+910" or is_91 == "910":
             return str("".join(re_groups[0][1::]))
         else:
             return str(number)

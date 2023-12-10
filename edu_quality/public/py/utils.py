@@ -378,9 +378,12 @@ def convert_time_string_to_hours(time_string):
 
 
 def add_indian_country_code(number):
+    if not number:
+        return ""
     try:
         phone_pattern = r"^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$"
-        is_91 = re.findall(phone_pattern, number)[0][0]
+        number = re.sub(r"\s", "", str(number))
+        is_91 = re.findall(phone_pattern, str(number))[0][0]
 
         if is_91:
             return number
