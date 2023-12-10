@@ -93,9 +93,15 @@ frappe.ui.form.on("Lead", {
 
     },
 
-    validate: function (frm) {
+    validate: function (frm) { 
+        const temp_fathers_phone = frm.doc.fathers_phone.replace(/\s/g, '');
         const re = /^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/
-        if (!re.test(frm.doc.fathers_phone)) {
+        if (!re.test(temp_fathers_phone)) {
+            frappe.msgprint({
+                message: __("Fathers Phone Number format is invalid, Please check the spacing is according to standard phone number spacing or none at all, and country code shouldn't be there for Indian numbers only for foreign numbers."),
+                indicator: "red",
+                title: __("Incorrect Field")
+            });
             frappe.validated = false
         }
         if (frm.doc.next_action_date) {
