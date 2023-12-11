@@ -353,7 +353,7 @@ def payment_split(doc, ref_dis=None, time_dis=None, payplan_discount=0):
 
     elif doc.doctype == "Fee Advance":
         split_payments[doc.payment_term] = get_split_payment(doc, 100)
-        company_wise_split[doc.payment_term] = company_wise(doc, 100)
+        company_wise_split[doc.payment_term] = company_wise_advance(doc.company, doc.amount)
         component_wise_split[doc.payment_term] = component_wise(doc, doc.due_date, 100)
 
     doc.split_payments = json.dumps(split_payments)
@@ -495,8 +495,6 @@ def get_split_payment(doc, portion, combination=False):
 
 
 def company_wise(fees, invoice_portion, combination=False):
-    if fees.doctype == "Fee Advance":
-        return company_wise_advance(fees.institution, fees.amount)
     paid_from_dict = {}
     paid_to_dict = {}
     companies = {}

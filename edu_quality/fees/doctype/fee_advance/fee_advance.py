@@ -3,13 +3,13 @@
 
 from edu_quality.public.py.fee import payment_split
 import frappe
-from frappe.model.document import Document
-from frappe import _
+import erpnext
+from erpnext.controllers.accounts_controller import AccountsController
 from frappe.utils import today
 from edu_quality.overrides import make_payment_request
 
 
-class FeeAdvance(Document):
+class FeeAdvance(AccountsController):
     def autoname(self):
         self.name = self.student + " - " + self.fee_structure
 
@@ -44,9 +44,13 @@ class FeeAdvance(Document):
     def before_submit(self):
         payment_split(self)
 
-    
+    def validate(self):
+        self.set_missing_accounts_and_fields()
+
     
     def on_submit(self):
+        self.make_gl_entries()
+
         student_email = frappe.db.get_value("Student", self.student, "student_email_id")
         make_payment_request(
                 party_type="Student",
@@ -56,6 +60,67 @@ class FeeAdvance(Document):
                 recipient_id=student_email,
                 submit_doc=True,
             )
+        
+        
+    def set_missing_accounts_and_fields(self):
+        if not self.company:
+            self.company = frappe.defaults.get_defaults().company
+        if not self.currency:
+            self.currency = erpnext.get_company_currency(self.company)
+        if not (self.receivable_account and self.income_account and self.cost_center):
+            accounts_details = frappe.get_all(
+                "Company",
+                fields=[
+                    "default_receivable_account",
+                    "default_income_account",
+                    "cost_center",
+                ],
+                filters={"name": self.company},
+            )[0]
+        if not self.receivable_account:
+            self.receivable_account = accounts_details.default_receivable_account
+        if not self.income_account:
+            self.income_account = accounts_details.default_income_account
+        if not self.cost_center:
+            self.cost_center = accounts_details.cost_center
+
+
+    def make_gl_entries(self):
+        if not self.amount:
+            return
+        student_gl_entries = self.get_gl_dict(
+            {
+                "account": self.receivable_account,
+                "party_type": "Student",
+                "party": self.student,
+                "against": self.income_account,
+                "debit": self.amount,
+                "debit_in_account_currency": self.amount,
+                "against_voucher": self.name,
+                "against_voucher_type": self.doctype,
+            },
+            item=self,
+        )
+
+        fee_advance_gl_entry = self.get_gl_dict(
+            {
+                "account": self.income_account,
+                "against": self.student,
+                "credit": self.amount,
+                "credit_in_account_currency": self.amount,
+                "cost_center": self.cost_center,
+            },
+            item=self,
+        )
+
+        from erpnext.accounts.general_ledger import make_gl_entries
+
+        make_gl_entries(
+            [student_gl_entries, fee_advance_gl_entry],
+            cancel=(self.docstatus == 2),
+            update_outstanding="Yes",
+            merge_entries=False,
+        )
 
 
 def get_percent(term, payment_plan):
