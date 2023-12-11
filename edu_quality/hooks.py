@@ -40,6 +40,7 @@ doctype_js = {
 doctype_list_js = {
     "Student Applicant": "public/js/list/student_applicant_list.js",
     "Lead": "public/js/list/lead_list.js",
+    "Program Enrollment": "public/js/list/program_enrollment_list.js",
     "Student": "public/js/list/student_list.js",
     "Student ID Card": "public/js/list/student_id_card.js",
 }

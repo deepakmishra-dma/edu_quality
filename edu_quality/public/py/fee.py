@@ -6,7 +6,7 @@ from edu_quality.public.py.discount import (
     update_payment_schedule,
     get_label,
 )
-import frappe 
+import frappe
 from erpnext.accounts.utils import get_account_currency
 from erpnext.accounts.doctype.payment_request.payment_request import PaymentRequest
 from erpnext.accounts.doctype.payment_entry.payment_entry import (
@@ -28,11 +28,13 @@ import base64
 def after_insert(doc, method=None):
     payment_plan(doc)
 
-def before_submit(doc,method=None):
+
+def before_submit(doc, method=None):
     time_dis = time_based_discount(doc)
     ref_dis = referal_discount(doc)
     payplan_discount = update_payment_schedule(doc)
     payment_split(doc, ref_dis, time_dis, payplan_discount)
+
 
 def verify_invoice_portion(payment_schedule):
     total_portion = sum([ps.invoice_portion for ps in payment_schedule])
@@ -205,14 +207,22 @@ def create_fees(doc, method=None):
 def append_program_enrollment(doc, method=None):
     student = frappe.get_doc("Student", doc.student)
     # create id card
-    qrcode_image = qrcode.make(f"{doc.get('academic_year')}/{doc.get('custom_school')}/{student.get('reference_number')}")
-   
+    qrcode_image = qrcode.make(
+        f"{doc.get('academic_year')}/{doc.get('custom_school')}/{student.get('reference_number')}"
+    )
+
     doc.custom_id_card = (
-        frappe.get_doc({"doctype": "Student ID Card", "program_enrolled_in": doc.name,"qr_code": im_2_b64(qrcode_image)})
+        frappe.get_doc(
+            {
+                "doctype": "Student ID Card",
+                "program_enrolled_in": doc.name,
+                "qr_code": im_2_b64(qrcode_image),
+            }
+        )
         .insert()
         .get("name")
     )
-  
+
     student.append(
         "class_details",
         {
@@ -362,26 +372,49 @@ def payment_split(doc, ref_dis, time_dis, payplan_discount=0):
                     doc, invoice_portion
                 )
                 company_wise_split[term] = company_wise(doc, invoice_portion)
-                component_wise_split[term] = component_wise(doc, due_date, invoice_portion)
-    
+                component_wise_split[term] = component_wise(
+                    doc, due_date, invoice_portion
+                )
+
     if ref_dis:
         split_payments, company_wise_split, component_wise_split = update_splits(
-            split_payments, company_wise_split, component_wise_split, dis=ref_dis, term=1
+            split_payments,
+            company_wise_split,
+            component_wise_split,
+            dis=ref_dis,
+            term=1,
         )
     if time_dis:
         split_payments, company_wise_split, component_wise_split = update_splits(
-            split_payments, company_wise_split, component_wise_split, dis=time_dis, term=1
+            split_payments,
+            company_wise_split,
+            component_wise_split,
+            dis=time_dis,
+            term=1,
         )
     if payplan_discount:
         split_payments, company_wise_split, component_wise_split = update_splits(
-            split_payments, company_wise_split, component_wise_split, doc, payplan_discount, term=-1
+            split_payments,
+            company_wise_split,
+            component_wise_split,
+            doc,
+            payplan_discount,
+            term=-1,
         )
     doc.split_payments = json.dumps(split_payments)
     doc.company_split = json.dumps(company_wise_split)
     doc.component_split = json.dumps(component_wise_split)
 
 
-def update_splits(split_payments, company_wise_split=None, component_wise_split=None,  doc=None, payplan_discount=None, dis=None, term=None):
+def update_splits(
+    split_payments,
+    company_wise_split=None,
+    component_wise_split=None,
+    doc=None,
+    payplan_discount=None,
+    dis=None,
+    term=None,
+):
     """
     subtract payplan_discount amount from split payment in the last term from the respected account
     if the time or referral discount then substract from 1st term
@@ -389,8 +422,15 @@ def update_splits(split_payments, company_wise_split=None, component_wise_split=
     try:
         if payplan_discount and doc and term == -1:
             for component in doc.components:
-                dis_filter = {"payment_plan": doc.payment_plan, "fee_structure":doc.fee_structure, "enabled": 1, "fee_category": component.fees_category}
-                fees_category = frappe.db.get_value("Discount Configuration", dis_filter, "fee_category")
+                dis_filter = {
+                    "payment_plan": doc.payment_plan,
+                    "fee_structure": doc.fee_structure,
+                    "enabled": 1,
+                    "fee_category": component.fees_category,
+                }
+                fees_category = frappe.db.get_value(
+                    "Discount Configuration", dis_filter, "fee_category"
+                )
                 if fees_category:
                     label = get_label(fees_category)
 
@@ -398,11 +438,19 @@ def update_splits(split_payments, company_wise_split=None, component_wise_split=
                     last_term_split = split_payments[last_term]
                     last_term_split[label] -= payplan_discount
                     split_payments[last_term] = last_term_split
-                    company_wise_split = update_company_wise_split(company_wise_split=company_wise_split, fee_category=fees_category, payplan_discount=payplan_discount)
-                    component_wise_split = update_component_wise_split(component_wise_split=component_wise_split, fee_category=fees_category, payplan_discount=payplan_discount)
+                    company_wise_split = update_company_wise_split(
+                        company_wise_split=company_wise_split,
+                        fee_category=fees_category,
+                        payplan_discount=payplan_discount,
+                    )
+                    component_wise_split = update_component_wise_split(
+                        component_wise_split=component_wise_split,
+                        fee_category=fees_category,
+                        payplan_discount=payplan_discount,
+                    )
 
                     return split_payments, company_wise_split, component_wise_split
-                
+
         elif dis and term == 1 and company_wise_split:
             label = next(iter(dis)).split("-")[0].strip()
             discount_amount = list(dis.get(label).values())[0]
@@ -411,16 +459,22 @@ def update_splits(split_payments, company_wise_split=None, component_wise_split=
             first_term_split = split_payments.get(first_term, {})
             first_term_split[label] = first_term_split.get(label, 0) - discount_amount
             split_payments[first_term] = first_term_split
-            company_wise_split = update_company_wise_split(company_wise_split=company_wise_split, dis=dis)
-            component_wise_split = update_component_wise_split(component_wise_split=component_wise_split, dis=dis)
+            company_wise_split = update_company_wise_split(
+                company_wise_split=company_wise_split, dis=dis
+            )
+            component_wise_split = update_component_wise_split(
+                component_wise_split=component_wise_split, dis=dis
+            )
             return split_payments, company_wise_split, component_wise_split
 
     except Exception as e:
         frappe.logger("update_splits").exception(e)
         return split_payments, company_wise_split, component_wise_split
 
-    
-def update_company_wise_split(company_wise_split, fee_category=None, payplan_discount=None, dis=None):
+
+def update_company_wise_split(
+    company_wise_split, fee_category=None, payplan_discount=None, dis=None
+):
     """
     subtract payplan discount amount from company split in the Last term from the respected account from fee category,
     if the time or referral discount then substract from 1st term
@@ -436,7 +490,10 @@ def update_company_wise_split(company_wise_split, fee_category=None, payplan_dis
     elif dis:
         label = next(iter(dis)).split("-")[0].strip()
         fee_dis = dis.get(label)
-        fee_category, payplan_discount = list(fee_dis.keys())[0], list(fee_dis.values())[0]
+        fee_category, payplan_discount = (
+            list(fee_dis.keys())[0],
+            list(fee_dis.values())[0],
+        )
         term_split = company_wise_split.get(first_term, {})
     else:
         return company_wise_split
@@ -451,13 +508,15 @@ def update_company_wise_split(company_wise_split, fee_category=None, payplan_dis
     return company_wise_split
 
 
-def update_component_wise_split(component_wise_split, fee_category=None, payplan_discount=None, dis=None):
+def update_component_wise_split(
+    component_wise_split, fee_category=None, payplan_discount=None, dis=None
+):
     """
     subtract payplan discount amount from component split in the Last term from the respected account from fee category,
     if the time or referral discount then substract from 1st term
     """
     if not component_wise_split:
-        return component_wise_split    
+        return component_wise_split
 
     term_keys = list(component_wise_split.keys())
     last_term, first_term = term_keys[-1], term_keys[0]
@@ -467,18 +526,21 @@ def update_component_wise_split(component_wise_split, fee_category=None, payplan
     elif dis:
         label = next(iter(dis)).split("-")[0].strip()
         fee_dis = dis.get(label)
-        fee_category, payplan_discount = list(fee_dis.keys())[0], list(fee_dis.values())[0]
+        fee_category, payplan_discount = (
+            list(fee_dis.keys())[0],
+            list(fee_dis.values())[0],
+        )
         term_split = component_wise_split.get(first_term, {})
     else:
         return component_wise_split
-    
-    for item in term_split['breakup']:
+
+    for item in term_split["breakup"]:
         if fee_category in item.values():
-            amount = frappe.utils.flt(item['amount'].split(" ")[1])
+            amount = frappe.utils.flt(item["amount"].split(" ")[1])
             amount -= payplan_discount
-            item['amount'] = frappe.utils.fmt_money(amount, currency="INR")
+            item["amount"] = frappe.utils.fmt_money(amount, currency="INR")
             return component_wise_split
-            
+
     return component_wise_split
 
 
@@ -604,8 +666,9 @@ def component_wise(doc, due_date, invoice_portion, combination=False):
     component_wise_split["is_deposit"] = combination
     return component_wise_split
 
+
 def im_2_b64(image):
     buff = BytesIO()
     image.save(buff, format="JPEG")
-    img_str = base64.b64encode(buff.getvalue())
-    return 'data:image/jpg;base64,' +  img_str
+    img_str = base64.b64encode(buff.getvalue()).decode('utf-8')
+    return f'data:image/jpeg;base64,{img_str}'

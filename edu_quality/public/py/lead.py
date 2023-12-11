@@ -1,6 +1,7 @@
 import frappe
 
 from edu_quality.public.py.utils import add_indian_country_code
+
 try:
     from nextai.funnel.custom_trigger import trigger_event
 except ImportError:
@@ -9,6 +10,7 @@ except ImportError:
 
 def after_insert(doc, method=None):
     doc.contact_doc.whatsapp_id = add_indian_country_code(doc.fathers_phone)
+    doc.custom_contact_link = doc.contact_doc.get("name")
     if doc.fathers_phone:
         doc.contact_doc.append(
             "phone_nos", {"phone": doc.fathers_phone, "is_primary_mobile_no": 1}
