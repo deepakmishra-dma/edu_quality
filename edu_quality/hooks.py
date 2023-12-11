@@ -109,6 +109,7 @@ override_doctype_class = {
     "Payment Request": "edu_quality.overrides.CustomPaymentRequest",
     "Fee Schedule": "edu_quality.public.py.fee_schedule.CustomFeeSchedule",
     "Program Enrollment": "edu_quality.public.py.enrollment_override.CustomProgramEnrollment",
+    "Fees": "edu_quality.edu_quality.overrides.fees.CustomFees"
 }
 
 # Document Events
