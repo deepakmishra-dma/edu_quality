@@ -74,8 +74,7 @@ def fee_advance(**kwargs):
         student = frappe.get_doc("Student", s.get("name"))
         if frappe.db.exists("Program Enrollment", {"student": student.name}):
             program_enrollment = frappe.get_doc("Program Enrollment", {"student": student.name})
-            create_fee_advance(student,program_enrollment)
-            # frappe.enqueue(create_fee_advance, student=student, program_enrollment=program_enrollment)
+            frappe.enqueue(create_fee_advance, student=student, program_enrollment=program_enrollment)
         else:
             frappe.msgprint(
                 f"Program Enrollment does not exists for student <b>{student.first_name}</b>. Fee Advance can only be created for old students."

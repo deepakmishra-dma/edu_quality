@@ -111,8 +111,7 @@ def import_student(**kwargs):
     }
     for school in schools:
         database = school_db.get(school.name)
-        import_handler(database)
-        # frappe.enqueue(import_handler, queue="long", timeout=1500, database=database)
+        frappe.enqueue(import_handler, queue="long", timeout=1500, database=database)
     frappe.response['message'] = {
         "status": "success",
         "res": "Student Import Scheduled Successfully",
