@@ -3,6 +3,8 @@ import mysql.connector
 from edu_quality.overrides import make_payment_request
 import time 
 from frappe.utils import today
+import json
+from datetime import datetime, timedelta
 
 def autoname(doc, method=None):
     school_prefixes = {
@@ -140,7 +142,6 @@ def import_handler(database):
         # fetach only no_of_students number of rows
         rows = cursor.fetchall()
         # Iterate over the rows and create Frappe records
-
         for row in rows:
             insert_student(row, cursor.column_names, "Student")
             
@@ -180,8 +181,10 @@ def insert_student(row, column_names, doctype):
     category = get_data("category")
 
     class_admitted_to = get_data("class_admitted_to")
+    division = get_data("division")
     program = frappe.get_value("Program", {"program_name": class_admitted_to})
-    division = get_division(class_admitted_to)
+    division = get_division(division)
+    division_log = division
     division = frappe.get_value("Student Group", {"student_group_name": division})
     academic_year = get_data("academic_year")
 
@@ -249,12 +252,17 @@ def insert_student(row, column_names, doctype):
         "doctype": doctype,
     }
     frappe_data['division'] = division
+    frappe_data['division_log'] = division_log
     frappe_data['academic_year'] = academic_year
     frappe.flags.in_import = True
     if not frappe.db.exists(doctype, docname):
         new_doc = frappe.get_doc(new_doc_data)
         new_doc.insert(ignore_permissions=True)
         insert_program_enrollment(new_doc, frappe_data)
+    else:
+        if not frappe.db.exists("Program Enrollment", {"student":docname,"program":program}):
+            old_doc = frappe.get_doc(doctype, docname)
+            insert_program_enrollment(old_doc, frappe_data)
     frappe.flags.in_import = False
 
 
@@ -263,6 +271,7 @@ def insert_program_enrollment(student, data=None):
         program = student.seeking_admission_in_class
         academic_year = data.get("academic_year")
         academic_term = frappe.get_value("Academic Term", {"academic_year": academic_year})
+        year_start_date = frappe.get_value("Academic Year",academic_year,"year_start_date")
         student_group = data.get('division')
         program_enrollment = frappe.new_doc("Program Enrollment")
         program_enrollment.student = student.name
@@ -273,14 +282,27 @@ def insert_program_enrollment(student, data=None):
         program_enrollment.academic_year = academic_year
         program_enrollment.academic_term = academic_term
         program_enrollment.student_group = student_group
+        program_enrollment.enrollment_date = year_start_date
         program_enrollment.save()
         program_enrollment.submit()
     except Exception as e:
         frappe.logger("program_enrollment").exception(e)
+        cleaned_data = {key: value for key, value in data.items() if not isinstance(value, (datetime, timedelta))}
+        error_obj={
+                "filename":"program_enrollment",
+                "object": cleaned_data,
+                "Traceback": frappe.get_traceback(),
+            },
+        frappe.log_error(
+        title="program_enrollment",
+        message=json.dumps(error_obj),
+        )
 
 
-def get_division(grade):
-    if grade.isalpha():
-        return ord(grade) - 24
-    else:
-        return int(grade) + 24
+def get_division(division):
+    if not division:
+        return None
+    if 40 <= int(division) <= 48:
+        return chr(int(division) + 24)
+    return int(division) - 24
+
