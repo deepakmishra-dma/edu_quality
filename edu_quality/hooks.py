@@ -40,7 +40,9 @@ doctype_js = {
 doctype_list_js = {
     "Student Applicant": "public/js/list/student_applicant_list.js",
     "Lead": "public/js/list/lead_list.js",
+    "Program Enrollment": "public/js/list/program_enrollment_list.js",
     "Student": "public/js/list/student_list.js",
+    "Student ID Card": "public/js/list/student_id_card.js",
 }
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -109,6 +111,7 @@ override_doctype_class = {
     "Payment Request": "edu_quality.overrides.CustomPaymentRequest",
     "Fee Schedule": "edu_quality.public.py.fee_schedule.CustomFeeSchedule",
     "Program Enrollment": "edu_quality.public.py.enrollment_override.CustomProgramEnrollment",
+    "Fees": "edu_quality.edu_quality.overrides.fees.CustomFees"
 }
 
 # Document Events
@@ -124,7 +127,7 @@ doc_events = {
     "Program Enrollment": {
         "on_submit": "edu_quality.public.py.fee.create_fees",
         "after_insert": "edu_quality.public.py.fee.append_program_enrollment",
-        "before_cancel": "edu_quality.public.py.fee.remove_program_enrollment"
+        "before_cancel": "edu_quality.public.py.fee.remove_program_enrollment",
     },
     "Fees": {
         "after_insert": "edu_quality.public.py.fee.after_insert",

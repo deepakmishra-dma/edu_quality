@@ -41,3 +41,4 @@ class CustomProgramEnrollment(ProgramEnrollment):
                         get_link_to_form("Academic Term", self.academic_term)
                     )
                 )
+    

@@ -10,9 +10,6 @@ from edu_quality.overrides import make_payment_request
 
 
 class FeeAdvance(AccountsController):
-    def autoname(self):
-        self.name = self.student + " - " + self.fee_structure
-
     def before_save(self):
         if self.is_rte:
             fee_structure = frappe.get_doc("Fee Structure", self.fee_structure)
