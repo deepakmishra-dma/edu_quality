@@ -19,6 +19,8 @@ from frappe.utils import (
     today,
 )
 from frappe import _, bold, throw
+from erpnext.accounts.general_ledger import make_gl_entries
+from erpnext.accounts.general_ledger import make_reverse_gl_entries
 
 
 class CustomFees(Fees):
@@ -26,7 +28,7 @@ class CustomFees(Fees):
         if not self.grand_total:
             return
         entries = self.get_company_splits()
-        from erpnext.accounts.general_ledger import make_gl_entries
+        
 
         make_gl_entries(
             entries,
@@ -104,6 +106,52 @@ class CustomFees(Fees):
             )
 
         return gl_dict
+    
+    def remove_discount_entry(self,company,amount):
+         receivable_account, liability_account, cost_center = frappe.db.get_value("Company", company,["default_receivable_account","default_liability_account","cost_center"])
+         entries = []
+         if frappe.db.exists("GL Entry",{'voucher_type':self.doctype,'voucher_no':self.name,'account':receivable_account,'debit':amount}):
+              entries.append(frappe.db.get_value("GL Entry",{'voucher_type':self.doctype,'voucher_no':self.name,'account':receivable_account,'debit':amount}))
+         if frappe.db.exists("GL Entry",{'voucher_type':self.doctype,'voucher_no':self.name,'account':liability_account,'credit':amount}):
+              entries.append(frappe.db.get_value("GL Entry",{'voucher_type':self.doctype,'voucher_no':self.name,'account':liability_account,'credit':amount}))
+         make_reverse_gl_entries(entries)
+         
+    def add_discount_entry(self,company,amount):
+         receivable_account, liability_account, cost_center = frappe.db.get_value("Company", company,["default_receivable_account","default_liability_account","cost_center"])
+         debit_entry = (self.get_gl_dict(
+                    {
+                        "company": company,
+                        "account": receivable_account,
+                        "party_type": "Student",
+                        "party": self.student,
+                        "against": liability_account,
+                        "debit": amount,
+                        "debit_in_account_currency": amount,
+                        "against_voucher": self.name,
+                        "against_voucher_type": self.doctype
+                    },
+                    item=self,
+                ))
+         credit_entry = (self.get_gl_dict(
+                            {
+                                "company": company,
+                                "account": liability_account,
+                                "against": self.student,
+                                "credit": amount,
+                                "credit_in_account_currency":amount,
+                                "cost_center": cost_center
+                            },
+                            item=self,
+                        ))
+         make_gl_entries(
+            [debit_entry,credit_entry],
+            cancel=(self.docstatus == 2),
+            update_outstanding="Yes",
+            merge_entries=False,
+        )
+    
+    
+         
 
     
     def get_company_splits(self):
