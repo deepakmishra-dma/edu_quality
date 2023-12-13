@@ -24,16 +24,36 @@ def get_payment_details(**kwargs):
     payment_request = frappe.get_value("Payment Request",{'payment_hash': kwargs.get('doc')})
     payment_request = frappe.get_doc("Payment Request",payment_request)
     fees = frappe.get_doc(payment_request.reference_doctype, payment_request.reference_name)
-    component = json.loads(fees.component_split)[payment_request.payment_term]
-    breakup = component['breakup']
-    due_date = component['due_date']
-    is_deposit = component['is_deposit']
-    if fees.doctype == "Fees":
+    breakup = []
+    if payment_request.payment_term:
+        component = json.loads(fees.component_split)[payment_request.payment_term]
+        breakup = component['breakup']
+        due_date = component['due_date']
+        is_deposit = component['is_deposit']
+        if fees.doctype == "Fees":
+            student_name = fees.student_name
+            company = fees.company
+        elif fees.doctype == "Fee Advance":
+            student_name = frappe.db.get_value("Student", fees.student, "student_name")
+            company = fees.institution
+    else:
         student_name = fees.student_name
-        company = fees.company
-    elif fees.doctype == "Fee Advance":
-        student_name = frappe.db.get_value("Student", fees.student, "student_name")
-        company = fees.institution
+        due_date = fees.due_date
+        for fee in fees.components:
+            fee_type = frappe.db.get_value("Fee Category",fee.fees_category,"type")
+            amount = fee.custom_amount_after_discount or fee.amount
+            if frappe.db.exists("Fee Category",fee.fees_category):
+                company = frappe.db.get_value("Fee Category",fee.fees_category,"custom_company")
+            else:
+                company = fees.company
+                
+            if fee_type != "Regular":
+                breakup.append({
+                    'fees_category': fee.fees_category,
+                    'amount':  frappe.utils.fmt_money(amount, currency="INR"),
+                    'company': company
+                })
+                is_deposit = True
 
     return {
         'student_name': student_name,
