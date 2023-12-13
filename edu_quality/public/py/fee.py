@@ -417,8 +417,10 @@ def payment_split(doc, ref_dis=None, time_dis=None, payplan_discount=0):
             )
 
     elif doc.doctype == "Fee Advance":
+        if isinstance(doc.due_date, str):
+            doc.due_date = datetime.strptime(doc.due_date, "%Y-%m-%d").date()
         split_payments[doc.payment_term] = get_split_payment(doc, 100)
-        company_wise_split[doc.payment_term] = company_wise_advance(doc.company, doc.amount)
+        company_wise_split[doc.payment_term] = company_wise(doc, 100)
         component_wise_split[doc.payment_term] = component_wise(doc, doc.due_date, 100)
 
     doc.split_payments = json.dumps(split_payments)
@@ -650,22 +652,6 @@ def company_wise(fees, invoice_portion, combination=False):
                 "fee_categories": fee_categories[paid_from],
             }
         )
-    return company_wise_split
-
-
-def company_wise_advance(company, amount, invoice_portion=100):
-    paid_to = frappe.get_value("Company", company, "default_receivable_account")
-    paid_from = frappe.get_value("Company", company, "default_payable_account")
-    cost_center = frappe.get_value("Company", company, "cost_center")
-    company_wise_split = [
-        {
-            "amount": amount,
-            "paid_from": paid_from,
-            "paid_to": paid_to,
-            "company": company,
-            "cost_center": cost_center,
-        }
-    ]
     return company_wise_split
 
 
