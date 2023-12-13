@@ -66,12 +66,6 @@
    "reqd": 1
   },
   {
-   "fieldname": "amount",
-   "fieldtype": "Currency",
-   "label": "Amount",
-   "read_only": 1
-  },
-  {
    "fieldname": "school",
    "fieldtype": "Link",
    "label": "School",
@@ -177,30 +171,6 @@
    "read_only": 1
   },
   {
-   "fieldname": "company",
-   "fieldtype": "Link",
-   "label": "Institution",
-   "options": "Company",
-   "reqd": 1
-  },
-  {
-   "fieldname": "section_break_hmik",
-   "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "column_break_cpuc",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "currency",
-   "fieldtype": "Link",
-   "hidden": 1,
-   "label": "Currency",
-   "options": "Currency",
-   "print_hide": 1,
-   "read_only": 1
-  },
-  {
    "fieldname": "accounts_tab",
    "fieldtype": "Tab Break",
    "label": "Accounts"
@@ -223,7 +193,7 @@
    "fieldtype": "Column Break"
   },
   {
-   "fetch_from": "company.default_income_account",
+   "fetch_from": "company.default_liability_account",
    "fieldname": "income_account",
    "fieldtype": "Link",
    "label": "Income Account",
@@ -240,12 +210,42 @@
    "fieldtype": "Link",
    "label": "Cost Center",
    "options": "Cost Center"
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "label": "Amount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Institution",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_hmik",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_cpuc",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Currency",
+   "options": "Currency",
+   "print_hide": 1,
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-11-22 17:45:15.002428",
+ "modified": "2023-11-23 12:01:06.545399",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Fee Advance",

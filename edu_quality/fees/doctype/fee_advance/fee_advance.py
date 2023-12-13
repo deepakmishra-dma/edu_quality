@@ -2,51 +2,63 @@
 # For license information, please see license.txt
 
 from edu_quality.public.py.fee import payment_split
+from erpnext.accounts.doctype.account.account import get_account_currency
+from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
+    get_accounting_dimensions,
+)
+from erpnext.accounts.utils import get_fiscal_years
 import frappe
-from frappe.model.document import Document
-from frappe import _
+import erpnext
+from erpnext.controllers.accounts_controller import (
+    AccountsController,
+    set_balance_in_account_currency,
+    update_gl_dict_with_regional_fields,
+)
 from frappe.utils import today
 from edu_quality.overrides import make_payment_request
+from frappe.utils import (
+    formatdate,
+    today,
+)
 
-
-class FeeAdvance(Document):
-    # def autoname(self):
-    #     self.name = self.student + " - " + self.fee_structure
-
+class FeeAdvance(AccountsController):
     def before_save(self):
-        if self.is_rte:
-            fee_structure = frappe.get_doc("Fee Structure", self.fee_structure)
-            self.components = []
-            percent = get_percent(self.payment_term, self.payment_plan)
-            amount = 0
-            for component in fee_structure.components:
-                amount += component.amount * percent / 100
-                self.append(
-                    "components",
-                    {
-                        "fees_category": component.fees_category,
-                        "description": component.description,
-                        "amount": component.amount * percent / 100,
-                    },
-                )
-            self.amount = amount
-            self.outstanding_amount = amount
-        else:
-            fee_structure = frappe.get_doc("Fee Structure", self.fee_structure)
-            percent = get_percent(self.payment_term, self.payment_plan)
-            amount = 0
-            self.components = []
-            for component in fee_structure.components:
-                amount += component.amount * percent / 100
-            self.amount = amount
-            self.outstanding_amount = amount
+        fee_structure = frappe.get_doc("Fee Structure", self.fee_structure)
+        percent = get_percent(self.payment_term, self.payment_plan)
+        self.components = []
+        amount = 0
+
+        for component in fee_structure.components:
+            if self.is_rte:
+                rte_excempt = frappe.get_value("Fee Category",component.fees_category, "rte_excempt")
+                if rte_excempt:
+                    continue
+
+            component_amount = component.amount * percent / 100
+            amount += component_amount
+            self.append(
+                "components",
+                {
+                    "fees_category": component.fees_category,
+                    "description": component.description,
+                    "amount": component_amount,
+                    "custom_company": component.custom_company,
+                },
+            )
+
+        self.amount = amount
+        self.outstanding_amount = amount
 
     def before_submit(self):
         payment_split(self)
 
-    
+    def validate(self):
+        self.set_missing_accounts_and_fields()
+
     
     def on_submit(self):
+        self.make_gl_entries()
+
         student_email = frappe.db.get_value("Student", self.student, "student_email_id")
         make_payment_request(
                 party_type="Student",
@@ -56,6 +68,159 @@ class FeeAdvance(Document):
                 recipient_id=student_email,
                 submit_doc=True,
             )
+        
+        
+    def set_missing_accounts_and_fields(self):
+        if not self.company:
+            self.company = frappe.defaults.get_defaults().company
+        if not self.currency:
+            self.currency = erpnext.get_company_currency(self.company)
+        if not (self.receivable_account and self.income_account and self.cost_center):
+            accounts_details = frappe.get_all(
+                "Company",
+                fields=[
+                    "default_receivable_account",
+                    "default_income_account",
+                    "cost_center",
+                ],
+                filters={"name": self.company},
+            )[0]
+        if not self.receivable_account:
+            self.receivable_account = accounts_details.default_receivable_account
+        if not self.income_account:
+            self.income_account = accounts_details.default_liability_account or accounts_details.default_income_account
+        if not self.cost_center:
+            self.cost_center = accounts_details.cost_center
+
+
+    def make_gl_entries(self):
+        if not self.amount:
+            return
+        entries = self.get_company_splits()
+        from erpnext.accounts.general_ledger import make_gl_entries
+
+        make_gl_entries(
+            entries,
+            cancel=(self.docstatus == 2),
+            update_outstanding="Yes",
+            merge_entries=False,
+        )
+
+
+    def get_gl_dict(self, args, account_currency=None, item=None):
+        """this method populates the common properties of a gl entry record"""
+        company = args.get('company') or self.company
+        posting_date = args.get("posting_date") or self.get("posting_date")
+        fiscal_years = get_fiscal_years(posting_date, company=company)
+        if len(fiscal_years) > 1:
+            frappe.throw(
+                frappe._("Multiple fiscal years exist for the date {0}. Please set company in Fiscal Year").format(
+                    formatdate(posting_date)
+                )
+            )
+        else:
+            fiscal_year = fiscal_years[0][0]
+
+        gl_dict = frappe._dict(
+            {
+                "company": company,
+                "posting_date": posting_date,
+                "fiscal_year": fiscal_year,
+                "voucher_type": self.doctype,
+                "voucher_no": self.name,
+                "remarks": self.get("remarks") or self.get("remark"),
+                "debit": 0,
+                "credit": 0,
+                "debit_in_account_currency": 0,
+                "credit_in_account_currency": 0,
+                "is_opening": self.get("is_opening") or "No",
+                "party_type": None,
+                "party": None,
+                "project": self.get("project"),
+                "post_net_value": args.get("post_net_value"),
+            }
+        )
+
+        update_gl_dict_with_regional_fields(self, gl_dict)
+        accounting_dimensions = get_accounting_dimensions()
+        dimension_dict = frappe._dict()
+
+        for dimension in accounting_dimensions:
+            dimension_dict[dimension] = self.get(dimension)
+            if item and item.get(dimension):
+                dimension_dict[dimension] = item.get(dimension)
+
+        gl_dict.update(dimension_dict)
+        gl_dict.update(args)
+
+        if not account_currency:
+            account_currency = get_account_currency(gl_dict.account)
+
+        if gl_dict.account and self.doctype not in [
+            "Journal Entry",
+            "Period Closing Voucher",
+            "Payment Entry",
+            "Purchase Receipt",
+            "Purchase Invoice",
+            "Stock Entry",
+        ]:
+            self.validate_account_currency(gl_dict.account, account_currency)
+
+        if gl_dict.account and self.doctype not in [
+            "Journal Entry",
+            "Period Closing Voucher",
+            "Payment Entry",
+        ]:
+            set_balance_in_account_currency(
+                gl_dict, account_currency, self.get("conversion_rate"), self.company_currency
+            )
+
+        return gl_dict
+
+
+    def get_company_splits(self):
+        try:
+            receivable_account, liability_account, cost_center = frappe.db.get_value("Company", self.company, ["default_receivable_account", "default_liability_account", "cost_center"])
+            student_entries = {}
+            fee_entries = {}
+
+            for component in self.components:
+                if receivable_account not in student_entries:
+                    student_entries[receivable_account] = self.get_gl_dict({
+                        "company": component.custom_company,
+                        "account": receivable_account,
+                        "party_type": "Student",
+                        "party": self.student,
+                        "against": liability_account,
+                        "debit": component.amount,
+                        "debit_in_account_currency": component.amount,
+                        "against_voucher": self.name,
+                        "against_voucher_type": self.doctype
+                    }, item=self)
+
+                else:
+                    student_entries[receivable_account]['debit'] += component.amount
+                    student_entries[receivable_account]['debit_in_account_currency'] += component.amount
+
+                if liability_account not in fee_entries:
+                    fee_entries[liability_account] = self.get_gl_dict({
+                        "company": component.custom_company,
+                        "account": liability_account,
+                        "against": self.student,
+                        "credit": component.amount,
+                        "credit_in_account_currency": component.amount,
+                        "cost_center": cost_center
+                    }, item=self)
+
+                else:
+                    fee_entries[liability_account]['credit'] += component.amount
+                    fee_entries[liability_account]['credit_in_account_currency'] += component.amount
+
+            entries = list(student_entries.values()) + list(fee_entries.values())
+            frappe.logger('fee').exception(entries)
+            return entries
+        except Exception as e:
+            frappe.logger('fee').exception(e)
 
 
 def get_percent(term, payment_plan):
