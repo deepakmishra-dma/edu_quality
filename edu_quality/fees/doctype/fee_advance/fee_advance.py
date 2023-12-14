@@ -296,14 +296,15 @@ def get_fee_structure(academic_year, school, program):
 
 
 def get_current_academic_year():
-    from datetime import datetime
-    acads = frappe.get_list("Academic Year")
-    for acad in acads:
-        doc = frappe.get_doc("Academic Year", acad.name)
-        today_date = datetime.strptime(today(), "%Y-%m-%d").date()
-        if doc.year_start_date <= today_date <= doc.year_end_date:
-            return acad.name
-    return None
+    return "2024-2025"
+    # from datetime import datetime
+    # acads = frappe.get_list("Academic Year")
+    # for acad in acads:
+    #     doc = frappe.get_doc("Academic Year", acad.name)
+    #     today_date = datetime.strptime(today(), "%Y-%m-%d").date()
+    #     if doc.year_start_date <= today_date <= doc.year_end_date:
+    #         return acad.name
+    # return None
 
 
 def get_payment_plan(fee_structure=None, program_enrollment=None):
