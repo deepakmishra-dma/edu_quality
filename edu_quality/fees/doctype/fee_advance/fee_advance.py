@@ -254,13 +254,14 @@ def create_fee_advance(student, program_enrollment):
         school = frappe.get_value("Program", program_enrollment.program, ["school"])
         institution = frappe.get_value("School", school, ["institution"])
         next_program = get_next_program(program_enrollment.program, school)
-        academic_year = get_current_academic_year()
-        fee_structure = get_fee_structure(academic_year, school, next_program)
+        current_academic_year = frappe.get_value("Academic Year",{"custom_current_academic_year":1})
+        next_academic_year = frappe.get_value("Academic Year",{"custom_next_academic_year":1})
+        fee_structure = get_fee_structure(next_academic_year, school, next_program)
         payment_plan = get_payment_plan(fee_structure, program_enrollment)
 
         fee_advance = frappe.new_doc("Fee Advance")
         fee_advance.student = program_enrollment.student
-        fee_advance.academic_year = academic_year
+        fee_advance.academic_year = current_academic_year
         fee_advance.school = school
         fee_advance.fee_structure = fee_structure
         fee_advance.institution = institution
@@ -295,22 +296,11 @@ def get_fee_structure(academic_year, school, program):
     return fee_structure
 
 
-def get_current_academic_year():
-    return "2024-2025"
-    # from datetime import datetime
-    # acads = frappe.get_list("Academic Year")
-    # for acad in acads:
-    #     doc = frappe.get_doc("Academic Year", acad.name)
-    #     today_date = datetime.strptime(today(), "%Y-%m-%d").date()
-    #     if doc.year_start_date <= today_date <= doc.year_end_date:
-    #         return acad.name
-    # return None
-
-
 def get_payment_plan(fee_structure=None, program_enrollment=None):
-    if fee_structure:
-        payment_plan = frappe.get_value("Payment Plan", {"fee_structure": fee_structure}, "name")
-        if payment_plan:
-            return payment_plan
-
-    program_enrollment.custom_payment_plan
+    if program_enrollment.custom_payment_plan:
+        return program_enrollment.custom_payment_plan
+    payment_plan = frappe.get_value("Payment Plan", {"fee_structure": fee_structure,"plan_name":["like", "P2"]}, "name")
+    if payment_plan:
+        return payment_plan
+    else:
+        return frappe.get_value("Payment Plan", {"fee_structure": fee_structure}, "name")
