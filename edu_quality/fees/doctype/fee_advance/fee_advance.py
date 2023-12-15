@@ -299,7 +299,7 @@ def get_fee_structure(academic_year, school, program):
 def get_payment_plan(fee_structure=None, program_enrollment=None):
     if program_enrollment.custom_payment_plan:
         return program_enrollment.custom_payment_plan
-    payment_plan = frappe.get_value("Payment Plan", {"fee_structure": fee_structure,"plan_name":["like", "P2"]}, "name")
+    payment_plan = frappe.get_value("Payment Plan", {"fee_structure": fee_structure,"plan_name":["like", "%P2%"]}, "name")
     if payment_plan:
         return payment_plan
     else:
