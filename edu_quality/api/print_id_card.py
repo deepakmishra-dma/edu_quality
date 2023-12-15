@@ -1,6 +1,8 @@
 from frappe.utils.jinja import validate_template
 from frappe.utils.weasyprint import download_pdf, get_html
 import frappe
+from weasyprint import CSS, HTML
+import json
 
 
 def divide_into_subarrays(arr, max_size):
@@ -8,11 +10,10 @@ def divide_into_subarrays(arr, max_size):
     return result
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist()
 def generate(**kwargs):
     print(kwargs)
-    from weasyprint import CSS, HTML
-
+    # kwargs["enrollments"] = json.loads(kwargs.get("enrollments", []))
     # letter_head = frappe.get_doc("letter_head")
     base_url = frappe.utils.get_url()
 

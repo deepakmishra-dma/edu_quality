@@ -142,7 +142,10 @@ doc_events = {
     "Custom DocPerm": {
         "after_insert": "edu_quality.public.py.fixtures.custom_doc_perm"
     },
-    "Lead": {"after_insert": "edu_quality.public.py.lead.after_insert"},
+    "Lead": {
+        "after_insert": "edu_quality.public.py.lead.after_insert",
+        "before_insert": "edu_quality.public.py.lead.before_insert",
+    },
     "Payment Entry": {"autoname": "edu_quality.public.py.payment_entry.autoname"},
 }
 
@@ -266,6 +269,7 @@ fixtures = [
     {"dt": "Funnel"},
     {"dt": "Email Template"},
     {"dt": "Letter Head"},
+    {"dt": "CRM Settings"},
     {
         "dt": "Workspace",
         "filters": [

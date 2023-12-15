@@ -8,20 +8,46 @@ except ImportError:
     print("Chatnext is not installed")
 
 
+def before_insert(doc, method=None):
+    contacts = frappe.db.get_list(
+        "Contact",
+        {"whatsapp_id": add_indian_country_code(doc.fathers_phone)},
+        ignore_permissions=True,
+    )
+
+    if len(contacts):
+        doc.contact_doc = frappe.get_doc(
+            "Contact", contacts[0], ignore_permissions=True
+        )
+    else:
+        doc.contact_doc = doc.create_contact()
+    doc.contact_doc.flags.ignore_permissions = True
+
+
 def after_insert(doc, method=None):
+    if not doc.contact_doc:
+        return
     doc.contact_doc.whatsapp_id = add_indian_country_code(doc.fathers_phone)
     doc.custom_contact_link = doc.contact_doc.get("name")
     if doc.fathers_phone:
         doc.contact_doc.append(
-            "phone_nos", {"phone": doc.fathers_phone, "is_primary_mobile_no": 1}
+            "phone_nos",
+            {
+                "phone": doc.fathers_phone,
+                "is_primary_mobile_no": 0 if len(doc.contact_doc.phone_nos) else 1,
+            },
         )
 
     if doc.fathers_email:
         doc.contact_doc.append(
-            "email_ids", {"email_id": doc.fathers_email, "is_primary": 1}
+            "email_ids",
+            {
+                "email_id": doc.fathers_email,
+                "is_primary": 0 if len(doc.contact_doc.email_ids) else 1,
+            },
         )
 
-    doc.contact_doc.save()
+    doc.contact_doc.save(ignore_permissions=True)
     if doc.get("fathers_email"):
         content = enqueue_email(doc)
         if content:
