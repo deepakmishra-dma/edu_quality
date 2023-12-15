@@ -1,7 +1,9 @@
 {% set letter_head = frappe.get_doc("Letter Head","Walnut School") %} {% set
 student_data = frappe.get_doc("Student",doc.student) %} {% set id_card_data =
-frappe.get_doc("Student ID Card",doc.custom_id_card) %}
-
+frappe.get_doc("Student ID Card",doc.custom_id_card) %} {% set guardians = [] %}
+{% for guardian in student_data.guardians %} {% set temp_guard =
+frappe.get_doc("Guardian",guardian.guardian,fields=["mobile_number"]).mobile_number
+%} {% if guardians.append(temp_guard) %} {% endif %} {% endfor %}
 <style>
   * {
     margin: 0;
@@ -39,7 +41,7 @@ frappe.get_doc("Student ID Card",doc.custom_id_card) %}
     margin-right: 2em;
   }
   h3 {
-    font-size: 0.65em;
+    font-size: 0.7em;
   }
   p {
     font-size: 0.5em;
@@ -47,23 +49,33 @@ frappe.get_doc("Student ID Card",doc.custom_id_card) %}
   .letter-head-class {
     width: 100%;
     height: auto;
+    border-bottom: 0.1em solid black;
+    padding-bottom: 0.2em;
+    margin-bottom: 0.3em;
   }
   .doc-name {
-    margin-bottom: 3em;
+    margin-bottom: 2em;
   }
   .address {
     font-size: 0.55em;
     text-transform: uppercase;
-    margin-bottom: 2em;
+    max-height: 8em;
+    height: 8em;
+    margin-bottom: 1em;
   }
   .blood_group {
     color: blue;
   }
+  h6 {
+    line-height: 1.5em;
+    font-weight: 400;
+  }
 </style>
-{{letter_head.content}}
-<div>
+
+<div class="container">
+  {{letter_head.content}}
   <div class="first-row">
-    <div style="display: flex; gap: 0; flex-direction: column">
+    <div style="display: flex; gap: 0; flex-shrink: 0; flex-direction: column">
       <h2>{{student_data.reference_number}}</h2>
       <h1>{{doc.program}}</h1>
     </div>
@@ -73,13 +85,15 @@ frappe.get_doc("Student ID Card",doc.custom_id_card) %}
     <div><h1 class="bus-no">M2</h1></div>
   </div>
   <h2 class="doc-name">{{doc.name}}</h2>
-  <h3>{{student_data.first_name}} {{student_data.last_name}}</h3>
-  <p>{{doc.enrollment_date}}</p>
-
+  <h3 style="text-align: center">
+    {{student_data.first_name}} {{student_data.last_name}}
+  </h3>
+  <p style="text-align: center">{{doc.enrollment_date}}</p>
+  <p style="text-align: right">Roll No: 7</p>
   <h6 class="address">
     {{student_data.address_line_1}} {{student_data.address_line_2}}
   </h6>
-  <p>Phone: 9025920502</p>
+  <p>Phone: {{guardians | join(",")}}</p>
   <hr />
   <div style="display: flex; justify-content: space-between; width: 100%">
     <p>{{doc.academic_year}}</p>

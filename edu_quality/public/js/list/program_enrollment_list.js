@@ -8,12 +8,13 @@ frappe.listview_settings['Program Enrollment'] = {
             try {
                 const headers = new Headers()
                 headers.append('X-Frappe-CSRF-Token', frappe.csrf_token)
-                headers.append('content', 'application/json')
-                const payload = { "enrollments": selectedEnrollments }
+                headers.append('Content-Type', 'application/json')
+                const payload = { "enrollments": selectedEnrollments, type: "POST" }
                 console.log(payload, 'xx')
                 const generated = await fetch(`/api/method/edu_quality.api.print_id_card.generate`, {
                     method: 'POST',
-                    headers: headers, body: payload
+
+                    headers: headers, body: JSON.stringify(payload)
                 })
                 const file = await generated.blob()
                 pdfUrl = URL.createObjectURL(file);

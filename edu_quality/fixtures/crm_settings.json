@@ -1,0 +1,14 @@
+[
+ {
+  "allow_lead_duplication_based_on_emails": 0,
+  "auto_creation_of_contact": 0,
+  "campaign_naming_by": "Campaign Name",
+  "carry_forward_communication_and_comments": 0,
+  "close_opportunity_after_days": 15,
+  "default_valid_till": null,
+  "docstatus": 0,
+  "doctype": "CRM Settings",
+  "modified": "2023-11-23 10:43:57.569375",
+  "name": "CRM Settings"
+ }
+]

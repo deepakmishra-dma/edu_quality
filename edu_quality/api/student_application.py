@@ -770,7 +770,6 @@ and dl.parenttype = "Contact"
         if len(existing_contacts):
             existing_contacts = existing_contacts[0]
             contact = frappe.get_doc("Contact", existing_contacts[0])
-            contact.first_name = kwargs.get("first_name")
 
         school_name = get_school(kwargs.get("school")) or kwargs.get("school", "")
         class_name = get_class(school_name, kwargs.get("class", "")) or kwargs.get(
