@@ -1,6 +1,7 @@
 # Copyright (c) 2023, Hybrowlabs Technologies and contributors
 # For license information, please see license.txt
 
+import json
 from edu_quality.public.py.fee import payment_split
 from erpnext.accounts.doctype.account.account import get_account_currency
 from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
@@ -274,9 +275,11 @@ def create_fee_advance(student, program_enrollment):
         fee_advance.due_date = frappe.utils.add_days(today(), 30)
         fee_advance.save()
         fee_advance.submit()
-    except Exception as e:
-        frappe.logger('fee_advance').exception(e)
-
+    except Exception:
+        frappe.log_error(
+            title="Fee Advance",
+            message=frappe.get_traceback(),
+        )
 
 def get_next_program(program, school):
     program_name = frappe.get_value("Program", program, "program_name")
