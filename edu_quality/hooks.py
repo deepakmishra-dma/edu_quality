@@ -127,7 +127,7 @@ doc_events = {
     "Program Enrollment": {
         "on_submit": "edu_quality.public.py.fee.create_fees",
         "after_insert": "edu_quality.public.py.fee.append_program_enrollment",
-        "before_cancel": "edu_quality.public.py.fee.remove_program_enrollment",
+        "on_trash": "edu_quality.public.py.fee.remove_program_enrollment",
     },
     "Fees": {
         "after_insert": "edu_quality.public.py.fee.after_insert",

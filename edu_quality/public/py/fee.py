@@ -259,6 +259,8 @@ def append_program_enrollment(doc, method=None):
         "class_details",
         {
             "program_enrollment": doc.name,
+            "academic_year": doc.academic_year,
+            "student_group": doc.student_group,
             "payment_plan": doc.custom_payment_plan,
         },
     )
