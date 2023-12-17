@@ -1,0 +1,16 @@
+{
+ "creation": "2023-11-24 13:06:26.388951",
+ "doc_type": "Sales Invoice",
+ "docstatus": 0,
+ "doctype": "Property Setter",
+ "doctype_or_field": "DocField",
+ "field_name": "payment_schedule",
+ "is_system_generated": 0,
+ "modified": "2023-11-24 13:06:26.388951",
+ "modified_by": "Administrator",
+ "name": "Sales Invoice-payment_schedule-print_hide",
+ "owner": "Administrator",
+ "property": "print_hide",
+ "property_type": "Check",
+ "value": "1"
+}

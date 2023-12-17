@@ -1,0 +1,15 @@
+{
+ "creation": "2023-09-15 00:18:07.135355",
+ "doc_type": "Student Applicant",
+ "docstatus": 0,
+ "doctype": "Property Setter",
+ "doctype_or_field": "DocType",
+ "is_system_generated": 0,
+ "modified": "2023-09-15 00:18:07.135355",
+ "modified_by": "Administrator",
+ "name": "Student Applicant-main-autoname",
+ "owner": "Administrator",
+ "property": "autoname",
+ "property_type": "Data",
+ "value": "format:{school_code}-{class_name}-LD-{#####}"
+}

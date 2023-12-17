@@ -1,0 +1,15 @@
+{
+ "creation": "2023-11-27 09:04:45.963924",
+ "doc_type": "Item Group",
+ "docstatus": 0,
+ "doctype": "Property Setter",
+ "doctype_or_field": "DocType",
+ "is_system_generated": 0,
+ "modified": "2023-11-27 09:04:45.963924",
+ "modified_by": "Administrator",
+ "name": "Item Group-main-field_order",
+ "owner": "Administrator",
+ "property": "field_order",
+ "property_type": "Data",
+ "value": "[\"gs\", \"item_group_name\", \"parent_item_group\", \"is_group\", \"image\", \"column_break_5\", \"group_code\", \"defaults\", \"item_group_defaults\", \"sec_break_taxes\", \"taxes\", \"lft\", \"old_parent\", \"rgt\"]"
+}

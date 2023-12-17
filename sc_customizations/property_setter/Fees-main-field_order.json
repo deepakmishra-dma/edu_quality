@@ -1,0 +1,15 @@
+{
+ "creation": "2023-10-03 17:44:06.795914",
+ "doc_type": "Fees",
+ "docstatus": 0,
+ "doctype": "Property Setter",
+ "doctype_or_field": "DocType",
+ "is_system_generated": 0,
+ "modified": "2023-10-03 17:44:06.795914",
+ "modified_by": "Administrator",
+ "name": "Fees-main-field_order",
+ "owner": "Administrator",
+ "property": "field_order",
+ "property_type": "Data",
+ "value": "[\"workflow_state\", \"naming_series\", \"student\", \"student_name\", \"include_payment\", \"send_payment_request\", \"column_break_4\", \"custom_school\", \"company\", \"posting_date\", \"posting_time\", \"due_date\", \"set_posting_time\", \"student_details\", \"program_enrollment\", \"program\", \"column_break_16\", \"academic_year\", \"academic_term\", \"section_break_7\", \"fee_structure\", \"fee_schedule\", \"currency\", \"components\", \"section_break_10\", \"amended_from\", \"column_break_11\", \"grand_total\", \"grand_total_in_words\", \"outstanding_amount\", \"payment_plans\", \"payment_plan\", \"payment_schedule\", \"custom_authorized\", \"student_details_tab\", \"student_email\", \"student_category\", \"column_break_ywbf\", \"student_batch\", \"accounts_tab\", \"account\", \"receivable_account\", \"column_break_39\", \"income_account\", \"accounting_dimensions_section\", \"cost_center\", \"dimension_col_break\", \"print_settings_tab\", \"edit_printing_settings\", \"letter_head\", \"column_break_32\", \"select_print_heading\"]"
+}

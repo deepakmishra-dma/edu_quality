@@ -1,0 +1,16 @@
+{
+ "creation": "2023-11-08 15:11:15.306269",
+ "doc_type": "Student",
+ "docstatus": 0,
+ "doctype": "Property Setter",
+ "doctype_or_field": "DocField",
+ "field_name": "naming_series",
+ "is_system_generated": 0,
+ "modified": "2023-11-08 15:11:15.306269",
+ "modified_by": "Administrator",
+ "name": "Student-naming_series-hidden",
+ "owner": "Administrator",
+ "property": "hidden",
+ "property_type": "Check",
+ "value": "1"
+}

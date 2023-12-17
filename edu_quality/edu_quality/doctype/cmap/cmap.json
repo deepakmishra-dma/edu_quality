@@ -1,0 +1,130 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-11-23 10:19:52.045571",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "assignment_column",
+  "plan_date",
+  "class",
+  "worksheet_code",
+  "ppt_code",
+  "broadcast",
+  "homework",
+  "period",
+  "lesson_plan",
+  "e_learning",
+  "audio_code",
+  "mcq_test",
+  "assignment",
+  "grading",
+  "table_vwbr"
+ ],
+ "fields": [
+  {
+   "fieldname": "plan_date",
+   "fieldtype": "Date",
+   "label": "Plan Date"
+  },
+  {
+   "fieldname": "class",
+   "fieldtype": "Link",
+   "label": "Class",
+   "options": "Program"
+  },
+  {
+   "fieldname": "worksheet_code",
+   "fieldtype": "Link",
+   "label": "Worksheet code",
+   "options": "Item"
+  },
+  {
+   "fieldname": "ppt_code",
+   "fieldtype": "Link",
+   "label": "PPT Code",
+   "options": "Item"
+  },
+  {
+   "fieldname": "broadcast",
+   "fieldtype": "Text",
+   "label": "Comment"
+  },
+  {
+   "fieldname": "homework",
+   "fieldtype": "Link",
+   "label": "Homework",
+   "options": "Item"
+  },
+  {
+   "fieldname": "period",
+   "fieldtype": "Data",
+   "label": "Period"
+  },
+  {
+   "fieldname": "lesson_plan",
+   "fieldtype": "Link",
+   "label": "Lesson Plan",
+   "options": "Item"
+  },
+  {
+   "fieldname": "e_learning",
+   "fieldtype": "Data",
+   "label": "E learning"
+  },
+  {
+   "fieldname": "audio_code",
+   "fieldtype": "Data",
+   "label": "Audio Code"
+  },
+  {
+   "fieldname": "mcq_test",
+   "fieldtype": "Data",
+   "label": "MCQ test"
+  },
+  {
+   "fieldname": "assignment",
+   "fieldtype": "Data",
+   "label": "Assignment"
+  },
+  {
+   "fieldname": "grading",
+   "fieldtype": "Data",
+   "label": "Grading"
+  },
+  {
+   "fieldname": "assignment_column",
+   "fieldtype": "Column Break",
+   "label": "Assignment"
+  },
+  {
+   "fieldname": "table_vwbr",
+   "fieldtype": "Table",
+   "options": "CMAP Assignment"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-11-27 10:17:00.043024",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "CMAP",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

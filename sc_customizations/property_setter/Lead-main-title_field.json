@@ -1,0 +1,15 @@
+{
+ "creation": "2023-09-12 18:30:12.550533",
+ "doc_type": "Lead",
+ "docstatus": 0,
+ "doctype": "Property Setter",
+ "doctype_or_field": "DocType",
+ "is_system_generated": 0,
+ "modified": "2023-09-12 18:30:12.550533",
+ "modified_by": "Administrator",
+ "name": "Lead-main-title_field",
+ "owner": "Administrator",
+ "property": "title_field",
+ "property_type": "Data",
+ "value": "lead_name"
+}

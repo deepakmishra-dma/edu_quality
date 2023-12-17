@@ -1,0 +1,16 @@
+{
+ "creation": "2023-11-27 08:45:15.030705",
+ "doc_type": "Supplier Quotation",
+ "docstatus": 0,
+ "doctype": "Property Setter",
+ "doctype_or_field": "DocField",
+ "field_name": "rounded_total",
+ "is_system_generated": 0,
+ "modified": "2023-11-27 08:45:15.030705",
+ "modified_by": "Administrator",
+ "name": "Supplier Quotation-rounded_total-print_hide",
+ "owner": "Administrator",
+ "property": "print_hide",
+ "property_type": "Check",
+ "value": "0"
+}

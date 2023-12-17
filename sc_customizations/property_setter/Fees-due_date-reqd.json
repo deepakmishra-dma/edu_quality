@@ -1,0 +1,17 @@
+{
+ "creation": "2023-09-20 09:18:37.817915",
+ "doc_type": "Fees",
+ "docstatus": 0,
+ "doctype": "Property Setter",
+ "doctype_or_field": "DocField",
+ "field_name": "due_date",
+ "is_system_generated": 0,
+ "modified": "2023-09-20 09:18:37.817915",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "Fees-due_date-reqd",
+ "owner": "Administrator",
+ "property": "reqd",
+ "property_type": "Check",
+ "value": "0"
+}
