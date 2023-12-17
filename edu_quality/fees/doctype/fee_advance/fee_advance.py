@@ -73,7 +73,8 @@ class FeeAdvance(AccountsController):
         
     def set_missing_accounts_and_fields(self):
         if not self.company:
-            self.company = frappe.defaults.get_defaults().company
+            company = frappe.get_value("Fee Structure", self.fee_structure, "institution")
+            self.company = company
         if not self.currency:
             self.currency = erpnext.get_company_currency(self.company)
         if not (self.receivable_account and self.income_account and self.cost_center):
@@ -82,6 +83,7 @@ class FeeAdvance(AccountsController):
                 fields=[
                     "default_receivable_account",
                     "default_income_account",
+                    "default_liability_account",
                     "cost_center",
                 ],
                 filters={"name": self.company},
@@ -238,9 +240,12 @@ def fee_advance(**kwargs):
     students = frappe.parse_json(students)
     for s in students:
         student = frappe.get_doc("Student", s.get("name"))
-        if frappe.db.exists("Program Enrollment", {"student": student.name}):
-            program_enrollment = frappe.get_doc("Program Enrollment", {"student": student.name})
-            frappe.enqueue(create_fee_advance, student=student, program_enrollment=program_enrollment)
+        current_academic_year = frappe.get_value("Academic Year",{"custom_current_academic_year":1})
+        pe_filter = {"student": student.name, "academic_year": current_academic_year}
+        if frappe.db.exists("Program Enrollment", pe_filter):
+            program_enrollment = frappe.get_doc("Program Enrollment", pe_filter)
+            create_fee_advance(student, program_enrollment)
+            # frappe.enqueue(create_fee_advance, student=student, program_enrollment=program_enrollment)
         else:
             frappe.msgprint(
                 f"Program Enrollment does not exists for student <b>{student.first_name}</b>. Fee Advance can only be created for old students."
@@ -259,20 +264,22 @@ def create_fee_advance(student, program_enrollment):
         next_academic_year = frappe.get_value("Academic Year",{"custom_next_academic_year":1})
         fee_structure = get_fee_structure(next_academic_year, school, next_program)
         payment_plan = get_payment_plan(fee_structure, program_enrollment)
+        term, due_date = get_first_payment_term(payment_plan)
 
         fee_advance = frappe.new_doc("Fee Advance")
         fee_advance.student = program_enrollment.student
         fee_advance.academic_year = current_academic_year
         fee_advance.school = school
         fee_advance.fee_structure = fee_structure
-        fee_advance.institution = institution
+        fee_advance.company = institution
         fee_advance.program = program_enrollment.program
         fee_advance.next_program = next_program
         fee_advance.payment_plan = payment_plan
-        fee_advance.payment_term = get_first_payment_term(payment_plan)
+        fee_advance.payment_term = term
         fee_advance.is_rte = student.is_rte
         fee_advance.posting_date = today()
-        fee_advance.due_date = frappe.utils.add_days(today(), 30)
+        fee_advance.due_date = due_date
+        fee_advance.is_rte = frappe.get_value("Student", program_enrollment.student, "is_rte_student")
         fee_advance.save()
         fee_advance.submit()
     except Exception:
@@ -290,7 +297,9 @@ def get_next_program(program, school):
 
 def get_first_payment_term(payment_plan):
     payment_plan = frappe.get_doc("Payment Plan", payment_plan)
-    return payment_plan.payment_schedule[0].payment_term
+    term = payment_plan.payment_schedule[0].payment_term
+    due_date = payment_plan.payment_schedule[0].due_date
+    return term, due_date
 
 
 def get_fee_structure(academic_year, school, program):
