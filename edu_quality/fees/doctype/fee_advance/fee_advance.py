@@ -69,7 +69,19 @@ class FeeAdvance(AccountsController):
                 recipient_id=student_email,
                 submit_doc=True,
             )
-        
+    
+
+    def on_cancel(self):
+        if frappe.db.exists("Payment Request", {"reference_name": self.name}):
+            doc = frappe.get_doc("Payment Request", {"reference_name": self.name})
+            doc.cancel()
+  
+
+    def on_trash(self):
+        if frappe.db.exists("Payment Request", {"reference_name": self.name}):
+            doc = frappe.get_doc("Payment Request", {"reference_name": self.name})
+            doc.delete()
+    
         
     def set_missing_accounts_and_fields(self):
         if not self.company:
@@ -268,7 +280,7 @@ def create_fee_advance(student, program_enrollment):
 
         fee_advance = frappe.new_doc("Fee Advance")
         fee_advance.student = program_enrollment.student
-        fee_advance.academic_year = current_academic_year
+        fee_advance.academic_year = next_academic_year
         fee_advance.school = school
         fee_advance.fee_structure = fee_structure
         fee_advance.company = institution
