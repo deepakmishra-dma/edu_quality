@@ -1,0 +1,15 @@
+{
+ "creation": "2023-09-29 10:53:44.103153",
+ "doc_type": "Fee Component",
+ "docstatus": 0,
+ "doctype": "Property Setter",
+ "doctype_or_field": "DocType",
+ "is_system_generated": 0,
+ "modified": "2023-09-29 10:53:44.103153",
+ "modified_by": "Administrator",
+ "name": "Fee Component-main-field_order",
+ "owner": "Administrator",
+ "property": "field_order",
+ "property_type": "Data",
+ "value": "[\"fees_category\", \"description\", \"column_break_2\", \"amount\", \"custom_discount\", \"custom_discounts\", \"custom_discount_percentage\", \"custom_discount_amount\", \"custom_amount_after_discount\", \"fee_type\", \"custom_company\"]"
+}

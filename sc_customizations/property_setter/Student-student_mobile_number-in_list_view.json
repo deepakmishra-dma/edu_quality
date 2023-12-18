@@ -1,0 +1,16 @@
+{
+ "creation": "2023-09-13 22:20:12.860448",
+ "doc_type": "Student",
+ "docstatus": 0,
+ "doctype": "Property Setter",
+ "doctype_or_field": "DocField",
+ "field_name": "student_mobile_number",
+ "is_system_generated": 0,
+ "modified": "2023-09-13 22:20:12.860448",
+ "modified_by": "Administrator",
+ "name": "Student-student_mobile_number-in_list_view",
+ "owner": "Administrator",
+ "property": "in_list_view",
+ "property_type": "Check",
+ "value": "1"
+}

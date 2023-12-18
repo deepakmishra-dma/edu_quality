@@ -1,0 +1,16 @@
+{
+ "creation": "2023-11-27 08:45:22.865017",
+ "doc_type": "Sales Invoice Item",
+ "docstatus": 0,
+ "doctype": "Property Setter",
+ "doctype_or_field": "DocField",
+ "field_name": "target_warehouse",
+ "is_system_generated": 0,
+ "modified": "2023-11-27 08:45:22.865017",
+ "modified_by": "Administrator",
+ "name": "Sales Invoice Item-target_warehouse-hidden",
+ "owner": "Administrator",
+ "property": "hidden",
+ "property_type": "Check",
+ "value": "1"
+}

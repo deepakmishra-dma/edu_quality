@@ -1,0 +1,16 @@
+{
+ "creation": "2023-11-24 13:10:13.227001",
+ "doc_type": "Employee",
+ "docstatus": 0,
+ "doctype": "Property Setter",
+ "doctype_or_field": "DocField",
+ "field_name": "naming_series",
+ "is_system_generated": 0,
+ "modified": "2023-11-24 13:10:13.227001",
+ "modified_by": "Administrator",
+ "name": "Employee-naming_series-reqd",
+ "owner": "Administrator",
+ "property": "reqd",
+ "property_type": "Check",
+ "value": "1"
+}

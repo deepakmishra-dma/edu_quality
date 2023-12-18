@@ -1,0 +1,16 @@
+{
+ "creation": "2023-11-08 14:54:56.069403",
+ "doc_type": "Student",
+ "docstatus": 0,
+ "doctype": "Property Setter",
+ "doctype_or_field": "DocField",
+ "field_name": "image",
+ "is_system_generated": 0,
+ "modified": "2023-11-08 14:54:56.069403",
+ "modified_by": "Administrator",
+ "name": "Student-image-label",
+ "owner": "Administrator",
+ "property": "label",
+ "property_type": "Data",
+ "value": "Student Photo"
+}
