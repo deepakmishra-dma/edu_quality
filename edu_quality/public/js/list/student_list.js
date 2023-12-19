@@ -37,27 +37,37 @@ frappe.listview_settings['Student'] = {
             });
         });
 
-        listview.page.add_menu_item(__('Create Fee Advance'), function() {
+        listview.page.add_menu_item(__('Create Fee Advance'), function () {
             let students = listview.get_checked_items();
             if (students.length > 0) {
-                frappe.call({
-                    method: 'edu_quality.fees.doctype.fee_advance.fee_advance.fee_advance',
-                    args: {
-                        students: students
-                    },
-                    callback: function(response) {
-                        frappe.show_alert({
-                            message: __('Fee Advance creation scheduled successfully.'),
-                            indicator: 'green'
+                frappe.confirm('Are you sure you want to proceed?',
+                    () => {
+                        frappe.call({
+                            method: "edu_quality.fees.doctype.fee_advance.fee_advance.fee_advance",
+                            type: "POST",
+                            args: {
+                                students: students
+                            },
+                            callback: function (response) {
+                                frappe.show_alert({
+                                    message: __('Fee Advance Creation Scheduled Successfully'),
+                                    indicator: 'green'
+                                });
+                            }
                         });
-                    }
-                });
+                    }, () => {
+                        frappe.show_alert({
+                            message: __('Action Cancelled'),
+                            indicator: 'orange'
+                        });
+                    })
             } else {
                 frappe.show_alert({
                     message: __('Please select at least one Students.'),
                     indicator: 'orange'
                 });
             }
-        });
+        }
+        );
     }
-}
+};
