@@ -11,9 +11,10 @@ def add_discount(fee_name, discount):
     grand_discount_amount = 0
     fees = frappe.get_doc("Fees", fee_name)
     dis = frappe.get_doc("Discount Configuration", discount)
-
+    company = None
     for component in fees.components:
         if component.fees_category == dis.fee_category:
+            company = component.custom_company
             discount_name = component.custom_discounts
             if discount_name and dis.can_be_applied_with_other_discounts == 1:
                 discount_list = get_discount_list(discount_name)
@@ -71,6 +72,7 @@ def add_discount(fee_name, discount):
                     discount_applied = True
                     frappe.response['message'] = message
     if discount_applied:
+        fees.add_discount_entry(company, grand_discount_amount)
         update_total_discount_in_fees(fees.name)
         if dis.needs_admin_approval:
             frappe.db.set_value("Fees",fee_name,"workflow_state","Pending")
@@ -87,9 +89,11 @@ def remove_discount(fee_name, discount, update_payment_request=True):
     grand_discount_amount = 0
     fees = frappe.get_doc("Fees", fee_name)
     dis = frappe.get_doc("Discount Configuration", discount)
+    company = None
 
     for component in fees.components:
         if component.custom_discounts:
+            company = component.custom_company
             discount_list = get_discount_list(component.custom_discounts)
             if component.fees_category == dis.fee_category and discount in discount_list:
                 if dis.discount_amount:
@@ -120,6 +124,7 @@ def remove_discount(fee_name, discount, update_payment_request=True):
                 message = dis.name + " Discount does not present"
                 frappe.response['message'] = message
     if discount_removed:
+        fees.remove_discount_entry(company, grand_discount_amount)
         update_total_discount_in_fees(fees.name)
         update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=False,dis=dis)
         if update_payment_request:
@@ -201,14 +206,22 @@ def referal_discount(doc, method=None):
                     discount_percentage = calculate_discount(component.amount, total_discount)
 
                     discount_name = doc.components[i].custom_discounts
-                    doc.components[i].custom_discounts = f"{discount_name}, {dis.name}" if discount_name else dis.name
-                    doc.components[i].custom_discount_percentage = discount_percentage
-                    doc.components[i].custom_discount_amount = total_discount
-                    doc.components[i].custom_amount_after_discount = amount - discount
-                    grand_total = doc.grand_total - discount
-                    label = get_label(component.fees_category)
-                    ref_dis[label] = {component.fees_category:discount}
-                    break;
+                    if discount_name and dis.can_be_applied_with_other_discounts == 1:
+                        discount_list = get_discount_list(discount_name)
+                        if dis.name not in discount_list:
+                            discount_list.append(dis.name)
+                            discount_name = ", ".join(discount_list)
+                            doc.components[i].custom_discounts = discount_name
+                            doc.components[i].custom_discount_percentage = discount_percentage
+                            doc.components[i].custom_discount_amount = total_discount
+                            doc.components[i].custom_amount_after_discount = amount - discount
+                            grand_total = doc.grand_total - discount
+                            label = get_label(component.fees_category)
+                            ref_dis[label] = {component.fees_category:discount}
+                            doc.add_discount_entry(component.custom_company, discount)
+                            break;
+                    elif discount_name and dis.can_be_applied_with_other_discounts == 0:
+                        continue
                 
         doc.grand_total = grand_total
         doc.grand_total_in_words = str(frappe.utils.in_words(doc.grand_total)).title()
@@ -307,6 +320,7 @@ def time_based_discount(doc):
             )
             if dis.start_date <= getdate(today()) <= dis.end_date:
                 discount_amount = apply_time_based_discount(dis, component, doc)
+                doc.add_discount_entry(component.custom_company, discount_amount)
                 label = get_label(component.fees_category)
                 return {label:{component.fees_category:discount_amount}
 }
@@ -389,6 +403,7 @@ def get_payment_plan_discount(payment_plan, doc):
                 doc.grand_total = grand_total
                 doc.grand_total_in_words = grand_total_in_words
                 doc.outstanding_amount = grand_total
+                doc.add_discount_entry(component.custom_company, dis.discount_amount)
                 return (dis.discount_amount, "Amount", 0)
             else:
                 discount_amount = (component.amount * float(dis.discount)) / 100
@@ -401,6 +416,7 @@ def get_payment_plan_discount(payment_plan, doc):
                 doc.grand_total = grand_total
                 doc.grand_total_in_words = grand_total_in_words
                 doc.outstanding_amount = grand_total
+                doc.add_discount_entry(component.custom_company, discount_amount)
                 return (discount_amount, "Percentage", dis.discount)
     return None
 

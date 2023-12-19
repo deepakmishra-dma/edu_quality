@@ -108,47 +108,49 @@ class CustomFees(Fees):
         return gl_dict
     
     def remove_discount_entry(self,company,amount):
-         receivable_account, liability_account, cost_center = frappe.db.get_value("Company", company,["default_receivable_account","default_liability_account","cost_center"])
-         entries = []
-         if frappe.db.exists("GL Entry",{'voucher_type':self.doctype,'voucher_no':self.name,'account':receivable_account,'debit':amount}):
-              entries.append(frappe.db.get_value("GL Entry",{'voucher_type':self.doctype,'voucher_no':self.name,'account':receivable_account,'debit':amount}))
-         if frappe.db.exists("GL Entry",{'voucher_type':self.doctype,'voucher_no':self.name,'account':liability_account,'credit':amount}):
-              entries.append(frappe.db.get_value("GL Entry",{'voucher_type':self.doctype,'voucher_no':self.name,'account':liability_account,'credit':amount}))
-         make_reverse_gl_entries(entries)
+        receivable_account, discount_account = frappe.db.get_value("Company", company,["default_receivable_account","default_discount_account"])
+        entries = []
+        debit_filter = {'voucher_type':self.doctype,'voucher_no':self.name,'account':receivable_account,'debit':amount}
+        credit_filter = {'voucher_type':self.doctype,'voucher_no':self.name,'account':discount_account,'credit':amount}
+        if frappe.db.exists("GL Entry",debit_filter):
+            entries.append(frappe.get_doc("GL Entry",debit_filter).as_dict())
+        if frappe.db.exists("GL Entry",credit_filter):
+            entries.append(frappe.get_doc("GL Entry",credit_filter).as_dict())
+        make_reverse_gl_entries(entries)
          
     def add_discount_entry(self,company,amount):
-         receivable_account, liability_account, cost_center = frappe.db.get_value("Company", company,["default_receivable_account","default_liability_account","cost_center"])
-         debit_entry = (self.get_gl_dict(
-                    {
-                        "company": company,
-                        "account": receivable_account,
-                        "party_type": "Student",
-                        "party": self.student,
-                        "against": liability_account,
-                        "debit": amount,
-                        "debit_in_account_currency": amount,
-                        "against_voucher": self.name,
-                        "against_voucher_type": self.doctype
-                    },
-                    item=self,
-                ))
-         credit_entry = (self.get_gl_dict(
-                            {
-                                "company": company,
-                                "account": liability_account,
-                                "against": self.student,
-                                "credit": amount,
-                                "credit_in_account_currency":amount,
-                                "cost_center": cost_center
-                            },
-                            item=self,
-                        ))
-         make_gl_entries(
-            [debit_entry,credit_entry],
-            cancel=(self.docstatus == 2),
-            update_outstanding="Yes",
-            merge_entries=False,
-        )
+        receivable_account, discount_account, cost_center = frappe.db.get_value("Company", company,["default_receivable_account","default_discount_account","cost_center"])
+        debit_entry = (self.get_gl_dict(
+                {
+                    "company": company,
+                    "account": receivable_account,
+                    "party_type": "Student",
+                    "party": self.student,
+                    "against": discount_account,
+                    "debit": amount,
+                    "debit_in_account_currency": amount,
+                    "against_voucher": self.name,
+                    "against_voucher_type": self.doctype
+                },
+                item=self,
+            ))
+        credit_entry = (self.get_gl_dict(
+                        {
+                            "company": company,
+                            "account": discount_account,
+                            "against": self.student,
+                            "credit": amount,
+                            "credit_in_account_currency":amount,
+                            "cost_center": cost_center
+                        },
+                        item=self,
+                    ))
+        make_gl_entries(
+        [debit_entry,credit_entry],
+        cancel=(self.docstatus == 2),
+        update_outstanding="Yes",
+        merge_entries=False,
+    )
     
     
          
