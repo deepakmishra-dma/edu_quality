@@ -22,19 +22,27 @@ frappe.listview_settings['Student'] = {
 
     refresh: function (listview) {
         listview.page.add_menu_item(__("Import Student"), function () {
-            frappe.call({
-                method: "edu_quality.public.py.student.import_student",
-                type: "POST",
-                callback: function (response) {
-                    console.log(response);
-                    if (response.message.status == 'success') {
-                        frappe.show_alert({
-                            message: __(response.message.res),
-                            indicator: 'green'
-                        });
-                    }
-                }
-            });
+            frappe.confirm('Are you sure you want to proceed?',
+                () => {
+                    frappe.call({
+                        method: "edu_quality.public.py.student.import_student",
+                        type: "POST",
+                        callback: function (response) {
+                            console.log(response);
+                            if (response.message.status == 'success') {
+                                frappe.show_alert({
+                                    message: __(response.message.res),
+                                    indicator: 'green'
+                                });
+                            }
+                        }
+                    });
+                }, () => {
+                    frappe.show_alert({
+                        message: __('Import Student cancelled.'),
+                        indicator: 'orange'
+                    });
+                });
         });
 
         listview.page.add_menu_item(__('Create Fee Advance'), function () {

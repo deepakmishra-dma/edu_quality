@@ -181,11 +181,8 @@ def insert_student(row, column_names, doctype):
     category = get_data("category")
 
     class_admitted_to = get_data("class_admitted_to")
+    program = get_program(class_admitted_to, school)
     division = get_data("division")
-    program = frappe.get_value("Program", {"program_name": class_admitted_to})
-    division = get_division(division)
-    division_log = division
-    division = frappe.get_value("Student Group", {"student_group_name": division})
     academic_year = get_data("academic_year")
 
     new_doc_data = {
@@ -252,7 +249,7 @@ def insert_student(row, column_names, doctype):
         "doctype": doctype,
     }
     frappe_data['division'] = division
-    frappe_data['division_log'] = division_log
+    frappe_data['division_log'] = division
     frappe_data['academic_year'] = academic_year
     frappe.flags.in_import = True
     if not frappe.db.exists(doctype, docname):
@@ -272,16 +269,21 @@ def insert_program_enrollment(student, data=None):
         academic_year = data.get("academic_year")
         academic_term = frappe.get_value("Academic Term", {"academic_year": academic_year})
         year_start_date = frappe.get_value("Academic Year",academic_year,"year_start_date")
-        student_group = data.get('division')
+
+        academic_year = get_academic_year(data.get("academic_year"))
+        school = student.school
+        division = data.get("division")
+        division = get_division(division, program, school, academic_year)
+
         program_enrollment = frappe.new_doc("Program Enrollment")
         program_enrollment.student = student.name
         program_enrollment.student_category = student.category
         program_enrollment.student_name = student.student_name
-        program_enrollment.school = student.school
+        program_enrollment.school = school
         program_enrollment.program = program
         program_enrollment.academic_year = academic_year
         program_enrollment.academic_term = academic_term
-        program_enrollment.student_group = student_group
+        program_enrollment.student_group = division
         program_enrollment.enrollment_date = year_start_date
         program_enrollment.save()
         program_enrollment.submit()
@@ -299,10 +301,62 @@ def insert_program_enrollment(student, data=None):
         )
 
 
-def get_division(division):
-    if not division:
+def get_program(program_name, school):
+    if not program_name:
         return None
-    if 40 <= int(division) <= 48:
-        return chr(int(division) + 24)
-    return int(division) - 24
+    
+    program = frappe.get_value("Program", {"program_name": program_name, "school": school})
+    
+    if not program:
+        program = frappe.new_doc("Program")
+        program.program_name = program_name
+        program.school = school
+        program.reference_series = "AC"
+        program.insert(ignore_permissions=True)
+    
+    return program
 
+
+def get_division(division, program, school, academic_year):
+    div = chr(int(division) + 24) if 40 <= int(division) <= 48 else int(division) - 24
+
+    div_filter = {
+        "program": program,
+        "custom_school": school,
+        "academic_year": academic_year,
+        "student_group_name": div,
+    }
+    division = frappe.get_value("Student Group", div_filter)
+
+    if not division:
+        doc_properties = {
+            "doctype": "Student Group",
+            "program": program,
+            "custom_school": school,
+            "academic_year": academic_year,
+            "student_group_name": div,
+            "group_based_on": "Batch",
+            "start_time": "10:00:00",
+            "end_time": "10:00:00",
+        }
+        doc = frappe.get_doc(doc_properties)
+        doc.insert(ignore_permissions=True)
+        division = doc.name
+
+    return division
+
+
+def get_academic_year(academic_year):
+    if not academic_year:
+        return None
+    academic_year_name = frappe.get_value("Academic Year", {"academic_year_name": academic_year})
+    if academic_year_name:
+        return academic_year_name
+
+    year1, year2 = academic_year.split("-")
+    doc = frappe.new_doc("Academic Year")
+    doc.academic_year_name = academic_year
+    doc.year_start_date = f"{year1}-04-01"
+    doc.year_end_date = f"{year2}-03-31"
+    doc.insert(ignore_permissions=True)
+    return doc.name
