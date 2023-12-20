@@ -45,6 +45,20 @@ class CustomPaymentRequest(PaymentRequest):
                     split.get("fee_categories")
                 )
             mark_payment_term_paid(fees, self.payment_term, self.grand_total)
+        else:
+            company_split = json.loads(fees.company_split).get("Deposit")
+            if company_split:
+                for split in company_split:
+                    payment_entry(
+                        self,
+                        fees,
+                        split["amount"],
+                        split["paid_from"],
+                        split["paid_to"],
+                        split["company"],
+                        split["cost_center"],
+                        split.get("fee_categories")
+                    )
             
         paid_amount = fees.outstanding_amount - self.grand_total
         frappe.db.set_value(fees.doctype, fees.name, "outstanding_amount", paid_amount)

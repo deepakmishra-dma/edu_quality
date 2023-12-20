@@ -404,6 +404,8 @@ def payment_split(doc, ref_dis=None, time_dis=None, payplan_discount=0):
                     split_payments[schedule.payment_term] = get_split_payment(doc, invoice_portion)
                     company_wise_split[term] = company_wise(doc, invoice_portion)
                     component_wise_split[term] = component_wise(doc, due_date, invoice_portion)
+
+            company_wise_split['Deposit'] = company_wise_deposit(doc)
         
             if ref_dis:
                 split_payments, company_wise_split, component_wise_split = update_splits(
@@ -657,6 +659,49 @@ def company_wise(fees, invoice_portion, combination=False):
     return company_wise_split
 
 
+def company_wise_deposit(fees):
+    paid_from_dict = {}
+    paid_to_dict = {}
+    companies = {}
+    fee_categories = {}
+    for component in fees.components:
+        doc = frappe.get_doc("Fee Category", component.fees_category)
+        paid_to = doc.custom_account
+        company = doc.custom_company
+        paid_from = frappe.get_value(
+            "Account", {"company": company, "account_type": "Payable"}, ["name"]
+        )
+        fee_type = frappe.db.get_value("Fee Category", component.fees_category, "type")
+        amount = component.amount
+
+        if fee_type != "Regular":
+            if paid_from_dict.get(paid_from):
+                paid_from_dict[paid_from] += amount
+                fee_categories[paid_from].append({component.fees_category: amount})
+            else:
+                paid_from_dict[paid_from] = amount
+                fee_categories[paid_from] = [{component.fees_category: amount}]
+        paid_to_dict[paid_from] = paid_to
+        companies[paid_from] = company
+
+    company_wise_split = []
+    for paid_from, amount in paid_from_dict.items():
+        cost_center = frappe.get_value(
+            "Cost Center", {"company": companies[paid_from]}, ["name"]
+        )
+        company_wise_split.append(
+            {
+                "amount": amount,
+                "paid_from": paid_from,
+                "paid_to": paid_to_dict[paid_from],
+                "company": companies[paid_from],
+                "cost_center": cost_center,
+                "fee_categories": fee_categories[paid_from],
+            }
+        )
+    return company_wise_split
+
+
 def component_wise(doc, due_date, invoice_portion, combination=False):
     component_wise_split = dict()
     breakup = []
@@ -679,7 +724,7 @@ def component_wise(doc, due_date, invoice_portion, combination=False):
                 "company": component.custom_company,
                 "amount": frappe.utils.fmt_money(amount, currency="INR"),
             })
-    component_wise_split['due_date'] = due_date.strftime("%Y-%m-%d")
+    component_wise_split['due_date'] = due_date if isinstance(due_date, str) else due_date.strftime("%Y-%m-%d")
     component_wise_split['breakup'] = breakup
     component_wise_split['is_deposit'] = combination
     return component_wise_split
