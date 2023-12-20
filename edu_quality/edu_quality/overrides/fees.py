@@ -123,10 +123,10 @@ class CustomFees(Fees):
         debit_entry = (self.get_gl_dict(
                 {
                     "company": company,
-                    "account": receivable_account,
+                    "account":discount_account ,
                     "party_type": "Student",
                     "party": self.student,
-                    "against": discount_account,
+                    "against": receivable_account,
                     "debit": amount,
                     "debit_in_account_currency": amount,
                     "against_voucher": self.name,
@@ -137,7 +137,7 @@ class CustomFees(Fees):
         credit_entry = (self.get_gl_dict(
                         {
                             "company": company,
-                            "account": discount_account,
+                            "account": receivable_account,
                             "against": self.student,
                             "credit": amount,
                             "credit_in_account_currency":amount,
