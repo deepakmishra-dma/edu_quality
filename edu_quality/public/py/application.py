@@ -196,7 +196,7 @@ def enroll_student(source_name):
     program_enrollment.student_category = student_applicant.student_category
     program_enrollment.student_name = student.student_name
     program_enrollment.school = student_applicant.program
-    program_enrollment.program = student_applicant.program
+    program_enrollment.custom_program = student_applicant.program
     program_enrollment.academic_year = student_applicant.academic_year
     program_enrollment.academic_term = student_applicant.academic_term
     program_enrollment.student_group = student_group
