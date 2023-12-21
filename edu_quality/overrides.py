@@ -31,9 +31,11 @@ except ImportError:
 class CustomPaymentRequest(PaymentRequest):
     def create_payment_entry(self):
         fees = frappe.get_doc(self.reference_doctype, self.reference_name)
+        paid_amount = 0
         if self.payment_term:
             company_split = json.loads(fees.company_split)[self.payment_term]
             for split in company_split:
+                paid_amount += split["amount"]
                 payment_entry(
                     self,
                     fees,
@@ -49,6 +51,7 @@ class CustomPaymentRequest(PaymentRequest):
             company_split = json.loads(fees.company_split).get("Deposit")
             if company_split:
                 for split in company_split:
+                    paid_amount += split["amount"]
                     payment_entry(
                         self,
                         fees,
@@ -60,7 +63,6 @@ class CustomPaymentRequest(PaymentRequest):
                         split.get("fee_categories")
                     )
             
-        paid_amount = fees.outstanding_amount - self.grand_total
         frappe.db.set_value(fees.doctype, fees.name, "outstanding_amount", paid_amount)
         self.db_set("status", "Paid")
 
