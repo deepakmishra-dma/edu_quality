@@ -91,14 +91,14 @@
   {
    "fieldname": "program",
    "fieldtype": "Link",
-   "label": "Current Program",
+   "label": "Current Class",
    "options": "Program",
    "reqd": 1
   },
   {
    "fieldname": "next_program",
    "fieldtype": "Link",
-   "label": "Next Program",
+   "label": "Next Class",
    "options": "Program",
    "reqd": 1
   },
@@ -247,7 +247,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-11-24 18:27:19.297073",
+ "modified": "2023-11-28 11:39:34.381158",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Fee Advance",
