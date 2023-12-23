@@ -37,11 +37,11 @@ def before_save(doc,method=None):
         get_deposits(doc)
 
     if not doc.fee_structure:
-        if frappe.db.exists("Fee Structure",{'program':doc.program,'academic_year':doc.academic_year}):
-            doc.fee_structure = frappe.get_value("Fee Structure",{'program':doc.program,'academic_year':doc.academic_year},'name')
+        if frappe.db.exists("Fee Structure",{'program':doc.program,'academic_year':doc.academic_year,"docstatus":1}):
+            doc.fee_structure = frappe.get_value("Fee Structure",{'program':doc.program,'academic_year':doc.academic_year,"docstatus":1},'name')
 
     if doc.fee_structure:
-        fee_schedule = frappe.db.get_value("Fee Schedule",{'fee_structure':doc.fee_structure},'name')
+        fee_schedule = frappe.db.get_value("Fee Schedule",{'fee_structure':doc.fee_structure,"docstatus":1},'name')
         doc.fee_schedule = fee_schedule
         doc.application_fees = frappe.db.get_value("Application Fees List",{'class_name':doc.program},'application_fees')
 
