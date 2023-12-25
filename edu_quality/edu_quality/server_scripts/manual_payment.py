@@ -94,3 +94,15 @@ def company_wise(data, component):
     if f==0:
         data.append(component)
     return data
+
+
+@frappe.whitelist()
+def get_unpaid_terms(fee):
+    terms = frappe.db.get_all("Payment Request",{'reference_name':fee},"payment_term")
+    result = []
+    for term in terms:
+        if not term.payment_term:
+            result.append("Deposit")
+        else:
+            result.append(term.payment_term)
+    return result
