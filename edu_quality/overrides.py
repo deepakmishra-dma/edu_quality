@@ -62,8 +62,9 @@ class CustomPaymentRequest(PaymentRequest):
                         split["cost_center"],
                         split.get("fee_categories")
                     )
-            
-        frappe.db.set_value(fees.doctype, fees.name, "outstanding_amount", paid_amount)
+
+        outstanding_amount = flt(fees.outstanding_amount) - paid_amount
+        frappe.db.set_value(fees.doctype, fees.name, "outstanding_amount", outstanding_amount)
         self.db_set("status", "Paid")
 
         try:
