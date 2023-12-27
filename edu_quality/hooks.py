@@ -43,6 +43,7 @@ doctype_list_js = {
     "Program Enrollment": "public/js/list/program_enrollment_list.js",
     "Student": "public/js/list/student_list.js",
     "Student ID Card": "public/js/list/student_id_card.js",
+    "Fees": "public/js/list/fees_list.js",
 }
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
