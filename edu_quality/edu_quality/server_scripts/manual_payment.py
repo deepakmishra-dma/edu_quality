@@ -20,9 +20,9 @@ def manual_payment(fee,term,data,payment_mode):
                         reference_no = i.get("reference_number")
                         update_reference(reference_no, entry)
 
-            frappe.msgprint("Manual Payment Done")
+            return frappe.msgprint("Manual Payment Done")
     except Exception as e:
-        frappe.msgprint("Manual Payment Failed")
+        return frappe.msgprint("Manual Payment Failed")
         return e
 
 
