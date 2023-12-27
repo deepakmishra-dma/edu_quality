@@ -156,8 +156,8 @@ school_id_map = {
 @frappe.whitelist(allow_guest=True)
 def update_stud_data(**data):
     data = data.get("Student").get("StudentInfoChange")
-    ref_no = data.get("Student").get("refNo", None)
-    school_id = data.get("Student").get("school_id", None)
+    ref_no = data.get("refNo", None)
+    school_id = data.get("school_id", None)
     # applicant
     existing_student_doc = None
     if not ref_no or not school_id:

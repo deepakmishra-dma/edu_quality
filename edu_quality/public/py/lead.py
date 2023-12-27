@@ -12,7 +12,9 @@ def before_insert(doc, method=None):
     contacts = frappe.db.get_list(
         "Contact",
         {"whatsapp_id": add_indian_country_code(doc.fathers_phone)},
-        ignore_permissions=True,
+        limit_page_length=1,
+        order_by="creation desc",
+        ignore_permissions=True,    
     )
 
     if len(contacts):
