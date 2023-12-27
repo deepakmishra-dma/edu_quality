@@ -298,7 +298,7 @@ def handle_undertaking_submission(**kwargs):
     elif doctype == "Fee Advance":
         class_name = frappe.get_value("Fee Advance", docname, "next_program")
 
-    template = frappe.get_doc("Rules and Regulation Template", {"class": class_name})
+    template = frappe.get_value("Rules and Regulation Template", {"class": class_name},"name")
     student_doc = frappe.get_doc("Student", student)
 
     if not frappe.db.exists(
