@@ -62,6 +62,13 @@
     "parenttype": "DocType Layout"
    },
    {
+    "fieldname": "custom_contact_link",
+    "label": "Contact Link",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
     "fieldname": "custom_column_break_fmsgl",
     "label": null,
     "parent": "Lead",
@@ -132,7 +139,7 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "custom_address",
+    "fieldname": "custom_adress",
     "label": "Address",
     "parent": "Lead",
     "parentfield": "fields",
@@ -288,6 +295,13 @@
    {
     "fieldname": "custom_re_enquired_count",
     "label": "Re Enquired Count",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "custom_walked_out_time",
+    "label": "Walked Out Time",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
@@ -991,9 +1005,16 @@
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "custom_lead_scheduled",
+    "label": "Lead Scheduled",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
    }
   ],
-  "modified": "2023-11-08 14:00:58.547932",
+  "modified": "2023-11-28 17:59:45.393731",
   "name": "Lead",
   "route": "/app/lead"
  }
