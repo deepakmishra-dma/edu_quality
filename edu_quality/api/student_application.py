@@ -156,8 +156,10 @@ school_id_map = {
 @frappe.whitelist(allow_guest=True)
 def update_stud_data(**data):
     data = data.get("Student").get("StudentInfoChange")
-    ref_no = data.get("Student").get("refNo", None)
-    school_id = data.get("Student").get("school_id", None)
+    ref_no = data.get("refNo", None) or data.get("Student", {}).get("refNo", None)
+    school_id = data.get("school_id", None) or data.get("Student", {}).get(
+        "school_id", None
+    )
     # applicant
     existing_student_doc = None
     if not ref_no or not school_id:
@@ -610,21 +612,34 @@ id_to_location_map_fb = {
 
 
 def get_existing_leads(first_name, fathers_phone):
-    return frappe.db.get_list(
-        "Lead",
-        filters={
-            "first_name": first_name,
-            # "fathers_name": kwargs.get("fathers_name"),
-            "fathers_phone": remove_indian_country_code(str(fathers_phone)),
-        },
-        ignore_permissions=True,
-    ) or frappe.db.get_list(
-        "Lead",
-        filters={
-            "first_name": "Partial_Lead",
-            "fathers_phone": remove_indian_country_code(str(fathers_phone)),
-        },
-        ignore_permissions=True,
+    # to improve condition in one go
+    return (
+        frappe.db.get_list(
+            "Lead",
+            filters={
+                "first_name": first_name,
+                # "fathers_name": kwargs.get("fathers_name"),
+                "fathers_phone": remove_indian_country_code(str(fathers_phone)),
+            },
+            ignore_permissions=True,
+        )
+        or frappe.db.get_list(
+            "Lead",
+            filters={
+                "first_name": "Partial_Lead",
+                "fathers_phone": remove_indian_country_code(str(fathers_phone)),
+            },
+            ignore_permissions=True,
+        )
+        or frappe.db.get_list(
+            "Lead",
+            filters={
+             
+                "fathers_phone": remove_indian_country_code(str(fathers_phone)),
+                "custom_is_partial": 1,
+            },
+            ignore_permissions=True,
+        )
     )
 
 
@@ -758,7 +773,7 @@ def process_lead(source, lead, page_location, detail="", kwargs={}):
         lead.append("custom_lead_sub_status", {"sub_status": "Hot-School Visit Done"})
         insert_walk_in_date(lead)
         # if lead 3 there replace it otherwise find first empty and put there
-    if lead.first_name == "Partial_Lead":
+    if lead.first_name == "Partial_Lead" or lead.custom_is_partial:
         query = f"""SELECT c.name from `tabContact` c join `tabDynamic Link` dl
 on c.name = dl.parent
 where dl.link_name like "{lead.name}"
@@ -780,7 +795,7 @@ and dl.parenttype = "Contact"
         lead.first_name = student_name.get("first_name")
         lead.last_name = student_name.get("last_name")
         lead.middle_name = student_name.get("middle_name")
-        lead.fathers_name = kwargs.get("fathers_name")
+        lead.fathers_name = "Father of " + kwargs.get("fathers_name") 
         lead.fathers_email = kwargs.get("father_email_id") or kwargs.get(
             "fathers_email"
         )
@@ -801,7 +816,7 @@ and dl.parenttype = "Contact"
     )
     lead.flags.ignore_mandatory = True
     lead.save(ignore_permissions=True)
-    if lead.first_name == "Partial_Lead":
+    if lead.first_name == "Partial_Lead" or lead.custom_is_partial:
         if len(existing_contacts):
             contact.save(ignore_permissions=True)
     return lead
@@ -1039,8 +1054,9 @@ def create_partial_whatsapp_lead(**kwargs):
     new_lead_doc = frappe.get_doc(
         {
             "doctype": "Lead",
-            "first_name": "Partial_Lead",
+            "first_name": kwargs.get("fathers_phone"),
             "fathers_name": "Partial_Lead_Father_Name_Placeholder",
+            "custom_is_partial": 1,
             "fathers_phone": remove_indian_country_code(
                 str(kwargs.get("fathers_phone"))
             ),
