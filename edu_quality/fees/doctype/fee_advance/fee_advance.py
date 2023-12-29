@@ -270,7 +270,7 @@ def create_fee_advance(student, program_enrollment):
     program_enrollment: Previous Program Enrollment Doc
     """
     try:
-        school = frappe.get_value("Program", program_enrollment.program, ["school"])
+        school = frappe.get_value("Program", program_enrollment.program, ["custom_school"])
         institution = frappe.get_value("School", school, ["institution"])
         next_program = get_next_program(program_enrollment.program, school)
         current_academic_year = frappe.get_value("Academic Year",{"custom_current_academic_year":1})
