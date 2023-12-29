@@ -281,14 +281,15 @@ def get_submitted_undertaking(payment_request):
         class_name = frappe.get_value("Fees", docname, "program")
     elif doctype == "Fee Advance":
         class_name = frappe.get_value("Fee Advance", docname, "next_program")
-    if frappe.db.exists("Rules and Regulation Submission", {"student": student,"program":class_name}):
+    if frappe.db.exists("Rules and Regulation Submission", {"student": student,"program":class_name},"name"):
         # template = frappe.get_value("Rules and Regulation Submission", {"student": student}, 'rules_and_regulation_template')
         # academic_year = frappe.get_value("Rules and Regulation Template", template, 'academic_year')
         # current_academic_year = frappe.get_value("Academic Year", {"custom_current_academic_year": 1}, "name")
         # next_academic_year = frappe.get_value("Academic Year", {"custom_next_academic_year": 1}, "name")
         # return (doctype == "Fees" and academic_year == current_academic_year) or (doctype == "Fee Advance" and academic_year == next_academic_year)
         return True
-    else: return False
+    else: 
+        return False
 
 
 @frappe.whitelist(allow_guest=True)
