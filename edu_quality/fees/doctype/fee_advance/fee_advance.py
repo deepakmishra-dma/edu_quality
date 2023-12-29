@@ -99,13 +99,15 @@ class FeeAdvance(AccountsController):
                     "cost_center",
                 ],
                 filters={"name": self.company},
-            )[0]
-        if not self.receivable_account:
-            self.receivable_account = accounts_details.default_receivable_account
-        if not self.income_account:
-            self.income_account = accounts_details.default_liability_account or accounts_details.default_income_account
-        if not self.cost_center:
-            self.cost_center = accounts_details.cost_center
+            )
+            if accounts_details:
+                accounts_details = accounts_details[0]
+                if not self.receivable_account:
+                    self.receivable_account = accounts_details.default_receivable_account
+                if not self.income_account:
+                    self.income_account = accounts_details.default_liability_account or accounts_details.default_income_account
+                if not self.cost_center:
+                    self.cost_center = accounts_details.cost_center
 
 
     def make_gl_entries(self):
@@ -256,8 +258,7 @@ def fee_advance(**kwargs):
         pe_filter = {"student": student.name, "academic_year": current_academic_year}
         if frappe.db.exists("Program Enrollment", pe_filter):
             program_enrollment = frappe.get_doc("Program Enrollment", pe_filter)
-            create_fee_advance(student, program_enrollment)
-            # frappe.enqueue(create_fee_advance, student=student, program_enrollment=program_enrollment)
+            frappe.enqueue(create_fee_advance, student=student, program_enrollment=program_enrollment)
         else:
             frappe.msgprint(
                 f"Program Enrollment does not exists for student <b>{student.first_name}</b>. Fee Advance can only be created for old students."
