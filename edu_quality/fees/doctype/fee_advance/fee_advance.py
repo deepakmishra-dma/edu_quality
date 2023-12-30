@@ -85,7 +85,7 @@ class FeeAdvance(AccountsController):
         
     def set_missing_accounts_and_fields(self):
         if not self.company:
-            company = frappe.get_value("Program", self.program, ["school"])
+            company = frappe.get_value("Program", self.next_program,"school")
             self.company = company
         if not self.currency:
             self.currency = erpnext.get_company_currency(self.company)
@@ -108,6 +108,7 @@ class FeeAdvance(AccountsController):
                     self.income_account = accounts_details.default_liability_account or accounts_details.default_income_account
                 if not self.cost_center:
                     self.cost_center = accounts_details.cost_center
+            self.save()
 
 
     def make_gl_entries(self):
@@ -270,10 +271,9 @@ def create_fee_advance(student, program_enrollment):
     program_enrollment: Previous Program Enrollment Doc
     """
     try:
-        school = frappe.get_value("Program", program_enrollment.program, ["school"])
-        institution = frappe.get_value("School", school, ["institution"])
+        school = frappe.get_value("Program", program_enrollment.program,"school")
         next_program = get_next_program(program_enrollment.program, school)
-        current_academic_year = frappe.get_value("Academic Year",{"custom_current_academic_year":1})
+        institution = frappe.get_value("School", frappe.get_value("Program", next_program,"school"),"institution")
         next_academic_year = frappe.get_value("Academic Year",{"custom_next_academic_year":1})
         fee_structure = get_fee_structure(next_academic_year, school, next_program)
         payment_plan = get_payment_plan(fee_structure, program_enrollment)
