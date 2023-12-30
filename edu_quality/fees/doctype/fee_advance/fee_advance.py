@@ -108,7 +108,6 @@ class FeeAdvance(AccountsController):
                     self.income_account = accounts_details.default_liability_account or accounts_details.default_income_account
                 if not self.cost_center:
                     self.cost_center = accounts_details.cost_center
-            self.save()
 
 
     def make_gl_entries(self):
