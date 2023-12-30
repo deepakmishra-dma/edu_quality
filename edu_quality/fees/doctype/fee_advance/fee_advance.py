@@ -85,7 +85,7 @@ class FeeAdvance(AccountsController):
         
     def set_missing_accounts_and_fields(self):
         if not self.company:
-            company = frappe.get_value("Fee Structure", self.fee_structure, "institution")
+            company = frappe.get_value("Program", self.program, ["school"])
             self.company = company
         if not self.currency:
             self.currency = erpnext.get_company_currency(self.company)
