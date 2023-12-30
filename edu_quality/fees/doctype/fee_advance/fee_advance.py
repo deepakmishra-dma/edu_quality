@@ -270,7 +270,7 @@ def create_fee_advance(student, program_enrollment):
     program_enrollment: Previous Program Enrollment Doc
     """
     try:
-        school = frappe.get_value("Program", program_enrollment.program, ["custom_school"])
+        school = frappe.get_value("Program", program_enrollment.program, ["school"])
         institution = frappe.get_value("School", school, ["institution"])
         next_program = get_next_program(program_enrollment.program, school)
         current_academic_year = frappe.get_value("Academic Year",{"custom_current_academic_year":1})
@@ -317,11 +317,13 @@ def get_first_payment_term(payment_plan):
 
 def get_fee_structure(academic_year, school, program):
     doc_filter = {"academic_year": academic_year, "school": school, "program": program}
+    frappe.logger("pay_plan").exception(doc_filter)
     fee_structure = frappe.get_value("Fee Structure", doc_filter)
     return fee_structure
 
 
 def get_payment_plan(fee_structure=None, program_enrollment=None):
+    frappe.logger("pay_plan").exception(fee_structure)
     if program_enrollment.custom_payment_plan:
         return program_enrollment.custom_payment_plan
     payment_plan = frappe.get_value("Payment Plan", {"fee_structure": fee_structure,"plan_name":["like", "%P2%"]}, "name")
