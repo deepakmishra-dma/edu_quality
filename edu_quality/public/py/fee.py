@@ -614,9 +614,7 @@ def company_wise(fees, invoice_portion, combination=False):
         doc = frappe.get_doc("Fee Category", component.fees_category)
         paid_to = doc.custom_account
         company = doc.custom_company
-        paid_from = frappe.get_value(
-            "Account", {"company": company, "account_type": "Receivable"}, ["name"]
-        )
+        paid_from = frappe.get_value('Company',company,'default_receivable_account')
         fee_type = frappe.db.get_value("Fee Category", component.fees_category, "type")
         amount = component.amount
         if fee_type != "Regular" and combination == True:

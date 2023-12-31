@@ -95,7 +95,7 @@ def create_payment_request(fee,term=None):
                 dt="Fees",
                 dn=fee.name,
                 payment_term = term,
-                recipient_id=fee.student_email,
+                recipient_id=frappe.get_value('Student',fee.student,'student_email_id'),
                 submit_doc=True,
                 use_dummy_message=True,
             )
