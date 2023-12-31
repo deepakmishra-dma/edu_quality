@@ -10,20 +10,23 @@ def manual_payment(fee,term,data,payment_mode):
         else:
             filter = {'reference_name':fee,'payment_term':term}
         if frappe.db.exists("Payment Request",filter):
-            frappe.db.set_value("Payment Request",filter,'mode_of_payment',payment_mode)
-            pr = frappe.get_doc("Payment Request",filter)
-            pr.set_as_paid()
-            entries = frappe.get_all("Payment Entry", {"reference_no": pr.name},['name','company', 'party', 'paid_amount'])
-            for entry in entries:
-                for i in data:
-                    if entry.company == i.get("company"):
-                        reference_no = i.get("reference_number")
-                        update_reference(reference_no, entry)
-
-            return frappe.msgprint("Manual Payment Done")
+            frappe.enqueue(set_as_paid,queue='long',filter=filter,data=data,payment_mode=payment_mode)
     except Exception as e:
-        return frappe.msgprint("Manual Payment Failed")
+        frappe.logger('manual').exception(e)
         return e
+    
+def set_as_paid(filter,data,payment_mode):
+    frappe.db.set_value("Payment Request",filter,'mode_of_payment',payment_mode)
+    pr = frappe.get_doc("Payment Request",filter)
+    pr.save()
+    pr.set_as_paid()
+    entries = frappe.get_all("Payment Entry", {"reference_no": pr.name},['name','company', 'party', 'paid_amount'])
+    for entry in entries:
+        for i in data:
+            if entry.company == i.get("company"):
+                reference_no = i.get("reference_number")
+                update_reference(reference_no, entry)
+
 
 
 def update_reference(reference_no, entry):
