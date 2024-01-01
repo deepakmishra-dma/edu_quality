@@ -36,6 +36,8 @@ doctype_js = {
     "Lead": "public/js/lead.js",
     "Fee Schedule": "public/js/fee_schedule.js",
     "Student": "public/js/student.js",
+    "Item": "public/js/item.js",
+    "Topic": "public/js/topic.js",
 }
 doctype_list_js = {
     "Student Applicant": "public/js/list/student_applicant_list.js",
@@ -111,7 +113,7 @@ override_doctype_class = {
     "Payment Request": "edu_quality.overrides.CustomPaymentRequest",
     "Fee Schedule": "edu_quality.public.py.fee_schedule.CustomFeeSchedule",
     "Program Enrollment": "edu_quality.public.py.enrollment_override.CustomProgramEnrollment",
-    "Fees": "edu_quality.edu_quality.overrides.fees.CustomFees"
+    "Fees": "edu_quality.edu_quality.overrides.fees.CustomFees",
 }
 
 # Document Events
@@ -148,6 +150,12 @@ doc_events = {
         "before_insert": "edu_quality.public.py.lead.before_insert",
     },
     "Payment Entry": {"autoname": "edu_quality.public.py.payment_entry.autoname"},
+    "Item": {"autoname": "edu_quality.overrides_hooks.item.autoname"},
+    "Topic": {
+        "autoname": "edu_quality.overrides_hooks.topic.autoname",
+        "after_insert": "edu_quality.overrides_hooks.topic.after_insert",
+        "before_insert": "edu_quality.overrides_hooks.topic.before_insert",
+    },
 }
 
 # Scheduled Tasks
@@ -270,6 +278,8 @@ fixtures = [
     {"dt": "Funnel"},
     {"dt": "Email Template"},
     {"dt": "Letter Head"},
+    {"dt": "Class Type"},
+    {"dt": "Item Group"},
     {"dt": "CRM Settings"},
     {
         "dt": "Workspace",

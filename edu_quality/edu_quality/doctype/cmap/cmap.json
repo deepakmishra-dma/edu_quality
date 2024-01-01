@@ -5,21 +5,26 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "assignment_column",
+  "details_section",
   "plan_date",
+  "subject",
+  "texbook",
+  "academic_year",
+  "column_break_ohld",
+  "unit",
   "class",
-  "worksheet_code",
-  "ppt_code",
-  "broadcast",
-  "homework",
+  "chapter",
   "period",
-  "lesson_plan",
-  "e_learning",
-  "audio_code",
-  "mcq_test",
+  "section_break_hvmh",
+  "products",
+  "table_vwbr",
+  "comments_and_assignments_section",
+  "column_break_ycni",
+  "solve_assignment_instructions",
+  "assignment_instructions_footer",
+  "broadcast",
   "assignment",
-  "grading",
-  "table_vwbr"
+  "grading"
  ],
  "fields": [
   {
@@ -28,64 +33,22 @@
    "label": "Plan Date"
   },
   {
-   "fieldname": "class",
-   "fieldtype": "Link",
-   "label": "Class",
-   "options": "Program"
-  },
-  {
-   "fieldname": "worksheet_code",
-   "fieldtype": "Link",
-   "label": "Worksheet code",
-   "options": "Item"
-  },
-  {
-   "fieldname": "ppt_code",
-   "fieldtype": "Link",
-   "label": "PPT Code",
-   "options": "Item"
-  },
-  {
    "fieldname": "broadcast",
-   "fieldtype": "Text",
+   "fieldtype": "Small Text",
    "label": "Comment"
-  },
-  {
-   "fieldname": "homework",
-   "fieldtype": "Link",
-   "label": "Homework",
-   "options": "Item"
   },
   {
    "fieldname": "period",
    "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Period"
   },
   {
-   "fieldname": "lesson_plan",
-   "fieldtype": "Link",
-   "label": "Lesson Plan",
-   "options": "Item"
-  },
-  {
-   "fieldname": "e_learning",
-   "fieldtype": "Data",
-   "label": "E learning"
-  },
-  {
-   "fieldname": "audio_code",
-   "fieldtype": "Data",
-   "label": "Audio Code"
-  },
-  {
-   "fieldname": "mcq_test",
-   "fieldtype": "Data",
-   "label": "MCQ test"
-  },
-  {
    "fieldname": "assignment",
-   "fieldtype": "Data",
-   "label": "Assignment"
+   "fieldtype": "Small Text",
+   "label": "Assignment Instructions Header",
+   "options": "Item Detail"
   },
   {
    "fieldname": "grading",
@@ -93,19 +56,102 @@
    "label": "Grading"
   },
   {
-   "fieldname": "assignment_column",
-   "fieldtype": "Column Break",
-   "label": "Assignment"
-  },
-  {
    "fieldname": "table_vwbr",
    "fieldtype": "Table",
+   "label": "CMAP Assignees",
    "options": "CMAP Assignment"
+  },
+  {
+   "fieldname": "academic_year",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Academic Year",
+   "options": "Academic Year"
+  },
+  {
+   "fieldname": "subject",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Subject",
+   "options": "Course"
+  },
+  {
+   "fieldname": "chapter",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Chapter",
+   "options": "Topic"
+  },
+  {
+   "fieldname": "texbook",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Texbook",
+   "options": "Textbook"
+  },
+  {
+   "fieldname": "unit",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Unit",
+   "options": "1\n2\n3\n4"
+  },
+  {
+   "fieldname": "class",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Class",
+   "options": "Class Type"
+  },
+  {
+   "fieldname": "column_break_ycni",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "solve_assignment_instructions",
+   "fieldtype": "Small Text",
+   "label": "Solve Assignment Instructions"
+  },
+  {
+   "fieldname": "assignment_instructions_footer",
+   "fieldtype": "Small Text",
+   "label": "Assignment Instructions Footer"
+  },
+  {
+   "fieldname": "products",
+   "fieldtype": "Table",
+   "label": "Products",
+   "options": "Item Detail"
+  },
+  {
+   "fieldname": "details_section",
+   "fieldtype": "Section Break",
+   "label": "Details"
+  },
+  {
+   "fieldname": "column_break_ohld",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_hvmh",
+   "fieldtype": "Section Break",
+   "label": "Products and Assignees"
+  },
+  {
+   "fieldname": "comments_and_assignments_section",
+   "fieldtype": "Section Break",
+   "label": "Comments and Assignments"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-11-27 10:17:00.043024",
+ "modified": "2023-11-29 10:18:01.292384",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "CMAP",
