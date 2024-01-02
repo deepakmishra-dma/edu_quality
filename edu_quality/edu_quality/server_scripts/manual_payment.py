@@ -44,22 +44,28 @@ def get_payment_details(fee,term):
         data = []
         portion = 100
         description = ""
-        last_term = 1 if fee.payment_schedule[-1]['payment_term'] == term else 0
+        term_count = 0
         if term != 'Depsoit':
             for schedule in fee.payment_schedule:
                 if schedule.payment_term == term:
                     portion  = schedule.invoice_portion
                     description = schedule.description
+                    term_count+=1
                     break 
-            
+        last_term = 1 if len(fee.payment_schedule) == term_count else 0
+        frappe.logger('manual').exception(last_term)
         for component in fee.components:
             amount = component.custom_amount_after_discount or component.amount
-            if component.custom_discounts and "payment_plan" in component.custom_discounts.lower():
+            if component.custom_discounts and "payment plan" in component.custom_discounts.lower():
                 pp_amount,pp_percent = frappe.get_value("Discount Configuration",{'payment_plan':fee.payment_plan},['discount_amount','discount'])
                 if not last_term:
                     if not pp_amount:
                         pp_amount = flt(component.amount *(pp_percent/100),2)
-                    amount = amount - pp_amount
+                    frappe.logger('manual').exception(pp_amount)
+                    if component.custom_discount_amount != pp_amount:
+                        amount = component.amount - pp_amount
+                    else: 
+                        amount = component.amount
             company = frappe.db.get_value("Fee Category",component.fees_category,"custom_company")
             if not company:
                 company = "Unique Educational and Sports Foundation"
