@@ -4,7 +4,7 @@
  "bold": 0,
  "collapsible": 0,
  "columns": 0,
- "creation": "2023-11-29 03:21:26.559373",
+ "creation": "2023-11-24 13:09:07.714840",
  "default": "0",
  "description": "Use Redis cache on the server to speedup initial loads of POS Awesome ",
  "docstatus": 0,

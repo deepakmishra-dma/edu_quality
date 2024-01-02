@@ -6,7 +6,6 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "item_group",
   "item"
  ],
  "fields": [
@@ -15,19 +14,12 @@
    "fieldtype": "Link",
    "label": "Item",
    "options": "Item"
-  },
-  {
-   "fetch_from": "item.item_group",
-   "fieldname": "item_group",
-   "fieldtype": "Link",
-   "label": "Item Group",
-   "options": "Item Group"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2023-11-28 10:19:57.391445",
+ "modified": "2023-11-27 17:43:01.757587",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Item Detail",
