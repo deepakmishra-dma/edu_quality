@@ -123,7 +123,7 @@ override_doctype_class = {
 doc_events = {
     "Student Applicant": {
         "before_save": "edu_quality.public.py.application.before_save",
-        "after_insert": "edu_quality.public.py.application.after_insert",
+        "after_insert": "edu_quality.edu_quality.server_scripts.student_applicant.after_insert",
         "autoname": "edu_quality.public.py.application.autoname",
     },
     "Program Enrollment": {

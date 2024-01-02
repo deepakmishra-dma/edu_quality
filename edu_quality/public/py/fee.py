@@ -3,11 +3,13 @@ from edu_quality.public.py.discount import (
     add_discount,
     get_all_discounts,
     payment_plan,
-    referal_discount,
     time_based_discount,
     update_payment_schedule,
     get_label,
 )
+
+from edu_quality.edu_quality.server_scripts.student_applicant import referal_discount
+
 import frappe
 from erpnext.accounts.utils import get_account_currency
 from erpnext.accounts.doctype.payment_request.payment_request import PaymentRequest

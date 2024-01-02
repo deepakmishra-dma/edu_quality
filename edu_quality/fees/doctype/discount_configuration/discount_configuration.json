@@ -38,7 +38,7 @@
    "fieldname": "type",
    "fieldtype": "Select",
    "label": "Type",
-   "options": "Time Based\nPayment Plan\nOne Time\nReferral"
+   "options": "Time Based\nPayment Plan\nOne Time"
   },
   {
    "fieldname": "program",
@@ -150,7 +150,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-11-13 14:07:45.145706",
+ "modified": "2023-11-29 08:40:12.423732",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Discount Configuration",
