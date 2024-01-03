@@ -431,7 +431,6 @@ def payment_split(doc, ref_dis=None, time_dis=None, payplan_discount=0):
 
     doc.split_payments = json.dumps(split_payments)
     doc.company_split = json.dumps(company_wise_split)
-    frappe.logger('fee').exception(component_wise_split)
     doc.component_split = json.dumps(component_wise_split)
 
 

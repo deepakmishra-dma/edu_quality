@@ -198,8 +198,6 @@ class CustomFees(Fees):
                 entries.append(i)
             for j in fee_entries.values():
                 entries.append(j)
-            
-            frappe.logger('fee').exception(entries)
             return entries
         except Exception as e:
             frappe.logger('fee').exception(e)

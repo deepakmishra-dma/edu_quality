@@ -53,7 +53,6 @@ def get_payment_details(fee,term):
                     term_count+=1
                     break 
         last_term = 1 if len(fee.payment_schedule) == term_count else 0
-        frappe.logger('manual').exception(last_term)
         for component in fee.components:
             amount = component.custom_amount_after_discount or component.amount
             if component.custom_discounts and "payment plan" in component.custom_discounts.lower():
@@ -61,7 +60,6 @@ def get_payment_details(fee,term):
                 if not last_term:
                     if not pp_amount:
                         pp_amount = flt(component.amount *(pp_percent/100),2)
-                    frappe.logger('manual').exception(pp_amount)
                     if component.custom_discount_amount != pp_amount:
                         amount = component.amount - pp_amount
                     else: 
