@@ -9,6 +9,8 @@ from edu_quality.public.py.discount import (
     get_label
 )
 
+from edu_quality.public.py.payment_request import update_payment_request_after_discount
+
 
 def after_insert(doc, method=None):
     pass
@@ -128,7 +130,7 @@ def update_referral_discount(doc, discount_amount):
             doc.add_discount_entry(component.custom_company, discount_amount)
             update_total_discount_in_fees(doc.name)
             update_payment_plan_after_discount(doc, discount_amount, apply_discount=True,dis={"type":"Referral"})
-
+            update_payment_request_after_discount(doc)
             return 
         
     apply_referral_discount(doc, discount_amount)
@@ -151,7 +153,7 @@ def apply_referral_discount(doc, referral_amount):
         if component.fees_category != "Tution Fee":
             continue
 
-        amount = component.custom_amount_after_discount or component.amount
+        amount = component.amount
 
         if amount > referral_amount and referral_amount != 0:
             discount_list = get_discount_list(component.custom_discounts)
@@ -179,6 +181,7 @@ def apply_referral_discount(doc, referral_amount):
             doc.add_discount_entry(component.custom_company, referral_amount)
             update_total_discount_in_fees(doc.name)
             update_payment_plan_after_discount(doc, total_discount, apply_discount=True,dis={"type":"Referral"})
+            update_payment_request_after_discount(doc)
             return 
 
 
