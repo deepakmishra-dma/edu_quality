@@ -40,6 +40,7 @@ def add_referral_discount(referred_by):
     
         outstanding_fees = get_outstanding_fees(student)
         if outstanding_fees:
+            frappe.logger('referral').exception(outstanding_fees.as_json())
             update_referral_discount(outstanding_fees, discount_amount)
         else:
             student.referral_amount = student.referral_amount + discount_amount 
