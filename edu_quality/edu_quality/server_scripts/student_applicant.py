@@ -157,7 +157,7 @@ def apply_referral_discount(doc, referral_amount):
             if component.fees_category != "Tuition Fee":
                 continue
 
-            amount = component.amount
+            amount = component.custom_amount_after_discount or component.amount
 
             if amount > referral_amount and referral_amount != 0:
                 discount_list = get_discount_list(component.custom_discounts)
