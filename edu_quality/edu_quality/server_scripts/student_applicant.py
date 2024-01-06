@@ -86,7 +86,7 @@ def get_outstanding_fees(student):
     """
     filters = [
         ["Fees","student", "=", student.name],
-        ["Fees","outstanding_amount", ">", 0],
+        ["Fees","outstanding_amount", "!=", 0],
         ["Fees",'docstatus', "=", 1]
     ]
     if frappe.db.exists("Fees",filters):
@@ -170,7 +170,7 @@ def apply_referral_discount(doc, referral_amount):
                     discount_name = "Referral"
 
                 total_discount = component.custom_discount_amount + referral_amount
-                discounted_amount = amount - total_discount
+                discounted_amount = component.amount - total_discount
                 discount_percentage = calculate_discount(amount, total_discount)
 
                 update_component(
@@ -178,7 +178,7 @@ def apply_referral_discount(doc, referral_amount):
                     discount_name,
                     discount_percentage,
                     total_discount,
-                    total_discount,
+                    referral_amount,
                     discounted_amount,
                     doc,
                 )
