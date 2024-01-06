@@ -113,7 +113,7 @@ def import_student(**kwargs):
     }
     for school in schools:
         database = school_db.get(school.name)
-        frappe.enqueue(import_handler, queue="long", timeout=1500, database=database)
+        frappe.enqueue(import_handler, queue="long", database=database)
     frappe.response['message'] = {
         "status": "success",
         "res": "Student Import Scheduled Successfully",
@@ -134,7 +134,11 @@ def import_handler(database):
     try:
         connection = get_connection(database)
 
-        query = f"SELECT * FROM walnut_student_info"
+        query = """SELECT *
+                FROM walnut_student_info AS s
+                JOIN walnut_class_info AS c ON s.class_admitted_to = c.class_id
+                JOIN division_master AS d ON s.division = d.division_id;
+                """
 
         cursor = connection.cursor()
         cursor.execute(query)
@@ -142,14 +146,17 @@ def import_handler(database):
         # fetach only no_of_students number of rows
         rows = cursor.fetchall()
         # Iterate over the rows and create Frappe records
-        for row in rows:
-            insert_student(row, cursor.column_names, "Student")
+        total_len = len(rows)
+        for index, row in enumerate(rows):
+            frappe.enqueue(insert_student, queue="long",row=row,column_names=cursor.column_names,doctype="Student",total_len=total_len,index=index)
+            # insert_student(row, cursor.column_names, "Student")
             
     except Exception as e:
         frappe.logger("student_import").exception(e)
     
 
-def insert_student(row, column_names, doctype):
+def insert_student(row, column_names, doctype,total_len,index):
+    set_progress(index + 1, total_len, "Student Details")
     frappe_data = dict(zip(column_names, row))
 
     def get_data(key, default=None):
@@ -182,7 +189,7 @@ def insert_student(row, column_names, doctype):
 
     class_admitted_to = get_data("class_admitted_to")
     program = get_program(class_admitted_to, school)
-    division = get_data("division")
+    division = get_data("division_name")
     academic_year = get_data("academic_year")
 
     new_doc_data = {
@@ -249,7 +256,6 @@ def insert_student(row, column_names, doctype):
         "doctype": doctype,
     }
     frappe_data['division'] = division
-    frappe_data['division_log'] = division
     frappe_data['academic_year'] = academic_year
     frappe.flags.in_import = True
     if not frappe.db.exists(doctype, docname):
@@ -277,7 +283,7 @@ def insert_program_enrollment(student, data=None):
 
         program_enrollment = frappe.new_doc("Program Enrollment")
         program_enrollment.student = student.name
-        program_enrollment.student_category = student.category
+        program_enrollment.student_category = get_category(student.category)
         program_enrollment.student_name = student.student_name
         program_enrollment.school = school
         program_enrollment.program = program
@@ -300,7 +306,17 @@ def insert_program_enrollment(student, data=None):
         message=json.dumps(error_obj),
         )
 
-
+def get_category(category):
+    if not category:
+        return
+    category_id = frappe.get_value("Student Category", {"category": category}, "name")
+    if not category_id:
+        category_id = frappe.new_doc("Student Category")
+        category_id.category = category
+        category_id.save(ignore_permissions=True)
+    return category_id
+    
+    
 def get_program(program_name, school):
     if not program_name:
         return None
@@ -318,13 +334,13 @@ def get_program(program_name, school):
 
 
 def get_division(division, program, school, academic_year):
-    div = chr(int(division) + 24) if 40 <= int(division) <= 48 else int(division) - 24
-
+    # div = chr(int(division) + 24) if 40 <= int(division) <= 48 else int(division) - 24
+    div = division
     div_filter = {
         "program": program,
         "custom_school": school,
         "academic_year": academic_year,
-        "student_group_name": div,
+        "batch": div,
     }
     division = frappe.get_value("Student Group", div_filter)
 
@@ -335,6 +351,7 @@ def get_division(division, program, school, academic_year):
             "custom_school": school,
             "academic_year": academic_year,
             "student_group_name": div,
+            "batch": div,
             "group_based_on": "Batch",
             "start_time": "10:00:00",
             "end_time": "10:00:00",
@@ -360,3 +377,32 @@ def get_academic_year(academic_year):
     doc.year_end_date = f"{year2}-03-31"
     doc.insert(ignore_permissions=True)
     return doc.name
+
+
+def set_progress(current, total, job, expires_in_sec=300):
+    progress = (current / total) * 100
+    progress = f"{progress:.2f}%"
+    frappe.cache().set_value(
+        "student_import_status",
+        {"progress": progress, "job": job},
+        expires_in_sec=expires_in_sec,
+    )
+    frappe.db.commit()
+
+@frappe.whitelist()
+def get_migration_progress():
+    student_import_status = frappe.cache().get_value("student_import_status")
+    if not student_import_status and is_migration_jobs_queued():
+        student_import_status = {
+            "progress": "Background Jobs Queued. Please be patient while it's processed.", 
+            "job": None,
+        }
+
+    return student_import_status or {}
+
+from frappe.utils.background_jobs import get_jobs
+def is_migration_jobs_queued():
+    jobs = get_jobs(site=frappe.local.site, key="job_name")[frappe.local.site]
+
+    return any("atsl_migrate_" in job for job in jobs)  # noqa: 501
+
