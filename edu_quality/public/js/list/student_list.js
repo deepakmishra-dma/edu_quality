@@ -77,5 +77,39 @@ frappe.listview_settings['Student'] = {
             }
         }
         );
+
+        
+        addProgressButton(listview);
+
+
     }
+    
 };
+function addProgressButton(listview) {
+    function showProgress() {
+      frappe.call({
+        method: 'edu_quality.public.py.student.get_migration_progress',
+        freeze: true,
+        callback: res => {
+            // listview.set_intro('');
+          if (res.message.progress) {
+            const color = res.message?.progress?.includes('100')
+              ? 'green'
+              : 'orange';
+            let message = res.message.job ? `${res.message.job}: ` : '';
+            message += res.message.progress;
+            frappe.msgprint(message)
+            listview.set_intro(message, color);
+          } else {
+            // listview.set_intro('No Migration Jobs running', 'blue');
+          }
+        },
+      });
+    }
+  
+    showProgress();
+    
+    // listview.add_custom_button('Get Progress', () => {
+    //   showProgress();
+    // });
+  }
