@@ -222,10 +222,9 @@ def verify_otp(fee, otp):
 def get_undertaking_template(doc, is_deposit=False):
     doctype, docname = frappe.get_value("Payment Request", doc.name, ["reference_doctype", "reference_name"])
     if doctype=="Fee Advance":
-        class_name, student = frappe.get_value(
-            doctype, docname, ["next_program","student"]
+        class_name, academic_year, student = frappe.get_value(
+            doctype, docname, ["next_program","academic_year","student"]
         )
-        academic_year = frappe.get_value("Academic Year",{"custom_next_academic_year":1})
     else:
         class_name, academic_year, student = frappe.get_value(
             doctype, docname, ["program", "academic_year", "student"]
@@ -277,14 +276,20 @@ def get_undertaking_template(doc, is_deposit=False):
 def get_submitted_undertaking(payment_request):
     student = payment_request.party
     doctype = payment_request.reference_doctype
-
-    if frappe.db.exists("Rules and Regulation Submission", {"student": student}):
-        template = frappe.get_value("Rules and Regulation Submission", {"student": student}, 'rules_and_regulation_template')
-        academic_year = frappe.get_value("Rules and Regulation Template", template, 'academic_year')
-        current_academic_year = frappe.get_value("Academic Year", {"custom_current_academic_year": 1}, "name")
-        next_academic_year = frappe.get_value("Academic Year", {"custom_next_academic_year": 1}, "name")
-        return (doctype == "Fees" and academic_year == current_academic_year) or (doctype == "Fee Advance" and academic_year == next_academic_year)
-    else: return False
+    docname = payment_request.reference_name
+    if doctype == "Fees":
+        class_name = frappe.get_value("Fees", docname, "program")
+    elif doctype == "Fee Advance":
+        class_name = frappe.get_value("Fee Advance", docname, "next_program")
+    if frappe.db.exists("Rules and Regulation Submission", {"student": student,"program":class_name},"name"):
+        # template = frappe.get_value("Rules and Regulation Submission", {"student": student}, 'rules_and_regulation_template')
+        # academic_year = frappe.get_value("Rules and Regulation Template", template, 'academic_year')
+        # current_academic_year = frappe.get_value("Academic Year", {"custom_current_academic_year": 1}, "name")
+        # next_academic_year = frappe.get_value("Academic Year", {"custom_next_academic_year": 1}, "name")
+        # return (doctype == "Fees" and academic_year == current_academic_year) or (doctype == "Fee Advance" and academic_year == next_academic_year)
+        return True
+    else: 
+        return False
 
 
 @frappe.whitelist(allow_guest=True)
@@ -298,7 +303,7 @@ def handle_undertaking_submission(**kwargs):
     elif doctype == "Fee Advance":
         class_name = frappe.get_value("Fee Advance", docname, "next_program")
 
-    template = frappe.get_doc("Rules and Regulation Template", {"class": class_name})
+    template = frappe.get_value("Rules and Regulation Template", {"class": class_name},"name")
     student_doc = frappe.get_doc("Student", student)
 
     if not frappe.db.exists(
@@ -310,6 +315,7 @@ def handle_undertaking_submission(**kwargs):
         new_doc.reference_no = student_doc.custom_reference_number
         new_doc.fathers_name = student_doc.custom_fathers_first_name
         new_doc.mothers_name = student_doc.custom_mothers_first_name
+        new_doc.program = class_name
         new_doc.submitted_with_response = "Yes"
         new_doc.rules_and_regulation_template = template
         new_doc.submitted_date = frappe.utils.nowdate()

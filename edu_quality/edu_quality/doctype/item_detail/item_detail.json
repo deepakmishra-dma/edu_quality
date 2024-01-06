@@ -1,30 +1,28 @@
 {
  "actions": [],
  "allow_rename": 1,
- "creation": "2023-08-14 11:18:01.276006",
+ "creation": "2023-11-27 17:42:03.833970",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "referral_amount"
+  "item"
  ],
  "fields": [
   {
-   "columns": 5,
-   "fieldname": "referral_amount",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Referral Amount",
-   "reqd": 1
+   "fieldname": "item",
+   "fieldtype": "Link",
+   "label": "Item",
+   "options": "Item"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2023-11-29 08:42:40.673880",
+ "modified": "2023-11-27 17:43:01.757587",
  "modified_by": "Administrator",
- "module": "Fees",
- "name": "Referral",
+ "module": "Edu Quality",
+ "name": "Item Detail",
  "owner": "Administrator",
  "permissions": [],
  "sort_field": "modified",

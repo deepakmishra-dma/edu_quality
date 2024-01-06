@@ -85,7 +85,7 @@ class FeeAdvance(AccountsController):
         
     def set_missing_accounts_and_fields(self):
         if not self.company:
-            company = frappe.get_value("Fee Structure", self.fee_structure, "institution")
+            company = frappe.get_value("Program", self.next_program,"school")
             self.company = company
         if not self.currency:
             self.currency = erpnext.get_company_currency(self.company)
@@ -99,13 +99,15 @@ class FeeAdvance(AccountsController):
                     "cost_center",
                 ],
                 filters={"name": self.company},
-            )[0]
-        if not self.receivable_account:
-            self.receivable_account = accounts_details.default_receivable_account
-        if not self.income_account:
-            self.income_account = accounts_details.default_liability_account or accounts_details.default_income_account
-        if not self.cost_center:
-            self.cost_center = accounts_details.cost_center
+            )
+            if accounts_details:
+                accounts_details = accounts_details[0]
+                if not self.receivable_account:
+                    self.receivable_account = accounts_details.default_receivable_account
+                if not self.income_account:
+                    self.income_account = accounts_details.default_liability_account or accounts_details.default_income_account
+                if not self.cost_center:
+                    self.cost_center = accounts_details.cost_center
 
 
     def make_gl_entries(self):
@@ -232,7 +234,6 @@ class FeeAdvance(AccountsController):
                     fee_entries[liability_account]['credit_in_account_currency'] += component.amount
 
             entries = list(student_entries.values()) + list(fee_entries.values())
-            frappe.logger('fee').exception(entries)
             return entries
         except Exception as e:
             frappe.logger('fee').exception(e)
@@ -256,8 +257,7 @@ def fee_advance(**kwargs):
         pe_filter = {"student": student.name, "academic_year": current_academic_year}
         if frappe.db.exists("Program Enrollment", pe_filter):
             program_enrollment = frappe.get_doc("Program Enrollment", pe_filter)
-            create_fee_advance(student, program_enrollment)
-            # frappe.enqueue(create_fee_advance, student=student, program_enrollment=program_enrollment)
+            frappe.enqueue(create_fee_advance, student=student, program_enrollment=program_enrollment)
         else:
             frappe.msgprint(
                 f"Program Enrollment does not exists for student <b>{student.first_name}</b>. Fee Advance can only be created for old students."
@@ -269,10 +269,9 @@ def create_fee_advance(student, program_enrollment):
     program_enrollment: Previous Program Enrollment Doc
     """
     try:
-        school = frappe.get_value("Program", program_enrollment.program, ["school"])
-        institution = frappe.get_value("School", school, ["institution"])
+        school = frappe.get_value("Program", program_enrollment.program,"school")
         next_program = get_next_program(program_enrollment.program, school)
-        current_academic_year = frappe.get_value("Academic Year",{"custom_current_academic_year":1})
+        institution = frappe.get_value("School", frappe.get_value("Program", next_program,"school"),"institution")
         next_academic_year = frappe.get_value("Academic Year",{"custom_next_academic_year":1})
         fee_structure = get_fee_structure(next_academic_year, school, next_program)
         payment_plan = get_payment_plan(fee_structure, program_enrollment)
@@ -292,6 +291,9 @@ def create_fee_advance(student, program_enrollment):
         fee_advance.posting_date = today()
         fee_advance.due_date = due_date
         fee_advance.is_rte = frappe.get_value("Student", program_enrollment.student, "is_rte_student")
+        fee_advance.receivable_account = frappe.get_value("Company", institution, "default_receivable_account")
+        fee_advance.income_account = frappe.get_value("Company", institution, "default_income_account")
+        fee_advance.cost_center = frappe.get_value("Company", institution, "cost_center")
         fee_advance.save()
         fee_advance.submit()
     except Exception:

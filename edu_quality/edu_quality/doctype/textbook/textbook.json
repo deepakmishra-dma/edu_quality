@@ -11,14 +11,14 @@
  "fields": [
   {
    "fieldname": "class",
-   "fieldtype": "Link",
+   "fieldtype": "Select",
    "label": "Class",
-   "options": "Program"
+   "options": "01\n02\n03\n04\n05\n06\n07\n08\n09\n10\nNR\nJR\nSR"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-11-27 09:18:21.064577",
+ "modified": "2023-11-27 20:43:13.828590",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Textbook",

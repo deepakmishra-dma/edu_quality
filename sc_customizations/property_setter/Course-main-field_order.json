@@ -1,15 +1,15 @@
 {
- "creation": "2023-11-27 09:28:14.009555",
+ "creation": "2023-11-27 20:43:52.105147",
  "doc_type": "Course",
  "docstatus": 0,
  "doctype": "Property Setter",
  "doctype_or_field": "DocType",
  "is_system_generated": 0,
- "modified": "2023-11-27 09:28:14.009555",
+ "modified": "2023-11-27 20:43:52.105147",
  "modified_by": "Administrator",
  "name": "Course-main-field_order",
  "owner": "Administrator",
  "property": "field_order",
  "property_type": "Data",
- "value": "[\"course_name\", \"department\", \"description\", \"hero_image\", \"column_break_tflc\", \"section_break_6\", \"topics\", \"assessment_tab\", \"assessment\", \"default_grading_scale\", \"assessment_criteria\", \"connections_tab\"]"
+ "value": "[\"custom_details\", \"custom_language\", \"custom_syllabus\", \"course_name\", \"department\", \"hero_image\", \"column_break_tflc\", \"custom_short_code\", \"custom_class\", \"section_break_6\", \"description\", \"topics\", \"assessment_tab\", \"assessment\", \"default_grading_scale\", \"assessment_criteria\", \"connections_tab\"]"
 }

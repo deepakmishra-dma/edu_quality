@@ -7,6 +7,8 @@
  "field_order": [
   "assignment_column",
   "plan_date",
+  "subject",
+  "academic_year",
   "class",
   "worksheet_code",
   "ppt_code",
@@ -29,21 +31,21 @@
   },
   {
    "fieldname": "class",
-   "fieldtype": "Link",
+   "fieldtype": "Select",
    "label": "Class",
-   "options": "Program"
+   "options": "01\n02\n03\n04\n05\n06\n07\n08\n09\n10\nNR\nJR\nSR"
   },
   {
    "fieldname": "worksheet_code",
-   "fieldtype": "Link",
+   "fieldtype": "Table MultiSelect",
    "label": "Worksheet code",
-   "options": "Item"
+   "options": "Item Detail"
   },
   {
    "fieldname": "ppt_code",
-   "fieldtype": "Link",
+   "fieldtype": "Table MultiSelect",
    "label": "PPT Code",
-   "options": "Item"
+   "options": "Item Detail"
   },
   {
    "fieldname": "broadcast",
@@ -52,9 +54,9 @@
   },
   {
    "fieldname": "homework",
-   "fieldtype": "Link",
+   "fieldtype": "Table MultiSelect",
    "label": "Homework",
-   "options": "Item"
+   "options": "Item Detail"
   },
   {
    "fieldname": "period",
@@ -63,29 +65,33 @@
   },
   {
    "fieldname": "lesson_plan",
-   "fieldtype": "Link",
+   "fieldtype": "Table MultiSelect",
    "label": "Lesson Plan",
-   "options": "Item"
+   "options": "Item Detail"
   },
   {
    "fieldname": "e_learning",
-   "fieldtype": "Data",
-   "label": "E learning"
+   "fieldtype": "Table MultiSelect",
+   "label": "E learning",
+   "options": "Item Detail"
   },
   {
    "fieldname": "audio_code",
-   "fieldtype": "Data",
-   "label": "Audio Code"
+   "fieldtype": "Table MultiSelect",
+   "label": "Audio Code",
+   "options": "Item Detail"
   },
   {
    "fieldname": "mcq_test",
-   "fieldtype": "Data",
-   "label": "MCQ test"
+   "fieldtype": "Table MultiSelect",
+   "label": "MCQ test",
+   "options": "Item Detail"
   },
   {
    "fieldname": "assignment",
-   "fieldtype": "Data",
-   "label": "Assignment"
+   "fieldtype": "Table MultiSelect",
+   "label": "Assignment",
+   "options": "Item Detail"
   },
   {
    "fieldname": "grading",
@@ -100,12 +106,25 @@
   {
    "fieldname": "table_vwbr",
    "fieldtype": "Table",
+   "label": "Assignees",
    "options": "CMAP Assignment"
+  },
+  {
+   "fieldname": "academic_year",
+   "fieldtype": "Link",
+   "label": "Academic Year",
+   "options": "Academic Year"
+  },
+  {
+   "fieldname": "subject",
+   "fieldtype": "Link",
+   "label": "Subject",
+   "options": "Course"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-11-27 10:17:00.043024",
+ "modified": "2023-11-27 21:08:00.395101",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "CMAP",

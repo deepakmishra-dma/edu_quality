@@ -186,8 +186,7 @@
    "fieldname": "receivable_account",
    "fieldtype": "Link",
    "label": "Receivable Account",
-   "options": "Account",
-   "reqd": 1
+   "options": "Account"
   },
   {
    "fieldname": "column_break_upgj",
@@ -247,7 +246,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-11-28 12:04:52.039667",
+ "modified": "2023-11-29 21:18:53.349234",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Fee Advance",

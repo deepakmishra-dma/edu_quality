@@ -374,7 +374,6 @@ def make_payment_request(**args):
 
     if existing_payment_request_amount:
         grand_total -= existing_payment_request_amount
-    frappe.logger('pr').exception(grand_total)
     if draft_payment_request:
         frappe.db.set_value(
             "Payment Request", draft_payment_request, "grand_total", grand_total, update_modified=False

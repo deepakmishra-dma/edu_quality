@@ -5,5 +5,5 @@
 from frappe.model.document import Document
 
 
-class ReferralLog(Document):
+class ItemDetail(Document):
 	pass

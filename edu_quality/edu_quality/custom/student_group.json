@@ -38,7 +38,7 @@
    "label": "School",
    "length": 0,
    "mandatory_depends_on": null,
-   "modified": "2023-10-04 14:36:06.767664",
+   "modified": "2023-10-04 14:37:06.767664",
    "modified_by": "Administrator",
    "module": "Edu Quality",
    "name": "Student Group-custom_school",
@@ -255,7 +255,7 @@
    "property": "autoname",
    "property_type": "Data",
    "row_name": null,
-   "value": "format:{student_group_name}-{program}"
+   "value": "format:{student_group_name}-{program}-{academic_year}"
   },
   {
    "_assign": null,

@@ -112,7 +112,7 @@ override_doctype_class = {
     "Payment Request": "edu_quality.overrides.CustomPaymentRequest",
     "Fee Schedule": "edu_quality.public.py.fee_schedule.CustomFeeSchedule",
     "Program Enrollment": "edu_quality.public.py.enrollment_override.CustomProgramEnrollment",
-    "Fees": "edu_quality.edu_quality.overrides.fees.CustomFees"
+    "Fees": "edu_quality.edu_quality.overrides.fees.CustomFees",
 }
 
 # Document Events
@@ -122,7 +122,7 @@ override_doctype_class = {
 doc_events = {
     "Student Applicant": {
         "before_save": "edu_quality.public.py.application.before_save",
-        "after_insert": "edu_quality.public.py.application.after_insert",
+        "after_insert": "edu_quality.edu_quality.server_scripts.student_applicant.after_insert",
         "autoname": "edu_quality.public.py.application.autoname",
     },
     "Program Enrollment": {
@@ -149,6 +149,7 @@ doc_events = {
         "before_insert": "edu_quality.public.py.lead.before_insert",
     },
     "Payment Entry": {"autoname": "edu_quality.public.py.payment_entry.autoname"},
+    "Item": {"autoname": "edu_quality.overrides_hooks.item.autoname"},
 }
 
 # Scheduled Tasks
@@ -267,8 +268,8 @@ fixtures = [
     {"dt": "Lead Sub Status"},
     {"dt": "School"},
     {"dt": "Academic Year"},
-    {"dt": "Funnel Node", "filters": [["class_name", "=", "edu_quality"]]},
-    {"dt": "Funnel"},
+    # {"dt": "Funnel Node", "filters": [["class_name", "=", "edu_quality"]]},
+    # {"dt": "Funnel"},
     {"dt": "Email Template"},
     {"dt": "Letter Head"},
     {"dt": "CRM Settings"},

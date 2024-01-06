@@ -3,11 +3,13 @@ from edu_quality.public.py.discount import (
     add_discount,
     get_all_discounts,
     payment_plan,
-    referal_discount,
     time_based_discount,
     update_payment_schedule,
     get_label,
 )
+
+from edu_quality.edu_quality.server_scripts.student_applicant import referal_discount
+
 import frappe
 from erpnext.accounts.utils import get_account_currency
 from erpnext.accounts.doctype.payment_request.payment_request import PaymentRequest
@@ -429,7 +431,6 @@ def payment_split(doc, ref_dis=None, time_dis=None, payplan_discount=0):
 
     doc.split_payments = json.dumps(split_payments)
     doc.company_split = json.dumps(company_wise_split)
-    frappe.logger('fee').exception(component_wise_split)
     doc.component_split = json.dumps(component_wise_split)
 
 
@@ -614,9 +615,7 @@ def company_wise(fees, invoice_portion, combination=False):
         doc = frappe.get_doc("Fee Category", component.fees_category)
         paid_to = doc.custom_account
         company = doc.custom_company
-        paid_from = frappe.get_value(
-            "Account", {"company": company, "account_type": "Receivable"}, ["name"]
-        )
+        paid_from = frappe.get_value('Company',company,'default_receivable_account')
         fee_type = frappe.db.get_value("Fee Category", component.fees_category, "type")
         amount = component.amount
         if fee_type != "Regular" and combination == True:

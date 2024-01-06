@@ -6,11 +6,8 @@ from frappe.model.mapper import get_mapped_doc
 @frappe.whitelist()
 def create_fee_workflow(**kwargs):
     data = json.loads(kwargs.get("data"))
-    frappe.logger("walnut").exception(data)
     fee_structure = create_fee_structure(data)
     fee_schedule = create_fee_schedule(fee_structure,data)
-    frappe.logger("walnut").exception(kwargs)
-    frappe.logger("walnut").exception(data)
 
 
 
