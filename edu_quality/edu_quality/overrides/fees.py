@@ -33,7 +33,7 @@ class CustomFees(Fees):
         make_gl_entries(
             entries,
             cancel=(self.docstatus == 2),
-            update_outstanding="Yes",
+            update_outstanding="No",
             merge_entries=False,
         )
     
@@ -148,7 +148,7 @@ class CustomFees(Fees):
         make_gl_entries(
         [debit_entry,credit_entry],
         cancel=(self.docstatus == 2),
-        update_outstanding="Yes",
+        update_outstanding="No",
         merge_entries=False,
     )
     
