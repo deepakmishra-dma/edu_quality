@@ -634,7 +634,6 @@ def get_existing_leads(first_name, fathers_phone):
         or frappe.db.get_list(
             "Lead",
             filters={
-             
                 "fathers_phone": remove_indian_country_code(str(fathers_phone)),
                 "custom_is_partial": 1,
             },
@@ -740,7 +739,6 @@ def create_lead(kwargs):
             "note": f'<div class="ql-editor read-mode"><p>Lead Registered from <b>{kwargs.get("source",source).capitalize()} {("at location " + kwargs.get("page_location")) if kwargs.get("page_location") else ""}</b> at <b>{datetime.datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%d-%m-%Y , %H:%M IST")}</b> </p></div>'
         },
     )
-
     lead_doc = lead_doc.insert(ignore_permissions=True, ignore_mandatory=True)
     return lead_doc
 
@@ -774,18 +772,6 @@ def process_lead(source, lead, page_location, detail="", kwargs={}):
         insert_walk_in_date(lead)
         # if lead 3 there replace it otherwise find first empty and put there
     if lead.first_name == "Partial_Lead" or lead.custom_is_partial:
-        query = f"""SELECT c.name from `tabContact` c join `tabDynamic Link` dl
-on c.name = dl.parent
-where dl.link_name like "{lead.name}"
-and dl.link_doctype = "Lead"
-and dl.parenttype = "Contact"
-"""
-
-        existing_contacts = frappe.db.sql(query)
-        if len(existing_contacts):
-            existing_contacts = existing_contacts[0]
-            contact = frappe.get_doc("Contact", existing_contacts[0])
-
         school_name = get_school(kwargs.get("school")) or kwargs.get("school", "")
         class_name = get_class(school_name, kwargs.get("class", "")) or kwargs.get(
             "class", ""
@@ -796,7 +782,7 @@ and dl.parenttype = "Contact"
         lead.last_name = student_name.get("last_name")
         lead.middle_name = student_name.get("middle_name")
         lead.custom_is_partial = 0
-        lead.fathers_name = "Father of " + kwargs.get("fathers_name") 
+        lead.fathers_name = "Father of " + kwargs.get("fathers_name")
         lead.fathers_email = kwargs.get("father_email_id") or kwargs.get(
             "fathers_email"
         )
@@ -817,9 +803,6 @@ and dl.parenttype = "Contact"
     )
     lead.flags.ignore_mandatory = True
     lead.save(ignore_permissions=True)
-    if lead.first_name == "Partial_Lead" or lead.custom_is_partial:
-        if len(existing_contacts):
-            contact.save(ignore_permissions=True)
     return lead
 
 
@@ -1064,4 +1047,11 @@ def create_partial_whatsapp_lead(**kwargs):
             "source": "Whatsapp",
         }
     )
+    new_lead_doc.append(
+        "notes",
+        {
+            "note": f'<div class="ql-editor read-mode"><p>Partial Lead Registered from <b>Whatsapp  at <b>{datetime.datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%d-%m-%Y , %H:%M IST")}</b> </p></div>',
+        },
+    )
+
     new_lead_doc.insert(ignore_permissions=True, ignore_mandatory=True)

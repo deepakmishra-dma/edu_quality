@@ -218,7 +218,6 @@
    "read_only": 1
   },
   {
-   "fetch_from": "fee_structure.institution",
    "fieldname": "company",
    "fieldtype": "Link",
    "label": "Institution",
@@ -246,7 +245,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-11-29 21:18:53.349234",
+ "modified": "2023-11-30 09:49:26.469285",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Fee Advance",

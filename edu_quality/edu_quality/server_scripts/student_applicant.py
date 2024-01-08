@@ -86,7 +86,7 @@ def get_outstanding_fees(student):
     """
     filters = [
         ["Fees","student", "=", student.name],
-        ["Fees","outstanding_amount", ">", 0],
+        ["Fees","outstanding_amount", "!=", 0],
         ["Fees",'docstatus', "=", 1]
     ]
     if frappe.db.exists("Fees",filters):
@@ -170,7 +170,7 @@ def apply_referral_discount(doc, referral_amount):
                     discount_name = "Referral"
 
                 total_discount = component.custom_discount_amount + referral_amount
-                discounted_amount = amount - total_discount
+                discounted_amount = component.amount - total_discount
                 discount_percentage = calculate_discount(amount, total_discount)
 
                 update_component(
@@ -178,13 +178,13 @@ def apply_referral_discount(doc, referral_amount):
                     discount_name,
                     discount_percentage,
                     total_discount,
-                    total_discount,
+                    referral_amount,
                     discounted_amount,
                     doc,
                 )
                 doc.add_discount_entry(component.custom_company, referral_amount)
                 update_total_discount_in_fees(doc.name)
-                update_payment_plan_after_discount(doc, total_discount, apply_discount=True,dis={"type":"Referral"})
+                update_payment_plan_after_discount(doc, referral_amount, apply_discount=True,dis={"type":"Referral"})
                 update_payment_request_after_discount(doc)
                 return 
     except Exception as e:
