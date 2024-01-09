@@ -36,6 +36,9 @@ def autoname(doc, method=None):
             prefix += "0" + str(count)
         doc.name = prefix
 
+def before_insert(doc, method=None):
+    frappe.flags.in_import = True
+
 def get_reference(program):
     if not frappe.db.get_value("Academic Year",[["Academic Year","year_start_date","<=",today()],["Academic Year","year_end_date",">=",today()]],"rolled_over"):
         current_program = frappe.get_doc("Program",program)
@@ -111,9 +114,9 @@ def import_student(**kwargs):
         "Walnut School at Shivane": "test_wal_db_WSS",
         "Walnut School at Wakad": "test_wal_db_WSW",
     }
-    for school in schools:
+    for db, school in enumerate(schools):
         database = school_db.get(school.name)
-        frappe.enqueue(import_handler, queue="long", database=database)
+        frappe.enqueue(import_handler, queue="long", database=database,db=db)
     frappe.response['message'] = {
         "status": "success",
         "res": "Student Import Scheduled Successfully",
@@ -130,13 +133,13 @@ def get_connection(database):
     return connection
 
 
-def import_handler(database):
+def import_handler(database,db):
     try:
         connection = get_connection(database)
 
         query = """SELECT *
                 FROM walnut_student_info AS s
-                JOIN walnut_class_info AS c ON s.class_admitted_to = c.class_id
+                JOIN walnut_class_info AS c ON s.admission_to = c.class_id
                 JOIN division_master AS d ON s.division = d.division_id;
                 """
 
@@ -148,15 +151,15 @@ def import_handler(database):
         # Iterate over the rows and create Frappe records
         total_len = len(rows)
         for index, row in enumerate(rows):
-            frappe.enqueue(insert_student, queue="long",row=row,column_names=cursor.column_names,doctype="Student",total_len=total_len,index=index)
+            frappe.enqueue(insert_student, queue="long",row=row,column_names=cursor.column_names,doctype="Student",total_len=total_len,index=index,db=db)
             # insert_student(row, cursor.column_names, "Student")
             
     except Exception as e:
         frappe.logger("student_import").exception(e)
     
 
-def insert_student(row, column_names, doctype,total_len,index):
-    set_progress(index + 1, total_len, "Student Details")
+def insert_student(row, column_names, doctype,total_len,index,db):
+    set_progress(index + 1, total_len,db, "Student Details")
     frappe_data = dict(zip(column_names, row))
 
     def get_data(key, default=None):
@@ -187,10 +190,10 @@ def insert_student(row, column_names, doctype,total_len,index):
 
     category = get_data("category")
 
-    class_admitted_to = get_data("class_admitted_to")
+    class_admitted_to = get_data("class_name")
     program = get_program(class_admitted_to, school)
     division = get_data("division_name")
-    academic_year = get_data("academic_year")
+    academic_year = get_data("acadamic_year")
 
     new_doc_data = {
         "enabled": 1,
@@ -215,11 +218,11 @@ def insert_student(row, column_names, doctype,total_len,index):
         "country": country,
         "landmark": get_data("landmark"),
         "student_email_id": student_email_id,
-        "joining_date": joining_date,
+        # "joining_date": joining_date,
         "date_of_leaving": date_of_leaving,
         "student_name": student_name,
         "school": school,
-        "aadhaar_card_number": get_data("aadhaar_card_number"),
+        "aadhaar_card_number": get_data("adhar_card_no"),
         "category": category,
         "school": school,
         "seeking_admission_in_class": program,
@@ -254,6 +257,8 @@ def insert_student(row, column_names, doctype,total_len,index):
         "parent_divorced": get_data("if_divorced"),
         "single_parent_reason": get_data("single_parent_reason"),
         "doctype": doctype,
+        "custom_mgr_status":map_student_status(get_data("status")),
+        "custom_enquired_class":get_data("class_admitted_to")
     }
     frappe_data['division'] = division
     frappe_data['academic_year'] = academic_year
@@ -268,6 +273,10 @@ def insert_student(row, column_names, doctype,total_len,index):
             insert_program_enrollment(old_doc, frappe_data)
     frappe.flags.in_import = False
 
+
+def map_student_status(id):
+    data = {1:"New student",2:"Current student",3:"Cancelled",4:"Not attending",5:"Defaulter"}
+    return data.get(id)
 
 def insert_program_enrollment(student, data=None):
     try:
@@ -379,12 +388,12 @@ def get_academic_year(academic_year):
     return doc.name
 
 
-def set_progress(current, total, job, expires_in_sec=300):
+def set_progress(current, total,db, job, expires_in_sec=300):
     progress = (current / total) * 100
     progress = f"{progress:.2f}%"
     frappe.cache().set_value(
         "student_import_status",
-        {"progress": progress, "job": job},
+        {"progress": progress, "job": job,"db":db},
         expires_in_sec=expires_in_sec,
     )
     frappe.db.commit()
@@ -404,5 +413,5 @@ from frappe.utils.background_jobs import get_jobs
 def is_migration_jobs_queued():
     jobs = get_jobs(site=frappe.local.site, key="job_name")[frappe.local.site]
 
-    return any("atsl_migrate_" in job for job in jobs)  # noqa: 501
+    return any("student_import_" in job for job in jobs)  # noqa: 501
 

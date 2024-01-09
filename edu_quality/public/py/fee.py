@@ -256,7 +256,6 @@ def append_program_enrollment(doc, method=None):
         .insert()
         .get("name")
     )
-
     student.append(
         "class_details",
         {
