@@ -2,8 +2,20 @@ import frappe
 from edu_quality.public.py.discount import remove_discount
 from datetime import datetime
 from edu_quality.public.py.discount import add_discount, get_all_discounts
-from edu_quality.public.py.fee import get_deposit
 
+
+
+def get_deposit_amount(fees):
+
+    for schedule in fees.payment_schedule:
+        if 'deposit' not in schedule.description.lower():
+            return 0
+
+    deposits = 0
+    for component in fees.components:
+        if component.fee_type !='Regular':
+            deposits += component.amount 
+    return deposits
 
 
 @frappe.whitelist()
@@ -30,8 +42,7 @@ def remove_payment_plan_discount(doc):
 
 @frappe.whitelist()
 def update_payment_plan(payment_plan, doc):
-    old_payment_plan = frappe.get_doc("Payment Plan", doc.payment_plan)
-    deposit = get_deposit(doc.payment_schedule, old_payment_plan.payment_schedule)
+    deposit = get_deposit_amount(doc)
     payment_plan = frappe.get_doc("Payment Plan", payment_plan)
     discount = update_payplan_discount(doc, payment_plan)
     if discount:
@@ -40,9 +51,10 @@ def update_payment_plan(payment_plan, doc):
     doc.total_discount = get_all_discounts(doc)
     doc.payment_schedule = []
 
+    other_amounts = doc.grand_total - deposit
     for i, ps in enumerate(payment_plan.payment_schedule):
         description = f"Installment {i+1}"
-        amount = (ps.invoice_portion * doc.grand_total) / 100
+        amount = (ps.invoice_portion * other_amounts) / 100
         if i == 0 and deposit != 0:
             description += " and Deposit"
             amount += deposit
