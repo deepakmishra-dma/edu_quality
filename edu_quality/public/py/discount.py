@@ -6,10 +6,11 @@ from frappe.utils import today, getdate, flt
 
 
 @frappe.whitelist()
-def add_discount(fee_name, discount):
+def add_discount(fee_name, discount,fees=None):
     discount_applied = False
     grand_discount_amount = 0
-    fees = frappe.get_doc("Fees", fee_name)
+    if not fees:
+        fees = frappe.get_doc("Fees", fee_name)
     dis = frappe.get_doc("Discount Configuration", discount)
     company = None
     for component in fees.components:

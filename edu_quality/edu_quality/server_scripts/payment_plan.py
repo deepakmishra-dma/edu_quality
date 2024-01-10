@@ -27,6 +27,7 @@ def change_payment_plan(payment_plan,fee_name):
             frappe.throw(f"Cannot Change Payment Plan As {ps.payment_term} is already Paid!")
     
     remove_payment_plan_discount(doc)
+    doc.reload()
     update_payment_plan(payment_plan,doc)
 
 def remove_payment_plan_discount(doc):
@@ -38,7 +39,7 @@ def remove_payment_plan_discount(doc):
             if discount_config.fee_category == component.fees_category:
                 remove_discount(doc.name, discount_config.name, update_payment_request=True)
                 frappe.response['message'] = f"{discount_config.name} Discount removed successfully"
-                break
+                return
 
 @frappe.whitelist()
 def update_payment_plan(payment_plan, doc):
@@ -46,7 +47,7 @@ def update_payment_plan(payment_plan, doc):
     payment_plan = frappe.get_doc("Payment Plan", payment_plan)
     discount = update_payplan_discount(doc, payment_plan)
     if discount:
-        add_discount(doc.name, discount[1].name)
+        add_discount(doc.name, discount[1].name,fees=doc)
         discount_amount = discount[0]
     doc.total_discount = get_all_discounts(doc)
     doc.payment_schedule = []
