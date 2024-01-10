@@ -59,9 +59,7 @@ def update_student_group(p_e_doc,fee_structure=None):
             program_e_d.save()
             if frappe.db.exists("Fee Schedule",{"fee_structure":fee_structure}):
                 fee_schedule = frappe.get_value("Fee Schedule",{"fee_structure":fee_structure})
-                doc = frappe.get_doc("Fee Schedule Student Group", {"parent":fee_schedule,"student_group":student_group})
-                doc.total_students = len(st)
-                doc.save()
+                frappe.db.set_value("Fee Schedule Student Group", {"parent":fee_schedule,"student_group":student_group},'total_students',len(st))
         return
     except Exception as e:
         frappe.throw(str(e))
