@@ -1,10 +1,11 @@
 import json
 import frappe
 import requests
-
+from edu_quality.fees.doctype.fee_advance.fee_advance import create_fee_advance
 
 @frappe.whitelist(allow_guest=True)
 def import_fees(**kwargs):
+    frappe.logger("fesss").exception(kwargs)
     purl = "https://test.walnutedu.in/indexCI.php/fee_due_report/fetch_student_fee_due"
 
     payload = json.dumps(
@@ -20,41 +21,83 @@ def import_fees(**kwargs):
     )
 
     response = requests.post(purl, data=payload)
-    data = response.json()["data"]
-    # status = fee_import_handler(data)
-    return data
+    frappe.logger("fesss").exception(response.json())
+    frappe.logger("fesss").exception(response.status_code)
+    if response.status_code=="200":
+        data = response.json()
+        if data["data"]:
+            return data
+        else:
+            return None
 
 
 def fee_import_handler(data):
-    key_list = list(data.keys())
-    key = key_list[0]
-    # for key in key_list[0]:
-    fee_data = data[key]
-    year_head_data = fee_data["0"]["0"]["year_head_data"]
-    fee_head_name = year_head_data["fee_head_name"]
-    fee_head_amt = year_head_data["fee_head_amt"]
-    academic_year = year_head_data["financial_year"]
-    class_name = year_head_data["class_name"]
-    institution = year_head_data["instt_name"]
-    school = year_head_data["school_name"]
-    payplan_name = year_head_data["payplan_name"]
-    installment_name = fee_data["installment_name"]
-    ref_no = fee_data["refno"]
-    student, student_name = frappe.get_value("Student", {"ref_no": ref_no}, ['name', 'student_name'])
-    program = frappe.get_value("Program", {"name": class_name}, ['name'])
+    pass
+    # frappe.enqueue(create_fee_advance, student=student, program_enrollment=program_enrollment)
+    # key_list = list(data.keys())
+    # key = key_list[0]
+    # # for key in key_list[0]:
+    # fee_data = data[key]
+    # year_head_data = fee_data["0"]["0"]["year_head_data"]
+    # fee_head_name = year_head_data["fee_head_name"]
+    # fee_head_amt = year_head_data["fee_head_amt"]
+    # academic_year = year_head_data["financial_year"]
+    # class_name = year_head_data["class_name"]
+    # institution = year_head_data["instt_name"]
+    # school = year_head_data["school_name"]
+    # payplan_name = year_head_data["payplan_name"]
+    # installment_name = fee_data["installment_name"]
+    # ref_no = fee_data["refno"]
+    # student, student_name = frappe.get_value("Student", {"ref_no": ref_no}, ['name', 'student_name'])
+    # program = frappe.get_value("Program", {"name": class_name}, ['name'])
 
-    doc = frappe.get_doc(
-        {
-            "doctype": "Fees",
-            "student": student,
-            "student_name": student_name,
-            "academic_year": academic_year,
-            "program": program,
-            "institution": institution,
-            "school": school,
-        }
-    )
-    doc.append("components", {"fees_category": fee_head_name, "amount": fee_head_amt})
-    doc.save(ignore_permissions=True)
+    # doc = frappe.get_doc(
+    #     {
+    #         "doctype": "Fees",
+    #         "student": student,
+    #         "student_name": student_name,
+    #         "academic_year": academic_year,
+    #         "program": program,
+    #         "institution": institution,
+    #         "school": school,
+    #     }
+    # )
+    # doc.append("components", {"fees_category": fee_head_name, "amount": fee_head_amt})
+    # doc.save(ignore_permissions=True)
 
-    return True
+    # return True
+
+@frappe.whitelist()
+def fee_advance():
+    try:
+        students = frappe.get_all("Student",{"custom_mgr_status":"Current student"})
+        all_len = len(students)
+        for index, student in enumerate(students):
+            student_doc = frappe.get_doc("Student",student.name)
+            p_e_doc = frappe.get_doc("Program Enrollment",{"student": student.name})
+            class_name = frappe.get_value("Program",p_e_doc.program,"program_name")
+            fees = import_fees(institution="Rethink Educational Systems Pvt Ltd Shivane",program=class_name,status=student_doc.custom_mgr_status,financial_year=p_e_doc.academic_year,fee_or_dep="fee")
+            frappe.logger("fesss").exception(fees)
+            if fees:
+                if not check_deu_date_fee(fees,student_doc):
+                    frappe.enqueue(create_fee_advance, student=student_doc, program_enrollment=p_e_doc,all_len=all_len,index=index)
+            else:
+                frappe.enqueue(create_fee_advance, student=student_doc, program_enrollment=p_e_doc,all_len=all_len,index=index)
+    except Exception as e:
+        frappe.logger("fee_advance").exception(e)
+        cleaned_data = student
+        error_obj={
+                "filename":"fee_advance",
+                "object": cleaned_data,
+                "Traceback": frappe.get_traceback(),
+            },
+        frappe.log_error(
+        title="Fee Advance with import",
+        message=json.dumps(error_obj),
+        )
+
+def check_deu_date_fee(fees,student_doc):
+    if fees.data[student_doc.reference_number]:
+        return True
+    else:
+        return False

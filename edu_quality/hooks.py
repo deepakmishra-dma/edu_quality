@@ -152,6 +152,7 @@ doc_events = {
     },
     "Payment Entry": {"autoname": "edu_quality.public.py.payment_entry.autoname"},
     "Item": {"autoname": "edu_quality.overrides_hooks.item.autoname"},
+    "Program":{"validate":"edu_quality.public.py.program.validate"}
 }
 
 # Scheduled Tasks

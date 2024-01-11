@@ -151,14 +151,14 @@ def import_handler(database,db):
         # Iterate over the rows and create Frappe records
         total_len = len(rows)
         for index, row in enumerate(rows):
-            frappe.enqueue(insert_student, queue="long",row=row,column_names=cursor.column_names,doctype="Student",total_len=total_len,index=index,db=db)
+            frappe.enqueue(insert_student, queue="long",row=row,column_names=cursor.column_names,doctype="Student",total_len=total_len,index=index,db=db,database=database)
             # insert_student(row, cursor.column_names, "Student")
             
     except Exception as e:
         frappe.logger("student_import").exception(e)
     
 
-def insert_student(row, column_names, doctype,total_len,index,db):
+def insert_student(row, column_names, doctype,total_len,index,db,database):
     set_progress(index + 1, total_len,db, "Student Details")
     frappe_data = dict(zip(column_names, row))
 
@@ -258,7 +258,7 @@ def insert_student(row, column_names, doctype,total_len,index,db):
         "single_parent_reason": get_data("single_parent_reason"),
         "doctype": doctype,
         "custom_mgr_status":map_student_status(get_data("status")),
-        "custom_enquired_class":get_data("class_admitted_to")
+        "custom_enquired_class":get_adimitad_class(database,get_data("class_admitted_to"))
     }
     frappe_data['division'] = division
     frappe_data['academic_year'] = academic_year
@@ -294,7 +294,7 @@ def insert_program_enrollment(student, data=None):
         program_enrollment.student = student.name
         program_enrollment.student_category = get_category(student.category)
         program_enrollment.student_name = student.student_name
-        program_enrollment.school = school
+        program_enrollment.custom_school = school
         program_enrollment.program = program
         program_enrollment.academic_year = academic_year
         program_enrollment.academic_term = academic_term
@@ -415,3 +415,24 @@ def is_migration_jobs_queued():
 
     return any("student_import_" in job for job in jobs)  # noqa: 501
 
+
+
+def get_adimitad_class(database,class_admitted_to):
+    if not class_admitted_to:
+        return None
+    connection = get_connection(database)
+
+    query = f"""SELECT class_name
+            FROM walnut_class_info
+            where class_id = {class_admitted_to}
+            """.format(class_admitted_to=class_admitted_to)
+
+    cursor = connection.cursor()
+    cursor.execute(query)
+
+    # fetach only no_of_students number of rows
+    rows = cursor.fetchall()
+    if rows:
+        return rows[0][0]
+    else:
+        return None

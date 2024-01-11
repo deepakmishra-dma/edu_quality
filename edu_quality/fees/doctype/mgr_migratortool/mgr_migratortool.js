@@ -27,6 +27,29 @@ frappe.ui.form.on('MGR MigratorTool', {
                         indicator: 'orange'
                     });
                 });
+	},
+  import_fees:frm => {
+		frappe.confirm('Are you sure you want to proceed?',
+                () => {
+                    frappe.call({
+                        method: "edu_quality.fees.mgr_fees.fee_advance",
+                        type: "POST",
+                        callback: function (response) {
+                            console.log(response);
+                            if (response.message.status == 'success') {
+                                frappe.show_alert({
+                                    message: __(response.message.res),
+                                    indicator: 'green'
+                                });
+                            }
+                        }
+                    });
+                }, () => {
+                    frappe.show_alert({
+                        message: __('Import Student cancelled.'),
+                        indicator: 'orange'
+                    });
+                });
 	}
 });
 
