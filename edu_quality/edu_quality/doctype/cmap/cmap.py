@@ -12,4 +12,4 @@ class CMAP(Document):
         class_sortcode = frappe.db.get_value(
             "Class Type", self.get("class"), "short_code"
         )
-        self.name = f"{self.academic_year}-{course_doc}{textbook_shortcode}{class_sortcode}{self.unit}{self.period} - {self.chapter}"
+        self.name = f"{self.academic_year}-{course_doc.name}{textbook_shortcode}{class_sortcode}{self.unit}{self.period} - {self.chapter}"

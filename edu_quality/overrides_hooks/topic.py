@@ -25,10 +25,7 @@ def before_insert(self, method=None):
         order_by="custom_chapter_number DESC",
         ignore_permissions=True,
     )
-    if len(list_topics and len(list_topics[0])):
-        chapter_number = list_topics[0][0]
 
-    self.custom_chapter_number = chapter_number
 
 
 def after_insert(self, method=None):

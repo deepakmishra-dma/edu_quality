@@ -18,11 +18,18 @@
   "section_break_hvmh",
   "products",
   "table_vwbr",
+  "notes_section",
+  "broadcast",
+  "home_work",
+  "material_required",
+  "column_break_vgpi",
+  "parent_note",
+  "class_work",
   "comments_and_assignments_section",
   "column_break_ycni",
   "solve_assignment_instructions",
   "assignment_instructions_footer",
-  "broadcast",
+  "comment",
   "assignment",
   "grading"
  ],
@@ -34,8 +41,8 @@
   },
   {
    "fieldname": "broadcast",
-   "fieldtype": "Small Text",
-   "label": "Comment"
+   "fieldtype": "Select",
+   "label": "Broadcast"
   },
   {
    "fieldname": "period",
@@ -147,11 +154,45 @@
    "fieldname": "comments_and_assignments_section",
    "fieldtype": "Section Break",
    "label": "Comments and Assignments"
+  },
+  {
+   "fieldname": "notes_section",
+   "fieldtype": "Section Break",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "parent_note",
+   "fieldtype": "Select",
+   "label": "Parent Note"
+  },
+  {
+   "fieldname": "home_work",
+   "fieldtype": "Select",
+   "label": "Home Work"
+  },
+  {
+   "fieldname": "class_work",
+   "fieldtype": "Select",
+   "label": "Class Work"
+  },
+  {
+   "fieldname": "material_required",
+   "fieldtype": "Select",
+   "label": "Material Required"
+  },
+  {
+   "fieldname": "comment",
+   "fieldtype": "Small Text",
+   "label": "Comment"
+  },
+  {
+   "fieldname": "column_break_vgpi",
+   "fieldtype": "Column Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-11-29 10:18:01.292384",
+ "modified": "2023-12-01 09:47:52.535299",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "CMAP",
