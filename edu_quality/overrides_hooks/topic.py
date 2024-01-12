@@ -27,7 +27,6 @@ def before_insert(self, method=None):
     )
 
 
-
 def after_insert(self, method=None):
     subject = frappe.get_doc("Course", self.custom_subject)
     subject.append("topics", {"topic": self.topic_name, "topic_name": self.topic_name})
