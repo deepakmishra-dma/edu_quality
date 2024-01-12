@@ -51,7 +51,6 @@ frappe.ui.form.on("Item", {
             NotCmapFilter(frm)
         }
     },
-
     // item_group: function (frm) {
     //     console.log(frm.item_group, frm)
     //     if (frm.item_group.parent_item_group === "CMAP") {

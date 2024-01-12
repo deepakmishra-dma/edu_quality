@@ -76,8 +76,11 @@ frappe.get_doc("Guardian",guardian.guardian,fields=["mobile_number"]).mobile_num
   {{letter_head.content}}
   <div class="first-row">
     <div style="display: flex; gap: 0; flex-shrink: 0; flex-direction: column">
-      <h2>{{student_data.reference_number}}</h2>
-      <h1>{{doc.program}}</h1>
+      <h2>
+        {{student_data.custom_reference_number or
+        student_data.reference_number}}
+      </h2>
+      <h1>{{doc.student_group}}</h1>
     </div>
     <div>
       <img src="{{id_card_data.qr_code}}" class="image-size" />
@@ -91,7 +94,7 @@ frappe.get_doc("Guardian",guardian.guardian,fields=["mobile_number"]).mobile_num
   <p style="text-align: center">{{doc.enrollment_date}}</p>
   <p style="text-align: right">Roll No: 7</p>
   <h6 class="address">
-    {{student_data.address_line_1}} {{student_data.address_line_2}}
+    {{student_data.address_line_1 or ''}} {{student_data.address_line_2 or ''}}
   </h6>
   <p>Phone: {{guardians | join(",")}}</p>
   <hr />
