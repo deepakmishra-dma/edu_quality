@@ -6,25 +6,29 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "school",
   "division",
-  "teacher",
-  "school"
+  "teacher"
  ],
  "fields": [
   {
    "fieldname": "teacher",
-   "fieldtype": "Data",
-   "label": "Teacher"
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Teacher",
+   "options": "Instructor"
   },
   {
    "fieldname": "division",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Division",
    "options": "Student Group"
   },
   {
    "fieldname": "school",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "School",
    "options": "School"
   }
@@ -32,7 +36,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2023-11-27 21:08:28.454875",
+ "modified": "2023-11-29 08:00:15.293148",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "CMAP Assignment",
