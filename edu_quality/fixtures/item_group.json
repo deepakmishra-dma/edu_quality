@@ -70,6 +70,20 @@
   "taxes": []
  },
  {
+  "custom_group_code": null,
+  "docstatus": 0,
+  "doctype": "Item Group",
+  "image": null,
+  "is_group": 1,
+  "item_group_defaults": [],
+  "item_group_name": "CMAP",
+  "modified": "2023-11-27 09:04:04.948772",
+  "name": "CMAP",
+  "old_parent": "All Item Groups",
+  "parent_item_group": "All Item Groups",
+  "taxes": []
+ },
+ {
   "custom_group_code": "PT",
   "docstatus": 0,
   "doctype": "Item Group",
@@ -221,20 +235,6 @@
   "name": "Worksheet",
   "old_parent": "CMAP",
   "parent_item_group": "CMAP",
-  "taxes": []
- },
- {
-  "custom_group_code": null,
-  "docstatus": 0,
-  "doctype": "Item Group",
-  "image": null,
-  "is_group": 1,
-  "item_group_defaults": [],
-  "item_group_name": "CMAP",
-  "modified": "2023-11-27 09:04:04.948772",
-  "name": "CMAP",
-  "old_parent": "All Item Groups",
-  "parent_item_group": "All Item Groups",
   "taxes": []
  }
 ]
