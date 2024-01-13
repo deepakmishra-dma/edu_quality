@@ -33,13 +33,7 @@ def autoname(self, method=None):
         str(sheet_number).zfill(2),
     )
     self.item_code = strip(
-        short_code
-        + language_short_code
-        + syllabus_code
-        + class_name
-        + textbook_short_code
-        + str(chapter_code).zfill(2)
-        + str(sheet_number).zfill(2)
+        f"{short_code}{language_short_code}{syllabus_code}{class_name}{textbook_short_code}{str(chapter_code).zfill(2)}{str(sheet_number).zfill(2)}"
     )
 
     self.name = self.item_code
