@@ -294,7 +294,7 @@ def create_fee_advance(student, program_enrollment,all_len=None,index=None):
         fee_advance.due_date = due_date
         fee_advance.is_rte = frappe.get_value("Student", program_enrollment.student, "is_rte_student")
         fee_advance.receivable_account = frappe.get_value("Company", institution, "default_receivable_account")
-        fee_advance.income_account = frappe.get_value("Company", institution, "default_income_account")
+        fee_advance.income_account = frappe.get_value("Company", institution, "default_liability_account")
         fee_advance.cost_center = frappe.get_value("Company", institution, "cost_center")
         fee_advance.save()
         fee_advance.submit()
