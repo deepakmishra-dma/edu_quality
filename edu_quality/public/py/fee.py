@@ -347,8 +347,6 @@ def payment_split(doc, ref_dis=None, time_dis=None, payplan_discount=0):
                     split_payments[schedule.payment_term] = get_split_payment(doc, invoice_portion)
                     company_wise_split[term] = company_wise(doc, invoice_portion)
                     component_wise_split[term] = component_wise(doc, due_date, invoice_portion)
-
-            company_wise_split['Deposit'] = company_wise_deposit(doc)
         
             if ref_dis:
                 split_payments, company_wise_split, component_wise_split = update_splits(
@@ -362,6 +360,8 @@ def payment_split(doc, ref_dis=None, time_dis=None, payplan_discount=0):
                 split_payments, company_wise_split, component_wise_split = update_splits(
                     split_payments, company_wise_split, component_wise_split, doc, payplan_discount, term=-1
                 )
+        company_wise_split['Deposit'] = company_wise_deposit(doc)
+        
 
     elif doc.doctype == "Fee Advance":
         if isinstance(doc.due_date, str):
