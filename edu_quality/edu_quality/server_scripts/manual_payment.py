@@ -112,7 +112,11 @@ def company_wise(data, component):
 
 @frappe.whitelist()
 def get_unpaid_terms(fee):
-    terms = frappe.db.get_all("Payment Request",{'reference_name':fee},"payment_term")
+    filters = [
+        ["reference_name",'=',fee],
+        ["status",'!=','Paid']
+    ]
+    terms = frappe.db.get_all("Payment Request",filters,"payment_term")
     result = []
     for term in terms:
         if not term.payment_term:

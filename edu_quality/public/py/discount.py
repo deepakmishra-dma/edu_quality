@@ -6,10 +6,11 @@ from frappe.utils import today, getdate, flt
 
 
 @frappe.whitelist()
-def add_discount(fee_name, discount):
+def add_discount(fee_name, discount,fees=None):
     discount_applied = False
     grand_discount_amount = 0
-    fees = frappe.get_doc("Fees", fee_name)
+    if not fees:
+        fees = frappe.get_doc("Fees", fee_name)
     dis = frappe.get_doc("Discount Configuration", discount)
     company = None
     for component in fees.components:
@@ -82,7 +83,6 @@ def add_discount(fee_name, discount):
             update_payment_request_after_discount(fees)
 
 
-#remove discount
 @frappe.whitelist()
 def remove_discount(fee_name, discount, update_payment_request=True):
     discount_removed = False
@@ -253,7 +253,7 @@ def only_deposit(doc):
         dt="Fees",
         dn=doc.name,
         is_deposit=True,
-        recipient_id=doc.student_email,
+        recipient_id=doc.contact_email,
         submit_doc=True
     )
 
@@ -380,18 +380,7 @@ def get_payment_plan_discount(payment_plan, doc):
     return None
 
 
-@frappe.whitelist()
-def remove_payment_plan_discount(payment_plan, doc):
-    doc = frappe.get_doc("Fees", doc)
-    discount_configs = frappe.get_all("Discount Configuration",
-        filters={"payment_plan": payment_plan, "fee_structure": doc.fee_structure},
-        fields=["name", "fee_category"])
-    for component in doc.components:
-        for discount_config in discount_configs:
-            if discount_config.fee_category == component.fees_category:
-                remove_discount(doc.name, discount_config.name, update_payment_request=True)
-                frappe.response['message'] = f"{discount_config.name} Discount removed successfully"
-                break
+
             
 
 def update_payment_schedule(doc, payment_plan=None):

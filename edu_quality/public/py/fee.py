@@ -121,65 +121,6 @@ def get_deposit(doc_payment_plan, payment_plan):
     return 0
 
 
-@frappe.whitelist()
-def update_payment_plan(payment_plan, fee_name):
-    doc = frappe.get_doc("Fees", fee_name)
-    for ps in doc.payment_schedule:
-        if ps.outstanding == 0:
-            frappe.throw(f"Cannot Change Payment Plan As {ps.payment_term} is already Paid!")
-
-    old_payment_plan = frappe.get_doc("Payment Plan", doc.payment_plan)
-    deposit = get_deposit(doc.payment_schedule, old_payment_plan.payment_schedule)
-    payment_plan = frappe.get_doc("Payment Plan", payment_plan)
-    discount = update_payplan_discount(doc, payment_plan)
-    if discount:
-        add_discount(fee_name, discount[1].name)
-        discount_amount = discount[0]
-
-    doc = frappe.get_doc("Fees", fee_name)
-    doc.total_discount = get_all_discounts(doc)
-    doc.payment_schedule = []
-
-    for i, ps in enumerate(payment_plan.payment_schedule):
-        description = f"Installment {i+1}"
-        amount = (ps.invoice_portion * doc.grand_total) / 100
-        if i == 0 and deposit != 0:
-            description += " and Deposit"
-            amount += deposit
-        if i == len(payment_plan.payment_schedule)-1 and discount:
-            amount -= discount_amount
-        doc.append("payment_schedule",{
-            'payment_term':ps.payment_term,
-            'description': description,
-            'invoice_portion': ps.invoice_portion,
-            'payment_amount':amount,
-            'outstanding':amount,
-            'due_date':ps.due_date
-        })
-    doc.payment_plan = payment_plan.name
-    doc.save(ignore_permissions=True)
-    frappe.response["message"] = "Payment Plan Updated Successfully!"
-
-
-def update_payplan_discount(doc, payment_plan):
-    """
-    update time based discount and referal discount in the payment schedule
-    """
-    for ps in payment_plan.payment_schedule:
-        if ps.due_date < datetime.today().date():
-            frappe.msgprint("Cannot Apply new Payment Plan Discount As Due Date is Passed!")
-            return
-        
-    for component in doc.components:
-        dis_filter = {"payment_plan": payment_plan.name, "fee_structure":doc.fee_structure, "fee_category": component.fees_category, "enabled":1}
-        if frappe.db.exists("Discount Configuration", dis_filter):
-            dis = frappe.get_doc("Discount Configuration", dis_filter)
-            if dis.discount_amount:
-                return dis.discount_amount, dis
-            else:
-                discount_amount = (component.amount * float(dis.discount)) / 100
-                return discount_amount, dis
-    return None
     
 
 def create_fees(doc,method=None):
@@ -405,8 +346,6 @@ def payment_split(doc, ref_dis=None, time_dis=None, payplan_discount=0):
                     split_payments[schedule.payment_term] = get_split_payment(doc, invoice_portion)
                     company_wise_split[term] = company_wise(doc, invoice_portion)
                     component_wise_split[term] = component_wise(doc, due_date, invoice_portion)
-
-            company_wise_split['Deposit'] = company_wise_deposit(doc)
         
             if ref_dis:
                 split_payments, company_wise_split, component_wise_split = update_splits(
@@ -420,6 +359,8 @@ def payment_split(doc, ref_dis=None, time_dis=None, payplan_discount=0):
                 split_payments, company_wise_split, component_wise_split = update_splits(
                     split_payments, company_wise_split, component_wise_split, doc, payplan_discount, term=-1
                 )
+        company_wise_split['Deposit'] = company_wise_deposit(doc)
+        
 
     elif doc.doctype == "Fee Advance":
         if isinstance(doc.due_date, str):

@@ -1,0 +1,15 @@
+{
+ "creation": "2023-11-29 09:44:01.278471",
+ "doc_type": "Course",
+ "docstatus": 0,
+ "doctype": "Property Setter",
+ "doctype_or_field": "DocType",
+ "is_system_generated": 0,
+ "modified": "2023-11-29 09:44:01.278471",
+ "modified_by": "Administrator",
+ "name": "Course-main-naming_rule",
+ "owner": "Administrator",
+ "property": "naming_rule",
+ "property_type": "Data",
+ "value": "Expression (old style)"
+}

@@ -36,6 +36,8 @@ doctype_js = {
     "Lead": "public/js/lead.js",
     "Fee Schedule": "public/js/fee_schedule.js",
     "Student": "public/js/student.js",
+    "Item": "public/js/item.js",
+    "Topic": "public/js/topic.js",
 }
 doctype_list_js = {
     "Student Applicant": "public/js/list/student_applicant_list.js",
@@ -152,7 +154,12 @@ doc_events = {
     },
     "Payment Entry": {"autoname": "edu_quality.public.py.payment_entry.autoname"},
     "Item": {"autoname": "edu_quality.overrides_hooks.item.autoname"},
-    "Program":{"validate":"edu_quality.public.py.program.validate"}
+    "Program":{"validate":"edu_quality.public.py.program.validate"},
+    "Topic": {
+        "autoname": "edu_quality.overrides_hooks.topic.autoname",
+        "after_insert": "edu_quality.overrides_hooks.topic.after_insert",
+        "before_insert": "edu_quality.overrides_hooks.topic.before_insert",
+    },
 }
 
 # Scheduled Tasks
@@ -275,6 +282,8 @@ fixtures = [
     # {"dt": "Funnel"},
     {"dt": "Email Template"},
     {"dt": "Letter Head"},
+    {"dt": "Class Type"},
+    {"dt": "Item Group"},
     {"dt": "CRM Settings"},
     {
         "dt": "Workspace",
