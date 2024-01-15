@@ -58,21 +58,21 @@ def verify_payment_term(payment_schedule):
 
 def before_update(doc,method=None):   
     old_doc = doc.get_doc_before_save()
-
     if doc.parent_otp == 0 and old_doc.payment_schedule != doc.payment_schedule:
-        doc.need_otp = 1
-        frappe.msgprint(
-            title="Payment Schedule",
-            msg="Please Verify parent OTP to Update Payment Schedule",
-        )
+        if old_doc.payment_plan == doc.payment_plan:
+            doc.need_otp = 1
+            frappe.msgprint(
+                title="Payment Schedule",
+                msg="Please Verify parent OTP to Update Payment Schedule",
+            )
+            return
+        
+    if old_doc.payment_plan != doc.payment_plan:
+        update_payment_request_after_discount(doc)
         return
-
     verify_invoice_portion(doc.payment_schedule)
     verify_payment_term(doc.payment_schedule)
-    
-    if old_doc.payment_plan != doc.payment_plan:
-        return
-    elif old_doc.payment_schedule != doc.payment_schedule:
+    if old_doc.payment_schedule != doc.payment_schedule:
         for term, old_term in zip(doc.payment_schedule, old_doc.payment_schedule):
             if old_term.outstanding == 0 and term.outstanding != 0:
                 frappe.throw(
