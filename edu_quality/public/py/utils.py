@@ -311,7 +311,7 @@ def handle_undertaking_submission(**kwargs):
         {"reference_no": student_doc.custom_reference_number},
     ):
         new_doc = frappe.new_doc("Rules and Regulation Submission")
-        new_doc.student = student_doc
+        new_doc.student = student_doc.name
         new_doc.reference_no = student_doc.custom_reference_number
         new_doc.fathers_name = student_doc.custom_fathers_first_name
         new_doc.mothers_name = student_doc.custom_mothers_first_name

@@ -1,0 +1,53 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-11-30 08:34:13.440330",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "import_student",
+  "column_break_gxcmg",
+  "import_fees"
+ ],
+ "fields": [
+  {
+   "fieldname": "import_student",
+   "fieldtype": "Button",
+   "label": "Import Student"
+  },
+  {
+   "fieldname": "column_break_gxcmg",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "import_fees",
+   "fieldtype": "Button",
+   "label": "Import Fees"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2023-11-30 08:51:25.915779",
+ "modified_by": "Administrator",
+ "module": "Fees",
+ "name": "MGR MigratorTool",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
