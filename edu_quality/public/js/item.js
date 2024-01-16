@@ -1,3 +1,27 @@
+async function getItemCode(frm) {
+    if (!frm.doc.custom_subject || !frm.doc.custom_class || !frm.doc.custom_textbook || !frm.doc.custom_chapter || !frm.doc.item_group) return
+    if (frm.doc.__islocal) {
+        frappe.call({
+            method: "edu_quality.overrides_hooks.item.calculate_sheet_number",
+            args: {
+                self: frm.doc
+            }, callback: function (r) {
+                frm.set_value('custom_sheet_number', r.message)
+                frappe.call({
+                    method: "edu_quality.overrides_hooks.item.name",
+                    args: {
+                        self: frm.doc
+                    }, callback: function (r) {
+                        frm.set_value('item_code', r.message)
+                        frm.set_value('item_name', r.message)
+                    }
+                })
+            }
+        })
+
+
+    }
+}
 function queryTextbook(frm) {
     frm.set_query("custom_textbook", function () {
         return {
@@ -30,11 +54,16 @@ function NotCmapFilter(frm) {
     })
 }
 frappe.ui.form.on("Item", {
-    refresh:function(frm){
+    refresh: function (frm) {
         queryTextbook(frm)
         queryTopic(frm)
+
     },
-    onload: NotCmapFilter,
+    onload: function (frm) {
+        if (frm.doc__islocal) {
+            frm.set_value('custom_sheet_number', 0);
+        } NotCmapFilter(frm);
+    },
     custom_is_cmap: function (frm) {
         console.log(frm)
         if (frm.doc.custom_is_cmap === 1) {
@@ -51,6 +80,8 @@ frappe.ui.form.on("Item", {
             NotCmapFilter(frm)
         }
     },
+    item_group: getItemCode,
+    custom_chapter: getItemCode
     // item_group: function (frm) {
     //     console.log(frm.item_group, frm)
     //     if (frm.item_group.parent_item_group === "CMAP") {

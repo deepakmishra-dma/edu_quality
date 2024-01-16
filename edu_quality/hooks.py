@@ -153,7 +153,10 @@ doc_events = {
         "before_insert": "edu_quality.public.py.lead.before_insert",
     },
     "Payment Entry": {"autoname": "edu_quality.public.py.payment_entry.autoname"},
-    "Item": {"autoname": "edu_quality.overrides_hooks.item.autoname"},
+    "Item": {
+        "autoname": "edu_quality.overrides_hooks.item.autoname",
+        "before_insert": "edu_quality.overrides_hooks.item.before_insert",
+    },
     "Program":{"validate":"edu_quality.public.py.program.validate"},
     "Topic": {
         "autoname": "edu_quality.overrides_hooks.topic.autoname",

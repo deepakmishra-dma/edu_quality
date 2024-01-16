@@ -5,7 +5,6 @@ function queryTextbook(frm) {
         return {
             filters: {
                 "subject": frm.doc.subject,
-                "class": frm.doc.class
             }
         }
     })
@@ -15,7 +14,6 @@ function queryTopic(frm) {
         return {
             filters: {
                 "custom_subject": frm.doc.subject,
-                "custom_class": frm.doc.class,
                 "custom_textbook": frm.doc.texbook
             }
         }
@@ -33,7 +31,6 @@ async function getProduct(id) {
     return data.data.custom_additional_material
 }
 async function getNotes(frm) {
-    console.log(frm.get_field('products'))
     const products = frm.get_field('products').grid.data || []
     const data = await Promise.all(products.map(product => {
         return getProduct(product.item)
@@ -73,10 +70,19 @@ frappe.ui.form.on("CMAP", {
         queryTopic(frm)
         cur_frm.fields_dict['products'].grid.get_field('item_group').get_query = function (doc, cdt, dn) {
             let d = locals[cdt][dn];
-
             return {
                 "filters": {
                     "parent_item_group": `CMAP`,
+                    "item_group": ""
+                }
+            };
+        }
+        cur_frm.fields_dict['products'].grid.get_field('item').get_query = function (doc, cdt, dn) {
+            let d = locals[cdt][dn];
+            return {
+                "filters": {
+
+                    "item_group": d.item_group
                 }
             };
         }
