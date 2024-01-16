@@ -63,8 +63,6 @@ frappe.query_reports["CMAP Print"] = {
 		},
 	],
 	"formatter": function (value, row, column, data, default_formatter) {
-
-		console.log(row, column)
 		value = default_formatter(value, row, column, data)
 		if (column.id.includes("qty")) {
 			value = `<input type="number" value=${value} oninput="changePrintCMAPReportData(this,'${column.id}','${row[0]?.rowIndex}')" />`
@@ -72,5 +70,23 @@ frappe.query_reports["CMAP Print"] = {
 		}
 		return value
 		// console.log(value)
+	}, "onload": function (report) {
+		report.page.add_inner_button(__('Create a Material Request'), () => {
+			let message = `
+				<div>
+					
+					<p>Are you sure you want to create a Material Request ?</p>
+				</div>`;
+
+			frappe.confirm(__(message), () => {
+				frappe.call({
+					"method": "edu_quality.edu_quality.report.cmap_print.cmap_print.create_material_request",
+					"args": {
+						rows: frappe.query_report.data
+					}
+				})
+			})
+		})
+
 	}
 };
