@@ -21,29 +21,29 @@ frappe.listview_settings['Student'] = {
     },
 
     refresh: function (listview) {
-        listview.page.add_menu_item(__("Import Student"), function () {
-            frappe.confirm('Are you sure you want to proceed?',
-                () => {
-                    frappe.call({
-                        method: "edu_quality.public.py.student.import_student",
-                        type: "POST",
-                        callback: function (response) {
-                            console.log(response);
-                            if (response.message.status == 'success') {
-                                frappe.show_alert({
-                                    message: __(response.message.res),
-                                    indicator: 'green'
-                                });
-                            }
-                        }
-                    });
-                }, () => {
-                    frappe.show_alert({
-                        message: __('Import Student cancelled.'),
-                        indicator: 'orange'
-                    });
-                });
-        });
+        // listview.page.add_menu_item(__("Import Student"), function () {
+        //     frappe.confirm('Are you sure you want to proceed?',
+        //         () => {
+        //             frappe.call({
+        //                 method: "edu_quality.public.py.student.import_student",
+        //                 type: "POST",
+        //                 callback: function (response) {
+        //                     console.log(response);
+        //                     if (response.message.status == 'success') {
+        //                         frappe.show_alert({
+        //                             message: __(response.message.res),
+        //                             indicator: 'green'
+        //                         });
+        //                     }
+        //                 }
+        //             });
+        //         }, () => {
+        //             frappe.show_alert({
+        //                 message: __('Import Student cancelled.'),
+        //                 indicator: 'orange'
+        //             });
+        //         });
+        // });
 
         listview.page.add_menu_item(__('Create Fee Advance'), function () {
             let students = listview.get_checked_items();
@@ -78,38 +78,7 @@ frappe.listview_settings['Student'] = {
         }
         );
 
-        
-        addProgressButton(listview);
-
 
     }
     
 };
-function addProgressButton(listview) {
-    function showProgress() {
-      frappe.call({
-        method: 'edu_quality.public.py.student.get_migration_progress',
-        freeze: true,
-        callback: res => {
-            // listview.set_intro('');
-          if (res.message.progress) {
-            const color = res.message?.progress?.includes('100')
-              ? 'green'
-              : 'orange';
-            let message = res.message.job ? `${res.message.job}: ` : '';
-            message += res.message.progress;
-            frappe.msgprint(message)
-            listview.set_intro(message, color);
-          } else {
-            // listview.set_intro('No Migration Jobs running', 'blue');
-          }
-        },
-      });
-    }
-  
-    showProgress();
-    
-    // listview.add_custom_button('Get Progress', () => {
-    //   showProgress();
-    // });
-  }

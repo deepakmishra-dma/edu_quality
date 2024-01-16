@@ -45,6 +45,7 @@ doctype_list_js = {
     "Program Enrollment": "public/js/list/program_enrollment_list.js",
     "Student": "public/js/list/student_list.js",
     "Student ID Card": "public/js/list/student_id_card.js",
+    "Fees": "public/js/list/fees_list.js",
 }
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -140,7 +141,9 @@ doc_events = {
     "Payment Request": {
         "before_save": "edu_quality.public.py.payment_request.before_save",
     },
-    "Student": {"autoname": "edu_quality.public.py.student.autoname"},
+    "Student": {"autoname": "edu_quality.public.py.student.autoname",
+                "before_insert": "edu_quality.public.py.student.before_insert",},
+                
     "Custom Field": {"after_insert": "edu_quality.public.py.fixtures.custom_fields"},
     "Custom DocPerm": {
         "after_insert": "edu_quality.public.py.fixtures.custom_doc_perm"
@@ -154,6 +157,7 @@ doc_events = {
         "autoname": "edu_quality.overrides_hooks.item.autoname",
         "before_insert": "edu_quality.overrides_hooks.item.before_insert",
     },
+    "Program":{"validate":"edu_quality.public.py.program.validate"},
     "Topic": {
         "autoname": "edu_quality.overrides_hooks.topic.autoname",
         "after_insert": "edu_quality.overrides_hooks.topic.after_insert",

@@ -21,7 +21,7 @@ from frappe.utils import (
     formatdate,
     today,
 )
-
+from edu_quality.public.py.student import set_progress
 class FeeAdvance(AccountsController):
     def before_save(self):
         fee_structure = frappe.get_doc("Fee Structure", self.fee_structure)
@@ -264,11 +264,13 @@ def fee_advance(**kwargs):
             )
 
 
-def create_fee_advance(student, program_enrollment):
+def create_fee_advance(student, program_enrollment,all_len=None,index=None):
     """
     program_enrollment: Previous Program Enrollment Doc
     """
     try:
+        if all_len and index:
+            set_progress(index + 1, all_len,index, "Student Fees Details")
         school = frappe.get_value("Program", program_enrollment.program,"school")
         next_program = get_next_program(program_enrollment.program, school)
         institution = frappe.get_value("School", frappe.get_value("Program", next_program,"school"),"institution")
@@ -292,7 +294,7 @@ def create_fee_advance(student, program_enrollment):
         fee_advance.due_date = due_date
         fee_advance.is_rte = frappe.get_value("Student", program_enrollment.student, "is_rte_student")
         fee_advance.receivable_account = frappe.get_value("Company", institution, "default_receivable_account")
-        fee_advance.income_account = frappe.get_value("Company", institution, "default_income_account")
+        fee_advance.income_account = frappe.get_value("Company", institution, "default_liability_account")
         fee_advance.cost_center = frappe.get_value("Company", institution, "cost_center")
         fee_advance.save()
         fee_advance.submit()

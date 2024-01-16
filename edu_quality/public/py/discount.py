@@ -253,7 +253,7 @@ def only_deposit(doc):
         dt="Fees",
         dn=doc.name,
         is_deposit=True,
-        recipient_id=doc.student_email,
+        recipient_id=doc.contact_email,
         submit_doc=True
     )
 
