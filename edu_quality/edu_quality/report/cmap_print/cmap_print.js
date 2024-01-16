@@ -72,21 +72,35 @@ frappe.query_reports["CMAP Print"] = {
 		// console.log(value)
 	}, "onload": function (report) {
 		report.page.add_inner_button(__('Create a Material Request'), () => {
+			let indexes = frappe.query_report.datatable.rowmanager.getCheckedRows();
+			let selected_rows = indexes.map(i => frappe.query_report.data[i]);
+
+			if (selected_rows.length == 0) {
+				frappe.msgprint(__("Select a row before creating material request"))
+				return
+			}
 			let message = `
 				<div>
 					
-					<p>Are you sure you want to create a Material Request ?</p>
+					<p>Are you sure you want to create a Material Request, for the selected rows ?</p>
 				</div>`;
+
+
 
 			frappe.confirm(__(message), () => {
 				frappe.call({
 					"method": "edu_quality.edu_quality.report.cmap_print.cmap_print.create_material_request",
 					"args": {
-						rows: frappe.query_report.data
+						rows: selected_rows
 					}
 				})
 			})
 		})
 
+	},
+	get_datatable_options(options) {
+		return Object.assign(options, {
+			checkboxColumn: true
+		});
 	}
 };
