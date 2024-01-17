@@ -134,6 +134,7 @@ def create_fees(doc,method=None):
                 {
                     "doctype": "Fees",
                     "student": doc.name,
+                    "posting_date":nowdate(), 
                     "program_enrollment": frappe.db.get_value(
                         "Program Enrollment", {"student": doc.name}, "name"
                     ),
