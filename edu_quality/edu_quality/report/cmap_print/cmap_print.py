@@ -3,6 +3,7 @@
 
 import frappe
 from frappe.query_builder.functions import Count
+from frappe.utils import parse_json
 
 # def generate_school_fields():
 #     schools = frappe.get_list("School")
@@ -35,6 +36,12 @@ def get_columns():
             "width": 75,
         },
         {
+            "fieldname": "planned_Date",
+            "label": "Planned Date",
+            "fieldtype": "Date",
+            "hidden": 1,
+        },
+        {
             "fieldname": "chapter",
             "label": "Chapter Name",
             "fieldtype": "Link",
@@ -49,57 +56,57 @@ def get_columns():
         # },
         {
             "fieldname": "qty_for_shivane",
-            "label": "Quantity for Walnut School Shivane",
+            "label": "Walnut School Shivane",
             "fieldtype": "Data",
-            "width": 100,
+            "width": 175,
         },
         {
             "fieldname": "qty_for_Fursungi",
-            "label": "Quantity for Walnut School Fursungi",
+            "label": "Walnut School Fursungi",
             "fieldtype": "Data",
-            "width": 100,
+            "width": 175,
         },
         {
             "fieldname": "qty_for_Wakad",
-            "label": "Quantity for Walnut School Wakad",
+            "label": "Walnut School Wakad",
             "fieldtype": "Data",
-            "width": 100,
+            "width": 175,
         },
         {
             "fieldname": "extra_qty_per_school",
             "label": "Extra Quantity per school",
             "fieldtype": "Data",
-            "width": 100,
+            "width": 175,
         },
         {
             "fieldname": "total_quantity",
             "label": "Total Quantity",
             "fieldtype": "Data",
-            "width": 100,
+            "width": 175,
         },
         {
             "fieldname": "sent_to_print",
             "label": "Sent to Print On",
             "fieldtype": "Data",
-            "width": 100,
+            "width": 175,
         },
         {
             "fieldname": "sent_by",
             "label": "Sent By",
             "fieldtype": "Data",
-            "width": 100,
+            "width": 175,
         },
         {
             "fieldname": "received_from_printer_on",
             "label": "Received from printer on",
             "fieldtype": "Data",
-            "width": 100,
+            "width": 175,
         },
         {
             "fieldname": "received_by",
             "label": "Received By",
             "fieldtype": "Data",
-            "width": 100,
+            "width": 175,
         },
     ]
     return columns
@@ -166,6 +173,7 @@ def get_data_from_queries(filters=None):
             cmap.chapter,
             cmap.name,
             cmap["class"],
+            cmap.plan_date,
             item_detail.item.as_("product_code"),
         )
     )
@@ -202,3 +210,24 @@ def execute(filters=None):
 
     data = get_data_from_queries(filters)
     return columns, data
+
+
+@frappe.whitelist()
+def create_material_request(rows):
+    if isinstance(rows, str):
+        rows = parse_json(rows)
+    material_request = frappe.get_doc(
+        {"doctype": "Material Request", "purpose": "Purchase", "items": []}
+    )
+    for row in rows:
+        material_request.append(
+            "items",
+            {
+                "item_code": row.get("product_code"),
+                "qty": row.get("total_quantity"),
+                "schedule_date": frappe.utils.nowdate(),
+                "uom": "Nos",
+            },
+        )
+    if len(rows):
+        material_request.insert()

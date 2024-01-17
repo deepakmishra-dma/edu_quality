@@ -13,6 +13,8 @@
   {
    "fieldname": "item",
    "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Item",
    "options": "Item"
   },
@@ -20,6 +22,8 @@
    "fetch_from": "item.item_group",
    "fieldname": "item_group",
    "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Item Group",
    "options": "Item Group"
   }
@@ -27,7 +31,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2023-11-28 10:19:57.391445",
+ "modified": "2023-12-01 13:44:54.030473",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Item Detail",
