@@ -693,6 +693,7 @@ def component_wise(doc, due_date, invoice_portion, combination=False, only_depos
                         "amount": amount,
                     }
                 )
+    due_date = due_date.strftime("%Y-%m-%d") if due_date else None
     component_wise_split['due_date'] = due_date if isinstance(due_date, str) else due_date.strftime("%Y-%m-%d")
     component_wise_split['breakup'] = breakup
     component_wise_split['is_deposit'] = combination
