@@ -782,7 +782,7 @@ def process_lead(source, lead, page_location, detail="", kwargs={}):
         lead.last_name = student_name.get("last_name")
         lead.middle_name = student_name.get("middle_name")
         lead.custom_is_partial = 0
-        lead.fathers_name = "Father of " + kwargs.get("fathers_name")
+        lead.fathers_name = kwargs.get("fathers_name")
         lead.fathers_email = kwargs.get("father_email_id") or kwargs.get(
             "fathers_email"
         )
