@@ -213,11 +213,16 @@ def execute(filters=None):
 
 
 @frappe.whitelist()
-def create_material_request(rows):
+def create_purchase_order(rows):
     if isinstance(rows, str):
         rows = parse_json(rows)
     material_request = frappe.get_doc(
-        {"doctype": "Material Request", "purpose": "Purchase", "items": []}
+        {
+            "doctype": "Purchase Order",
+            "purpose": "Purchase",
+            "items": [],
+            "supplier": "Printer",
+        }
     )
     for row in rows:
         material_request.append(

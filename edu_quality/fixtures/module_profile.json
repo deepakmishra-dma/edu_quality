@@ -277,5 +277,13 @@
   "modified": "2023-10-10 12:04:52.681791",
   "module_profile_name": "Councellor",
   "name": "Councellor"
+ },
+ {
+  "block_modules": [],
+  "docstatus": 0,
+  "doctype": "Module Profile",
+  "modified": "2023-12-04 15:47:12.653502",
+  "module_profile_name": "Content Creator",
+  "name": "Content Creator"
  }
 ]

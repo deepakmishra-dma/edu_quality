@@ -318,8 +318,8 @@ fixtures = [
     {
         "dt": "Custom HTML Block",
     },
-    {"dt": "Module Profile", "filters": [["name", "in", ["Councellor"]]]},
-    {"dt": "Role Profile", "filters": [["name", "in", ["Councellor"]]]},
+    {"dt": "Module Profile", "filters": [["name", "in", ["Councellor","Content Creator"]]]},
+    {"dt": "Role Profile", "filters": [["name", "in", ["Councellor","Content Creator"]]]},
 ]
 
 
