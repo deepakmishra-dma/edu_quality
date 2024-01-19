@@ -76,13 +76,14 @@ def fee_advance():
             student_doc = frappe.get_doc("Student",student.name)
             p_e_doc = frappe.get_doc("Program Enrollment",{"student": student.name})
             class_name = frappe.get_value("Program",p_e_doc.program,"program_name")
-            fees = import_fees(institution="Rethink Educational Systems Pvt Ltd Shivane",program=class_name,status=student_doc.custom_mgr_status,financial_year=p_e_doc.academic_year,fee_or_dep="fee")
-            frappe.logger("fesss").exception(fees)
-            if fees:
-                if not check_deu_date_fee(fees,student_doc):
+            if not frappe.get_value("Fee Advance",{"student":student.name,"program":class_name}):
+                fees = import_fees(institution="Rethink Educational Systems Pvt Ltd Shivane",program=class_name,status=student_doc.custom_mgr_status,financial_year=p_e_doc.academic_year,fee_or_dep="fee")
+                frappe.logger("fesss").exception(fees)
+                if fees:
+                    if not check_deu_date_fee(fees,student_doc):
+                        frappe.enqueue(create_fee_advance, student=student_doc, program_enrollment=p_e_doc,all_len=all_len,index=index)
+                else:
                     frappe.enqueue(create_fee_advance, student=student_doc, program_enrollment=p_e_doc,all_len=all_len,index=index)
-            else:
-                frappe.enqueue(create_fee_advance, student=student_doc, program_enrollment=p_e_doc,all_len=all_len,index=index)
     except Exception as e:
         frappe.logger("fee_advance").exception(e)
         cleaned_data = student
