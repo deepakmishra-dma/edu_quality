@@ -23,6 +23,7 @@ def before_insert(doc, method=None):
         )
     else:
         doc.contact_doc = doc.create_contact()
+    doc.custom_contact_link = doc.contact_doc.get("name")
     doc.contact_doc.flags.ignore_permissions = True
 
 
@@ -30,7 +31,6 @@ def after_insert(doc, method=None):
     if not doc.contact_doc:
         return
     doc.contact_doc.whatsapp_id = add_indian_country_code(doc.fathers_phone)
-    doc.custom_contact_link = doc.contact_doc.get("name")
     if len(doc.contact_doc.phone_nos) == 0:
         if doc.fathers_phone:
             doc.contact_doc.append(
