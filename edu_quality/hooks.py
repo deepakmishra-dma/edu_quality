@@ -162,7 +162,6 @@ doc_events = {
     "Topic": {
         "autoname": "edu_quality.overrides_hooks.topic.autoname",
         "after_insert": "edu_quality.overrides_hooks.topic.after_insert",
-        "before_insert": "edu_quality.overrides_hooks.topic.before_insert",
     },
 }
 
@@ -318,8 +317,14 @@ fixtures = [
     {
         "dt": "Custom HTML Block",
     },
-    {"dt": "Module Profile", "filters": [["name", "in", ["Councellor","Content Creator"]]]},
-    {"dt": "Role Profile", "filters": [["name", "in", ["Councellor","Content Creator"]]]},
+    {
+        "dt": "Module Profile",
+        "filters": [["name", "in", ["Councellor", "Content Creator"]]],
+    },
+    {
+        "dt": "Role Profile",
+        "filters": [["name", "in", ["Councellor", "Content Creator"]]],
+    },
 ]
 
 
