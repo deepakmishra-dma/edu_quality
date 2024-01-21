@@ -69,6 +69,13 @@
     "parenttype": "DocType Layout"
    },
    {
+    "fieldname": "custom_preferred_communication_day",
+    "label": "Preferred Communication Day",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
     "fieldname": "custom_column_break_fmsgl",
     "label": null,
     "parent": "Lead",
@@ -134,6 +141,20 @@
    {
     "fieldname": "campaign_name",
     "label": "Campaign Name",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "custom_preferred_communication_mode",
+    "label": "Preferred Communication Mode",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "custom_preferred_communication_time",
+    "label": "Preferred Communication Time",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
@@ -1028,7 +1049,7 @@
     "parenttype": "DocType Layout"
    }
   ],
-  "modified": "2023-11-30 11:35:32.527446",
+  "modified": "2023-12-06 02:19:21.830988",
   "name": "Lead",
   "route": "/app/lead"
  }

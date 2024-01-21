@@ -28,16 +28,30 @@ def get_google_users():
     return admin_obj.users().list()
 
 
-def create_google_user(school_code, refno, first_name, last_name):
+# @frappe.whitelist(allow_guest=True)
+def create_google_user(school_code, refno, first_name, last_name, recovery_mail):
     user_service = get_google_admin_object()
-
+    print(user_service)
     new_user = {
         "primaryEmail": f"{school_code}-{refno}@example.com",
         "name": {
             "givenName": first_name,
             "familyName": last_name,
         },
+        "password": "walnut@12345",
+        "changePasswordAtNextLogin": True,
+        "ipWhitelisted": False,
+        "recoveryEmail": recovery_mail,
+        "orgUnitPath": f"/Walnut School at Wakad/Students",
         "password": secrets.token_urlsafe(PASSWORD_LENGTH),
     }
-
-    user_service.users().insert(body=new_user).execute()
+    # result = (
+    #     user_service.users()
+    #     .get(userKey="shbb04-demo@walnutedu.in", domain="walnutedu.in")
+    #     .execute()
+    # )
+    # print(result["primaryEmail"], result["name"]["fullName"])
+    result = user_service.users().list(domain="walnutedu.in").execute()
+    users = result.get("users", [])
+    return users
+    return user_service.users().insert(body=new_user).execute()
