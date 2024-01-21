@@ -106,3 +106,23 @@ def payment_receipt(payment_request,category):
     except Exception as e:
         frappe.logger("download").exception(e)
         return e
+
+
+@frappe.whitelist(allow_guest=True)
+def get_payment_details_manual(**kwargs):
+     return {
+        'student_name': "vikas",
+        'institution': "hubrow",
+        'due_date': "2023-04-23",
+        'class': "1-Walnut School at Fursungi",
+        'student_id':"232",
+        'due_amount': "2222",
+        'payment_url': "",
+        'status': "Unpaid",
+        'receipt_url': frappe.utils.get_url(),
+        "breakup": [{'fees_category': 'Tuition Fee', 'company': 'Unique Educational and Sports Foundation', 'amount': '₹ 35,629.00'},
+                    {'fees_category': 'Term Fee', 'company': 'Unique Educational and Sports Foundation', 'amount': '₹ 7,126.00'},
+                    {'fees_category': 'Curriculum Material Fee', 'company': 'Rethink Educational Systems LLP', 'amount': '₹ 11,670.00'}],
+        "undertaking_url": "",
+        "undertaking_accepted": ""
+    }
