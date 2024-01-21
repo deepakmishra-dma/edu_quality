@@ -252,6 +252,7 @@ def only_deposit(doc):
         party=doc.student,
         dt="Fees",
         dn=doc.name,
+        payment_request_type="Inward",
         is_deposit=True,
         recipient_id=doc.contact_email,
         submit_doc=True
