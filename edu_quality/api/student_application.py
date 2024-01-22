@@ -744,9 +744,9 @@ def create_lead(kwargs):
             "class_from_lead_source": kwargs.get("class"),
             "custom_previous_school": kwargs.get("current_school", ""),
             "source": source or "Website" or "Others",
-            "custom_preferred_communication_mode":kwargs.get("communication_mode"),
-            "custom_preferred_communication_day":kwargs.get("communication_day"),
-            "custom_preferred_communication_time":kwargs.get("communication_time")
+            "custom_preferred_communication_mode": "Call" if kwargs.get("communication_mode", "").lower() == "yes" else "Chat",
+            "custom_preferred_communication_day": kwargs.get("communication_day"),
+            "custom_preferred_communication_time": kwargs.get("communication_time"),
         }
     )
     if kwargs.get("source", "").lower() == "walkin":
@@ -816,10 +816,12 @@ def process_lead(source, lead, page_location, detail="", kwargs={}):
         setattr(lead, "class", class_name)
         lead.class_from_lead_source = kwargs.get("class")
         lead.custom_previous_school = kwargs.get("current_school", "")
-        lead.custom_preferred_communication_mode = kwargs.get("communication_mode")
-        lead.custom_preferred_communication_day=kwargs.get("communication_day")
+        lead.custom_preferred_communication_mode = (
+            "Call" if kwargs.get("communication_mode", "").lower() == "yes" else "Chat"
+        )
+        lead.custom_preferred_communication_day = kwargs.get("communication_day")
         lead.custom_preferred_communication_time = kwargs.get("communication_time")
-        
+
     lead.append(
         "notes",
         {
