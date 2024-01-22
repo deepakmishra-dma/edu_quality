@@ -140,6 +140,19 @@ class CustomPaymentRequest(PaymentRequest):
         elif self.payment_channel == "Phone":
             self.request_phone_payment()
             
+    def make_communication_entry(self):
+        """Make communication entry"""
+        comm = frappe.get_doc({
+                "doctype": "Communication",
+                "subject": self.subject,
+                "content": self.get_message(),
+                "sent_or_received": "Sent",
+                "communication_type": "Communication",
+                "reference_doctype": self.reference_doctype,
+                "reference_name": self.reference_name,
+            })
+        comm.insert(ignore_permissions=True)
+            
     def validate(self):
         if self.get("__islocal"):
             self.status = "Draft"
