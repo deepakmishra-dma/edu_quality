@@ -126,7 +126,7 @@ def get_unpaid_terms(fee):
             result.append("Deposit")
         else:
             result.append(term.payment_term)
-    pr_doc = frappe.get_doc("Payment Request",filters)
+    pr_doc = frappe.get_doc("Payment Request",{"reference_name":fee})
     fee_doc = frappe.get_doc("Fees",fee)
     component = json.loads(fee_doc.component_split)[pr_doc.payment_term]
     is_deposit = component['is_deposit']
