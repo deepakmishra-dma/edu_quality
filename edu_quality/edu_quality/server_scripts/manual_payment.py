@@ -1,5 +1,7 @@
 import frappe
 from frappe.utils.data import flt
+import json
+from edu_quality.public.py.utils import get_submitted_undertaking, get_undertaking_template
 
 @frappe.whitelist()
 def manual_payment(fee,term,data,payment_mode):
@@ -117,10 +119,16 @@ def get_unpaid_terms(fee):
         ["status",'!=','Paid']
     ]
     terms = frappe.db.get_all("Payment Request",filters,"payment_term")
+    print(terms)
     result = []
     for term in terms:
         if not term.payment_term:
             result.append("Deposit")
         else:
             result.append(term.payment_term)
-    return result
+    pr_doc = frappe.get_doc("Payment Request",filters)
+    fee_doc = frappe.get_doc("Fees",fee)
+    component = json.loads(fee_doc.component_split)[pr_doc.payment_term]
+    is_deposit = component['is_deposit']
+    data = {"terms": result,"undertaking_accepted":get_submitted_undertaking(pr_doc),"undertaking_url": get_undertaking_template(pr_doc, is_deposit=is_deposit)}
+    return data

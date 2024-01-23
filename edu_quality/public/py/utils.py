@@ -294,10 +294,16 @@ def get_submitted_undertaking(payment_request):
 
 @frappe.whitelist(allow_guest=True)
 def handle_undertaking_submission(**kwargs):
-    payment_hash = kwargs.get("payment_request")
-    student, doctype, docname = frappe.get_value(
-        "Payment Request", {"payment_hash": payment_hash}, ["party", "reference_doctype", "reference_name"]
-    )
+    if kwargs.get("fee"):
+        doc = frappe.get_doc("Fees",kwargs.get("fee"))
+        student = doc.student
+        doctype = "Fees"
+        docname = doc.name
+    else:
+        payment_hash = kwargs.get("payment_request")
+        student, doctype, docname = frappe.get_value(
+            "Payment Request", {"payment_hash": payment_hash}, ["party", "reference_doctype", "reference_name"]
+        )
     if doctype == "Fees":
         class_name = frappe.get_value("Fees", docname, "program")
     elif doctype == "Fee Advance":

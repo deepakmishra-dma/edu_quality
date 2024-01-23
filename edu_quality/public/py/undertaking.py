@@ -11,15 +11,24 @@ except ImportError:
 
 
 @frappe.whitelist(allow_guest=True)
-def generate_undertaking_otp(payment_hash):
-    doctype, docname = get_fee(payment_hash)
+def generate_undertaking_otp(payment_hash=None,fee=None):
+    if fee:
+        doctype = "Fees"
+        docname = fee
+    else:
+        doctype, docname = get_fee(payment_hash)
     return generate_otp(doctype, docname)
 
 
 @frappe.whitelist(allow_guest=True)
-def verify_undertaking_otp(payment_hash, otp):
-    doctype, docname = get_fee(payment_hash)
+def verify_undertaking_otp(otp,payment_hash=None,fee=None):
+    if fee:
+        doctype = "Fees"
+        docname = fee
+    else:
+        doctype, docname = get_fee(payment_hash)
     return verify_otp(docname, otp)
+
 
 
 def get_fee(payment_hash):
