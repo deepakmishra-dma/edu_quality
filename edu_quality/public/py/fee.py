@@ -270,6 +270,8 @@ def payment_entry(doc, ref_doc, bank_amount, party_amount, paid_to):
         }
     )
 
+
+
     payment_entry.update(
         {
             "mode_of_payment": doc.mode_of_payment,
@@ -291,6 +293,8 @@ def payment_entry(doc, ref_doc, bank_amount, party_amount, paid_to):
 
     for dimension in get_accounting_dimensions():
         payment_entry.update({dimension: doc.get(dimension)})
+    
+    
 
     if payment_entry.difference_amount:
         company_details = get_company_defaults(ref_doc.company)
@@ -301,6 +305,14 @@ def payment_entry(doc, ref_doc, bank_amount, party_amount, paid_to):
                 "account": company_details.exchange_gain_loss_account,
                 "cost_center": company_details.cost_center,
                 "amount": payment_entry.difference_amount,
+            },
+        )
+
+    payment_entry.append(
+            "references",
+            {
+                "reference_doctype": "Fees",
+                "reference_name": ref_doc.name
             },
         )
 

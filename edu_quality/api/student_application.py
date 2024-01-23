@@ -661,6 +661,14 @@ def get_class(school_name, class_name):
     )
 
 
+def get_school_code(location):
+    return frappe.db.get_value(
+        "School",
+        {"location": id_to_location_map_fb.get(str(location).lower(), "")},
+        "prefix",
+    )
+
+
 def create_lead(kwargs):
     kwargs["fathers_name"] = kwargs.get("fathers_name", "").strip()
     kwargs["first_name"] = kwargs.get("first_name", "").strip()
@@ -683,15 +691,6 @@ def create_lead(kwargs):
         student_name.get("first_name"), kwargs.get("fathers_phone")
     )
 
-    if len(existing_leads):
-        return process_lead(
-            kwargs.get("source"),
-            frappe.get_doc("Lead", existing_leads[0].get("name")),
-            kwargs.get("page_location", ""),
-            "",
-            kwargs,
-        )
-
     source = "Website"
     if source:
         source_doc = frappe.db.get_list(
@@ -702,7 +701,19 @@ def create_lead(kwargs):
         if len(source_doc):
             source = source_doc[0].get("name", None)
         else:
-            source = "Others"
+            frappe.get_doc(
+                {"doctype": "Lead Source", "source_name": kwargs.get("source")}
+            ).insert(ignore_permissions=True)
+            source = kwargs.get("source")
+
+    if len(existing_leads):
+        return process_lead(
+            source,
+            frappe.get_doc("Lead", existing_leads[0].get("name")),
+            kwargs.get("page_location", ""),
+            "",
+            kwargs,
+        )
 
     school_name = get_school(kwargs.get("school")) or kwargs.get("school", "")
     class_name = get_class(school_name, kwargs.get("class", "")) or kwargs.get(
@@ -727,11 +738,19 @@ def create_lead(kwargs):
             "school_from_lead_source": kwargs.get("school"),
             "center": school_name,
             "class": class_name,
+            "status": "Hot"
+            if kwargs.get("source", "").lower() == "walkin"
+            else "Fresh",
             "class_from_lead_source": kwargs.get("class"),
             "custom_previous_school": kwargs.get("current_school", ""),
             "source": source or "Website" or "Others",
+            "custom_preferred_communication_mode": "Call" if kwargs.get("communication_mode", "").lower() == "yes" else "Chat",
+            "custom_preferred_communication_day": kwargs.get("communication_day"),
+            "custom_preferred_communication_time": kwargs.get("communication_time"),
         }
     )
+    if kwargs.get("source", "").lower() == "walkin":
+        insert_walk_in_date(lead_doc)
 
     lead_doc.append(
         "notes",
@@ -756,19 +775,22 @@ def create_student_lead_fb(**kwargs):
 
 
 def process_lead(source, lead, page_location, detail="", kwargs={}):
-    if lead.first_name != "Partial Lead":
+    if lead.first_name != "Partial Lead" and not lead.custom_is_partial:
         lead.status = "Hot"
         lead.custom_re_enquired_count += 1
 
     source = source if source else "Not Known"
-    if source.lower() == "school" or id_to_location_map_fb.get(
-        str(source).lower(), None
+    if (
+        source.lower() == "school"
+        or source.lower() == "walkin"
+        or id_to_location_map_fb.get(str(source).lower(), None)
     ):
         lead.append("custom_lead_sub_status", {"sub_status": "Hot-School Visit Done"})
         insert_walk_in_date(lead)
 
-    if source == "school_walkin":
+    if source == "school_walkin" or source.lower() == "walkin":
         lead.append("custom_lead_sub_status", {"sub_status": "Hot-School Visit Done"})
+        lead.status = "Hot"
         insert_walk_in_date(lead)
         # if lead 3 there replace it otherwise find first empty and put there
     if lead.first_name == "Partial_Lead" or lead.custom_is_partial:
@@ -794,6 +816,11 @@ def process_lead(source, lead, page_location, detail="", kwargs={}):
         setattr(lead, "class", class_name)
         lead.class_from_lead_source = kwargs.get("class")
         lead.custom_previous_school = kwargs.get("current_school", "")
+        lead.custom_preferred_communication_mode = (
+            "Call" if kwargs.get("communication_mode", "").lower() == "yes" else "Chat"
+        )
+        lead.custom_preferred_communication_day = kwargs.get("communication_day")
+        lead.custom_preferred_communication_time = kwargs.get("communication_time")
 
     lead.append(
         "notes",
@@ -803,6 +830,7 @@ def process_lead(source, lead, page_location, detail="", kwargs={}):
     )
     lead.flags.ignore_mandatory = True
     lead.save(ignore_permissions=True)
+
     return lead
 
 
@@ -1029,7 +1057,9 @@ def create_partial_whatsapp_lead(**kwargs):
         return "Error Creating lead"
     lead_doc_name = frappe.db.get_value(
         "Lead",
-        {"fathers_phone": remove_indian_country_code(kwargs.get("fathers_phone"))},
+        {
+            "fathers_phone": remove_indian_country_code(kwargs.get("fathers_phone")),
+        },
         "name",
     )
     if lead_doc_name:
@@ -1055,3 +1085,17 @@ def create_partial_whatsapp_lead(**kwargs):
     )
 
     new_lead_doc.insert(ignore_permissions=True, ignore_mandatory=True)
+    return new_lead_doc
+
+
+def rename_partial_lead(lead, school_code):
+    try:
+        splitted_name = lead.name.split("-")[1::]
+        new_name = "-".join([school_code, *splitted_name])
+        renamed_lead = frappe.rename_doc("Lead", lead.name, new_name, merge=False)
+        print(renamed_lead)
+        return lead.reload()
+
+    except Exception as e:
+        print(e)
+        return lead
