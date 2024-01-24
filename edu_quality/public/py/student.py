@@ -191,7 +191,6 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
     class_admitted_to = get_data("class_name")
     program = get_program(class_admitted_to, school)
     division = get_data("division_name")
-    academic_year = get_data("acadamic_year")
 
     new_doc_data = {
         "enabled": 1,
@@ -259,7 +258,6 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
         "custom_enquired_class":get_adimitad_class(database,get_data("class_admitted_to"))
     }
     frappe_data['division'] = division
-    frappe_data['academic_year'] = academic_year
     frappe.flags.in_import = True
     if not frappe.db.exists(doctype, docname):
         new_doc = frappe.get_doc(new_doc_data)
@@ -279,11 +277,11 @@ def map_student_status(id):
 def insert_program_enrollment(student, data=None):
     try:
         program = student.seeking_admission_in_class
-        academic_year = data.get("academic_year")
+        academic_year = data.get("acadamic_year")
         academic_term = frappe.get_value("Academic Term", {"academic_year": academic_year})
         year_start_date = frappe.get_value("Academic Year",academic_year,"year_start_date")
 
-        academic_year = get_academic_year(data.get("academic_year"))
+        academic_year = get_academic_year(academic_year)
         school = student.school
         division = data.get("division")
         division = get_division(division, program, school, academic_year)
