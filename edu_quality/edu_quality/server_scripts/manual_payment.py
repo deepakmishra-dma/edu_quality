@@ -126,9 +126,14 @@ def get_unpaid_terms(fee):
             result.append("Deposit")
         else:
             result.append(term.payment_term)
-    pr_doc = frappe.get_doc("Payment Request",{"reference_name":fee})
     fee_doc = frappe.get_doc("Fees",fee)
-    component = json.loads(fee_doc.component_split)[pr_doc.payment_term]
-    is_deposit = component['is_deposit']
-    data = {"terms": result,"undertaking_accepted":get_submitted_undertaking(pr_doc),"undertaking_url": get_undertaking_template(pr_doc, is_deposit=is_deposit)}
+    is_deposit = False
+    if fee_doc.component_split:
+        component = json.loads(fee_doc.component_split)["Term 1"]
+        is_deposit = component['is_deposit']
+    if frappe.db.exists("Rules and Regulation Submission", {"student": fee_doc.student,"program":fee_doc.program},"name"):
+        undertaking_accepted = True
+    else:
+        undertaking_accepted= False
+    data = {"terms": result,"undertaking_accepted":undertaking_accepted,"undertaking_url": get_undertaking_template(is_deposit=is_deposit,fee=fee_doc.name)}
     return data
