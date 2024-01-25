@@ -230,9 +230,9 @@ def payment_entry(doc, ref_doc, party_amount, paid_from, paid_to, company, cost_
     payment_entry.append(
         "references",
         {
-            "reference_doctype": doc.reference_doctype,
-            "reference_name": doc.reference_name
-        }
+            "reference_doctype": "Fees",
+            "reference_name": ref_doc.name
+        },
     )
 
     payment_entry.insert(ignore_permissions=True)
