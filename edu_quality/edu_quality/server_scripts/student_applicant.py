@@ -6,7 +6,8 @@ from edu_quality.public.py.discount import (
     update_component,
     update_total_discount_in_fees,
     update_payment_plan_after_discount,
-    get_label
+    get_label,
+    update_breakups
 )
 
 from edu_quality.public.py.payment_request import update_payment_request_after_discount
@@ -118,6 +119,14 @@ def update_referral_discount(doc, discount_amount):
 
                 frappe.db.set_value("Fee Component", component.name, updates)
 
+                dis = {
+                "name": "Referral",
+                "discount": None,
+                "discount_amount": discount_amount,
+                }
+
+                update_breakups(dis, component, doc,term=1,update=1)
+
                 grand_total = doc.grand_total - discount_amount
                 grand_total_in_words = frappe.utils.in_words(grand_total).title()
 
@@ -156,6 +165,13 @@ def apply_referral_discount(doc, referral_amount):
         for component in doc.components:
             if component.fees_category != "Tuition Fee":
                 continue
+            dis = {
+                "name": "Referral",
+                "discount": None,
+                "discount_amount": referral_amount,
+            }
+
+            update_breakups(dis, component, doc,term=1,update=1)
 
             amount = component.custom_amount_after_discount or component.amount
 
@@ -216,6 +232,12 @@ def referal_discount(doc, method=None):
             continue
 
         if component.amount > discount and discount != 0:
+            dis = {
+                "name": "Referral",
+                "discount": None,
+                "discount_amount": discount,
+            }
+            update_breakups(dis, component, doc, term=1)
 
             amount = component.custom_amount_after_discount or component.amount
             amount_after_discount = amount - discount

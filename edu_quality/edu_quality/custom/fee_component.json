@@ -44,7 +44,7 @@
    "name": "Fee Component-fee_type",
    "no_copy": 0,
    "non_negative": 0,
-   "options": "",
+   "options": "Fee Type",
    "owner": "Administrator",
    "permlevel": 0,
    "precision": "",
