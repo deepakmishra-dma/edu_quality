@@ -3,6 +3,9 @@ from edu_quality.overrides import make_payment_request
 from edu_quality.public.py.payment_request import update_payment_request_after_discount
 import frappe
 from frappe.utils import today, getdate, flt
+import json
+
+from edu_quality.public.py.term import get_first_unpaid_term,get_last_term
 
 
 @frappe.whitelist()
@@ -289,6 +292,7 @@ def time_based_discount(doc):
 
 def apply_time_based_discount(dis, component, fees):
     # if the discount is not already present
+    update_breakups(dis, component, fees)
     if dis.discount_amount:
         discounted_amount = dis.discount_amount
         amount = component.amount - discounted_amount
@@ -353,6 +357,7 @@ def get_payment_plan_discount(payment_plan, doc):
         dis_filter = {"payment_plan": payment_plan, "fee_structure":doc.fee_structure, "fee_category": component.fees_category, "enabled":1}
         if frappe.db.exists("Discount Configuration", dis_filter):
             dis = frappe.get_doc("Discount Configuration", dis_filter)
+            update_breakups(dis, component, doc,term=-1)
             if dis.discount_amount:
                 component.custom_discounts = dis.name
                 component.custom_discount_percentage = calculate_discount(component.amount, dis.discount_amount)
@@ -431,3 +436,85 @@ def update_payment_schedule(doc, payment_plan=None):
     except Exception as e:
         frappe.logger('pp_discount').exception(e)
         return 0
+
+
+class AttributeDict(dict):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.__dict__ = self
+
+
+def update_breakups(dis, component, fees, term="All", update=0):
+    try:
+        frappe.logger('breakup').exception(update)
+        if str(type(dis))=="<class 'dict'>":
+            dis = AttributeDict(dis)
+
+        if not dis.discount_amount and dis.discount!=None:
+            dis.discount_amount = flt(dis.discount*component.amount/100,2)
+        #update component
+
+        discount_breakup = update_discount_breakup(component.amount, component.discount_breakup,
+                                                            dis.discount,dis.discount_amount,dis.name)
+        if not update:
+            component.discount_breakup = discount_breakup
+        else:
+            frappe.db.set_value("Fee Component",component.name,'discount_breakup',discount_breakup)
+
+        #update_schedule
+        if term == 1:
+            term = get_first_unpaid_term(fees)
+        elif term == -1:
+            term = get_last_term(fees)
+
+        if term !="All":
+            for schedule in fees.payment_schedule:
+                if term == schedule.payment_term:
+                    discount = flt((dis.discount_amount/schedule.payment_amount)*100,2)
+                    discount_breakup = update_discount_breakup(schedule.payment_amount, schedule.discount_breakup,
+                                                            discount,dis.discount_amount,dis.name)
+                    if not update:
+                        schedule.discount_breakup = discount_breakup
+                    else:
+                        frappe.db.set_value("Payment Schedule",schedule.name,'discount_breakup',discount_breakup)
+                    return
+        else:
+            for schedule in fees.payment_schedule:
+                discount_amount = flt(dis.discount_amount * schedule.invoice_portion/100,2)
+                discount = flt(discount_amount/schedule.payment_amount*100,2)
+                discount_breakup = update_discount_breakup(schedule.payment_amount, schedule.discount_breakup,
+                                                                discount,discount_amount,dis.name)
+                if not update:
+                    schedule.discount_breakup = discount_breakup
+                else:
+                    frappe.db.set_value("Payment Schedule",schedule.name,'discount_breakup',discount_breakup)
+    except Exception as e:
+        frappe.logger("breakup").exception(e)
+        
+
+
+
+def update_discount_breakup(component_amount,discount_breakup,discount,discount_amount,discount_name):
+    """
+    Update discount breakup details.
+
+    Parameters:
+    - component (object): The fee component object.
+    - discount (object): The discount object.
+
+    Returns:
+    dict: Updated discount breakup details.
+    """
+    if  not discount_amount:
+        discount_amount = flt(component_amount*discount/100,2)
+    elif not discount:
+        discount = flt((discount_amount/component_amount)*100,2)
+
+    breakup = json.loads(discount_breakup) if discount_breakup else {}
+    if breakup.get(discount_name):
+        breakup[discount_name]['discount_amount'] += discount_amount
+        breakup[discount_name]['discount_percentage'] += discount
+    else:
+        breakup[discount_name] = {"discount_amount": discount_amount, "discount_percentage": discount}
+
+    return json.dumps(breakup)
