@@ -29,7 +29,7 @@ except ImportError:
     print("Chatnext is not installed")
 
 class CustomPaymentRequest(PaymentRequest):
-    def create_payment_entry(self):
+    def create_payment_entry(self,submit=False):
         fees = frappe.get_doc(self.reference_doctype, self.reference_name)
         paid_amount = 0
         if self.payment_term:
@@ -227,6 +227,13 @@ def payment_entry(doc, ref_doc, party_amount, paid_from, paid_to, company, cost_
                         "amount": amount,
                     },
                 )
+    payment_entry.append(
+        "references",
+        {
+            "reference_doctype": doc.reference_doctype,
+            "reference_name": doc.reference_name
+        }
+    )
 
     payment_entry.insert(ignore_permissions=True)
     payment_entry.submit()
