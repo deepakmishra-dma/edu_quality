@@ -8,9 +8,9 @@ def manual_payment(fee,term,data,payment_mode):
     try:
         data = frappe.parse_json(data)
         if term == "Deposit":
-            filter = [["Payment Request","payment_term","is","not set"],["Payment Request","reference_name","=",fee]]
+            filter = [["Payment Request","payment_term","is","not set"],["Payment Request","reference_name","=",fee],["Payment Request","docstatus","=",1]]
         else:
-            filter = {'reference_name':fee,'payment_term':term}
+            filter = {'reference_name':fee,'payment_term':term,'docstatus':1}
         if frappe.db.exists("Payment Request",filter):
             frappe.enqueue(set_as_paid,queue='long',filter=filter,data=data,payment_mode=payment_mode)
     except Exception as e:
@@ -116,10 +116,10 @@ def company_wise(data, component):
 def get_unpaid_terms(fee):
     filters = [
         ["reference_name",'=',fee],
-        ["status",'!=','Paid']
+        ["status",'!=','Paid'],
+        ['docstatus','=',1]
     ]
     terms = frappe.db.get_all("Payment Request",filters,"payment_term")
-    print(terms)
     result = []
     for term in terms:
         if not term.payment_term:
