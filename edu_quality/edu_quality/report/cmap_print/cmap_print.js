@@ -71,7 +71,7 @@ frappe.query_reports["CMAP Print"] = {
 		return value
 		// console.log(value)
 	}, "onload": function (report) {
-		report.page.add_inner_button(__('create_purchase_order'), () => {
+		report.page.add_inner_button(__('Create Order'), () => {
 			let indexes = frappe.query_report.datatable.rowmanager.getCheckedRows();
 			let selected_rows = indexes.map(i => frappe.query_report.data[i]);
 

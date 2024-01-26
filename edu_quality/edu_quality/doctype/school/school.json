@@ -12,7 +12,8 @@
   "prefix",
   "description",
   "location",
-  "institution"
+  "institution",
+  "warehouse"
  ],
  "fields": [
   {
@@ -44,11 +45,17 @@
    "fieldtype": "Data",
    "label": "Prefix",
    "reqd": 1
+  },
+  {
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "label": "Warehouse",
+   "options": "Warehouse"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-09-15 13:15:48.358266",
+ "modified": "2023-12-06 15:18:07.192546",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "School",
