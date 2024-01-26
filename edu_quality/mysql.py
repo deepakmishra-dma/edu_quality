@@ -102,7 +102,7 @@ def sync_data(host, user, password, database, mysql_table, doctype, school):
                 new_doc = frappe.get_doc(
                     {
                         "custom_reference_number": refno,
-                        "custom_imported": 1,
+                        "imported": 1,
                         "form_code": form_code,
                         "enabled": 1,
                         "first_name": first_name,
@@ -126,7 +126,7 @@ def sync_data(host, user, password, database, mysql_table, doctype, school):
                         "school": school,
                         "custom_fathers_name":father_f_name,
                         "custom_mothers_first_name": mother_f_name,
-                        "custom_aadhaar_card_number": aadhaar_card_number,
+                        "aadhaar_card_number": aadhaar_card_number,
                         "doctype": doctype,
                     }
                 )
