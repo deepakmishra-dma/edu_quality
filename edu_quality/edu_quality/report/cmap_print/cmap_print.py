@@ -5,22 +5,32 @@ import frappe
 from frappe.query_builder.functions import Count
 from frappe.utils import parse_json
 
-# def generate_school_fields():
-#     schools = frappe.get_list("School")
-#     school_array = []
-#     for i in schools:
-#         school_array.append(
-#             {
-#                 "fieldname": f"qty_for_{i}",
-#                 "label": "Quantity for {i}",
-#                 "fieldtype": "Data",
-#                 "width": 100,
-#             }
-#         ),
-#     return school_array
+
+def generate_school_fields():
+    schools = frappe.get_list("School")
+    school_array = []
+    for i in schools:
+        school_array.append(
+            {
+                "fieldname": f"qty_for_{i.get('name')}",
+                "label": f"{i.get('name')}",
+                "fieldtype": "Data",
+                "width": 200,
+            }
+        ),
+    return school_array
+
+
+@frappe.whitelist()
+def get_school_fields_sum(row):
+    school_fields = generate_school_fields()
+    school_fields_to_sum = [school.get("fieldname") for school in school_fields]
+    frappe.errprint(row)
+    return sum([row.get(field, 0) for field in school_fields_to_sum])
 
 
 def get_columns():
+    school_fields = generate_school_fields()
     columns = [
         {
             "fieldname": "period",
@@ -54,24 +64,7 @@ def get_columns():
         #     "fieldtype": "Data",
         #     "width": 50,
         # },
-        {
-            "fieldname": "qty_for_shivane",
-            "label": "Walnut School Shivane",
-            "fieldtype": "Data",
-            "width": 175,
-        },
-        {
-            "fieldname": "qty_for_Fursungi",
-            "label": "Walnut School Fursungi",
-            "fieldtype": "Data",
-            "width": 175,
-        },
-        {
-            "fieldname": "qty_for_Wakad",
-            "label": "Walnut School Wakad",
-            "fieldtype": "Data",
-            "width": 175,
-        },
+        *school_fields,
         {
             "fieldname": "extra_qty_per_school",
             "label": "Extra Quantity per school",
@@ -116,25 +109,20 @@ def transform_data(program_enrollments, CMAPS):
     # converting the dict array received to a hashmap
     converted_dict = {item["program"]: item["count"] for item in program_enrollments}
     data = []
+    school_fields = generate_school_fields()
     for i in CMAPS:
-        i["qty_for_shivane"] = (
-            converted_dict.get(f'{i.get("class")}-Walnut School at Shivane', 0) or 0
-        )
+        for school in school_fields:
+            print(
+                converted_dict.get(f'{i.get("class")}-{school.get("label")}', 0),
+                "this-is-it",
+            )
+            i[school.get("fieldname")] = (
+                converted_dict.get(f'{i.get("class")}-{school.get("label")}', 0) or 0
+            )
 
-        i["qty_for_wakad"] = (
-            converted_dict.get(f'{i.get("class")}-Walnut School at Wakad', 0) or 0
-        )
-
-        i["qty_for_fursungi"] = (
-            converted_dict.get(f'{i.get("class")}-Walnut School at Fursungi', 0) or 0
-        )
         i["extra_qty_per_school"] = 30
-        i["total_quantity"] = (
-            i["qty_for_shivane"]
-            + i["qty_for_wakad"]
-            + i["qty_for_fursungi"]
-            + i["extra_qty_per_school"]
-        )
+
+        i["total_quantity"] = get_school_fields_sum(i) + i["extra_qty_per_school"]
 
         data.append(i)
     return data
@@ -216,7 +204,9 @@ def execute(filters=None):
 def create_purchase_order(rows):
     if isinstance(rows, str):
         rows = parse_json(rows)
-    material_request = frappe.get_doc(
+
+    school_fields = generate_school_fields()
+    purchase_order = frappe.get_doc(
         {
             "doctype": "Purchase Order",
             "purpose": "Purchase",
@@ -224,15 +214,25 @@ def create_purchase_order(rows):
             "supplier": "Printer",
         }
     )
+
     for row in rows:
-        material_request.append(
-            "items",
-            {
-                "item_code": row.get("product_code"),
-                "qty": row.get("total_quantity"),
-                "schedule_date": frappe.utils.nowdate(),
-                "uom": "Nos",
-            },
-        )
+        for school in school_fields:
+            append_items(purchase_order, row, school)
+
     if len(rows):
-        material_request.insert()
+        purchase_order.insert()
+
+
+def append_items(purchase_order, row, school_field):
+    school_doc = frappe.get_doc("School", school_field.get("label"))
+
+    purchase_order.append(
+        "items",
+        {
+            "item_code": row.get("product_code"),
+            "qty": row.get(school_field.get("fieldname")),
+            "schedule_date": frappe.utils.nowdate(),
+            "warehouse": school_doc.get("warehouse"),
+            "uom": "Nos",
+        },
+    )

@@ -163,6 +163,12 @@ doc_events = {
         "autoname": "edu_quality.overrides_hooks.topic.autoname",
         "after_insert": "edu_quality.overrides_hooks.topic.after_insert",
     },
+    "Purchase Order": {
+        "before_validate": "edu_quality.overrides_hooks.purchase_order.before_validate"
+    },
+    "Purchase Receipt": {
+        "before_validate": "edu_quality.overrides_hooks.purchase_order.before_validate"
+    },
 }
 
 # Scheduled Tasks
