@@ -159,7 +159,6 @@ def import_handler(database,db):
 def insert_student(row, column_names, doctype,total_len,index,db,database):
     set_progress(index + 1, total_len,db, "Student Details")
     frappe_data = dict(zip(column_names, row))
-
     def get_data(key, default=None):
         return frappe_data.get(key, default)
 
@@ -188,10 +187,8 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
 
     category = get_data("category")
 
-    class_admitted_to = get_data("class_name")
-    program = get_program(class_admitted_to, school)
-    division = get_data("division_name")
-
+    class_mgr = get_data("class_name")
+    program = get_program(class_mgr, school)
     new_doc_data = {
         "enabled": 1,
         "imported": 1,
@@ -255,10 +252,11 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
         "single_parent_reason": get_data("single_parent_reason"),
         "doctype": doctype,
         "custom_mgr_status":map_student_status(get_data("status")),
-        "custom_enquired_class":get_adimitad_class(database,get_data("class_admitted_to"))
+        "custom_enquired_class":get_adimitad_class(database,get_data("class_admitted_to")),
+        "custom_mothers_first_name":get_data("mother_f_name"),
     }
-    frappe_data['division'] = division
     frappe.flags.in_import = True
+    frappe.logger("dddd").exception(frappe_data)
     if not frappe.db.exists(doctype, docname):
         new_doc = frappe.get_doc(new_doc_data)
         new_doc.insert(ignore_permissions=True)
@@ -283,8 +281,8 @@ def insert_program_enrollment(student, data=None):
 
         academic_year = get_academic_year(academic_year)
         school = student.school
-        division = data.get("division")
-        division = get_division(division, program, school, academic_year)
+        division = data.get("division_name")
+        division_id = get_division(division, program, school, academic_year)
 
         program_enrollment = frappe.new_doc("Program Enrollment")
         program_enrollment.student = student.name
@@ -294,7 +292,7 @@ def insert_program_enrollment(student, data=None):
         program_enrollment.program = program
         program_enrollment.academic_year = academic_year
         program_enrollment.academic_term = academic_term
-        program_enrollment.student_group = division
+        program_enrollment.student_group = division_id
         program_enrollment.enrollment_date = year_start_date
         program_enrollment.save()
         program_enrollment.submit()
@@ -412,23 +410,14 @@ def is_migration_jobs_queued():
     return any("student_import_" in job for job in jobs)  # noqa: 501
 
 
-
-def get_adimitad_class(database,class_admitted_to):
+def get_adimitad_class(database, class_admitted_to):
     if not class_admitted_to:
         return None
+
     connection = get_connection(database)
-
-    query = f"""SELECT class_name
-            FROM walnut_class_info
-            where class_id = {class_admitted_to}
-            """.format(class_admitted_to=class_admitted_to)
-
     cursor = connection.cursor()
-    cursor.execute(query)
 
-    # fetach only no_of_students number of rows
-    rows = cursor.fetchall()
-    if rows:
-        return rows[0][0]
-    else:
-        return None
+    cursor.execute(f"SELECT class_name FROM walnut_class_info WHERE class_id = {class_admitted_to}")
+    row = cursor.fetchone()
+
+    return row[0] if row else None
