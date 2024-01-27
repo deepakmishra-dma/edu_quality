@@ -346,9 +346,11 @@ def handle_undertaking_submission(**kwargs):
         new_doc.save(ignore_permissions=True)
 
         try:
-            trigger_event(new_doc, "rules_and_regulation_submission")
+            # trigger_event(new_doc, "rules_and_regulation_submission")
+            return True
         except Exception as e:
             frappe.logger("edu_quality").exception(e)
+            return False
 
 
 def get_undertaking_submission_pdf(student):
