@@ -257,7 +257,7 @@ def only_deposit(doc):
         dn=doc.name,
         payment_request_type="Inward",
         is_deposit=True,
-        recipient_id=doc.contact_email,
+        recipient_id=frappe.db.get_value("Student",doc.student,'student_email_id'),
         submit_doc=True
     )
 
