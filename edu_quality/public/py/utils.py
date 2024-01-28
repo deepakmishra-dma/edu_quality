@@ -327,7 +327,7 @@ def handle_undertaking_submission(**kwargs):
 
     if not frappe.db.exists(
         "Rules and Regulation Submission",
-        {"reference_no": student_doc.custom_reference_number},
+        {"student": student_doc.name},
     ):
         new_doc = frappe.new_doc("Rules and Regulation Submission")
         new_doc.student = student_doc.name
