@@ -141,6 +141,7 @@ def update_referral_discount(doc, discount_amount):
                 update_total_discount_in_fees(doc.name)
                 update_payment_plan_after_discount(doc, discount_amount, apply_discount=True,dis={"type":"Referral"})
                 update_payment_request_after_discount(doc)
+                doc.update_split()
                 return 
             
         apply_referral_discount(doc, discount_amount)
@@ -202,6 +203,7 @@ def apply_referral_discount(doc, referral_amount):
                 update_total_discount_in_fees(doc.name)
                 update_payment_plan_after_discount(doc, referral_amount, apply_discount=True,dis={"type":"Referral"})
                 update_payment_request_after_discount(doc)
+                doc.update_split()
                 return 
     except Exception as e:
         frappe.logger('referral').exception(e)

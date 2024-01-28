@@ -2,20 +2,16 @@ import frappe
 import json
 from frappe.utils import flt
 
-def payment_split(fees):
-    generate_split_payment(fees)
 
-@frappe.whitelist(allow_guest=True)
-def test_split(fee_name):
-    fees = frappe.get_doc("Fees", fee_name)
-    return generate_split_payment(fees)
 
-def generate_split_payment(fees):
+def generate_split_payment(fees,update=0):
     """
         {"Term 1": {"RegistrationFeesFursungiPrimary": 90345.0, "KAPIL": 40331.0}, 
         "Term 2": {"KAPIL": 37417.0, "RegistrationFeesFursungiPrimary": 20845.0}, 
         "Deposit": {"RegistrationFeesFursungiPrimary": 69500.0}}
     """
+    if update:
+        fees.reload()
     split_payment = {}
     company_wise = {}
     component_wise = {}
@@ -41,10 +37,14 @@ def generate_split_payment(fees):
             "breakup": cw,
             "is_deposit": apply_deposit
             }
-
-    frappe.db.set_value("Fees",fees.name,'split_payments',json.dumps(split_payment))
-    frappe.db.set_value("Fees",fees.name,'company_split',json.dumps(company_wise))
-    frappe.db.set_value("Fees",fees.name,'component_split',json.dumps(component_wise))
+    if update:
+        frappe.db.set_value("Fees",fees.name,'split_payments',json.dumps(split_payment))
+        frappe.db.set_value("Fees",fees.name,'company_split',json.dumps(company_wise))
+        frappe.db.set_value("Fees",fees.name,'component_split',json.dumps(component_wise))
+    else:
+        fees.split_payments = json.dumps(split_payment)
+        fees.company_split = json.dumps(company_wise)
+        fees.component_split = json.dumps(component_wise)
     return split_payment,company_wise,component_wise
 
 

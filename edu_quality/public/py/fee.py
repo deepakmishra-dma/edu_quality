@@ -10,6 +10,7 @@ from edu_quality.public.py.discount import (
 
 from edu_quality.edu_quality.server_scripts.student_applicant import referal_discount
 
+
 import frappe
 from erpnext.accounts.utils import get_account_currency
 from erpnext.accounts.doctype.payment_request.payment_request import PaymentRequest
@@ -37,8 +38,10 @@ def before_submit(doc, method=None):
     time_dis = time_based_discount(doc)
     ref_dis = referal_discount(doc)
     payplan_discount = update_payment_schedule(doc)
-    payment_split(doc, ref_dis, time_dis, payplan_discount)
-    doc.total_discount = get_all_discounts(doc)
+    doc.generate_split()
+
+    # payment_split(doc, ref_dis, time_dis, payplan_discount)
+    # doc.total_discount = get_all_discounts(doc)
 
 
 def verify_invoice_portion(payment_schedule):
@@ -54,6 +57,8 @@ def verify_payment_term(payment_schedule):
             frappe.throw(title="Payment Schedule", msg="Duplicate Terms not allowed")
         else:
             terms.append(ps.payment_term)
+
+
 
 
 def before_update(doc,method=None):   
