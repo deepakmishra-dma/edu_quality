@@ -744,7 +744,9 @@ def create_lead(kwargs):
             "class_from_lead_source": kwargs.get("class"),
             "custom_previous_school": kwargs.get("current_school", ""),
             "source": source or "Website" or "Others",
-            "custom_preferred_communication_mode": "Call" if kwargs.get("communication_mode", "").lower() == "yes" else "Chat",
+            "custom_preferred_communication_mode": "Call"
+            if kwargs.get("communication_mode", "").lower() == "yes"
+            else "Chat",
             "custom_preferred_communication_day": kwargs.get("communication_day"),
             "custom_preferred_communication_time": kwargs.get("communication_time"),
         }
@@ -775,7 +777,12 @@ def create_student_lead_fb(**kwargs):
 
 
 def process_lead(source, lead, page_location, detail="", kwargs={}):
-    if lead.first_name != "Partial Lead" and not lead.custom_is_partial:
+    if (
+        lead.first_name != "Partial Lead"
+        and not lead.custom_is_partial
+        and lead.status != "Enrolled"
+        and lead.status != "Closed"
+    ):
         lead.status = "Hot"
         lead.custom_re_enquired_count += 1
 
@@ -790,7 +797,8 @@ def process_lead(source, lead, page_location, detail="", kwargs={}):
 
     if source == "school_walkin" or source.lower() == "walkin":
         lead.append("custom_lead_sub_status", {"sub_status": "Hot-School Visit Done"})
-        lead.status = "Hot"
+        if lead.status != "Enrolled" and lead.status != "Closed":
+            lead.status = "Hot"
         insert_walk_in_date(lead)
         # if lead 3 there replace it otherwise find first empty and put there
     if lead.first_name == "Partial_Lead" or lead.custom_is_partial:

@@ -3,6 +3,9 @@ import math, random
 import requests
 import urllib
 import re
+from io import BytesIO
+import base64
+import qrcode
 
 try:
     from nextai.funnel.custom_trigger import trigger_event
@@ -229,7 +232,7 @@ def get_undertaking_template(doc=None, is_deposit=False,fee=None):
         doctype, docname = frappe.get_value("Payment Request", doc.name, ["reference_doctype", "reference_name"])
     if doctype=="Fee Advance":
         class_name, academic_year, student = frappe.get_value(
-            doctype, docname, ["next_program","academic_year","student"]
+            doctype, docname, ["next_program", "academic_year", "student"]
         )
     else:
         class_name, academic_year, student = frappe.get_value(
@@ -287,14 +290,18 @@ def get_submitted_undertaking(payment_request):
         class_name = frappe.get_value("Fees", docname, "program")
     elif doctype == "Fee Advance":
         class_name = frappe.get_value("Fee Advance", docname, "next_program")
-    if frappe.db.exists("Rules and Regulation Submission", {"student": student,"program":class_name},"name"):
+    if frappe.db.exists(
+        "Rules and Regulation Submission",
+        {"student": student, "program": class_name},
+        "name",
+    ):
         # template = frappe.get_value("Rules and Regulation Submission", {"student": student}, 'rules_and_regulation_template')
         # academic_year = frappe.get_value("Rules and Regulation Template", template, 'academic_year')
         # current_academic_year = frappe.get_value("Academic Year", {"custom_current_academic_year": 1}, "name")
         # next_academic_year = frappe.get_value("Academic Year", {"custom_next_academic_year": 1}, "name")
         # return (doctype == "Fees" and academic_year == current_academic_year) or (doctype == "Fee Advance" and academic_year == next_academic_year)
         return True
-    else: 
+    else:
         return False
 
 
@@ -315,12 +322,14 @@ def handle_undertaking_submission(**kwargs):
     elif doctype == "Fee Advance":
         class_name = frappe.get_value("Fee Advance", docname, "next_program")
 
-    template = frappe.get_value("Rules and Regulation Template", {"class": class_name},"name")
+    template = frappe.get_value(
+        "Rules and Regulation Template", {"class": class_name}, "name"
+    )
     student_doc = frappe.get_doc("Student", student)
 
     if not frappe.db.exists(
         "Rules and Regulation Submission",
-        {"reference_no": student_doc.custom_reference_number},
+        {"student": student_doc.name,"program":class_name},
     ):
         new_doc = frappe.new_doc("Rules and Regulation Submission")
         new_doc.student = student_doc.name
@@ -339,9 +348,11 @@ def handle_undertaking_submission(**kwargs):
         new_doc.save(ignore_permissions=True)
 
         try:
-            trigger_event(new_doc, "rules_and_regulation_submission")
+            # trigger_event(new_doc, "rules_and_regulation_submission")
+            return True
         except Exception as e:
             frappe.logger("edu_quality").exception(e)
+            return False
 
 
 def get_undertaking_submission_pdf(student):
@@ -374,7 +385,9 @@ def get_previous_academic_year(academic_year):
     start_year, end_year = map(int, academic_year.split("-"))
     previous_academic_year = f"{start_year - 1}-{end_year - 1}"
 
-    return bool(frappe.get_value("Academic Year", {"name": previous_academic_year}, "name"))
+    return bool(
+        frappe.get_value("Academic Year", {"name": previous_academic_year}, "name")
+    )
 
 
 # edu_quality.public.py.utils.generate_fields_map
@@ -425,3 +438,18 @@ def add_indian_country_code(number):
     except Exception as e:
         frappe.log_error("Error adding indian country code", str(e))
         return number
+
+
+def im_2_b64(image):
+    """
+    Converts image to base 64 jpeg
+    """
+    buff = BytesIO()
+    image.save(buff, format="JPEG")
+    img_str = base64.b64encode(buff.getvalue()).decode("utf-8")
+    return f"data:image/jpeg;base64,{img_str}"
+
+
+def gen_qr_code_b64(str):
+    frappe.errprint("hiya")
+    return im_2_b64(qrcode.make(str))
