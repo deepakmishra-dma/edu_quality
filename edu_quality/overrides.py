@@ -35,6 +35,7 @@ class CustomPaymentRequest(PaymentRequest):
         if self.payment_term:
             company_split = json.loads(fees.company_split)[self.payment_term]
             for split in company_split:
+                split = json.loads(split)
                 paid_amount += split["amount"]
                 payment_entry(
                     self,
