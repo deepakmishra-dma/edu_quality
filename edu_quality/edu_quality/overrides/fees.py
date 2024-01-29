@@ -21,9 +21,16 @@ from frappe.utils import (
 from frappe import _, bold, throw
 from erpnext.accounts.general_ledger import make_gl_entries
 from erpnext.accounts.general_ledger import make_reverse_gl_entries
-
+from edu_quality.edu_quality.server_scripts.payment_split import generate_split_payment
 
 class CustomFees(Fees):
+    def generate_split(self):
+        generate_split_payment(self)
+
+    def update_split(self):
+        generate_split_payment(self,update=1)
+
+
     def make_gl_entries(self):
         if not self.grand_total:
             return

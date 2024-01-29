@@ -35,6 +35,8 @@ def set_property(doctype, fieldname, prop, property_type, value):
 
 
 def migrate():
+    from edu_quality.edu_quality.server_scripts.document_links import update_links
+    update_links()
     set_property("Fees", "due_date", "reqd", "Check", 0)
     set_property("Fees", "fee_schedule", "reqd", "Check", 0)
     set_property("Fee Schedule", "due_date", "reqd", "Check", 0)
