@@ -49,64 +49,68 @@ def generate_split_payment(fees,update=0):
 
 
 def get_split(fees, schedule, case=0,apply_deposit=0):
-    split = {}
-    company_wise = {}
-    component_wise = []
-    for component in fees.components:
-        if case == 1:
-            if component.fee_type == "Regular":
+    try:
+        frappe.logger('split').exception(schedule)
+        split = {}
+        company_wise = {}
+        component_wise = []
+        for component in fees.components:
+            if case == 1:
+                if component.fee_type == "Regular":
+                    continue
+                portion = 100
+            else:
+                portion = schedule.invoice_portion
+
+            amount = flt(component.amount * portion/100,2)
+            if component.fee_type != "Regular":
+                amount = component.amount
+            discount_amount = 0
+            if case != 1:
+                if schedule.discount_breakup:
+                    schedule_breakup = json.loads(schedule.discount_breakup)
+                    component_breakup = json.loads(component.discount_breakup) if component.discount_breakup else {}
+                    for discount in schedule_breakup:
+                        if discount in component_breakup:
+                            amount -= schedule_breakup[discount]['discount_amount']
+                            discount_amount += schedule_breakup[discount]['discount_amount']
+
+            if case == 2 and component.fee_type !='Regular' and apply_deposit==0:
+                continue          
+            elif case==0 and component.fee_type !="Regular":
                 continue
-            portion = 100
-        else:
-            portion = schedule.invoice_portion
 
-        amount = flt(component.amount * portion/100,2)
-        if component.fee_type != "Regular":
-            amount = component.amount
-        discount_amount = 0
-        if case != 1:
-            if schedule.discount_breakup:
-                schedule_breakup = json.loads(schedule.discount_breakup)
-                component_breakup = json.loads(component.discount_breakup) if component.discount_breakup else {}
-                for discount in schedule_breakup:
-                    if discount in component_breakup:
-                        amount -= schedule_breakup[discount]['discount_amount']
-                        discount_amount += schedule_breakup[discount]['discount_amount']
+            label = component.label
+            if label:
+                label = label.split("-")[0].strip()
 
-        if case == 2 and component.fee_type !='Regular' and apply_deposit==0:
-            continue          
-        elif case==0 and component.fee_type !="Regular":
-            continue
+            split[label] = split.get(label, 0) + amount
+            paid_to = frappe.db.get_value("Fee Category",component.fees_category,'custom_account') 
+            paid_from = frappe.db.get_value("Company",component.custom_company,"default_receivable_account")
+            cost_center = frappe.get_value(
+                "Cost Center", {"company": component.custom_company}, ["name"]
+            )
 
-        label = component.label
-        if label:
-            label = label.split("-")[0].strip()
+            component_wise.append({
+                "fees_category":component.fees_category,
+                "company": component.custom_company,
+                "amount": amount,   
+                "discount_amount":discount_amount
+                })
 
-        split[label] = split.get(label, 0) + amount
-        paid_to = frappe.db.get_value("Fee Category",component.fees_category,'custom_account') 
-        paid_from = frappe.db.get_value("Company",component.custom_company,"default_receivable_account")
-        cost_center = frappe.get_value(
-            "Cost Center", {"company": component.custom_company}, ["name"]
-        )
-
-        component_wise.append({
-            "fees_category":component.fees_category,
-            "company": component.custom_company,
-            "amount": amount,   
-            "discount_amount":discount_amount
-            })
-
-        if component.custom_company in company_wise:
-            company_wise[component.custom_company]['amount'] += amount 
-        else:
-            company_wise_breakup = {
-                'amount': amount,
-                'paid_from': paid_from,
-                'paid_to': paid_to,
-                'cost_center': cost_center
-            }
-            company_wise[component.custom_company] = company_wise_breakup
-    return split,company_wise, component_wise
+            if component.custom_company in company_wise:
+                company_wise[component.custom_company]['amount'] += amount 
+            else:
+                company_wise_breakup = {
+                    'amount': amount,
+                    'paid_from': paid_from,
+                    'paid_to': paid_to,
+                    'cost_center': cost_center
+                }
+                company_wise[component.custom_company] = company_wise_breakup
+        return split,company_wise, component_wise
+    except Exception as e:
+        frappe.logger('split').exception(e)
 
 
 def check_deposit_combination(fees):
