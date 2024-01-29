@@ -34,34 +34,33 @@ class CustomPaymentRequest(PaymentRequest):
         paid_amount = 0
         if self.payment_term:
             company_split = json.loads(fees.company_split)[self.payment_term]
-            for split in company_split:
-                split = json.loads(split)
-                paid_amount += split["amount"]
+            for company in company_split:
+                paid_amount += company_split[company]["amount"]
                 payment_entry(
                     self,
                     fees,
-                    split["amount"],
-                    split["paid_from"],
-                    split["paid_to"],
-                    split["company"],
-                    split["cost_center"],
-                    split.get("fee_categories")
+                    company_split[company]["amount"],
+                    company_split[company]["paid_from"],
+                    company_split[company]["paid_to"],
+                    company,
+                    company_split[company]["cost_center"],
+                    company_split[company].get("fee_categories")
                 )
             mark_payment_term_paid(fees, self.payment_term, self.grand_total)
         else:
             company_split = json.loads(fees.company_split).get("Deposit")
             if company_split:
-                for split in company_split:
-                    paid_amount += split["amount"]
+                for company in company_split:
+                    paid_amount += company_split[company]["amount"]
                     payment_entry(
                         self,
                         fees,
-                        split["amount"],
-                        split["paid_from"],
-                        split["paid_to"],
-                        split["company"],
-                        split["cost_center"],
-                        split.get("fee_categories")
+                        company_split[company]["amount"],
+                        company_split[company]["paid_from"],
+                        company_split[company]["paid_to"],
+                        company,
+                        company_split[company]["cost_center"],
+                        company_split[company].get("fee_categories")
                     )
 
         outstanding_amount = flt(fees.outstanding_amount) - paid_amount
