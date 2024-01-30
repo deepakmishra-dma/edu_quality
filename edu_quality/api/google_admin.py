@@ -5,6 +5,7 @@ from requests import get, post
 from googleapiclient.errors import HttpError
 import os
 import secrets
+from edu_quality.public.py.utils import add_indian_country_code
 
 PASSWORD_LENGTH = 12
 
@@ -28,37 +29,40 @@ def get_google_users():
     return admin_obj.users().list()
 
 
-
-def create_google_user(school_code, refno, first_name, last_name, recovery_mail):
+def create_google_user(email_key, first_name, last_name, recovery_mail, phone_no):
     user_service = get_google_admin_object()
-    print(user_service)
-    new_user = {
-        "primaryEmail": f"{school_code}-{refno}@walnutedu.in",
-        "name": {
-            "givenName": first_name,
-            "familyName": last_name,
-        },
-        "password": "walnut@12345",
-        "changePasswordAtNextLogin": True,
-        "ipWhitelisted": False,
-        "recoveryEmail": recovery_mail,
-        "orgUnitPath": f"/Walnut School at Wakad/Students",
-        # "domain": "walnutedu.in",
-        # "kind": "admin#directory#user",
-    }
-    # result = (
-    #     user_service.users()
-    #     .get(userKey="shbb04-demo@walnutedu.in", domain="walnutedu.in")
-    #     .execute()
-    # )
-    # print(result["primaryEmail"], result["name"]["fullName"])
-    # result = user_service.users().list(domain="walnutedu.in").execute()
-    # users = result.get("users", [])
-    # return users
-    return (
+    existing_user = (
         user_service.users()
-        .insert(
-            body=new_user,
+        .get(
+            userKey=f"{email_key}@walnutedu.in",
         )
         .execute()
     )
+    if existing_user.get("exception"):
+        new_user = {
+            "primaryEmail": f"{email_key}@walnutedu.in",
+            "name": {
+                "givenName": first_name,
+                "familyName": last_name,
+            },
+            # "recoveryPhone": add_indian_country_code(phone_no, True),
+            "password": "walnut@12345",
+            "changePasswordAtNextLogin": True,
+            "ipWhitelisted": False,
+            # "recoveryEmail": recovery_mail,
+            "orgUnitPath": f"/Walnut School at Wakad/Students",
+        }
+        if recovery_mail:
+            new_user["recoveryEmail"] = recovery_mail
+        
+        if phone_no:
+            new_user["recoveryPhone"] = add_indian_country_code(phone_no, True)
+            
+        return (
+            user_service.users()
+            .insert(
+                body=new_user,
+            )
+            .execute()
+        )
+    return existing_user
