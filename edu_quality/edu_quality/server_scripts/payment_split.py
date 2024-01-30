@@ -37,6 +37,16 @@ def generate_split_payment(fees,update=0):
             "breakup": cw,
             "is_deposit": apply_deposit
             }
+        total = 0
+        for i in split_payment[schedule.payment_term]:
+            total += split_payment[schedule.payment_term][i]
+        if schedule.payment_amount != total:
+            if update:
+                frappe.db.set_value("Payment Schedule", schedule.name, 'payment_amount',total)
+                frappe.db.set_value("Payment Schedule", schedule.name, 'outstanding',total)
+            else:
+                schedule.payment_amount = total
+                schedule.outstanding = total
     if update:
         frappe.db.set_value("Fees",fees.name,'split_payments',json.dumps(split_payment))
         frappe.db.set_value("Fees",fees.name,'company_split',json.dumps(company_wise))
@@ -50,7 +60,6 @@ def generate_split_payment(fees,update=0):
 
 def get_split(fees, schedule, case=0,apply_deposit=0):
     try:
-        frappe.logger('split').exception(schedule)
         split = {}
         company_wise = {}
         component_wise = []

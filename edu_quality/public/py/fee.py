@@ -40,7 +40,7 @@ def before_submit(doc, method=None):
     doc.generate_split()
 
     # payment_split(doc, ref_dis, time_dis, payplan_discount)
-    # doc.total_discount = get_all_discounts(doc)
+    doc.total_discount = get_all_discounts(doc)
 
 
 def verify_invoice_portion(payment_schedule):
@@ -64,10 +64,10 @@ def before_update(doc, method=None):
     if doc.parent_otp == 0 and old_doc.payment_schedule != doc.payment_schedule:
         if old_doc.payment_plan == doc.payment_plan:
             doc.need_otp = 1
-            frappe.msgprint(
-                title="Payment Schedule",
-                msg="Please Verify parent OTP to Update Payment Schedule",
-            )
+            # frappe.msgprint(
+            #     title="Payment Schedule",
+            #     msg="Please Verify parent OTP to Update Payment Schedule",
+            # )
             return
 
     if old_doc.payment_plan != doc.payment_plan:
