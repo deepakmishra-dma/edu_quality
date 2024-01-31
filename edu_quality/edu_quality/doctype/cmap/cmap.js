@@ -73,7 +73,6 @@ frappe.ui.form.on("CMAP", {
             return {
                 "filters": {
                     "parent_item_group": `CMAP`,
-                    "item_group": ""
                 }
             };
         }
