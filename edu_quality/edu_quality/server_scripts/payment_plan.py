@@ -4,6 +4,7 @@ from datetime import datetime
 from edu_quality.public.py.discount import add_discount, get_all_discounts
 import json
 from frappe.utils import flt
+from edu_quality.public.py.payment_request import update_payment_request_after_discount
 
 
 def get_deposit_amount(fees):
@@ -30,6 +31,7 @@ def change_payment_plan(payment_plan,fee_name):
     remove_payment_plan_discount(doc)
     doc.reload()
     update_payment_plan(payment_plan,doc)
+    update_payment_request_after_discount(doc)
 
 def remove_payment_plan_discount(doc):
     discount_configs = frappe.get_all("Discount Configuration",
