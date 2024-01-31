@@ -42,18 +42,19 @@ frappe.ui.form.on("Lead", {
             frm.clear_custom_buttons()
 
             // <div style="display:flex;align-items:center;gap:4px;"><img alt="open whatsapp ui" src="/assets/edu_quality/img/whatsapp-icon.png" style="height:100%;object-fit:contain;background-repeat:no-repeat;max-height:19.5px" /><div>Open in Whatsapp UI</div></div>`
-            frm.add_custom_button(__(`Open in Whatsapp UI`), function () {
-                frappe.call({
-                    "method": "frappe.desk.form.linked_with.get",
-                    args: {
-                        docname: frm.doc.name,
-                        doctype: "Lead"
-                    }, callback: (data) => {
-                        if (data?.message && data.message.Contact && data.message.Contact?.[0]?.name) {
-                            window.location.href = window.location.origin + "/app/whatsapp_manager?user=" + data.message.Contact?.[0]?.name
-                        }
-                    }
+            frm.add_custom_button(__(`Open in Whatsapp UI`), async function () {
+                const contactsWithPhone = await fetch(`http://localhost:8004/api/resource/Contact?fields=[%22name%22]&filters=[[%22mobile_no%22,%22like%22,%22%25${frm.doc.fathers_phone}%25%22]]&order_by="creation%20desc"&limit=1`, {
+                    headers: (() => {
+                        const headers = new Headers()
+                        headers.append('X-Frappe-CSRF-Token', frappe.csrf_token)
+                        return headers;
+                    })(),
                 })
+                const contacts = await contactsWithPhone.json()
+                if (contacts?.data && contacts?.data?.length) {
+                    window.location.href = window.location.origin + "/app/whatsapp_manager?user=" + contacts?.data?.[0]?.name
+                }
+                // })
             }, '', "Open in whatsapp ui")
 
             frm.add_custom_button(__("Push To MGR"), function () {
@@ -93,7 +94,7 @@ frappe.ui.form.on("Lead", {
 
     },
 
-    validate: function (frm) { 
+    validate: function (frm) {
         const temp_fathers_phone = frm.doc.fathers_phone.replace(/\s/g, '');
         const re = /^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/
         if (!re.test(temp_fathers_phone)) {
