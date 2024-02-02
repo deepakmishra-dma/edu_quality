@@ -22,7 +22,16 @@ from frappe.utils import (
     today,
 )
 from edu_quality.public.py.student import set_progress
+from edu_quality.edu_quality.server_scripts.payment_split import generate_split_payment
+
 class FeeAdvance(AccountsController):
+    def generate_split(self):
+        generate_split_payment(self)
+
+    def update_split(self):
+        generate_split_payment(self,update=1)
+
+
     def before_save(self):
         fee_structure = frappe.get_doc("Fee Structure", self.fee_structure)
         percent = get_percent(self.payment_term, self.payment_plan)
@@ -34,6 +43,8 @@ class FeeAdvance(AccountsController):
                 rte_excempt = frappe.get_value("Fee Category",component.fees_category, "rte_excempt")
                 if rte_excempt:
                     continue
+            label = frappe.get_value("Fee Category",component.fees_category, "custom_label")
+            default_account = frappe.get_value("Fees Settings", None, "default_account")
 
             component_amount = component.amount * percent / 100
             amount += component_amount
@@ -44,6 +55,9 @@ class FeeAdvance(AccountsController):
                     "description": component.description,
                     "amount": component_amount,
                     "custom_company": component.custom_company,
+                    "label": label or default_account,
+                    "custom_company": component.custom_company,
+                    "fee_type": component.fee_type,
                 },
             )
 
@@ -51,7 +65,7 @@ class FeeAdvance(AccountsController):
         self.outstanding_amount = amount
 
     def before_submit(self):
-        payment_split(self)
+        self.generate_split()
 
     def validate(self):
         self.set_missing_accounts_and_fields()
@@ -67,6 +81,7 @@ class FeeAdvance(AccountsController):
                 dt=self.doctype,
                 dn=self.name,
                 recipient_id=student_email,
+                payment_term=self.payment_term,
                 submit_doc=True,
             )
     
