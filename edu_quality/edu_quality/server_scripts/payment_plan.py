@@ -2,7 +2,9 @@ import frappe
 from edu_quality.public.py.discount import remove_discount
 from datetime import datetime
 from edu_quality.public.py.discount import add_discount, get_all_discounts
-
+import json
+from frappe.utils import flt
+from edu_quality.public.py.payment_request import update_payment_request_after_discount
 
 
 def get_deposit_amount(fees):
@@ -29,6 +31,7 @@ def change_payment_plan(payment_plan,fee_name):
     remove_payment_plan_discount(doc)
     doc.reload()
     update_payment_plan(payment_plan,doc)
+    update_payment_request_after_discount(doc)
 
 def remove_payment_plan_discount(doc):
     discount_configs = frappe.get_all("Discount Configuration",
@@ -41,17 +44,39 @@ def remove_payment_plan_discount(doc):
                 frappe.response['message'] = f"{discount_config.name} Discount removed successfully"
                 return
 
+def get_term_wise_discounts(fees,payment_plan):
+    discounts = {}
+    terms = [schedule.payment_term for schedule in payment_plan.payment_schedule]
+    for component in fees.components:
+        if component.discount_breakup:
+            discount = json.loads(component.discount_breakup)
+            for dis in discount:
+                if "payment" not in str(dis).lower():
+                    if dis == "Referral":
+                        discounts[terms[0]] = {
+                            dis: discount[dis]
+                        }
+                    else:
+                        for schedule in payment_plan.payment_schedule:
+                            discounts[schedule.payment_term] = {
+                                    dis: {
+                                        "discount_amount": flt(discount[dis]["discount_amount"] * schedule.invoice_portion/100,2)
+                                    }
+                                }
+    return discounts
+                    
+    
+
+
 @frappe.whitelist()
 def update_payment_plan(payment_plan, doc):
     deposit,apply_deposit = get_deposit_amount(doc)
     payment_plan = frappe.get_doc("Payment Plan", payment_plan)
-    discount = update_payplan_discount(doc, payment_plan)
-    if discount:
-        add_discount(doc.name, discount[1].name,fees=doc)
-        discount_amount = discount[0]
-    doc.total_discount = get_all_discounts(doc)
+    term_discounts = get_term_wise_discounts(doc,payment_plan)
+    frappe.logger('breakup').exception(term_discounts)
+    doc.payment_plan = payment_plan.name
     doc.payment_schedule = []
-
+   
     other_amounts = doc.grand_total - deposit
     for i, ps in enumerate(payment_plan.payment_schedule):
         description = f"Installment {i+1}"
@@ -59,18 +84,33 @@ def update_payment_plan(payment_plan, doc):
         if i == 0 and apply_deposit:
             description += " and Deposit/Registration"
             amount += deposit
-        if i == len(payment_plan.payment_schedule)-1 and discount:
-            amount -= discount_amount
+        # if i == len(payment_plan.payment_schedule)-1 and discount:
+        #     amount -= discount_amount
+        breakup = term_discounts.get(ps.payment_term,{})
         doc.append("payment_schedule",{
             'payment_term':ps.payment_term,
             'description': description,
             'invoice_portion': ps.invoice_portion,
             'payment_amount':amount,
             'outstanding':amount,
-            'due_date':ps.due_date
+            'due_date':ps.due_date,
+            'discount_breakup': json.dumps(breakup)
         })
-    doc.payment_plan = payment_plan.name
+    doc.total_discount = get_all_discounts(doc)
     doc.save(ignore_permissions=True)
+    discount = update_payplan_discount(doc, payment_plan)
+    if discount:
+        add_discount(doc.name, discount[1].name,fees=doc)
+        doc.reload()
+        discount_amount = discount[0]
+    doc.reload()
+    doc.total_discount = get_all_discounts(doc)
+    doc.save(ignore_permissions=True)
+    doc.update_split()
+    
+
+
+    
     frappe.response["message"] = "Payment Plan Updated Successfully!"
 
 
