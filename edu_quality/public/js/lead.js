@@ -43,7 +43,7 @@ frappe.ui.form.on("Lead", {
 
             // <div style="display:flex;align-items:center;gap:4px;"><img alt="open whatsapp ui" src="/assets/edu_quality/img/whatsapp-icon.png" style="height:100%;object-fit:contain;background-repeat:no-repeat;max-height:19.5px" /><div>Open in Whatsapp UI</div></div>`
             frm.add_custom_button(__(`Open in Whatsapp UI`), async function () {
-                const contactsWithPhone = await fetch(`/api/resource/Contact?fields=[%22name%22]&filters=[[%22mobile_no%22,%22like%22,%22%25${frm.doc.fathers_phone}%25%22]]&order_by="creation%20desc"&limit=1`, {
+                const contactsWithPhone = await fetch(`/api/resource/Contact?fields=[%22name%22]&filters=[[%22mobile_no%22,%22like%22,%22%25${frm.doc.fathers_phone}%25%22]]&order_by=creation%20desc&limit=1`, {
                     headers: (() => {
                         const headers = new Headers()
                         headers.append('X-Frappe-CSRF-Token', frappe.csrf_token)
