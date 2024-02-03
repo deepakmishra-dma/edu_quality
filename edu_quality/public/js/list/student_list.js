@@ -25,7 +25,7 @@ frappe.listview_settings['Student'] = {
         //     frappe.confirm('Are you sure you want to proceed?',
         //         () => {
         //             frappe.call({
-        //                 method: "edu_quality.public.py.student.import_student",
+        //                 method: "edu_quality.common.utils.student_import.student_import.import_student",
         //                 type: "POST",
         //                 callback: function (response) {
         //                     console.log(response);

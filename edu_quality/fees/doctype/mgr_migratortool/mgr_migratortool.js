@@ -9,7 +9,7 @@ frappe.ui.form.on('MGR MigratorTool', {
 		frappe.confirm('Are you sure you want to proceed?',
                 () => {
                     frappe.call({
-                        method: "edu_quality.public.py.student.import_student",
+                        method: "edu_quality.common.utils.student_import.student_import.import_student",
                         type: "POST",
                         callback: function (response) {
                             console.log(response);
@@ -32,7 +32,7 @@ frappe.ui.form.on('MGR MigratorTool', {
 		frappe.confirm('Are you sure you want to proceed?',
                 () => {
                     frappe.call({
-                        method: "edu_quality.fees.mgr_fees.fee_advance",
+                        method: "edu_quality.common.utils.fee_import.fee_import.fee_advance",
                         type: "POST",
                         callback: function (response) {
                             console.log(response);
@@ -56,7 +56,7 @@ frappe.ui.form.on('MGR MigratorTool', {
 function addProgressButton(frm) {
     function showProgress() { 
       frappe.call({
-        method: 'edu_quality.public.py.student.get_migration_progress',
+        method: 'edu_quality.common.utils.progress.get_migration_progress',
         freeze: true,
         callback: res => {
             frm.set_intro('');

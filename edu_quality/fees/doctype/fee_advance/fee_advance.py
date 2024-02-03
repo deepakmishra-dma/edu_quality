@@ -21,7 +21,7 @@ from frappe.utils import (
     formatdate,
     today,
 )
-from edu_quality.public.py.student import set_progress
+from edu_quality.common.utils.progress import set_progress
 class FeeAdvance(AccountsController):
     def before_save(self):
         fee_structure = frappe.get_doc("Fee Structure", self.fee_structure)
