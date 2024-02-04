@@ -1,6 +1,7 @@
 from edu_quality.overrides import make_payment_request
 import time 
 from frappe.utils import today
+import frappe
 
 def autoname(doc, method=None):
     school_prefixes = {
