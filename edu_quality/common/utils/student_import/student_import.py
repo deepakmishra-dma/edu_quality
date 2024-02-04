@@ -410,7 +410,6 @@ def get_sql_query():
                     wsi.ref_parent_name,
                     wsi.ref_parent_no,
                     wsi.ref_source_name,
-                    wsi.fee_not_paid_cancellation,
                     WCI.class_name as admission_class,
                     WCC.class_name as admitted_class,
                     WCD.division_name,
