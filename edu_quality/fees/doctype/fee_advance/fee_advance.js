@@ -16,7 +16,7 @@ frappe.ui.form.on('Fee Advance', {
 				frappe.set_route("query-report", "General Ledger");
 			}, __("View"));
 			frm.add_custom_button(__("Payment Entry"), function() {
-				frappe.set_route("List", "Payment Entry", {"Payment Entry Reference.reference_name": frm.doc.name});
+				frappe.set_route("List", "Payment Entry", {"reference_name": frm.doc.name});
 			}, __("View"));
             frm.add_custom_button(__("Payment Request"), function() {
 				frappe.set_route("List", "Payment Request", {"Payment Request Reference.reference_name": frm.doc.name});

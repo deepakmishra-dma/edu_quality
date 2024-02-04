@@ -21,8 +21,10 @@ from frappe.utils import (
     formatdate,
     today,
 )
+
 from edu_quality.public.py.student import set_progress
 from edu_quality.edu_quality.server_scripts.payment_split import generate_split_payment
+
 
 class FeeAdvance(AccountsController):
     def generate_split(self):
