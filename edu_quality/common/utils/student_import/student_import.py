@@ -146,9 +146,10 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
     if not frappe.db.exists(doctype, docname):
         new_doc = frappe.get_doc(new_doc_data)
         new_doc.insert(ignore_permissions=True)
-        insert_program_enrollment(new_doc, frappe_data)
+        if map_student_status(get_data("status")) !="Cancelled":
+            insert_program_enrollment(new_doc, frappe_data)
     else:
-        if not frappe.db.exists("Program Enrollment", {"student":docname,"program":program}):
+        if not frappe.db.exists("Program Enrollment", {"student":docname,"program":program}) and map_student_status(get_data("status")) !="Cancelled":
             old_doc = frappe.get_doc(doctype, docname)
             insert_program_enrollment(old_doc, frappe_data)
     frappe.flags.in_import = False
@@ -161,7 +162,11 @@ def map_student_status(id):
 def insert_program_enrollment(student, data=None):
     try:
         program = student.seeking_admission_in_class
-        academic_year = data.get("acadamic_year_division")
+        if data.get("status")==1:
+            academic_year = "2024-2025"
+        else:
+            academic_year = "2023-2024"
+        # academic_year = data.get("acadamic_year_division")
         academic_term = frappe.get_value("Academic Term", {"academic_year": academic_year})
         year_start_date = frappe.get_value("Academic Year",academic_year,"year_start_date")
 
@@ -401,7 +406,6 @@ def get_sql_query():
                     wsi.next_cancel_letter,
                     wsi.cancel_photo_id,
                     wsi.tiffin_rack_no,
-                    wsi.passout_year,
                     wsi.walnut_enquiry,
                     wsi.ref_parent_name,
                     wsi.ref_parent_no,
