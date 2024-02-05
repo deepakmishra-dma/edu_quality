@@ -228,7 +228,8 @@ def payment_entry(doc, ref_doc, party_amount, paid_from, paid_to, company, cost_
                     },
                 )
     payment_entry.update({
-        'fees': ref_doc.name,
+        'reference_doctype': ref_doc.doctype, # 'Fees' or 'Fee Advance'
+        'reference_name': ref_doc.name,
         'payment_request': doc.name
     })
 
@@ -416,6 +417,7 @@ def make_payment_request(**args):
                 "party_type": args.get("party_type") or "Customer",
                 "party": args.get("party") or ref_doc.get("customer"),
                 "bank_account": bank_account,
+                "payment_term": args.payment_term
             }
         )
 
