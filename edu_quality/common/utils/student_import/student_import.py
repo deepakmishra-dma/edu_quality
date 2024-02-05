@@ -420,6 +420,5 @@ def get_sql_query():
                 INNER JOIN walnut_class_info WCI ON WCI.class_id = wsi.admission_to 
                 INNER JOIN walnut_class_info WCC ON WCC.class_id = wsi.class_admitted_to
                 INNER JOIN division_master WCD ON WCD.division_id = wsi.division;
-                WHERE wsi.refno = 'GA01'
                 """
     return query
