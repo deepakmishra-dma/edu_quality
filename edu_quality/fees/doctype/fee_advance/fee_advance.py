@@ -22,7 +22,7 @@ from frappe.utils import (
     today,
 )
 
-from edu_quality.public.py.student import set_progress
+from edu_quality.common.utils.progress import set_progress
 from edu_quality.edu_quality.server_scripts.payment_split import generate_split_payment
 
 
@@ -286,6 +286,8 @@ def create_fee_advance(student, program_enrollment,all_len=None,index=None):
     program_enrollment: Previous Program Enrollment Doc
     """
     try:
+        if not frappe.get_value("Program", program_enrollment.program, "custom_is_passing_out_class"):
+            frappe.log_error(title="Fee Advance",message="Since there is not a class scheduled for {class_name}, we will not be creating a fee advance.".format(class_name =program_enrollment.program))
         if all_len and index:
             set_progress(index + 1, all_len,index, "Student Fees Details")
         school = frappe.get_value("Program", program_enrollment.program,"school")
@@ -322,9 +324,9 @@ def create_fee_advance(student, program_enrollment,all_len=None,index=None):
         )
 
 def get_next_program(program, school):
-    program_name = frappe.get_value("Program", program, "program_name")
-    next_program = int(program_name) + 1
-    next_program = frappe.get_value("Program", {"program_name": str(next_program), "school":school})
+    sequence = frappe.get_value("Program", program, "sequence")
+    next_program = int(sequence) + 1
+    next_program = frappe.get_value("Program", {"sequence": str(next_program), "school":school})
     return next_program
 
 
