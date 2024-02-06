@@ -55,6 +55,9 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
     student_name = f"{first_name} {middle_name or ''} {last_name}"
     student_email_id = f"{str(first_name).lower().replace(' ', '')}{random.randint(100, 999)}@walnutedu.in"
 
+    mother_name = get_data('mother_f_name')
+    father_name = get_data('father_f_name')
+
     school_prefixes = {"Walnut School at Fursungi": "FU", "Walnut School at Shivane": "SH", "Walnut School at Wakad": "WA"}
     school_ids = {4: "Walnut School at Fursungi", 2: "Walnut School at Shivane", 5: "Walnut School at Wakad"}
     school_id = get_data("school_id")
@@ -67,7 +70,6 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
     country = "India" if get_data("country") not in countries else get_data("country")
 
     date_of_leaving = get_data("leaving_date")
-    joining_date = date_of_leaving - frappe.utils.datetime.timedelta(days=365) if date_of_leaving else None
 
     address_line_2 = f"{get_data('survey_number')}, {get_data('sub_area')}, {get_data('road')}, {get_data('area')}"
 
@@ -98,7 +100,6 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
         "country": country,
         "landmark": get_data("landmark"),
         "student_email_id": student_email_id,
-        # "joining_date": joining_date,
         "date_of_leaving": date_of_leaving,
         "student_name": student_name,
         "school": school,
@@ -139,6 +140,7 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
         "doctype": doctype,
         "student_status":map_student_status(get_data("status")),
         "enquired_class":get_data("admitted_class"),
+        "guardian": get_guardian(father_name, mother_name),
     }
     frappe.flags.in_import = True
     frappe.logger("dddd").exception(frappe_data)
@@ -271,6 +273,32 @@ def get_academic_year(academic_year):
     doc.insert(ignore_permissions=True)
     return doc.name
 
+
+def create_guardian(first_name, relation, middle_name=None, last_name=None, mobile_no=None, email_id=None, education=None, occupation=None, annual_income=None):
+    guardian = frappe.get_value("Guardian", {"guardian_name": first_name})
+    if not guardian:
+        guardian = frappe.new_doc("Guardian", {
+            "guardian_name": first_name,
+            "first_name": first_name,
+            "middle_name": middle_name,
+            "last_name": last_name,
+            "mobile_number": mobile_no,
+            "email_address": email_id,
+            "education": education,
+            "occupation": occupation,
+            "annual_income": annual_income
+        })
+        guardian.insert(ignore_permissions=True)
+    return {
+        "guardian": guardian,
+        "guardian_name": first_name,
+        "guardian_relation": relation,
+    }
+
+def get_guardian(father_name, mother_name):
+    return [create_guardian(name, relation) for name, relation in [(father_name, "Father"), (mother_name, "Mother")] if name]
+
+    
 
 def get_sql_query():
     query = """SELECT
