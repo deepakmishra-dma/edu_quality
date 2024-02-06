@@ -128,8 +128,8 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
         "single_parent_reason": get_data("single_parent_reason"),
         "religion": get_data("religion"),
         "reference_number": get_data("refno"),
-        "custom_referrer_school": referral_school,
-        "custom_referred_by": get_data("refer_by"),
+        "referrer_school": referral_school,
+        "referred_by": get_data("refer_by"),
         "day_care_contact": get_data("day_care_contact"),
         "bus_service_required": get_data("bus_service_required"),
         "has_allergies": 1 if get_data("allergies") else 0,
@@ -137,9 +137,8 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
         "parent_divorced": get_data("if_divorced"),
         "single_parent_reason": get_data("single_parent_reason"),
         "doctype": doctype,
-        "custom_mgr_status":map_student_status(get_data("status")),
-        "custom_enquired_class":get_data("admitted_class"),
-        "custom_mothers_first_name":get_data("mother_f_name"),
+        "student_status":map_student_status(get_data("status")),
+        "enquired_class":get_data("admitted_class"),
     }
     frappe.flags.in_import = True
     frappe.logger("dddd").exception(frappe_data)

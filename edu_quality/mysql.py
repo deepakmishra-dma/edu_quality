@@ -101,7 +101,7 @@ def sync_data(host, user, password, database, mysql_table, doctype, school):
             if not frappe.db.exists(doctype, docname):
                 new_doc = frappe.get_doc(
                     {
-                        "custom_reference_number": refno,
+                        "reference_number": refno,
                         "imported": 1,
                         "form_code": form_code,
                         "enabled": 1,

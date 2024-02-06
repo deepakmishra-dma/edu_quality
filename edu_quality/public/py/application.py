@@ -126,8 +126,8 @@ def enroll_student(source_name):
         ignore_permissions=True,
     )
     student_applicant = frappe.get_doc("Student Applicant", source_name)
-    if student_applicant.custom_referred_by:
-        add_referral_discount(student_applicant.custom_referred_by)
+    if student_applicant.referred_by:
+        add_referral_discount(student_applicant.referred_by)
 
     fee_schedule = frappe.get_doc("Fee Schedule", student_applicant.fee_schedule)
     student_group = get_student_group(student_applicant)
