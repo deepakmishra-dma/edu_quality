@@ -70,6 +70,7 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
     country = "India" if get_data("country") not in countries else get_data("country")
 
     date_of_leaving = get_data("leaving_date")
+    joining_date = get_data("admission_date")
 
     address_line_2 = f"{get_data('survey_number')}, {get_data('sub_area')}, {get_data('road')}, {get_data('area')}"
 
@@ -101,6 +102,7 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
         "landmark": get_data("landmark"),
         "student_email_id": student_email_id,
         "date_of_leaving": date_of_leaving,
+        "joining_date": joining_date,
         "student_name": student_name,
         "school": school,
         "aadhaar_card_number": get_data("adhar_card_no"),
@@ -441,11 +443,13 @@ def get_sql_query():
                     WCC.class_name as admitted_class,
                     WCD.division_name,
                     WCD.acadamic_year as acadamic_year_division
+                    WAD.admission_date,
                 FROM
                     walnut_student_info wsi
 
                 INNER JOIN walnut_class_info WCI ON WCI.class_id = wsi.admission_to 
                 INNER JOIN walnut_class_info WCC ON WCC.class_id = wsi.class_admitted_to
                 INNER JOIN division_master WCD ON WCD.division_id = wsi.division;
+                INNER JOIN stud_admission_details WAD ON WAD.refno = wsi.refno;
                 """
     return query
