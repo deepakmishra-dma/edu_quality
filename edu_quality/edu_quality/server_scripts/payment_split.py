@@ -58,6 +58,7 @@ def generate_split_payment(fees,update=0):
         component_wise[term] = {
             "due_date": str(fees.due_date),
             "breakup": components,
+            "is_deposit": False
         }
 
     if update:
