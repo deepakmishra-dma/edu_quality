@@ -142,7 +142,7 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
         "doctype": doctype,
         "student_status":map_student_status(get_data("status")),
         "enquired_class":get_data("admitted_class"),
-        "guardian": get_guardian(father_name, mother_name),
+        # "guardians": get_guardian(father_name, mother_name),
     }
     frappe.flags.in_import = True
     frappe.logger("dddd").exception(frappe_data)
@@ -281,14 +281,11 @@ def create_guardian(first_name, relation, middle_name=None, last_name=None, mobi
     if not guardian:
         guardian = frappe.new_doc("Guardian", {
             "guardian_name": first_name,
-            "first_name": first_name,
-            "middle_name": middle_name,
             "last_name": last_name,
             "mobile_number": mobile_no,
             "email_address": email_id,
             "education": education,
             "occupation": occupation,
-            "annual_income": annual_income
         })
         guardian.insert(ignore_permissions=True)
     return {
