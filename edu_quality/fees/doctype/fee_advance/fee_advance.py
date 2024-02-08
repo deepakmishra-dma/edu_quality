@@ -288,6 +288,7 @@ def create_fee_advance(student, program_enrollment,all_len=None,index=None):
     try:
         if not frappe.get_value("Program", program_enrollment.program, "custom_is_passing_out_class"):
             frappe.log_error(title="Fee Advance",message="Since there is not a class scheduled for {class_name}, we will not be creating a fee advance.".format(class_name =program_enrollment.program))
+            return 
         if all_len and index:
             set_progress(index + 1, all_len,index, "Student Fees Details")
         school = frappe.get_value("Program", program_enrollment.program,"school")
