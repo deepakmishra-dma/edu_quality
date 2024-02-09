@@ -35,7 +35,7 @@ def get_payment_details(**kwargs):
             company = fees.company
         elif fees.doctype == "Fee Advance":
             student_name = frappe.db.get_value("Student", fees.student, "student_name")
-            company = fees.institution
+            company = fees.company
     else:
         student_name = fees.student_name
         due_date = fees.due_date
