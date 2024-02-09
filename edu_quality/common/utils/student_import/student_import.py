@@ -439,14 +439,14 @@ def get_sql_query():
                     WCI.class_name as admission_class,
                     WCC.class_name as admitted_class,
                     WCD.division_name,
-                    WCD.acadamic_year as acadamic_year_division
-                    WAD.admission_date,
+                    WCD.acadamic_year as acadamic_year_division,
+                    WAD.admission_date
                 FROM
                     walnut_student_info wsi
 
                 INNER JOIN walnut_class_info WCI ON WCI.class_id = wsi.admission_to 
                 INNER JOIN walnut_class_info WCC ON WCC.class_id = wsi.class_admitted_to
-                INNER JOIN division_master WCD ON WCD.division_id = wsi.division;
-                INNER JOIN stud_admission_details WAD ON WAD.refno = wsi.refno;
+                INNER JOIN division_master WCD ON WCD.division_id = wsi.division
+                INNER JOIN stud_admission_details WAD ON WAD.ref_no = wsi.refno;
                 """
     return query
