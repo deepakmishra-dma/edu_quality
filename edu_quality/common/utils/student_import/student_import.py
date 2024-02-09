@@ -127,7 +127,7 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
         "is_student_disabled": 1 if get_data("student_isdisability") else 0,
         "student_disability_name": get_data("student_disability_name"),
         "is_sibling_in_school": get_data("student_bro_sis_inschool"),
-        "is_rte_student": get_data("stud_rte"),
+        "is_rte": get_data("stud_rte"),
         "single_parent_reason": get_data("single_parent_reason"),
         "religion": get_data("religion"),
         "reference_number": get_data("refno"),
@@ -142,7 +142,16 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
         "doctype": doctype,
         "student_status":map_student_status(get_data("status")),
         "enquired_class":get_data("admitted_class"),
-        # "guardians": get_guardian(father_name, mother_name),
+        "gr_number":get_data("gr_number"),
+        "gr_book_number":get_data("gr_book_number"),
+        "height":get_data("height_start"),
+        "weight":get_data("weight_start"),
+        "birth_place":get_data("birthplace"),
+        "pickup_bus":get_data("pickup_bus"),
+        "drop_bus":get_data("drop_bus"),
+        "confirm_for_next_year":get_data("confirm_next_year"),
+        "last_school_attended": get_data("student_last_school_name"),
+        "guardians": get_guardian(father_name, mother_name),
     }
     frappe.flags.in_import = True
     frappe.logger("dddd").exception(frappe_data)
@@ -188,6 +197,7 @@ def insert_program_enrollment(student, data=None):
         program_enrollment.academic_term = academic_term
         program_enrollment.student_group = division_id
         program_enrollment.enrollment_date = year_start_date
+        program_enrollment.tiffin_rack_no = data.get("tiffin_rack_no")
         program_enrollment.save()
         program_enrollment.submit()
     except Exception as e:
@@ -279,7 +289,8 @@ def get_academic_year(academic_year):
 def create_guardian(first_name, relation, middle_name=None, last_name=None, mobile_no=None, email_id=None, education=None, occupation=None, annual_income=None):
     guardian = frappe.get_value("Guardian", {"guardian_name": first_name})
     if not guardian:
-        guardian = frappe.new_doc("Guardian", {
+        guardian = frappe.get_doc({
+            "doctype": "Guardian",
             "guardian_name": first_name,
             "last_name": last_name,
             "mobile_number": mobile_no,
@@ -291,7 +302,7 @@ def create_guardian(first_name, relation, middle_name=None, last_name=None, mobi
     return {
         "guardian": guardian,
         "guardian_name": first_name,
-        "guardian_relation": relation,
+        "relation": relation,
     }
 
 def get_guardian(father_name, mother_name):
