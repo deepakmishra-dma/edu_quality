@@ -244,8 +244,17 @@
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
- "links": [],
- "modified": "2023-11-30 09:49:26.469285",
+ "links": [
+  {
+   "link_doctype": "Payment Entry",
+   "link_fieldname": "fees"
+  },
+  {
+   "link_doctype": "Payment Request",
+   "link_fieldname": "reference_name"
+  }
+ ],
+ "modified": "2023-12-12 10:51:13.867909",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Fee Advance",
