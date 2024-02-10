@@ -186,6 +186,7 @@ def insert_program_enrollment(student, data=None):
         school = student.school
         division = data.get("division_name")
         division_id = get_division(division, program, school, academic_year)
+        roll_no = data.get("roll_no")
 
         program_enrollment = frappe.new_doc("Program Enrollment")
         program_enrollment.student = student.name
@@ -198,6 +199,7 @@ def insert_program_enrollment(student, data=None):
         program_enrollment.student_group = division_id
         program_enrollment.enrollment_date = year_start_date
         program_enrollment.tiffin_rack_no = data.get("tiffin_rack_no")
+        program_enrollment.roll_no = roll_no
         program_enrollment.save()
         program_enrollment.submit()
     except Exception as e:
