@@ -131,7 +131,6 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
         "referrer_school": referral_school,
         "referred_by": get_data("refer_by"),
         "day_care_contact": get_data("day_care_contact"),
-        "bus_service_required": get_data("bus_service_required"),
         "has_allergies": 1 if get_data("allergies") else 0,
         "allergies": get_data("allergies"),
         "parent_divorced": get_data("if_divorced"),
@@ -148,6 +147,11 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
         "drop_bus":get_data("drop_bus"),
         "confirm_for_next_year":get_data("confirm_next_year"),
         "last_school_attended": get_data("student_last_school_name"),
+        "bus_service_required": get_data("bus_service_required"),
+        "pickup_bus": get_data("pickup_bus"),
+        "drop_bus": get_data("drop_bus"),
+        "pickup_address": get_data("pickup_address"),
+        "drop_address": get_data("drop_address"),
         "guardians": get_guardian(frappe_data),
     }
     frappe.flags.in_import = True
@@ -483,7 +487,11 @@ def get_sql_query():
                     WSP.mother_education,
                     WSP.mother_profession,
                     WSP.mother_annual_income,
-                    WSP.mother_office_address
+                    WSP.mother_office_address,
+                    WSB.pickup_bus,
+                    WSB.drop_bus,
+                    WSB.pickup_address,
+                    WSB.drop_address
 
                 FROM
                     walnut_student_info wsi
@@ -492,6 +500,7 @@ def get_sql_query():
                 INNER JOIN walnut_class_info WCC ON WCC.class_id = wsi.class_admitted_to
                 INNER JOIN division_master WCD ON WCD.division_id = wsi.division
                 INNER JOIN stud_admission_details WAD ON WAD.ref_no = wsi.refno
-                INNER JOIN walnut_student_parent_details WSP ON WSP.student_id = wsi.form_id;
+                INNER JOIN walnut_student_parent_details WSP ON WSP.student_id = wsi.form_id
+                INNER JOIN walnut_student_bus WSB ON WSB.student_id = wsi.form_id
                 """
     return query
