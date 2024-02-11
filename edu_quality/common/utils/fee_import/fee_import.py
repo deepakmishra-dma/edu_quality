@@ -33,14 +33,14 @@ def import_fees(**kwargs):
 @frappe.whitelist()
 def fee_advance():
     try:
-        students = frappe.get_all("Student",{"custom_mgr_status":"Current student"})
+        students = frappe.get_all("Student",{"student_status":"Current student"})
         all_len = len(students)
         for index, student in enumerate(students):
             student_doc = frappe.get_doc("Student",student.name)
             p_e_doc = frappe.get_doc("Program Enrollment",{"student": student.name})
             class_name = frappe.get_value("Program",p_e_doc.program,"program_name")
             if not frappe.get_value("Fee Advance",{"student":student.name,"program":class_name}):
-                fees = import_fees(institution="Rethink Educational Systems Pvt Ltd Shivane",program=class_name,status=student_doc.custom_mgr_status,financial_year=p_e_doc.academic_year,fee_or_dep="fee")
+                fees = import_fees(institution="Rethink Educational Systems Pvt Ltd Shivane",program=class_name,status=student_doc.student_status,financial_year=p_e_doc.academic_year,fee_or_dep="fee")
                 frappe.logger("fesss").exception(fees)
                 if fees:
                     if not check_deu_date_fee(fees,student_doc):

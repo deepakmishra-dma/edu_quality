@@ -29,7 +29,7 @@
    "reqd": 1
   },
   {
-   "fetch_from": "program_enrollment.custom_payment_plan",
+   "fetch_from": "program_enrollment.payment_plan",
    "fieldname": "payment_plan",
    "fieldtype": "Link",
    "label": "Payment Plan",

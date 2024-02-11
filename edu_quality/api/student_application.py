@@ -172,7 +172,7 @@ def update_stud_data(**data):
         existing_student_doc = frappe.get_list(
             "Student",
             {
-                "custom_reference_number": ref_no,
+                "reference_number": ref_no,
                 "school": school_id_map.get(str(school_id), ""),
             },
         )

@@ -212,8 +212,8 @@ def get_label(fee_category):
 
 def payment_plan(doc, method=None):
     pe = frappe.get_doc("Program Enrollment", doc.program_enrollment)
-    if pe.custom_payment_plan is not None:
-        doc.payment_plan = pe.custom_payment_plan
+    if pe.payment_plan is not None:
+        doc.payment_plan = pe.payment_plan
     else:
         doc.payment_plan = frappe.db.get_value("Fee Schedule",doc.fee_schedule,'payment_plan')
     if doc.payment_plan:

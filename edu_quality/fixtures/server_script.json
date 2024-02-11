@@ -156,7 +156,7 @@
   "module": "Fees",
   "name": "Add Payment Plan to Fees",
   "reference_doctype": "Fees",
-  "script": "pe = frappe.get_doc(\"Program Enrollment\", doc.program_enrollment)\nif pe.custom_payment_plan is not None:\n    doc.payment_plan = pe.custom_payment_plan",
+  "script": "pe = frappe.get_doc(\"Program Enrollment\", doc.program_enrollment)\nif pe.payment_plan is not None:\n    doc.payment_plan = pe.payment_plan",
   "script_type": "DocType Event"
  },
  {

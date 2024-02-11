@@ -55,6 +55,9 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
     student_name = f"{first_name} {middle_name or ''} {last_name}"
     student_email_id = f"{str(first_name).lower().replace(' ', '')}{random.randint(100, 999)}@walnutedu.in"
 
+    mother_name = get_data('mother_f_name')
+    father_name = get_data('father_f_name')
+
     school_prefixes = {"Walnut School at Fursungi": "FU", "Walnut School at Shivane": "SH", "Walnut School at Wakad": "WA"}
     school_ids = {4: "Walnut School at Fursungi", 2: "Walnut School at Shivane", 5: "Walnut School at Wakad"}
     school_id = get_data("school_id")
@@ -67,7 +70,7 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
     country = "India" if get_data("country") not in countries else get_data("country")
 
     date_of_leaving = get_data("leaving_date")
-    joining_date = date_of_leaving - frappe.utils.datetime.timedelta(days=365) if date_of_leaving else None
+    joining_date = get_data("admission_date")
 
     address_line_2 = f"{get_data('survey_number')}, {get_data('sub_area')}, {get_data('road')}, {get_data('area')}"
 
@@ -98,8 +101,8 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
         "country": country,
         "landmark": get_data("landmark"),
         "student_email_id": student_email_id,
-        # "joining_date": joining_date,
         "date_of_leaving": date_of_leaving,
+        "joining_date": joining_date,
         "student_name": student_name,
         "school": school,
         "aadhaar_card_number": get_data("adhar_card_no"),
@@ -124,12 +127,12 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
         "is_student_disabled": 1 if get_data("student_isdisability") else 0,
         "student_disability_name": get_data("student_disability_name"),
         "is_sibling_in_school": get_data("student_bro_sis_inschool"),
-        "is_rte_student": get_data("stud_rte"),
+        "is_rte": get_data("stud_rte"),
         "single_parent_reason": get_data("single_parent_reason"),
         "religion": get_data("religion"),
         "reference_number": get_data("refno"),
-        "custom_referrer_school": referral_school,
-        "custom_referred_by": get_data("refer_by"),
+        "referrer_school": referral_school,
+        "referred_by": get_data("refer_by"),
         "day_care_contact": get_data("day_care_contact"),
         "bus_service_required": get_data("bus_service_required"),
         "has_allergies": 1 if get_data("allergies") else 0,
@@ -137,9 +140,18 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
         "parent_divorced": get_data("if_divorced"),
         "single_parent_reason": get_data("single_parent_reason"),
         "doctype": doctype,
-        "custom_mgr_status":map_student_status(get_data("status")),
-        "custom_enquired_class":get_data("admitted_class"),
-        "custom_mothers_first_name":get_data("mother_f_name"),
+        "student_status":map_student_status(get_data("status")),
+        "enquired_class":get_data("admitted_class"),
+        "gr_number":get_data("gr_number"),
+        "gr_book_number":get_data("gr_book_number"),
+        "height":get_data("height_start"),
+        "weight":get_data("weight_start"),
+        "birth_place":get_data("birthplace"),
+        "pickup_bus":get_data("pickup_bus"),
+        "drop_bus":get_data("drop_bus"),
+        "confirm_for_next_year":get_data("confirm_next_year"),
+        "last_school_attended": get_data("student_last_school_name"),
+        "guardians": get_guardian(father_name, mother_name),
     }
     frappe.flags.in_import = True
     frappe.logger("dddd").exception(frappe_data)
@@ -174,6 +186,7 @@ def insert_program_enrollment(student, data=None):
         school = student.school
         division = data.get("division_name")
         division_id = get_division(division, program, school, academic_year)
+        roll_no = data.get("roll_no")
 
         program_enrollment = frappe.new_doc("Program Enrollment")
         program_enrollment.student = student.name
@@ -185,6 +198,8 @@ def insert_program_enrollment(student, data=None):
         program_enrollment.academic_term = academic_term
         program_enrollment.student_group = division_id
         program_enrollment.enrollment_date = year_start_date
+        program_enrollment.tiffin_rack_no = data.get("tiffin_rack_no")
+        program_enrollment.roll_no = roll_no
         program_enrollment.save()
         program_enrollment.submit()
     except Exception as e:
@@ -272,6 +287,30 @@ def get_academic_year(academic_year):
     doc.insert(ignore_permissions=True)
     return doc.name
 
+
+def create_guardian(first_name, relation, middle_name=None, last_name=None, mobile_no=None, email_id=None, education=None, occupation=None, annual_income=None):
+    guardian = frappe.get_value("Guardian", {"guardian_name": first_name})
+    if not guardian:
+        guardian = frappe.get_doc({
+            "doctype": "Guardian",
+            "guardian_name": first_name,
+            "last_name": last_name,
+            "mobile_number": mobile_no,
+            "email_address": email_id,
+            "education": education,
+            "occupation": occupation,
+        })
+        guardian.insert(ignore_permissions=True)
+    return {
+        "guardian": guardian,
+        "guardian_name": first_name,
+        "relation": relation,
+    }
+
+def get_guardian(father_name, mother_name):
+    return [create_guardian(name, relation) for name, relation in [(father_name, "Father"), (mother_name, "Mother")] if name]
+
+    
 
 def get_sql_query():
     query = """SELECT
@@ -413,12 +452,14 @@ def get_sql_query():
                     WCI.class_name as admission_class,
                     WCC.class_name as admitted_class,
                     WCD.division_name,
-                    WCD.acadamic_year as acadamic_year_division
+                    WCD.acadamic_year as acadamic_year_division,
+                    WAD.admission_date
                 FROM
                     walnut_student_info wsi
 
                 INNER JOIN walnut_class_info WCI ON WCI.class_id = wsi.admission_to 
                 INNER JOIN walnut_class_info WCC ON WCC.class_id = wsi.class_admitted_to
-                INNER JOIN division_master WCD ON WCD.division_id = wsi.division;
+                INNER JOIN division_master WCD ON WCD.division_id = wsi.division
+                INNER JOIN stud_admission_details WAD ON WAD.ref_no = wsi.refno;
                 """
     return query
