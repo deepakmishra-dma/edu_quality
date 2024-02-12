@@ -311,8 +311,11 @@ def create_guardian(relation, **kwargs):
             }
         )
         guardian.insert(ignore_permissions=True)
+        guardian_id = guardian.name
+    else:
+        guardian_id = guardian
     return {
-        "guardian": guardian.name,
+        "guardian": guardian_id,
         "guardian_name": first_name,
         "relation": relation,
     }
@@ -498,11 +501,11 @@ def get_sql_query():
                 FROM
                     walnut_student_info wsi
 
-                INNER JOIN walnut_class_info WCI ON WCI.class_id = wsi.admission_to 
-                INNER JOIN walnut_class_info WCC ON WCC.class_id = wsi.class_admitted_to
-                INNER JOIN division_master WCD ON WCD.division_id = wsi.division
-                INNER JOIN stud_admission_details WAD ON WAD.ref_no = wsi.refno
-                INNER JOIN walnut_student_parent_details WSP ON WSP.student_id = wsi.form_id
-                INNER JOIN walnut_student_bus WSB ON WSB.student_id = wsi.form_id
+                LEFT OUTER JOIN walnut_class_info WCI ON WCI.class_id = wsi.admission_to 
+                LEFT OUTER JOIN walnut_class_info WCC ON WCC.class_id = wsi.class_admitted_to
+                LEFT OUTER JOIN division_master WCD ON WCD.division_id = wsi.division
+                LEFT OUTER JOIN stud_admission_details WAD ON WAD.ref_no = wsi.refno
+                LEFT OUTER JOIN walnut_student_parent_details WSP ON WSP.student_id = wsi.form_id
+                LEFT OUTER JOIN walnut_student_bus WSB ON WSB.student_id = wsi.form_id
                 """
     return query
