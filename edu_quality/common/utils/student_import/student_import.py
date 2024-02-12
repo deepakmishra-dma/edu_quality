@@ -53,10 +53,6 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
 
     first_name, middle_name, last_name = map(capitalize_name, ["first_name", "middle_name", "last_name"])
     student_name = f"{first_name} {middle_name or ''} {last_name}"
-    student_email_id = f"{str(first_name).lower().replace(' ', '')}{random.randint(100, 999)}@walnutedu.in"
-
-    mother_name = get_data('mother_f_name')
-    father_name = get_data('father_f_name')
 
     school_prefixes = {"Walnut School at Fursungi": "FU", "Walnut School at Shivane": "SH", "Walnut School at Wakad": "WA"}
     school_ids = {4: "Walnut School at Fursungi", 2: "Walnut School at Shivane", 5: "Walnut School at Wakad"}
@@ -64,7 +60,10 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
     referral_school_id = get_data("referral_school_id")
     referral_school = school_ids.get(referral_school_id)
     school = school_ids.get(school_id)
-    docname = school_prefixes.get(school, "") + get_data("refno")
+    refno = get_data("refno")
+    docname = school_prefixes.get(school, "") + refno
+
+    student_email_id = f"{docname.lower()}@walnutedu.in"
 
     countries = [d["name"] for d in frappe.get_all("Country")]
     country = "India" if get_data("country") not in countries else get_data("country")
@@ -130,11 +129,10 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
         "is_rte": get_data("stud_rte"),
         "single_parent_reason": get_data("single_parent_reason"),
         "religion": get_data("religion"),
-        "reference_number": get_data("refno"),
+        "reference_number": refno,
         "referrer_school": referral_school,
         "referred_by": get_data("refer_by"),
         "day_care_contact": get_data("day_care_contact"),
-        "bus_service_required": get_data("bus_service_required"),
         "has_allergies": 1 if get_data("allergies") else 0,
         "allergies": get_data("allergies"),
         "parent_divorced": get_data("if_divorced"),
@@ -151,7 +149,12 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
         "drop_bus":get_data("drop_bus"),
         "confirm_for_next_year":get_data("confirm_next_year"),
         "last_school_attended": get_data("student_last_school_name"),
-        "guardians": get_guardian(father_name, mother_name),
+        "bus_service_required": get_data("bus_service_required"),
+        "pickup_bus": get_data("pickup_bus"),
+        "drop_bus": get_data("drop_bus"),
+        "pickup_address": get_data("pickup_address"),
+        "drop_address": get_data("drop_address"),
+        "guardians": get_guardian(frappe_data),
     }
     frappe.flags.in_import = True
     frappe.logger("dddd").exception(frappe_data)
@@ -243,7 +246,6 @@ def get_program(program_name, school):
 
 
 def get_division(division, program, school, academic_year):
-    # div = chr(int(division) + 24) if 40 <= int(division) <= 48 else int(division) - 24
     div = division
     div_filter = {
         "program": program,
@@ -288,28 +290,44 @@ def get_academic_year(academic_year):
     return doc.name
 
 
-def create_guardian(first_name, relation, middle_name=None, last_name=None, mobile_no=None, email_id=None, education=None, occupation=None, annual_income=None):
-    guardian = frappe.get_value("Guardian", {"guardian_name": first_name})
+def create_guardian(relation, **kwargs):
+    first_name, middle_name, last_name = map(lambda x: kwargs.get(x), ["f_name", "m_name", "s_name"])
+    guardian_name = f"{first_name} {middle_name or ''} {last_name or ''}"
+    guardian = frappe.get_value("Guardian", {"guardian_name": guardian_name})
     if not guardian:
-        guardian = frappe.get_doc({
-            "doctype": "Guardian",
-            "guardian_name": first_name,
-            "last_name": last_name,
-            "mobile_number": mobile_no,
-            "email_address": email_id,
-            "education": education,
-            "occupation": occupation,
-        })
+        guardian = frappe.get_doc(
+            {
+                "doctype": "Guardian",
+                "guardian_name": guardian_name,
+                "first_name": first_name,
+                "middle_name": middle_name,
+                "last_name": last_name,
+                "mobile_number": kwargs.get("mobile_no"),
+                "email_address": kwargs.get("email_id"),
+                "education": kwargs.get("education"),
+                "occupation": kwargs.get("profession"),
+                "annual_income": kwargs.get("annual_income"),
+                "work_address": kwargs.get("office_address"),
+            }
+        )
         guardian.insert(ignore_permissions=True)
     return {
-        "guardian": guardian,
+        "guardian": guardian.name,
         "guardian_name": first_name,
         "relation": relation,
     }
 
-def get_guardian(father_name, mother_name):
-    return [create_guardian(name, relation) for name, relation in [(father_name, "Father"), (mother_name, "Mother")] if name]
 
+def get_guardian(data):
+    attributes = ["f_name", "m_name", "s_name", "email_id", "mobile_no", "education", "profession", "annual_income", "office_address"]
+    relations = ["Father", "Mother"]
+
+    guardians = []
+    for relation in relations:
+        kwargs = {attr: data.get(f"{relation.lower()}_{attr}") for attr in attributes}
+        guardian = create_guardian(relation, **kwargs)
+        guardians.append(guardian)
+    return guardians
     
 
 def get_sql_query():
@@ -453,13 +471,38 @@ def get_sql_query():
                     WCC.class_name as admitted_class,
                     WCD.division_name,
                     WCD.acadamic_year as acadamic_year_division,
-                    WAD.admission_date
+                    WAD.admission_date,
+                    WSP.father_f_name,
+                    WSP.father_m_name,
+                    WSP.father_s_name,
+                    WSP.father_email_id,
+                    WSP.father_mobile_no,
+                    WSP.father_education,
+                    WSP.father_profession,
+                    WSP.father_annual_income,
+                    WSP.father_office_address,
+                    WSP.mother_f_name,
+                    WSP.mother_s_name,
+                    WSP.mother_m_name,
+                    WSP.mother_email_id,
+                    WSP.mother_mobile_no,
+                    WSP.mother_education,
+                    WSP.mother_profession,
+                    WSP.mother_annual_income,
+                    WSP.mother_office_address,
+                    WSB.pickup_bus,
+                    WSB.drop_bus,
+                    WSB.pickup_address,
+                    WSB.drop_address
+
                 FROM
                     walnut_student_info wsi
 
                 INNER JOIN walnut_class_info WCI ON WCI.class_id = wsi.admission_to 
                 INNER JOIN walnut_class_info WCC ON WCC.class_id = wsi.class_admitted_to
                 INNER JOIN division_master WCD ON WCD.division_id = wsi.division
-                INNER JOIN stud_admission_details WAD ON WAD.ref_no = wsi.refno;
+                INNER JOIN stud_admission_details WAD ON WAD.ref_no = wsi.refno
+                INNER JOIN walnut_student_parent_details WSP ON WSP.student_id = wsi.form_id
+                INNER JOIN walnut_student_bus WSB ON WSB.student_id = wsi.form_id
                 """
     return query
