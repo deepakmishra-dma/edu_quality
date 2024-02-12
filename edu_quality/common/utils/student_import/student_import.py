@@ -53,7 +53,6 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
 
     first_name, middle_name, last_name = map(capitalize_name, ["first_name", "middle_name", "last_name"])
     student_name = f"{first_name} {middle_name or ''} {last_name}"
-    student_email_id = f"{str(first_name).lower().replace(' ', '')}{random.randint(100, 999)}@walnutedu.in"
 
     school_prefixes = {"Walnut School at Fursungi": "FU", "Walnut School at Shivane": "SH", "Walnut School at Wakad": "WA"}
     school_ids = {4: "Walnut School at Fursungi", 2: "Walnut School at Shivane", 5: "Walnut School at Wakad"}
@@ -61,7 +60,10 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
     referral_school_id = get_data("referral_school_id")
     referral_school = school_ids.get(referral_school_id)
     school = school_ids.get(school_id)
-    docname = school_prefixes.get(school, "") + get_data("refno")
+    refno = get_data("refno")
+    docname = school_prefixes.get(school, "") + refno
+
+    student_email_id = f"{docname.lower()}@walnutedu.in"
 
     countries = [d["name"] for d in frappe.get_all("Country")]
     country = "India" if get_data("country") not in countries else get_data("country")
@@ -127,7 +129,7 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
         "is_rte": get_data("stud_rte"),
         "single_parent_reason": get_data("single_parent_reason"),
         "religion": get_data("religion"),
-        "reference_number": get_data("refno"),
+        "reference_number": refno,
         "referrer_school": referral_school,
         "referred_by": get_data("refer_by"),
         "day_care_contact": get_data("day_care_contact"),
