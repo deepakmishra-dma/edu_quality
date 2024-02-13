@@ -4,11 +4,25 @@ function changePrintCMAPReportData(value, id, rowIndex) {
 
 	frappe.query_report.data[rowIndex][id] = value.value
 	calculateTotalQty(rowIndex)
+	console.log(value, id, rowIndex)
 }
 
 function calculateTotalQty(rowIndex) {
-	const totalQty = frappe.query_report.data[rowIndex]["qty_for_shivane"] + frappe.query_report.data[rowIndex]["qty_for_wakad"] + frappe.query_report.data[rowIndex]["qty_for_fursungi"] + frappe.query_report.data[rowIndex]["extra_qty_per_school"]
+	// const totalQty = frappe.query_report.data[rowIndex]["qty_for_shivane"] + frappe.query_report.data[rowIndex]["qty_for_wakad"] + frappe.query_report.data[rowIndex]["qty_for_fursungi"] + frappe.query_report.data[rowIndex]["extra_qty_per_school"]
+	let totalQty = 0;
+	Object.keys(frappe.query_report.data[rowIndex]).forEach((key) => {
+		if (key.includes("qty_for_")) {
+			console.log(key)
+			totalQty += Number(frappe.query_report.data[rowIndex][key]) + Number(frappe.query_report.data[rowIndex]["extra_qty_per_school"])
+		}
+	})
+
 	frappe.query_report.data[rowIndex]["total_quantity"] = totalQty
+	const el = document.querySelector(`.dt-cell[data-row-index="${rowIndex}"] input#total_quantity`)
+	console.log(el)
+	if (el)
+		el.value = totalQty
+	console.log(totalQty)
 }
 frappe.query_reports["CMAP Print"] = {
 	"filters": [
@@ -21,13 +35,14 @@ frappe.query_reports["CMAP Print"] = {
 		{
 			"fieldname": "class",
 			"label": __("Class"),
-			"fieldtype": "MultiSelectList",
+			"fieldtype": "Link",
+			"options": "Class Type",
 			"reqd": 1,
-			get_data: function (txt) {
-				return frappe.db.get_link_options('Class Type', txt, {
+			// get_data: function (txt) {
+			// 	return frappe.db.get_link_options('Class Type', txt, {
 
-				});
-			}
+			// 	});
+			// }
 
 		},
 		{
@@ -65,8 +80,11 @@ frappe.query_reports["CMAP Print"] = {
 	"formatter": function (value, row, column, data, default_formatter) {
 		value = default_formatter(value, row, column, data)
 		if (column.id.includes("qty")) {
-			value = `<input type="number" value=${value} oninput="changePrintCMAPReportData(this,'${column.id}','${row[0]?.rowIndex}')" />`
+			value = `<input type="number" id="${column.id}" value=${value} oninput="changePrintCMAPReportData(this,'${column.id}','${row[0]?.rowIndex}')" />`
 			console.log(frappe.query_report)
+		}
+		if (column.id == "total_quantity") {
+			value = `<input type="number" disabled="true" id="${column.id}" value=${value} oninput="changePrintCMAPReportData(this,'${column.id}','${row[0]?.rowIndex}')" />`
 		}
 		return value
 		// console.log(value)
@@ -92,6 +110,11 @@ frappe.query_reports["CMAP Print"] = {
 					"method": "edu_quality.edu_quality.report.cmap_print.cmap_print.create_purchase_order",
 					"args": {
 						rows: selected_rows
+					},
+					callback: function (r) {
+						if (r.message) {
+							frappe.set_route(`/app/purchase-order/${r?.message?.name}`)
+						}
 					}
 				})
 			})

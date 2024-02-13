@@ -40,5 +40,20 @@
     "role": "Inbox User"
    }
   ]
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Role Profile",
+  "modified": "2023-12-13 02:43:50.636829",
+  "name": "Printer",
+  "role_profile": "Printer",
+  "roles": [
+   {
+    "parent": "Printer",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Printer"
+   }
+  ]
  }
 ]

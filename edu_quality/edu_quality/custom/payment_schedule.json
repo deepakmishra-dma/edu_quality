@@ -37,6 +37,7 @@
    "is_virtual": 0,
    "label": "Discount Breakup",
    "length": 0,
+   "link_filters": null,
    "mandatory_depends_on": null,
    "modified": "2023-12-02 13:00:53.168734",
    "modified_by": "Administrator",

@@ -280,7 +280,7 @@ fixtures = [
     {"dt": "Accounting Dimension"},
     {
         "dt": "Role",
-        "filters": [["name", "in", ["Head Administration", "Councellor", "Teacher"]]],
+        "filters": [["name", "in", ["Head Administration", "Councellor", "Teacher","Printer","Watchman"]]],
     },
     {
         "dt": "Role",
@@ -288,7 +288,7 @@ fixtures = [
             [
                 "name",
                 "in",
-                ["Head Administration", "Councellor", "Teacher", "Content Creator"],
+                ["Head Administration", "Councellor", "Teacher", "Content Creator","Printer","Watchman"],
             ]
         ],
     },
@@ -298,7 +298,7 @@ fixtures = [
     {"dt": "School"},
     {"dt": "Academic Year"},
     # {"dt": "Funnel Node", "filters": [["class_name", "=", "edu_quality"]]},
-    # {"dt": "Funnel"},
+    {"dt": "Funnel"},
     {"dt": "Email Template"},
     {"dt": "Letter Head"},
     {"dt": "Class Type"},
@@ -325,11 +325,11 @@ fixtures = [
     },
     {
         "dt": "Module Profile",
-        "filters": [["name", "in", ["Councellor", "Content Creator"]]],
+        "filters": [["name", "in", ["Councellor", "Content Creator","Printer","Watchman"]]],
     },
     {
         "dt": "Role Profile",
-        "filters": [["name", "in", ["Councellor", "Content Creator"]]],
+        "filters": [["name", "in", ["Councellor", "Content Creator","Printer","Watchman"]]],
     },
 ]
 

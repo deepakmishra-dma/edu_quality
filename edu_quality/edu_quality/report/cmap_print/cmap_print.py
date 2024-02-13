@@ -26,7 +26,12 @@ def get_school_fields_sum(row):
     school_fields = generate_school_fields()
     school_fields_to_sum = [school.get("fieldname") for school in school_fields]
     frappe.errprint(row)
-    return sum([row.get(field, 0) for field in school_fields_to_sum])
+    return sum(
+        [
+            row.get(field, 0) + row.get("extra_qty_per_school", 0)
+            for field in school_fields_to_sum
+        ]
+    )
 
 
 def get_columns():
@@ -112,17 +117,13 @@ def transform_data(program_enrollments, CMAPS):
     school_fields = generate_school_fields()
     for i in CMAPS:
         for school in school_fields:
-            print(
-                converted_dict.get(f'{i.get("class")}-{school.get("label")}', 0),
-                "this-is-it",
-            )
             i[school.get("fieldname")] = (
                 converted_dict.get(f'{i.get("class")}-{school.get("label")}', 0) or 0
             )
 
         i["extra_qty_per_school"] = 30
 
-        i["total_quantity"] = get_school_fields_sum(i) + i["extra_qty_per_school"]
+        i["total_quantity"] = get_school_fields_sum(i)
 
         data.append(i)
     return data
@@ -145,7 +146,7 @@ def get_data_from_queries(filters=None):
         .on(item_detail.item == item.name)
         .where(
             (cmap.academic_year == filters.get("academic_year"))
-            & (cmap["class"].isin(class_filter if len(class_filter) else [None]))
+            & (cmap["class"].isin([class_filter] if len(class_filter) else [None]))
             & (cmap.subject.isin(subject_filter if len(subject_filter) else [None]))
             & (cmap.unit.isin(unit_filter if len(unit_filter) else [None]))
             & (
@@ -221,6 +222,7 @@ def create_purchase_order(rows):
 
     if len(rows):
         purchase_order.insert()
+    return purchase_order
 
 
 def append_items(purchase_order, row, school_field):
@@ -234,5 +236,6 @@ def append_items(purchase_order, row, school_field):
             "schedule_date": frappe.utils.nowdate(),
             "warehouse": school_doc.get("warehouse"),
             "uom": "Nos",
+            "custom_period": row.get("period"),
         },
     )
