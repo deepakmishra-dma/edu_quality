@@ -746,7 +746,9 @@ def create_lead(kwargs):
             "source": source or "Website" or "Others",
             "custom_preferred_communication_mode": "Call"
             if kwargs.get("communication_mode", "").lower() == "yes"
-            else "Chat",
+            else "Chat"
+            if kwargs.get("communication_mode", "").lower() == "no"
+            else "Call",
             "custom_preferred_communication_day": kwargs.get("communication_day"),
             "custom_preferred_communication_time": kwargs.get("communication_time"),
         }
@@ -824,11 +826,10 @@ def process_lead(source, lead, page_location, detail="", kwargs={}):
         setattr(lead, "class", class_name)
         lead.class_from_lead_source = kwargs.get("class")
         lead.custom_previous_school = kwargs.get("current_school", "")
-        lead.custom_preferred_communication_mode = (
-            "Call" if kwargs.get("communication_mode", "").lower() == "yes" else "Chat"
-        )
-        lead.custom_preferred_communication_day = kwargs.get("communication_day")
-        lead.custom_preferred_communication_time = kwargs.get("communication_time")
+        update_communication(lead, kwargs)
+
+    if source.lower() == "whatsapp":
+        update_communication(lead, kwargs)
 
     lead.append(
         "notes",
@@ -840,6 +841,18 @@ def process_lead(source, lead, page_location, detail="", kwargs={}):
     lead.save(ignore_permissions=True)
 
     return lead
+
+
+def update_communication(lead, kwargs):
+    lead.custom_preferred_communication_mode = (
+        "Call"
+        if kwargs.get("communication_mode", "").lower() == "yes"
+        else "Chat"
+        if kwargs.get("communication_mode", "").lower() == "no"
+        else "Call"
+    )
+    lead.custom_preferred_communication_day = kwargs.get("communication_day")
+    lead.custom_preferred_communication_time = kwargs.get("communication_time")
 
 
 def insert_walk_in_date(lead):
