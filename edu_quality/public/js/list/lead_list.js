@@ -51,7 +51,7 @@ frappe.listview_settings['Lead'] = {
             const docData = await doc.json()
             payload.group_members = [...(docData.data.group_members || []), ...payload.group_members]
             group_hash = {}
-            console.log(payload.group_members)
+          
             payload.group_members = payload.group_members.filter((member, index, array) => {
               if (!group_hash[member.member_name]) {
                 group_hash[member.member_name] = 1

@@ -749,7 +749,7 @@ def create_lead(kwargs):
             else "Chat"
             if kwargs.get("communication_mode", "").lower() == "no"
             else "Call",
-            "custom_preferred_communication_day": kwargs.get("communication_day"),
+            "custom_preferred_communication_day": kwargs.get("communication_day","Monday"),
             "custom_preferred_communication_time": kwargs.get("communication_time"),
         }
     )
@@ -851,7 +851,7 @@ def update_communication(lead, kwargs):
         if kwargs.get("communication_mode", "").lower() == "no"
         else "Call"
     )
-    lead.custom_preferred_communication_day = kwargs.get("communication_day")
+    lead.custom_preferred_communication_day = kwargs.get("communication_day","Monday")
     lead.custom_preferred_communication_time = kwargs.get("communication_time")
 
 
