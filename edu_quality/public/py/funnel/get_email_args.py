@@ -62,8 +62,12 @@ def get_arguments(doctype, docname):
         pdf_url = site_url + pdf
 
         first_name = student_doc.first_name
-        mother_name = student_doc.custom_mothers_first_name
-        father_name = student_doc.custom_fathers_first_name
+        father_name = frappe.get_value(
+            "Student Guardian", {"parent": undertaking_doc.student, "relation": "Father"}, "guardian_name"
+        )
+        mother_name = frappe.get_value(
+            "Student Guardian", {"parent": undertaking_doc.student, "relation": "Mother"}, "guardian_name"
+        )
 
         context = {
             "refno": student_doc.custom_reference_number,

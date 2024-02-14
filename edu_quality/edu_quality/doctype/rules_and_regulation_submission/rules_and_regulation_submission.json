@@ -31,7 +31,7 @@
    "options": "Student"
   },
   {
-   "fetch_from": "student.custom_fathers_first_name",
+   "fetch_from": "",
    "fieldname": "fathers_name",
    "fieldtype": "Data",
    "label": "Father's Name"
@@ -47,13 +47,13 @@
    "options": "Rules and Regulation Template"
   },
   {
-   "fetch_from": "student.custom_reference_number",
+   "fetch_from": "student.reference_number",
    "fieldname": "reference_no",
    "fieldtype": "Data",
    "label": "Reference No"
   },
   {
-   "fetch_from": "student.custom_mothers_first_name",
+   "fetch_from": "",
    "fieldname": "mothers_name",
    "fieldtype": "Data",
    "label": "Mother's Name"

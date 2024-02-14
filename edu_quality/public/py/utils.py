@@ -166,27 +166,36 @@ def generate_otp(fee):
         return False
 
 
+def get_mobile_number(student):
+    if student.student_mobile_number:
+        return student.student_mobile_number
+    elif student.primary_contact:
+        return student.primary_contact
+    elif student.whatsapp_number:
+        return student.whatsapp_number
+    elif student.day_care_contact:
+        return student.day_care_contact
+    else:
+        return False
+
+
+def get_email_id(student):
+    if student.student_email_id:
+        return student.student_email_id
+    else:
+        return False
+    
+
 def send_otp(fee, otp):
     try:
         student = frappe.get_value("Fees", fee, "student")
         student = frappe.get_doc("Student", student)
-        if student.custom_fathers_email:
-            email = student.custom_fathers_email
-        elif student.custom_mothers_email:
-            email = student.custom_mothers_email
-        elif student.custom_guardians_email_id:
-            email = student.custom_guardians_email_id
-        if student.custom_fathers_mobile_no:
-            mobile = student.custom_fathers_mobile_no
-        elif student.custom_mothers_mobile_no:
-            mobile = student.custom_mothers_mobile_no
-        elif student.custom_guardians_mobile_no:
-            mobile = student.custom_guardians_mobile_no
+        email = get_email_id(student)
+        mobile = get_mobile_number(student)
         if mobile:
             sms_otp(mobile, otp)
         if email:
             email_otp(email, otp)
-        # whatsapp message
         return True
     except Exception as e:
         return False
@@ -330,6 +339,12 @@ def handle_undertaking_submission(**kwargs):
         "Rules and Regulation Template", {"class": class_name}, "name"
     )
     student_doc = frappe.get_doc("Student", student)
+    fathers_name = frappe.get_value(
+        "Student Guardian", {"parent": student, "relation": "Father"}, "guardian_name"
+    )
+    mothers_name = frappe.get_value(
+        "Student Guardian", {"parent": student, "relation": "Mother"}, "guardian_name"
+    )
 
     if not frappe.db.exists(
         "Rules and Regulation Submission",
@@ -337,15 +352,15 @@ def handle_undertaking_submission(**kwargs):
     ):
         new_doc = frappe.new_doc("Rules and Regulation Submission")
         new_doc.student = student_doc.name
-        new_doc.reference_no = student_doc.custom_reference_number
-        new_doc.fathers_name = student_doc.custom_fathers_first_name
-        new_doc.mothers_name = student_doc.custom_mothers_first_name
+        new_doc.reference_no = student_doc.reference_number
+        new_doc.fathers_name = fathers_name
+        new_doc.mothers_name = mothers_name
         new_doc.program = class_name
         new_doc.submitted_with_response = "Yes"
         new_doc.rules_and_regulation_template = template
         new_doc.submitted_date = frappe.utils.nowdate()
         new_doc.otp_entered = kwargs.get("otp")
-        new_doc.otp_sent_to_contact_no = student_doc.custom_fathers_mobile_no
+        new_doc.otp_sent_to_contact_no = get_mobile_number(student_doc)
         new_doc.otp_sent_to_email_id = student_doc.student_email_id
         new_doc.ip_address = kwargs.get("ip_address")
         new_doc.user_info = kwargs.get("browser_info")

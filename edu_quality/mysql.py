@@ -124,8 +124,6 @@ def sync_data(host, user, password, database, mysql_table, doctype, school):
                         "date_of_leaving": date_of_leaving,
                         "student_name": student_name,
                         "school": school,
-                        "custom_fathers_name":father_f_name,
-                        "custom_mothers_first_name": mother_f_name,
                         "aadhaar_card_number": aadhaar_card_number,
                         "doctype": doctype,
                     }
