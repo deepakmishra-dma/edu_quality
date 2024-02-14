@@ -232,7 +232,8 @@ def append_items(purchase_order, row, school_field):
         "items",
         {
             "item_code": row.get("product_code"),
-            "qty": row.get(school_field.get("fieldname")),
+            "qty": int(row.get(school_field.get("fieldname", 0)))
+            + int(row.get("extra_qty_per_school", 0)),
             "schedule_date": frappe.utils.nowdate(),
             "warehouse": school_doc.get("warehouse"),
             "uom": "Nos",
