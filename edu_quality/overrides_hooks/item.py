@@ -22,13 +22,13 @@ def name(self):
     language = subject.get("custom_language")
     class_name = self.get("custom_class")
     textbook_short_code = textbook.get("short_code")
-
+    class_doc = frappe.get_doc("Class Type", class_name)
     syllabus_code = "C" if syllabus == "CBSE" else "S"
     language_short_code = "E" if language == "English" else "M"
     chapter_code = chapter.get("custom_chapter_number")
     sheet_number = self.get("custom_sheet_number")
     item_code = strip(
-        f"{short_code}{language_short_code}{syllabus_code}{class_name}{textbook_short_code}{str(chapter_code).zfill(2)}{str(sheet_number).zfill(2)}"
+        f"{short_code}{language_short_code}{syllabus_code}{class_doc.short_code}{textbook_short_code}{str(chapter_code).zfill(2)}{str(sheet_number).zfill(2)}"
     )
     return item_code
 

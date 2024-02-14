@@ -224,13 +224,15 @@ def verify_otp(fee, otp):
         return False
 
 
-def get_undertaking_template(doc=None, is_deposit=False,fee=None):
+def get_undertaking_template(doc=None, is_deposit=False, fee=None):
     if fee:
         doctype = "Fees"
         docname = fee
     else:
-        doctype, docname = frappe.get_value("Payment Request", doc.name, ["reference_doctype", "reference_name"])
-    if doctype=="Fee Advance":
+        doctype, docname = frappe.get_value(
+            "Payment Request", doc.name, ["reference_doctype", "reference_name"]
+        )
+    if doctype == "Fee Advance":
         class_name, academic_year, student = frappe.get_value(
             doctype, docname, ["next_program", "academic_year", "student"]
         )
@@ -308,14 +310,16 @@ def get_submitted_undertaking(payment_request):
 @frappe.whitelist(allow_guest=True)
 def handle_undertaking_submission(**kwargs):
     if kwargs.get("fee"):
-        doc = frappe.get_doc("Fees",kwargs.get("fee"))
+        doc = frappe.get_doc("Fees", kwargs.get("fee"))
         student = doc.student
         doctype = "Fees"
         docname = doc.name
     else:
         payment_hash = kwargs.get("payment_request")
         student, doctype, docname = frappe.get_value(
-            "Payment Request", {"payment_hash": payment_hash}, ["party", "reference_doctype", "reference_name"]
+            "Payment Request",
+            {"payment_hash": payment_hash},
+            ["party", "reference_doctype", "reference_name"],
         )
     if doctype == "Fees":
         class_name = frappe.get_value("Fees", docname, "program")
@@ -422,7 +426,7 @@ def convert_time_string_to_hours(time_string):
     return total_hours
 
 
-def add_indian_country_code(number):
+def add_indian_country_code(number, add_plus=False):
     if not number:
         return ""
     try:
@@ -433,6 +437,8 @@ def add_indian_country_code(number):
         if is_91:
             return number
         else:
+            if add_plus:
+                return "+91"+number
             return "91" + number
 
     except Exception as e:
