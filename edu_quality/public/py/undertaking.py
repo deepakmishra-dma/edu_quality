@@ -1,6 +1,6 @@
 import frappe
 import math, random, json
-from edu_quality.public.py.utils import sms_otp, verify_otp
+from edu_quality.public.py.utils import sms_otp, verify_otp, get_email_id, get_mobile_number
 
 try:
     from nextai.whatsapp_business_api_integration.doctype.whatsapp_message.whatsapp_message import (
@@ -74,32 +74,6 @@ def send_otp(doctype, docname, otp):
         return True
     except Exception as e:
         frappe.logger("OTP").exception(e)
-        return False
-
-
-def get_mobile_number(student):
-    if student.student_mobile_number:
-        return student.student_mobile_number
-    elif student.custom_fathers_mobile_no:
-        return student.custom_fathers_mobile_no
-    elif student.custom_mothers_mobile_no:
-        return student.custom_mothers_mobile_no
-    elif student.custom_guardians_mobile_no:
-        return student.custom_guardians_mobile_no
-    else:
-        return False
-
-
-def get_email_id(student):
-    if student.custom_fathers_email:
-        return student.custom_fathers_email
-    elif student.custom_mothers_email:
-        return student.custom_mothers_email
-    elif student.custom_guardians_email_id:
-        return student.custom_guardians_email_id
-    elif student.student_email_id:
-        return student.student_email_id
-    else:
         return False
 
 
