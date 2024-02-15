@@ -115,7 +115,9 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
         "tiffin_rack_no": get_data("tiffin_rack_no"),
         "catering": get_data("catering"),
         "caste": get_data("caste"),
+        "other_caste": get_data("other_caste"),
         "subcaste": get_data("subcaste"),
+        "other_subcaste": get_data("other_subcaste"),
         "minority": get_data("minority"),
         "mother_tongue": get_data("mother_tongue"),
         "student_referral_number": get_data("student_referral_refno"),
@@ -145,15 +147,15 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
         "height":get_data("height_start"),
         "weight":get_data("weight_start"),
         "birth_place":get_data("birthplace"),
-        "pickup_bus":get_data("pickup_bus"),
-        "drop_bus":get_data("drop_bus"),
-        "confirm_for_next_year":get_data("confirm_next_year"),
+        "confirm_for_next_year":"Yes" if get_data("confirm_next_year")==1 else "No",
         "last_school_attended": get_data("student_last_school_name"),
         "bus_service_required": get_data("bus_service_required"),
         "pickup_bus": get_data("pickup_bus"),
-        "drop_bus": get_data("drop_bus"),
         "pickup_address": get_data("pickup_address"),
+        "special_instruction": get_data("spcl_instruction"),
+        "drop_bus": get_data("drop_bus"),
         "drop_address": get_data("drop_address"),
+        "source_name": get_data("ref_source_name"),
         "guardians": get_guardian(frappe_data),
     }
     frappe.flags.in_import = True
@@ -291,25 +293,30 @@ def get_academic_year(academic_year):
 
 
 def create_guardian(relation, **kwargs):
-    first_name, middle_name, last_name = map(lambda x: kwargs.get(x), ["f_name", "m_name", "s_name"])
-    guardian_name = f"{first_name} {middle_name or ''} {last_name or ''}"
-    guardian = frappe.get_value("Guardian", {"guardian_name": guardian_name})
+    first_name = kwargs.get("f_name", "").capitalize()
+    middle_name = kwargs.get("m_name", "").capitalize() if kwargs.get("m_name") else None
+    last_name = kwargs.get("s_name", "").capitalize() if kwargs.get("s_name") else None
+    guardian_name = f"{first_name} {last_name or ''}"
+    mobile_no = kwargs.get("mobile_no")
+    email_id = kwargs.get("email_id").lower() if kwargs.get("email_id") else None
+    guardian = frappe.get_value("Guardian", {"guardian_name": guardian_name, "mobile_number": mobile_no})
     if not guardian:
-        guardian = frappe.get_doc(
-            {
-                "doctype": "Guardian",
-                "guardian_name": guardian_name,
-                "first_name": first_name,
-                "middle_name": middle_name,
-                "last_name": last_name,
-                "mobile_number": kwargs.get("mobile_no"),
-                "email_address": kwargs.get("email_id"),
-                "education": kwargs.get("education"),
-                "occupation": kwargs.get("profession"),
-                "annual_income": kwargs.get("annual_income"),
-                "work_address": kwargs.get("office_address"),
-            }
-        )
+        doc = {
+            "doctype": "Guardian",
+            "guardian_name": guardian_name,
+            "first_name": first_name,
+            "middle_name": middle_name,
+            "last_name": last_name,
+            "mobile_number": kwargs.get("mobile_no"),
+            "email_address": email_id,
+            "education": kwargs.get("education"),
+            "occupation": kwargs.get("profession"),
+            "annual_income": kwargs.get("annual_income"),
+            "work_address": kwargs.get("office_address"),
+            "company_name": kwargs.get("company_name"),
+            "designation": kwargs.get("designation"),
+        }
+        guardian = frappe.get_doc(doc)
         guardian.insert(ignore_permissions=True)
         guardian_id = guardian.name
     else:
@@ -322,7 +329,7 @@ def create_guardian(relation, **kwargs):
 
 
 def get_guardian(data):
-    attributes = ["f_name", "m_name", "s_name", "email_id", "mobile_no", "education", "profession", "annual_income", "office_address"]
+    attributes = ["f_name", "m_name", "s_name", "email_id", "mobile_no", "education", "profession", "annual_income", "office_address", "company_name", "designation"]
     relations = ["Father", "Mother"]
 
     guardians = []
@@ -484,6 +491,8 @@ def get_sql_query():
                     WSP.father_profession,
                     WSP.father_annual_income,
                     WSP.father_office_address,
+                    WSP.father_company_name,
+                    WSP.father_designation,
                     WSP.mother_f_name,
                     WSP.mother_s_name,
                     WSP.mother_m_name,
@@ -493,10 +502,13 @@ def get_sql_query():
                     WSP.mother_profession,
                     WSP.mother_annual_income,
                     WSP.mother_office_address,
+                    WSP.mother_company_name,
+                    WSP.mother_designation,
                     WSB.pickup_bus,
                     WSB.drop_bus,
                     WSB.pickup_address,
-                    WSB.drop_address
+                    WSB.drop_address,
+                    WSB.spcl_instruction
 
                 FROM
                     walnut_student_info wsi
