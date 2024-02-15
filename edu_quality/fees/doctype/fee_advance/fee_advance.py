@@ -318,6 +318,21 @@ def create_fee_advance(student, program_enrollment,all_len=None,index=None):
         fee_advance.cost_center = frappe.get_value("Company", institution, "cost_center")
         fee_advance.save()
         fee_advance.submit()
+
+        success_log = {
+                "student_id": student.name, 
+                "student_name": student.first_name,
+                "class_name": program_enrollment.program,
+                "fee_structure": fee_structure,
+                "payment_plan": payment_plan,
+                "payment_term": term,
+                "current_academic_year": program_enrollment.academic_year,
+                "next_academic_year": next_academic_year,
+                "next_class": next_program,
+                "institution": institution,
+                "fee_advance": fee_advance.name,
+            }
+        frappe.logger("fee_advance_success").exception(json.dumps(success_log))
     except Exception:
         frappe.log_error(
             title="Fee Advance",
