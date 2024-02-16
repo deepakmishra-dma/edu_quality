@@ -1,19 +1,19 @@
-frappe.pages['scan-receipts'].on_page_load = function (wrapper) {
+frappe.pages['scan-orders'].on_page_load = function (wrapper) {
 	var page = frappe.ui.make_app_page({
 		parent: wrapper,
-		title: 'Scan Orders and Receipts',
+		title: 'Scan Purchase Orders',
 		single_column: true
 	});
 	const el = document.querySelector('.container.page-body')
 
 	const d = make_fieldgroup(el, [
 		{
-			label: 'QR Code',
+			label: 'Enter Purchase Order/ Challan No',
 			fieldname: 'qr_code',
 			fieldtype: 'Data',
 		},
 		{
-			label: 'Open Scanner',
+			label: '<i class="fa fa-qrcode" aria-hidden="true"></i> Open Scanner',
 			fieldname: 'scanbtn',
 			fieldtype: 'Button',
 			click: async () => {

@@ -1,18 +1,11 @@
 [
  {
   "charts": [],
-  "content": "[{\"id\":\"aCk49ShVRs\",\"type\":\"onboarding\",\"data\":{\"onboarding_name\":\"Home\",\"col\":12}},{\"id\":\"kb3XPLg8lb\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Your Shortcuts</b></span>\",\"col\":12}},{\"id\":\"nWd2KJPW8l\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Item\",\"col\":3}},{\"id\":\"snrzfbFr5Y\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Customer\",\"col\":3}},{\"id\":\"SHJKakmLLf\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Supplier\",\"col\":3}},{\"id\":\"CPxEyhaf3G\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Sales Invoice\",\"col\":3}},{\"id\":\"WU4F-HUcIQ\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Leaderboard\",\"col\":3}},{\"id\":\"jvRWnjPAAF\",\"type\":\"custom_block\",\"data\":{\"custom_block_name\":\"Lead Next Action Date  From Today\",\"col\":12}},{\"id\":\"d_KVM1gsf9\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"7YbFIwh5qs\",\"type\":\"custom_block\",\"data\":{\"custom_block_name\":\"Scanner\",\"col\":12}},{\"id\":\"JVu8-FJZCu\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Reports &amp; Masters</b></span>\",\"col\":12}},{\"id\":\"JiuSi0ubOg\",\"type\":\"card\",\"data\":{\"card_name\":\"Accounting\",\"col\":4}},{\"id\":\"ji2Jlm3Q8i\",\"type\":\"card\",\"data\":{\"card_name\":\"Stock\",\"col\":4}},{\"id\":\"N61oiXpuwK\",\"type\":\"card\",\"data\":{\"card_name\":\"CRM\",\"col\":4}},{\"id\":\"6J0CVl1mPo\",\"type\":\"card\",\"data\":{\"card_name\":\"Data Import and Settings\",\"col\":4}}]",
+  "content": "[{\"id\":\"aCk49ShVRs\",\"type\":\"onboarding\",\"data\":{\"onboarding_name\":\"Home\",\"col\":12}},{\"id\":\"kb3XPLg8lb\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Your Shortcuts</b></span>\",\"col\":12}},{\"id\":\"nWd2KJPW8l\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Item\",\"col\":3}},{\"id\":\"snrzfbFr5Y\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Customer\",\"col\":3}},{\"id\":\"SHJKakmLLf\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Supplier\",\"col\":3}},{\"id\":\"CPxEyhaf3G\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Sales Invoice\",\"col\":3}},{\"id\":\"WU4F-HUcIQ\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Leaderboard\",\"col\":3}},{\"id\":\"jvRWnjPAAF\",\"type\":\"custom_block\",\"data\":{\"custom_block_name\":\"Lead Next Action Date  From Today\",\"col\":12}},{\"id\":\"d_KVM1gsf9\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"JVu8-FJZCu\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Reports &amp; Masters</b></span>\",\"col\":12}},{\"id\":\"JiuSi0ubOg\",\"type\":\"card\",\"data\":{\"card_name\":\"Accounting\",\"col\":4}},{\"id\":\"ji2Jlm3Q8i\",\"type\":\"card\",\"data\":{\"card_name\":\"Stock\",\"col\":4}},{\"id\":\"N61oiXpuwK\",\"type\":\"card\",\"data\":{\"card_name\":\"CRM\",\"col\":4}},{\"id\":\"6J0CVl1mPo\",\"type\":\"card\",\"data\":{\"card_name\":\"Data Import and Settings\",\"col\":4}}]",
   "custom_blocks": [
    {
     "custom_block_name": "Lead Next Action Date  From Today",
     "label": "Lead Next Action Date  From Today",
-    "parent": "Home",
-    "parentfield": "custom_blocks",
-    "parenttype": "Workspace"
-   },
-   {
-    "custom_block_name": "Scanner",
-    "label": "Scanner",
     "parent": "Home",
     "parentfield": "custom_blocks",
     "parenttype": "Workspace"
@@ -364,7 +357,7 @@
     "type": "Link"
    }
   ],
-  "modified": "2023-12-13 09:25:23.614966",
+  "modified": "2023-12-14 02:25:54.511621",
   "module": "Setup",
   "name": "Home",
   "number_cards": [],
@@ -471,7 +464,7 @@
   "is_hidden": 0,
   "label": "Fees Setup",
   "links": [],
-  "modified": "2023-09-26 13:01:17.379055",
+  "modified": "2023-12-14 02:02:23.627355",
   "module": "",
   "name": "Fees Setup",
   "number_cards": [],
@@ -487,7 +480,7 @@
     "role": "Head Administration"
    }
   ],
-  "sequence_id": 25.0,
+  "sequence_id": 35.0,
   "shortcuts": [
    {
     "color": "Grey",
@@ -601,7 +594,7 @@
   "is_hidden": 0,
   "label": "Student Management",
   "links": [],
-  "modified": "2023-10-13 13:13:08.883770",
+  "modified": "2023-12-14 02:02:23.988735",
   "module": "",
   "name": "Student Management",
   "number_cards": [],
@@ -635,7 +628,7 @@
     "role": "Accounts Manager"
    }
   ],
-  "sequence_id": 27.0,
+  "sequence_id": 37.0,
   "shortcuts": [
    {
     "color": "Grey",
@@ -669,7 +662,7 @@
   "is_hidden": 0,
   "label": "Walnut Accounts",
   "links": [],
-  "modified": "2023-10-13 13:13:26.675586",
+  "modified": "2023-12-14 02:02:24.493724",
   "module": "",
   "name": "Walnut Accounts",
   "number_cards": [],
@@ -685,7 +678,7 @@
     "role": "Councellor"
    }
   ],
-  "sequence_id": 28.0,
+  "sequence_id": 38.0,
   "shortcuts": [
    {
     "color": "Grey",
@@ -796,7 +789,7 @@
   "is_hidden": 0,
   "label": "Walnut Analytics Dashboard",
   "links": [],
-  "modified": "2023-10-13 13:14:00.620914",
+  "modified": "2023-12-14 02:02:24.929385",
   "module": null,
   "name": "Walnut Analytics Dashboard",
   "number_cards": [
@@ -834,7 +827,7 @@
   "quick_lists": [],
   "restrict_to_domain": null,
   "roles": [],
-  "sequence_id": 29.0,
+  "sequence_id": 39.0,
   "shortcuts": [],
   "title": "Walnut Analytics Dashboard"
  }
