@@ -5,7 +5,6 @@ from edu_quality.fees.doctype.fee_advance.fee_advance import create_fee_advance
 
 @frappe.whitelist(allow_guest=True)
 def import_fees(**kwargs):
-    frappe.logger("fesss").exception(kwargs)
     purl = "https://test.walnutedu.in/indexCI.php/fee_due_report/fetch_student_fee_due"
 
     payload = json.dumps(
@@ -19,13 +18,10 @@ def import_fees(**kwargs):
             "password": "***REMOVED-PASSWORD***",
         }
     )
-
     response = requests.post(purl, data=payload)
-    frappe.logger("fesss").exception(response.json())
-    frappe.logger("fesss").exception(response.status_code)
-    if response.status_code=="200":
+    if response.status_code==200:
         data = response.json()
-        if data["data"]:
+        if data.get("data",[]):
             return data
         else:
             return None
@@ -40,8 +36,7 @@ def fee_advance():
             p_e_doc = frappe.get_doc("Program Enrollment",{"student": student.name})
             class_name = frappe.get_value("Program",p_e_doc.program,"program_name")
             if not frappe.get_value("Fee Advance",{"student":student.name,"program":class_name}):
-                fees = import_fees(institution="Rethink Educational Systems Pvt Ltd Shivane",program=class_name,status=student_doc.student_status,financial_year=p_e_doc.academic_year,fee_or_dep="fee")
-                frappe.logger("fesss").exception(fees)
+                fees = import_fees(institution=student_doc.school,program=class_name,status=student_doc.student_status,financial_year=p_e_doc.academic_year,fee_or_dep="fee")
                 if fees:
                     if not check_deu_date_fee(fees,student_doc):
                         frappe.enqueue(create_fee_advance, student=student_doc, program_enrollment=p_e_doc,all_len=all_len,index=index)
@@ -61,7 +56,10 @@ def fee_advance():
         )
 
 def check_deu_date_fee(fees,student_doc):
-    if fees.data[student_doc.reference_number]:
+    frappe.logger("fesss").exception(fees)
+    records = fees.get("data",[])
+    if records:
+        records.get(student_doc.reference_number,[])
         return True
     else:
         return False
