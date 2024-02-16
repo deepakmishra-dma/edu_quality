@@ -12,7 +12,7 @@
   "module": "Edu Quality",
   "name": "Add ref to student",
   "reference_doctype": "Student",
-  "script": "if doc.name[:2] in [\"FU\", \"SH\", \"WA\"]:\n    doc.custom_reference_number = doc.name[2:]",
+  "script": "if doc.name[:2] in [\"FU\", \"SH\", \"WA\"]:\n    doc.reference_number = doc.name[2:]",
   "script_type": "DocType Event"
  },
  {

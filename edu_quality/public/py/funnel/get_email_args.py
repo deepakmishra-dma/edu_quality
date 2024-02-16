@@ -70,7 +70,7 @@ def get_arguments(doctype, docname):
         )
 
         context = {
-            "refno": student_doc.custom_reference_number,
+            "refno": student_doc.reference_number,
             "first_name": first_name.capitalize() if first_name else "",
             "mother_name": mother_name.capitalize() if mother_name else "",
             "father_name": father_name.capitalize() if father_name else "",
