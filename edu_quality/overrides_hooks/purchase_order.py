@@ -145,7 +145,11 @@ def create_purchase_receipt(self, school="Walnut School at Shivane"):
             receipt.get("items"),
         )
     )
-
+    if len(filtered_items) == 0:
+        frappe.msgprint(
+            f"Quantity is 0 for the selected {school}, Please create receipt for another one"
+        )
+        return
     receipt.items = filtered_items
     receipt.rounded_total = 0
     receipt.insert()

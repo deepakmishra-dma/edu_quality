@@ -55,5 +55,20 @@
     "role": "Printer"
    }
   ]
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Role Profile",
+  "modified": "2023-12-14 09:52:28.415420",
+  "name": "Watchman",
+  "role_profile": "Watchman",
+  "roles": [
+   {
+    "parent": "Watchman",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Watchman"
+   }
+  ]
  }
 ]
