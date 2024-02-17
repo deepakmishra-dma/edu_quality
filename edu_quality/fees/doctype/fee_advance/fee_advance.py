@@ -35,36 +35,13 @@ class FeeAdvance(AccountsController):
 
 
     def before_save(self):
-        fee_structure = frappe.get_doc("Fee Structure", self.fee_structure)
         percent = get_percent(self.payment_term, self.payment_plan)
-        self.components = []
-        amount = 0
-
-        for component in fee_structure.components:
-            if self.is_rte:
-                rte_excempt = frappe.get_value("Fee Category",component.fees_category, "rte_excempt")
-                if rte_excempt:
-                    continue
-            label = frappe.get_value("Fee Category",component.fees_category, "custom_label")
-            default_account = frappe.get_value("Fees Settings", None, "default_account")
-
-            component_amount = component.amount * percent / 100
-            amount += component_amount
-            self.append(
-                "components",
-                {
-                    "fees_category": component.fees_category,
-                    "description": component.description,
-                    "amount": component_amount,
-                    "custom_company": component.custom_company,
-                    "label": label or default_account,
-                    "custom_company": component.custom_company,
-                    "fee_type": component.fee_type,
-                },
-            )
-
+        components, amount = get_components(self.fee_structure, percent, self.is_rte)
         self.amount = amount
         self.outstanding_amount = amount
+        self.components = []
+        for component in components:
+            self.append('components', component)
 
     def before_submit(self):
         self.generate_split()
@@ -254,6 +231,34 @@ class FeeAdvance(AccountsController):
             return entries
         except Exception as e:
             frappe.logger('fee').exception(e)
+
+
+def get_components(fee_structure, percent, is_rte):
+    fee_structure_doc = frappe.get_doc("Fee Structure", fee_structure)
+    components = []
+    amount = 0
+    for component in fee_structure_doc.components:
+        if is_rte:
+            rte_excempt = frappe.get_value("Fee Category",component.fees_category, "rte_excempt")
+            if rte_excempt:
+                continue
+        label = frappe.get_value("Fee Category",component.fees_category, "custom_label")
+        default_account = frappe.get_value("Fees Settings", None, "default_account")
+
+        component_amount = component.amount * percent / 100
+        amount += component_amount
+        components.append(
+            {
+                "fees_category": component.fees_category,
+                "description": component.description,
+                "amount": component_amount,
+                "custom_company": component.custom_company,
+                "label": label or default_account,
+                "custom_company": component.custom_company,
+                "fee_type": component.fee_type,
+            }
+        )
+    return components, amount
 
 
 def get_percent(term, payment_plan):

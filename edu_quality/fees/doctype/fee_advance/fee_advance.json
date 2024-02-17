@@ -22,6 +22,7 @@
   "payment_plan",
   "payment_term",
   "section_break_hmik",
+  "column_break_ydcb",
   "components",
   "section_break_q6c2a",
   "amount",
@@ -52,10 +53,12 @@
    "reqd": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "payment_plan",
    "fieldtype": "Link",
    "label": "Payment Plan",
    "options": "Payment Plan",
+   "read_only_depends_on": "eval:doc.docstatus == 1",
    "reqd": 1
   },
   {
@@ -122,6 +125,7 @@
    "label": "Due Date"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "components",
    "fieldtype": "Table",
    "label": "Components",
@@ -166,6 +170,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "outstanding_amount",
    "fieldtype": "Currency",
    "label": "Outstanding Amount",
@@ -212,6 +217,7 @@
    "options": "Cost Center"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "amount",
    "fieldtype": "Currency",
    "label": "Amount",
@@ -240,6 +246,10 @@
    "options": "Currency",
    "print_hide": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "column_break_ydcb",
+   "fieldtype": "Column Break"
   }
  ],
  "index_web_pages_for_search": 1,
@@ -254,7 +264,7 @@
    "link_fieldname": "reference_name"
   }
  ],
- "modified": "2023-12-12 10:51:13.867909",
+ "modified": "2023-12-14 13:59:38.367179",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Fee Advance",
