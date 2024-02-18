@@ -291,58 +291,38 @@ def create_fee_advance(student, program_enrollment,all_len=None,index=None):
     program_enrollment: Previous Program Enrollment Doc
     """
     try:
-        # if frappe.get_value("Program", program_enrollment.program, "custom_is_passing_out_class"):
-        #     frappe.log_error(title="Fee Advance",message="Since there is not a class scheduled for {class_name}, we will not be creating a fee advance.".format(class_name =program_enrollment.program))
-        #     return 
-        # if all_len and index:
-        #     set_progress(index + 1, all_len,index, "Student Fees Details")
-        # school = frappe.get_value("Program", program_enrollment.program,"school")
-        # next_program = get_next_program(program_enrollment.program, school)
-        # institution = frappe.get_value("School", frappe.get_value("Program", next_program,"school"),"institution")
-        # next_academic_year = frappe.get_value("Academic Year",{"custom_next_academic_year":1})
-        # fee_structure = get_fee_structure(next_academic_year, school, next_program)
-        # payment_plan = get_payment_plan(fee_structure, program_enrollment)
-        # term, due_date = get_first_payment_term(payment_plan)
+        if frappe.get_value("Program", program_enrollment.program, "custom_is_passing_out_class"):
+            frappe.log_error(title="Fee Advance",message="Since there is not a class scheduled for {class_name}, we will not be creating a fee advance.".format(class_name =program_enrollment.program))
+            return 
+        if all_len and index:
+            set_progress(index + 1, all_len,index, "Student Fees Details")
+        school = frappe.get_value("Program", program_enrollment.program,"school")
+        next_program = get_next_program(program_enrollment.program, school)
+        institution = frappe.get_value("School", frappe.get_value("Program", next_program,"school"),"institution")
+        next_academic_year = frappe.get_value("Academic Year",{"custom_next_academic_year":1})
+        fee_structure = get_fee_structure(next_academic_year, school, next_program)
+        payment_plan = get_payment_plan(fee_structure, program_enrollment)
+        term, due_date = get_first_payment_term(payment_plan)
 
-        # fee_advance = frappe.new_doc("Fee Advance")
-        # fee_advance.student = program_enrollment.student
-        # fee_advance.academic_year = next_academic_year
-        # fee_advance.school = school
-        # fee_advance.fee_structure = fee_structure
-        # fee_advance.company = institution
-        # fee_advance.program = program_enrollment.program
-        # fee_advance.next_program = next_program
-        # fee_advance.payment_plan = payment_plan
-        # fee_advance.payment_term = term
-        # fee_advance.is_rte = student.is_rte
-        # fee_advance.posting_date = today()
-        # fee_advance.due_date = due_date
-        # fee_advance.is_rte = frappe.get_value("Student", program_enrollment.student, "is_rte")
-        # fee_advance.receivable_account = frappe.get_value("Company", institution, "default_receivable_account")
-        # fee_advance.income_account = frappe.get_value("Company", institution, "default_liability_account")
-        # fee_advance.cost_center = frappe.get_value("Company", institution, "cost_center")
-        # fee_advance.save()
-        # fee_advance.submit()
-
-        # success_log = {
-        #         "student_id": student.name, 
-        #         "student_name": student.first_name,
-        #         "class_name": program_enrollment.program,
-        #         "fee_structure": fee_structure,
-        #         "payment_plan": payment_plan,
-        #         "payment_term": term,
-        #         "current_academic_year": program_enrollment.academic_year,
-        #         "next_academic_year": next_academic_year,
-        #         "next_class": next_program,
-        #         "institution": institution,
-        #         "fee_advance": fee_advance.name,
-        #     }
-        success_log = {
-                "student_id": student.name, 
-                "student_name": student.first_name,
-                "class_name": program_enrollment.program
-            }
-        frappe.logger("fee_advance_success").exception(json.dumps(success_log))
+        fee_advance = frappe.new_doc("Fee Advance")
+        fee_advance.student = program_enrollment.student
+        fee_advance.academic_year = next_academic_year
+        fee_advance.school = school
+        fee_advance.fee_structure = fee_structure
+        fee_advance.company = institution
+        fee_advance.program = program_enrollment.program
+        fee_advance.next_program = next_program
+        fee_advance.payment_plan = payment_plan
+        fee_advance.payment_term = term
+        fee_advance.is_rte = student.is_rte
+        fee_advance.posting_date = today()
+        fee_advance.due_date = due_date
+        fee_advance.is_rte = frappe.get_value("Student", program_enrollment.student, "is_rte")
+        fee_advance.receivable_account = frappe.get_value("Company", institution, "default_receivable_account")
+        fee_advance.income_account = frappe.get_value("Company", institution, "default_liability_account")
+        fee_advance.cost_center = frappe.get_value("Company", institution, "cost_center")
+        fee_advance.save()
+        fee_advance.submit()
     except Exception:
         frappe.log_error(
             title="Fee Advance",
