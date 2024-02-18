@@ -191,11 +191,13 @@ class FeeAdvance(AccountsController):
 
     def get_company_splits(self):
         try:
-            receivable_account, liability_account, cost_center = frappe.db.get_value("Company", self.company, ["default_receivable_account", "default_liability_account", "cost_center"])
             student_entries = {}
             fee_entries = {}
 
             for component in self.components:
+                company = component.custom_company or self.company
+                receivable_account, liability_account, cost_center = frappe.db.get_value("Company", company, ["default_receivable_account", "default_liability_account", "cost_center"])
+
                 if receivable_account not in student_entries:
                     student_entries[receivable_account] = self.get_gl_dict({
                         "company": component.custom_company,
@@ -317,7 +319,6 @@ def create_fee_advance(student, program_enrollment,all_len=None,index=None):
         fee_advance.is_rte = student.is_rte
         fee_advance.posting_date = today()
         fee_advance.due_date = due_date
-        fee_advance.is_rte = frappe.get_value("Student", program_enrollment.student, "is_rte")
         fee_advance.receivable_account = frappe.get_value("Company", institution, "default_receivable_account")
         fee_advance.income_account = frappe.get_value("Company", institution, "default_liability_account")
         fee_advance.cost_center = frappe.get_value("Company", institution, "cost_center")
