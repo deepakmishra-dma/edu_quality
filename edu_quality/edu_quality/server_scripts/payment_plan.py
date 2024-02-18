@@ -5,7 +5,7 @@ from edu_quality.public.py.discount import add_discount, get_all_discounts
 import json
 from frappe.utils import flt
 from edu_quality.public.py.payment_request import update_payment_request_after_discount
-
+from edu_quality.fees.doctype.fee_advance.fee_advance import get_percent, get_components
 
 def get_deposit_amount(fees):
     apply_deposit = 0
@@ -21,17 +21,35 @@ def get_deposit_amount(fees):
 
 
 @frappe.whitelist()
-def change_payment_plan(payment_plan,fee_name):
-    doc = frappe.get_doc("Fees", fee_name)
+def change_payment_plan(payment_plan, doctype, fee_name):
+    if doctype == "Fees":
+        doc = frappe.get_doc("Fees", fee_name)
 
-    for ps in doc.payment_schedule:
-        if ps.outstanding == 0:
-            frappe.throw(f"Cannot Change Payment Plan As {ps.payment_term} is already Paid!")
+        for ps in doc.payment_schedule:
+            if ps.outstanding == 0:
+                frappe.throw(f"Cannot Change Payment Plan As {ps.payment_term} is already Paid!")
+        
+        remove_payment_plan_discount(doc)
+        doc.reload()
+        update_payment_plan(payment_plan,doc)
+        update_payment_request_after_discount(doc)
     
-    remove_payment_plan_discount(doc)
-    doc.reload()
-    update_payment_plan(payment_plan,doc)
-    update_payment_request_after_discount(doc)
+    elif doctype == "Fee Advance":
+        doc = frappe.get_doc("Fee Advance", fee_name)
+        percent = get_percent(doc.payment_term, payment_plan)
+        if doc.outstanding_amount == 0:
+            frappe.throw(f"Cannot Change Payment Plan As the Fee Advance is already Paid!")
+
+        components, amount = get_components(doc.fee_structure, percent, doc.is_rte)
+        doc.payment_plan = payment_plan
+        doc.amount = amount
+        doc.outstanding_amount = amount
+        doc.components = []
+        for component in components:
+            doc.append('components', component)
+        doc.save(ignore_permissions=True)
+        frappe.response["message"] = "Payment Plan Updated Successfully!"
+        update_payment_request_after_discount(doc)
 
 def remove_payment_plan_discount(doc):
     discount_configs = frappe.get_all("Discount Configuration",

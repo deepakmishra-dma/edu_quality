@@ -119,6 +119,7 @@ frappe.ui.form.on('Fees', {
                         type: "POST",
                         args: {
                             payment_plan: values.payment_plan,
+                            doctype: doc.doctype,
                             fee_name: doc.name
                         },
                         callback: function (response) {
