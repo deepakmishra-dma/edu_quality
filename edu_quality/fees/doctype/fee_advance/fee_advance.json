@@ -264,7 +264,7 @@
    "link_fieldname": "reference_name"
   }
  ],
- "modified": "2023-12-14 13:59:38.367179",
+ "modified": "2023-12-15 11:52:48.368559",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Fee Advance",
@@ -281,6 +281,7 @@
    "report": 1,
    "role": "System Manager",
    "share": 1,
+   "submit": 1,
    "write": 1
   }
  ],
