@@ -36,7 +36,7 @@ def create_payment_request_before_due_date():
                 if (schedule.due_date - today).days == before_days:
                     frappe.enqueue(
                         "edu_quality.public.py.student.create_payment_request",
-                        fees=fee,
+                        fee=fee,
                         term = schedule.payment_term,
                         is_async=True,
                         queue="long",
@@ -52,7 +52,7 @@ def create_payment_request_before_due_date_fee_advance():
         if (due_date - today_date).days < 30:
             frappe.enqueue(
                 "edu_quality.public.py.student.create_payment_request",
-                fees=fee_advance_doc,
+                fee=fee_advance_doc,
                 term = fee_advance_doc.payment_term,
                 is_async=True,
                 queue="long",
