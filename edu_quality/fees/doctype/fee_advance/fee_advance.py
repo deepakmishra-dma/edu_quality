@@ -54,15 +54,23 @@ class FeeAdvance(AccountsController):
         self.make_gl_entries()
 
         student_email = frappe.db.get_value("Student", self.student, "student_email_id")
-        make_payment_request(
-                party_type="Student",
-                party=self.student,
-                dt=self.doctype,
-                dn=self.name,
-                recipient_id=student_email,
-                payment_term=self.payment_term,
-                submit_doc=True,
-            )
+        today_date = frappe.utils.getdate(today())
+
+        if isinstance(self.due_date, str):
+            due_date = frappe.utils.getdate(self.due_date)
+        else:
+            due_date = self.due_date
+
+        if (due_date - today_date).days < 30:
+            make_payment_request(
+                    party_type="Student",
+                    party=self.student,
+                    dt=self.doctype,
+                    dn=self.name,
+                    recipient_id=student_email,
+                    payment_term=self.payment_term,
+                    submit_doc=True,
+                )
     
 
     def on_cancel(self):
