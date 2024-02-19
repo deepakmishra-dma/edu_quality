@@ -84,13 +84,13 @@ def create_payment_request(fee,term=None):
     try:
         if not frappe.db.exists(
             "Payment Request",
-            {"reference_doctype": "Fees", "reference_docname": fee.name},
+            {"reference_doctype": fee.doctype, "reference_docname": fee.name},
         ):
             time.sleep(30)
             make_payment_request(
                 party_type="Student",
                 party=fee.student,
-                dt="Fees",
+                dt=fee.doctype,
                 dn=fee.name,
                 payment_term = term,
                 recipient_id=frappe.get_value('Student',fee.student,'student_email_id'),

@@ -42,3 +42,19 @@ def create_payment_request_before_due_date():
                         queue="long",
                         timeout=1800,
                     )
+
+def create_payment_request_before_due_date_fee_advance():
+    today_date = frappe.utils.getdate(frappe.utils.today())
+    fee_advance_docs = frappe.get_all("Fee Advance")
+    for fee_advance in fee_advance_docs:
+        fee_advance_doc = frappe.get_doc("Fee Advance",fee_advance.name)
+        due_date = fee_advance_doc.due_date
+        if (due_date - today_date).days < 30:
+            frappe.enqueue(
+                "edu_quality.public.py.student.create_payment_request",
+                fees=fee_advance_doc,
+                term = fee_advance_doc.payment_term,
+                is_async=True,
+                queue="long",
+                timeout=1800,
+            )
