@@ -1,9 +1,8 @@
 # Copyright (c) 2023, Hybrowlabs Technologies and contributors
 # For license information, please see license.txt
 
-import json
+from datetime import datetime
 from edu_quality.public.py.discount import calculate_discount, get_discount_list
-from edu_quality.public.py.fee import payment_split
 from erpnext.accounts.doctype.account.account import get_account_currency
 from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
     get_accounting_dimensions,
@@ -31,9 +30,6 @@ class FeeAdvance(AccountsController):
     def generate_split(self):
         generate_split_payment(self)
 
-    def update_split(self):
-        generate_split_payment(self,update=1)
-
 
     def before_save(self):
         percent = get_percent(self.payment_term, self.payment_plan)
@@ -45,7 +41,13 @@ class FeeAdvance(AccountsController):
             self.append('components', component)
 
     def before_submit(self):
-        referal_discount(self, "Before Submit")
+        referal_discount(self)
+        payment_plan(self)
+        self.generate_split()
+
+    def before_update_after_submit(self):
+        referal_discount(self)
+        payment_plan(self)
         self.generate_split()
 
     def validate(self):
@@ -411,7 +413,43 @@ def referal_discount(doc, method=None):
 
             grand_total = doc.amount - discount
 
-            if method == "Before Submit":
+            component.custom_discounts = discount_name
+            component.custom_discount_amount = new_discount
+            component.custom_amount_after_discount = amount_after_discount
+            component.custom_discount_percentage = discount_percentage
+
+            doc.amount = grand_total
+            doc.outstanding_amount = grand_total
+            break  
+
+
+def payment_plan(doc, method=None):
+    payment_plan_doc = frappe.get_doc("Payment Plan", doc.payment_plan)
+    payplan_discount = get_payplan_discount(doc, payment_plan_doc)
+    if not payplan_discount:
+        frappe.response["message"] = f"Payment Plan Discount not found for {doc.payment_plan}"
+        return
+    discount_amount, discount = payplan_discount
+    if discount_amount:
+        for component in doc.components:
+            if component.fees_category == discount.fee_category:
+                amount = component.custom_amount_after_discount or component.amount
+                amount_after_discount = amount - discount_amount
+                previous_discount = component.custom_discount_amount or 0
+                new_discount = previous_discount + discount_amount
+                discount_percentage = calculate_discount(component.amount, new_discount)
+
+                discount_name = component.custom_discounts
+                discount_list = get_discount_list(discount_name)
+
+                if discount_list and discount.name not in discount_list:
+                    discount_list.append(discount.name)
+                    discount_name = ", ".join(discount_list)
+                else:
+                    discount_name = discount.name
+
+                grand_total = doc.amount - discount_amount
+
                 component.custom_discounts = discount_name
                 component.custom_discount_amount = new_discount
                 component.custom_amount_after_discount = amount_after_discount
@@ -419,21 +457,25 @@ def referal_discount(doc, method=None):
 
                 doc.amount = grand_total
                 doc.outstanding_amount = grand_total
+                break
 
-            elif method == "Before Update":
-                updates = {
-                    "custom_discounts": discount_name,
-                    "custom_discount_amount": new_discount,
-                    "custom_amount_after_discount": amount_after_discount,
-                    "custom_discount_percentage": discount_percentage
-                }
 
-                frappe.db.set_value("Fee Component", component.name, updates)
-
-                doc_updates = {
-                    "amount": grand_total,
-                    "outstanding_amount": doc.outstanding_amount - discount
-                }
-
-                frappe.db.set_value("Fee Advance", doc.name, doc_updates)  
-            break  
+def get_payplan_discount(doc, payment_plan):
+    """
+    update time based discount and referal discount in the payment schedule
+    """
+    for ps in payment_plan.payment_schedule:
+        if ps.due_date < datetime.today().date():
+            frappe.msgprint("Cannot Apply new Payment Plan Discount As Due Date is Passed!")
+            return
+        
+    for component in doc.components:
+        dis_filter = {"payment_plan": payment_plan.name, "fee_structure":doc.fee_structure, "fee_category": component.fees_category, "enabled":1}
+        if frappe.db.exists("Discount Configuration", dis_filter):
+            dis = frappe.get_doc("Discount Configuration", dis_filter)
+            if dis.discount_amount:
+                return dis.discount_amount, dis
+            else:
+                discount_amount = (component.amount * float(dis.discount)) / 100
+                return discount_amount, dis
+    return None
