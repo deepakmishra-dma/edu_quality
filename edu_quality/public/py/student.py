@@ -36,7 +36,7 @@ def autoname(doc,method=None):
         doc.name = prefix
 
 def get_reference(program):
-    if not frappe.db.get_value("Academic Year",[["Academic+Year","year_start_date","<=",today()],["Academic+Year","year_end_date",">=",today()]],"rolled_over"):
+    if not frappe.db.get_value("Academic Year",[["Academic Year","year_start_date","<=",today()],["Academic Year","year_end_date",">=",today()]],"rolled_over"):
         current_program = frappe.get_doc("Program",program)
         series = frappe.db.get_value("Program",{'school':current_program.school,"sequence":current_program.sequence-1},'reference_series')
         if not series:
