@@ -2,6 +2,7 @@
 # For license information, please see license.txt
 
 import json
+from edu_quality.public.py.discount import calculate_discount, get_discount_list
 from edu_quality.public.py.fee import payment_split
 from erpnext.accounts.doctype.account.account import get_account_currency
 from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
@@ -44,6 +45,7 @@ class FeeAdvance(AccountsController):
             self.append('components', component)
 
     def before_submit(self):
+        referal_discount(self, "Before Submit")
         self.generate_split()
 
     def validate(self):
@@ -366,3 +368,72 @@ def get_payment_plan(fee_structure=None, program_enrollment=None):
         return payment_plan
     else:
         return frappe.get_value("Payment Plan", {"fee_structure": fee_structure}, "name")
+
+
+def referal_discount(doc, method=None):
+    """
+    Apply referral discount to eligible fee components and update the document when creating fee document.
+
+    Parameters:
+    - doc (frappe.model.document.Document): The document to which the referral discount is applied.
+    - method (str, optional): The method triggering the referral discount application.
+
+    Returns:
+    dict: A dictionary containing information about the applied referral discount per fee category.
+    """
+    grand_total = doc.amount
+    student = frappe.get_doc("Student", doc.student)
+
+    if student.is_rte or student.referral_amount == 0:
+        return
+    
+    discount = float(student.referral_amount)
+
+    for component in doc.components:
+        if not component.fees_category != "Tuition Fee":
+            continue
+
+        if component.amount > discount and discount != 0:
+            amount = component.custom_amount_after_discount or component.amount
+            amount_after_discount = amount - discount
+            previous_discount = component.custom_discount_amount or 0
+            new_discount = previous_discount + discount
+            discount_percentage = calculate_discount(component.amount, new_discount)
+
+            discount_name = component.custom_discounts
+            discount_list = get_discount_list(discount_name)
+
+            if discount_list and "Referral" not in discount_list:
+                discount_list.append("Referral")
+                discount_name = ", ".join(discount_list)
+            else:
+                discount_name = "Referral"
+
+            grand_total = doc.amount - discount
+
+            if method == "Before Submit":
+                component.custom_discounts = discount_name
+                component.custom_discount_amount = new_discount
+                component.custom_amount_after_discount = amount_after_discount
+                component.custom_discount_percentage = discount_percentage
+
+                doc.amount = grand_total
+                doc.outstanding_amount = grand_total
+
+            elif method == "Before Update":
+                updates = {
+                    "custom_discounts": discount_name,
+                    "custom_discount_amount": new_discount,
+                    "custom_amount_after_discount": amount_after_discount,
+                    "custom_discount_percentage": discount_percentage
+                }
+
+                frappe.db.set_value("Fee Component", component.name, updates)
+
+                doc_updates = {
+                    "amount": grand_total,
+                    "outstanding_amount": doc.outstanding_amount - discount
+                }
+
+                frappe.db.set_value("Fee Advance", doc.name, doc_updates)  
+            break  
