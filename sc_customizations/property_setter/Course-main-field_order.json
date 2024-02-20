@@ -1,0 +1,15 @@
+{
+ "creation": "2023-11-29 02:52:07.637690",
+ "doc_type": "Course",
+ "docstatus": 0,
+ "doctype": "Property Setter",
+ "doctype_or_field": "DocType",
+ "is_system_generated": 0,
+ "modified": "2023-11-29 02:52:07.637690",
+ "modified_by": "Administrator",
+ "name": "Course-main-field_order",
+ "owner": "Administrator",
+ "property": "field_order",
+ "property_type": "Data",
+ "value": "[\"custom_details\", \"custom_language\", \"custom_syllabus\", \"course_name\", \"department\", \"hero_image\", \"column_break_tflc\", \"custom_short_code\", \"section_break_6\", \"description\", \"topics\", \"assessment_tab\", \"assessment\", \"default_grading_scale\", \"assessment_criteria\", \"connections_tab\"]"
+}

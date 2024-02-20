@@ -49,7 +49,17 @@ frappe.listview_settings['Lead'] = {
             const groupName = values.group_name
             const doc = await fetch(`/api/resource/Broadcast Group/${groupName}`, { headers: headers })
             const docData = await doc.json()
-            payload.group_members = [...(docData.group_members || []), ...payload.group_members]
+            payload.group_members = [...(docData.data.group_members || []), ...payload.group_members]
+            group_hash = {}
+          
+            payload.group_members = payload.group_members.filter((member, index, array) => {
+              if (!group_hash[member.member_name]) {
+                group_hash[member.member_name] = 1
+                return true
+              }
+              else return false
+            })
+
             const res = await fetch(`/api/resource/Broadcast Group/${groupName}`, {
               method: 'PUT',
               headers: headers, body: JSON.stringify(payload)

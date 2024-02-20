@@ -13,5 +13,62 @@
     "role": "Councellor"
    }
   ]
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Role Profile",
+  "modified": "2023-12-05 09:17:31.360648",
+  "name": "Content Creator",
+  "role_profile": "Content Creator",
+  "roles": [
+   {
+    "parent": "Content Creator",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Content Creator"
+   },
+   {
+    "parent": "Content Creator",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Employee"
+   },
+   {
+    "parent": "Content Creator",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Inbox User"
+   }
+  ]
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Role Profile",
+  "modified": "2023-12-13 02:43:50.636829",
+  "name": "Printer",
+  "role_profile": "Printer",
+  "roles": [
+   {
+    "parent": "Printer",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Printer"
+   }
+  ]
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Role Profile",
+  "modified": "2023-12-14 09:52:28.415420",
+  "name": "Watchman",
+  "role_profile": "Watchman",
+  "roles": [
+   {
+    "parent": "Watchman",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Watchman"
+   }
+  ]
  }
 ]

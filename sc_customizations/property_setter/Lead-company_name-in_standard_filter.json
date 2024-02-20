@@ -1,0 +1,16 @@
+{
+ "creation": "2023-10-13 13:07:26.138862",
+ "doc_type": "Lead",
+ "docstatus": 0,
+ "doctype": "Property Setter",
+ "doctype_or_field": "DocField",
+ "field_name": "company_name",
+ "is_system_generated": 0,
+ "modified": "2023-10-13 13:07:26.138862",
+ "modified_by": "Administrator",
+ "name": "Lead-company_name-in_standard_filter",
+ "owner": "Administrator",
+ "property": "in_standard_filter",
+ "property_type": "Check",
+ "value": "0"
+}

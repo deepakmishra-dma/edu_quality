@@ -3,11 +3,66 @@
   "docstatus": 0,
   "doctype": "Custom HTML Block",
   "html": "<a id=\"lead-action\" style=\"text-decoration:none;\" onclick=\"reRoute()\"><span class=\"ellipsis\" title=\"Lead Next Action Date From Today\"   style=\"font-weight:500;\">Lead Next Action Date From Today</span><svg class=\"icon ml-2 icon-xs\" style=\"stroke: grey\">\r\n\t\t\t<use class=\"\" href=\"#icon-arrow-up-right\"></use>\r\n\t\t</svg></a>",
-  "modified": "2023-10-19 18:19:33.824730",
+  "modified": "2023-12-14 01:39:09.419064",
   "name": "Lead Next Action Date  From Today",
   "private": 0,
-  "roles": [],
+  "roles": [
+   {
+    "parent": "Lead Next Action Date  From Today",
+    "parentfield": "roles",
+    "parenttype": "Custom HTML Block",
+    "role": "Councellor"
+   },
+   {
+    "parent": "Lead Next Action Date  From Today",
+    "parentfield": "roles",
+    "parenttype": "Custom HTML Block",
+    "role": "Walnut Admin"
+   },
+   {
+    "parent": "Lead Next Action Date  From Today",
+    "parentfield": "roles",
+    "parenttype": "Custom HTML Block",
+    "role": "System Manager"
+   }
+  ],
   "script": "\nvar anchorTag = root_element.getElementById(\"lead-action\")\nanchorTag.addEventListener('click',reRoute)\n\nfunction reRoute(e){\n    e.preventDefault()\n    var todayDate = new Date()\n    \n \n    frappe.set_route(\"app\",\"lead\",{next_action_date:`${todayDate.getFullYear()}-${todayDate.getMonth()+1}-${todayDate.getDate()}`})\n}",
+  "style": null
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Custom HTML Block",
+  "html": "<div><button id =\"qrCodeScanBtn\" class=\"btn btn-primary btn-sm primary-action\"><div><i style =\"font-size:128px;height:128px;width:128px\" class=\"fa fa-print\" aria-hidden=\"true\"></i></div>Generate Receipts</button></div>",
+  "modified": "2023-12-14 02:40:54.396419",
+  "name": "Printer Scanner",
+  "private": 0,
+  "roles": [
+   {
+    "parent": "Printer Scanner",
+    "parentfield": "roles",
+    "parenttype": "Custom HTML Block",
+    "role": "Printer"
+   }
+  ],
+  "script": "var btn = root_element.getElementById(\"qrCodeScanBtn\")\nconsole.log(btn)\nlet d = new frappe.ui.Dialog({\n\t\t\ttitle: __(\"Scan Challans or Orders\"),\n\t\t\tfields: [\n\t\t{\n\t\t\tlabel: 'Order/Receipt ID',\n\t\t\tfieldname: 'qr_code',\n\t\t\tfieldtype: 'Data',\n\t\t},\n\t\t{\n\t\t\tlabel: 'Open Scanner',\n\t\t\tfieldname: 'scanbtn',\n\t\t\tfieldtype: 'Button',\n\t\t\tclick: async () => {\n\t\t\t\tconst images = await nativeInterface.execute('openWebViewScanner')\n\t\t\t\td.set_value('qr_code', images?.data)\n\n\t\t\t}\n\t\t},\n\t\t{\n\t\t\tlabel: 'Submit',\n\t\t\tfieldname: 'submitbtn',\n\t\t\tfieldtype: 'Button',\n\t\t\tclick: async () => {\n\t\t\t\tfrappe.call({\n\t\t\t\t\tmethod: \"edu_quality.api.scan_receipts.find_url_to_redirect_to\",\n\t\t\t\t\targs: {\n\t\t\t\t\t\tkey: d['fields_dict']['qr_code']['input'].value,\n\t\t\t\t\t\ttype: \"POST\",\n\t\t\t\t\t}, callback: (r) => {\n\t\t\t\t\t\tif (r.message) {\n\t\t\t\t\t\t\tfrappe.set_route(`/app${r.message}`)\n\t\t\t\t\t\t}\n\t\t\t\t\t}\n\t\t\t\t})\n\n\t\t\t}\n\t\t},\n\n\n\t],\n\t\t});\n\t\t\nbtn.addEventListener('click', ()=>{\tfrappe.set_route(\"/scan-orders\")})",
+  "style": null
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Custom HTML Block",
+  "html": "<div><button id =\"qrCodeScanBtn\" class=\"btn btn-primary btn-sm primary-action\"><div><i style =\"font-size:128px;height:128px;width:128px\" class=\"fa-solid fa-box\" aria-hidden=\"true\"></i></div>Generate Receipts</button></div>",
+  "modified": "2023-12-14 10:29:15.811001",
+  "name": "Watchman Scanner",
+  "private": 0,
+  "roles": [
+   {
+    "parent": "Watchman Scanner",
+    "parentfield": "roles",
+    "parenttype": "Custom HTML Block",
+    "role": "Printer"
+   }
+  ],
+  "script": "var btn = root_element.getElementById(\"qrCodeScanBtn\")\nconsole.log(btn)\nlet d = new frappe.ui.Dialog({\n\t\t\ttitle: __(\"Scan Challans or Orders\"),\n\t\t\tfields: [\n\t\t{\n\t\t\tlabel: 'Order/Receipt ID',\n\t\t\tfieldname: 'qr_code',\n\t\t\tfieldtype: 'Data',\n\t\t},\n\t\t{\n\t\t\tlabel: 'Open Scanner',\n\t\t\tfieldname: 'scanbtn',\n\t\t\tfieldtype: 'Button',\n\t\t\tclick: async () => {\n\t\t\t\tconst images = await nativeInterface.execute('openWebViewScanner')\n\t\t\t\td.set_value('qr_code', images?.data)\n\n\t\t\t}\n\t\t},\n\t\t{\n\t\t\tlabel: 'Submit',\n\t\t\tfieldname: 'submitbtn',\n\t\t\tfieldtype: 'Button',\n\t\t\tclick: async () => {\n\t\t\t\tfrappe.call({\n\t\t\t\t\tmethod: \"edu_quality.api.scan_receipts.find_url_to_redirect_to\",\n\t\t\t\t\targs: {\n\t\t\t\t\t\tkey: d['fields_dict']['qr_code']['input'].value,\n\t\t\t\t\t\ttype: \"POST\",\n\t\t\t\t\t}, callback: (r) => {\n\t\t\t\t\t\tif (r.message) {\n\t\t\t\t\t\t\tfrappe.set_route(`/app${r.message}`)\n\t\t\t\t\t\t}\n\t\t\t\t\t}\n\t\t\t\t})\n\n\t\t\t}\n\t\t},\n\n\n\t],\n\t\t});\n\t\t\nbtn.addEventListener('click', ()=>{\tfrappe.set_route(\"/scan-orders\")})",
   "style": null
  }
 ]

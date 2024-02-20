@@ -36,11 +36,16 @@ doctype_js = {
     "Lead": "public/js/lead.js",
     "Fee Schedule": "public/js/fee_schedule.js",
     "Student": "public/js/student.js",
+    "Item": "public/js/item.js",
+    "Topic": "public/js/topic.js",
 }
 doctype_list_js = {
     "Student Applicant": "public/js/list/student_applicant_list.js",
     "Lead": "public/js/list/lead_list.js",
+    "Program Enrollment": "public/js/list/program_enrollment_list.js",
     "Student": "public/js/list/student_list.js",
+    "Student ID Card": "public/js/list/student_id_card.js",
+    "Fees": "public/js/list/fees_list.js",
 }
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -109,6 +114,7 @@ override_doctype_class = {
     "Payment Request": "edu_quality.overrides.CustomPaymentRequest",
     "Fee Schedule": "edu_quality.public.py.fee_schedule.CustomFeeSchedule",
     "Program Enrollment": "edu_quality.public.py.enrollment_override.CustomProgramEnrollment",
+    "Fees": "edu_quality.edu_quality.overrides.fees.CustomFees",
 }
 
 # Document Events
@@ -118,13 +124,13 @@ override_doctype_class = {
 doc_events = {
     "Student Applicant": {
         "before_save": "edu_quality.public.py.application.before_save",
-        "after_insert": "edu_quality.public.py.application.after_insert",
+        "after_insert": "edu_quality.edu_quality.server_scripts.student_applicant.after_insert",
         "autoname": "edu_quality.public.py.application.autoname",
     },
     "Program Enrollment": {
         "on_submit": "edu_quality.public.py.fee.create_fees",
         "after_insert": "edu_quality.public.py.fee.append_program_enrollment",
-        "before_cancel": "edu_quality.public.py.fee.remove_program_enrollment"
+        "on_trash": "edu_quality.public.py.fee.remove_program_enrollment",
     },
     "Fees": {
         "after_insert": "edu_quality.public.py.fee.after_insert",
@@ -135,13 +141,34 @@ doc_events = {
     "Payment Request": {
         "before_save": "edu_quality.public.py.payment_request.before_save",
     },
-    "Student": {"autoname": "edu_quality.public.py.student.autoname"},
+    "Student": {
+        "autoname": "edu_quality.public.py.student.autoname",
+        "before_insert": "edu_quality.public.py.student.before_insert",
+    },
     "Custom Field": {"after_insert": "edu_quality.public.py.fixtures.custom_fields"},
     "Custom DocPerm": {
         "after_insert": "edu_quality.public.py.fixtures.custom_doc_perm"
     },
-    "Lead": {"after_insert": "edu_quality.public.py.lead.after_insert"},
+    "Lead": {
+        "after_insert": "edu_quality.public.py.lead.after_insert",
+        "before_insert": "edu_quality.public.py.lead.before_insert",
+    },
     "Payment Entry": {"autoname": "edu_quality.public.py.payment_entry.autoname"},
+    "Item": {
+        "autoname": "edu_quality.overrides_hooks.item.autoname",
+        "before_insert": "edu_quality.overrides_hooks.item.before_insert",
+    },
+    "Program": {"validate": "edu_quality.public.py.program.validate"},
+    "Topic": {
+        "autoname": "edu_quality.overrides_hooks.topic.autoname",
+        "after_insert": "edu_quality.overrides_hooks.topic.after_insert",
+    },
+    "Purchase Order": {
+        "before_validate": "edu_quality.overrides_hooks.purchase_order.before_validate"
+    },
+    "Purchase Receipt": {
+        "before_validate": "edu_quality.overrides_hooks.purchase_order.before_validate"
+    },
 }
 
 # Scheduled Tasks
@@ -152,6 +179,7 @@ scheduler_events = {
     "daily": [
         "edu_quality.tasks.time_based",
         "edu_quality.tasks.create_payment_request_before_due_date",
+        "edu_quality.tasks.create_payment_request_before_due_date_fee_advance",
     ],
 }
 # scheduler_events = {
@@ -253,17 +281,30 @@ fixtures = [
     {"dt": "Accounting Dimension"},
     {
         "dt": "Role",
-        "filters": [["name", "in", ["Head Administration", "Councellor", "Teacher"]]],
+        "filters": [["name", "in", ["Head Administration", "Councellor", "Teacher","Printer","Watchman"]]],
+    },
+    {
+        "dt": "Role",
+        "filters": [
+            [
+                "name",
+                "in",
+                ["Head Administration", "Councellor", "Teacher", "Content Creator","Printer","Watchman"],
+            ]
+        ],
     },
     {"dt": "Custom DocPerm", "filters": [["module", "=", "Edu Quality"]]},
     {"dt": "Program"},
     {"dt": "Lead Sub Status"},
     {"dt": "School"},
     {"dt": "Academic Year"},
-    {"dt": "Funnel Node", "filters": [["class_name", "=", "edu_quality"]]},
+    # {"dt": "Funnel Node", "filters": [["class_name", "=", "edu_quality"]]},
     {"dt": "Funnel"},
     {"dt": "Email Template"},
     {"dt": "Letter Head"},
+    {"dt": "Class Type"},
+    {"dt": "Item Group"},
+    {"dt": "CRM Settings"},
     {
         "dt": "Workspace",
         "filters": [
@@ -283,8 +324,14 @@ fixtures = [
     {
         "dt": "Custom HTML Block",
     },
-    {"dt": "Module Profile", "filters": [["name", "in", ["Councellor"]]]},
-    {"dt": "Role Profile", "filters": [["name", "in", ["Councellor"]]]},
+    {
+        "dt": "Module Profile",
+        "filters": [["name", "in", ["Councellor", "Content Creator","Printer","Watchman"]]],
+    },
+    {
+        "dt": "Role Profile",
+        "filters": [["name", "in", ["Councellor", "Content Creator","Printer","Watchman"]]],
+    },
 ]
 
 

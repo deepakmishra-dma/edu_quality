@@ -1,0 +1,225 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-11-23 10:19:52.045571",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "details_section",
+  "plan_date",
+  "subject",
+  "texbook",
+  "academic_year",
+  "column_break_ohld",
+  "unit",
+  "class",
+  "chapter",
+  "period",
+  "section_break_hvmh",
+  "products",
+  "table_vwbr",
+  "notes_section",
+  "broadcast",
+  "home_work",
+  "material_required",
+  "column_break_vgpi",
+  "parent_note",
+  "class_work",
+  "comments_and_assignments_section",
+  "column_break_ycni",
+  "solve_assignment_instructions",
+  "assignment_instructions_footer",
+  "comment",
+  "assignment",
+  "grading"
+ ],
+ "fields": [
+  {
+   "fieldname": "plan_date",
+   "fieldtype": "Date",
+   "label": "Plan Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "broadcast",
+   "fieldtype": "Select",
+   "label": "Broadcast"
+  },
+  {
+   "fieldname": "period",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Period",
+   "reqd": 1
+  },
+  {
+   "fieldname": "assignment",
+   "fieldtype": "Small Text",
+   "label": "Assignment Instructions Header",
+   "options": "Item Detail"
+  },
+  {
+   "fieldname": "grading",
+   "fieldtype": "Data",
+   "label": "Grading"
+  },
+  {
+   "fieldname": "table_vwbr",
+   "fieldtype": "Table",
+   "label": "CMAP Assignees",
+   "options": "CMAP Assignment"
+  },
+  {
+   "fieldname": "academic_year",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Academic Year",
+   "options": "Academic Year",
+   "reqd": 1
+  },
+  {
+   "fieldname": "subject",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Subject",
+   "options": "Course",
+   "reqd": 1
+  },
+  {
+   "fieldname": "chapter",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Chapter",
+   "options": "Topic",
+   "reqd": 1
+  },
+  {
+   "fieldname": "texbook",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Texbook",
+   "options": "Textbook",
+   "reqd": 1
+  },
+  {
+   "fieldname": "unit",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Unit",
+   "options": "1\n2\n3\n4",
+   "reqd": 1
+  },
+  {
+   "fieldname": "class",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Class",
+   "options": "Class Type",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_ycni",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "solve_assignment_instructions",
+   "fieldtype": "Small Text",
+   "label": "Solve Assignment Instructions"
+  },
+  {
+   "fieldname": "assignment_instructions_footer",
+   "fieldtype": "Small Text",
+   "label": "Assignment Instructions Footer"
+  },
+  {
+   "fieldname": "products",
+   "fieldtype": "Table",
+   "label": "Products",
+   "options": "Item Detail"
+  },
+  {
+   "fieldname": "details_section",
+   "fieldtype": "Section Break",
+   "label": "Details"
+  },
+  {
+   "fieldname": "column_break_ohld",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_hvmh",
+   "fieldtype": "Section Break",
+   "label": "Products and Assignees"
+  },
+  {
+   "fieldname": "comments_and_assignments_section",
+   "fieldtype": "Section Break",
+   "label": "Comments and Assignments"
+  },
+  {
+   "fieldname": "notes_section",
+   "fieldtype": "Section Break",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "parent_note",
+   "fieldtype": "Select",
+   "label": "Parent Note"
+  },
+  {
+   "fieldname": "home_work",
+   "fieldtype": "Select",
+   "label": "Home Work"
+  },
+  {
+   "fieldname": "class_work",
+   "fieldtype": "Select",
+   "label": "Class Work"
+  },
+  {
+   "fieldname": "material_required",
+   "fieldtype": "Select",
+   "label": "Material Required"
+  },
+  {
+   "fieldname": "comment",
+   "fieldtype": "Small Text",
+   "label": "Comment"
+  },
+  {
+   "fieldname": "column_break_vgpi",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-12-04 01:54:54.655509",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "CMAP",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -113,48 +113,23 @@ frappe.ui.form.on('Fees', {
                 size: 'large',
                 primary_action_label: 'Submit',
                 primary_action: async function (values) {
-                    if (frm.doc.need_otp === 1 && frm.doc.parent_otp === 1) {
-                        frappe.call({
-                            method: "edu_quality.public.py.discount.remove_payment_plan_discount",
-                            type: "POST",
-                            args: {
-                                payment_plan: doc.payment_plan,
-                                doc: doc.name
-                            },
-                            callback: function (response) {
-                                if (response.message != null) {
-                                    frappe.show_alert({
-                                        message: __(response.message),
-                                        indicator: 'green'
-                                    });
-                                }
-                            },
-                            async: false
-                        });
-                        doc.payment_plan = values.payment_plan;
-                        await frappe.call({
-                            method: "edu_quality.public.py.fee.update_payment_plan",
-                            type: "POST",
-                            args: {
-                                payment_plan: values.payment_plan,
-                                fee_name: doc.name
-                            },
-                            callback: function (response) {
-                                frappe.show_alert({
-                                    message: __(response.message),
-                                    indicator: 'green'
-                                });
-                            },
-                            async: false
-                        });
-                    } else {
-                        frm.doc.need_otp = 1;
-                        frappe.show_alert({
-                            message: __("Please verify parent OTP"),
-                            indicator: 'red'
-                        });
-                        frm.save('Update');
-                    }
+                    doc.payment_plan = values.payment_plan;
+                    await frappe.call({
+                        method: "edu_quality.edu_quality.server_scripts.payment_plan.change_payment_plan",
+                        type: "POST",
+                        args: {
+                            payment_plan: values.payment_plan,
+                            doctype: doc.doctype,
+                            fee_name: doc.name
+                        },
+                        callback: function (response) {
+                            frappe.show_alert({
+                                message: __(response.message),
+                                indicator: 'green'
+                            });
+                        },
+                        async: false
+                    });
                     dialog.hide();
                     frm.reload_doc();
                 }

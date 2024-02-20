@@ -16,6 +16,7 @@
   "for_user": "",
   "hide_custom": 0,
   "icon": "getting-started",
+  "indicator_color": null,
   "is_hidden": 0,
   "label": "Home",
   "links": [
@@ -356,7 +357,7 @@
     "type": "Link"
    }
   ],
-  "modified": "2023-10-17 11:17:53.164525",
+  "modified": "2023-12-14 02:25:54.511621",
   "module": "Setup",
   "name": "Home",
   "number_cards": [],
@@ -459,10 +460,11 @@
   "for_user": "",
   "hide_custom": 0,
   "icon": "money-coins-1",
+  "indicator_color": null,
   "is_hidden": 0,
   "label": "Fees Setup",
   "links": [],
-  "modified": "2023-09-26 13:01:17.379055",
+  "modified": "2023-12-14 02:02:23.627355",
   "module": "",
   "name": "Fees Setup",
   "number_cards": [],
@@ -478,7 +480,7 @@
     "role": "Head Administration"
    }
   ],
-  "sequence_id": 25.0,
+  "sequence_id": 35.0,
   "shortcuts": [
    {
     "color": "Grey",
@@ -588,10 +590,11 @@
   "for_user": "",
   "hide_custom": 0,
   "icon": "customer",
+  "indicator_color": null,
   "is_hidden": 0,
   "label": "Student Management",
   "links": [],
-  "modified": "2023-10-13 13:13:08.883770",
+  "modified": "2023-12-14 02:02:23.988735",
   "module": "",
   "name": "Student Management",
   "number_cards": [],
@@ -625,7 +628,7 @@
     "role": "Accounts Manager"
    }
   ],
-  "sequence_id": 27.0,
+  "sequence_id": 37.0,
   "shortcuts": [
    {
     "color": "Grey",
@@ -655,10 +658,11 @@
   "for_user": "",
   "hide_custom": 0,
   "icon": "users",
+  "indicator_color": null,
   "is_hidden": 0,
   "label": "Walnut Accounts",
   "links": [],
-  "modified": "2023-10-13 13:13:26.675586",
+  "modified": "2023-12-14 02:02:24.493724",
   "module": "",
   "name": "Walnut Accounts",
   "number_cards": [],
@@ -674,7 +678,7 @@
     "role": "Councellor"
    }
   ],
-  "sequence_id": 28.0,
+  "sequence_id": 38.0,
   "shortcuts": [
    {
     "color": "Grey",
@@ -781,10 +785,11 @@
   "for_user": "",
   "hide_custom": 0,
   "icon": "dashboard-list",
+  "indicator_color": null,
   "is_hidden": 0,
   "label": "Walnut Analytics Dashboard",
   "links": [],
-  "modified": "2023-10-13 13:14:00.620914",
+  "modified": "2023-12-14 02:02:24.929385",
   "module": null,
   "name": "Walnut Analytics Dashboard",
   "number_cards": [
@@ -822,7 +827,7 @@
   "quick_lists": [],
   "restrict_to_domain": null,
   "roles": [],
-  "sequence_id": 29.0,
+  "sequence_id": 39.0,
   "shortcuts": [],
   "title": "Walnut Analytics Dashboard"
  }

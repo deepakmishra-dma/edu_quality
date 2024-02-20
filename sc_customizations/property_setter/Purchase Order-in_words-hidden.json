@@ -1,0 +1,16 @@
+{
+ "creation": "2023-11-27 08:45:16.465385",
+ "doc_type": "Purchase Order",
+ "docstatus": 0,
+ "doctype": "Property Setter",
+ "doctype_or_field": "DocField",
+ "field_name": "in_words",
+ "is_system_generated": 0,
+ "modified": "2023-11-27 08:45:16.465385",
+ "modified_by": "Administrator",
+ "name": "Purchase Order-in_words-hidden",
+ "owner": "Administrator",
+ "property": "hidden",
+ "property_type": "Check",
+ "value": "0"
+}

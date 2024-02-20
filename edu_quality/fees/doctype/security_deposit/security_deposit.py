@@ -10,6 +10,7 @@ class SecurityDeposit(Document):
         
             "doctype": "Fee Category",
             "category_name": self.name,
-            'type':"Deposit"
+            'type':"Deposit",
+            'custom_company': "Unique Educational and Sports Foundation"
         })
         doc.insert()

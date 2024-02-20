@@ -1,0 +1,56 @@
+<style>
+  @page {
+    size: A4 Landscape;
+  }
+  .no-spacing {
+    border-spacing: 0; /* Removes the cell spacing via CSS */
+    border-collapse: collapse;
+    border-spacing: 0;
+  }
+  .cell {
+    width: 60mm;
+    padding: 0.5em;
+    background: linear-gradient(to right, black 1px, transparent 1px) 0 0,
+      linear-gradient(to right, black 1px, transparent 1px) 0 100%,
+      linear-gradient(to left, black 1px, transparent 1px) 100% 0,
+      linear-gradient(to left, black 1px, transparent 1px) 100% 100%,
+      linear-gradient(to bottom, black 1px, transparent 1px) 0 0,
+      linear-gradient(to bottom, black 1px, transparent 1px) 100% 0,
+      linear-gradient(to top, black 1px, transparent 1px) 0 100%,
+      linear-gradient(to top, black 1px, transparent 1px) 100% 100%;
+
+    background-repeat: no-repeat;
+    background-size: 20px 20px;
+  }
+</style>
+
+{% for enrollment_array in program_enrollments %}
+<table
+  class="page no-spacing"
+  style="height: 210mm"
+  cellspacing="0"
+  cellpadding="0"
+>
+  <tr style="max-width: 100%">
+    {% for enrollment in range(0,(enrollment_array|length)//2) %} {% set
+    enroll_template =
+    frappe.render_template("edu_quality/templates/pdf/temporary_id_card.html",{'doc':
+    enrollment_array[enrollment]}) %}
+
+    <td class="cell">{{enroll_template}}</td>
+
+    {% endfor %}
+  </tr>
+  <tr style="max-width: 100%">
+    {% for enrollment in
+    range((enrollment_array|length)//2,enrollment_array|length) %} {% set
+    enroll_template =
+    frappe.render_template("edu_quality/templates/pdf/temporary_id_card.html",{'doc':
+    enrollment_array[enrollment]}) %}
+
+    <td class="cell">{{enroll_template}}</td>
+
+    {% endfor %}
+  </tr>
+</table>
+{% endfor %}

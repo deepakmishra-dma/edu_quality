@@ -1,0 +1,15 @@
+{
+ "creation": "2023-08-07 12:54:13.381662",
+ "doc_type": "Program",
+ "docstatus": 0,
+ "doctype": "Property Setter",
+ "doctype_or_field": "DocType",
+ "is_system_generated": 0,
+ "modified": "2023-08-07 12:54:13.381662",
+ "modified_by": "Administrator",
+ "name": "Program-main-autoname",
+ "owner": "Administrator",
+ "property": "autoname",
+ "property_type": "Data",
+ "value": "format:{program_name}-{school}"
+}

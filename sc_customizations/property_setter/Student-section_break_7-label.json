@@ -1,0 +1,16 @@
+{
+ "creation": "2023-11-08 13:44:38.695950",
+ "doc_type": "Student",
+ "docstatus": 0,
+ "doctype": "Property Setter",
+ "doctype_or_field": "DocField",
+ "field_name": "section_break_7",
+ "is_system_generated": 0,
+ "modified": "2023-11-08 13:44:38.695950",
+ "modified_by": "Administrator",
+ "name": "Student-section_break_7-label",
+ "owner": "Administrator",
+ "property": "label",
+ "property_type": "Data",
+ "value": "Miscellaneous Information"
+}

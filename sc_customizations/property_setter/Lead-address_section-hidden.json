@@ -1,0 +1,16 @@
+{
+ "creation": "2023-08-22 00:38:16.628102",
+ "doc_type": "Lead",
+ "docstatus": 0,
+ "doctype": "Property Setter",
+ "doctype_or_field": "DocField",
+ "field_name": "address_section",
+ "is_system_generated": 0,
+ "modified": "2023-08-22 00:38:16.628102",
+ "modified_by": "Administrator",
+ "name": "Lead-address_section-hidden",
+ "owner": "Administrator",
+ "property": "hidden",
+ "property_type": "Check",
+ "value": "1"
+}

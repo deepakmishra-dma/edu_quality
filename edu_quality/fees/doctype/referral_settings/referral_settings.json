@@ -14,13 +14,14 @@
    "fieldname": "referral",
    "fieldtype": "Table",
    "label": "Referral",
-   "options": "Referral"
+   "options": "Referral",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-08-14 13:45:46.837278",
+ "modified": "2023-11-29 08:41:30.282820",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Referral Settings",

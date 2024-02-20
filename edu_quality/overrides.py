@@ -29,25 +29,42 @@ except ImportError:
     print("Chatnext is not installed")
 
 class CustomPaymentRequest(PaymentRequest):
-    def create_payment_entry(self):
+    def create_payment_entry(self,submit=False):
         fees = frappe.get_doc(self.reference_doctype, self.reference_name)
+        paid_amount = 0
         if self.payment_term:
             company_split = json.loads(fees.company_split)[self.payment_term]
-            for split in company_split:
+            for company in company_split:
+                paid_amount += company_split[company]["amount"]
                 payment_entry(
                     self,
                     fees,
-                    split["amount"],
-                    split["paid_from"],
-                    split["paid_to"],
-                    split["company"],
-                    split["cost_center"],
-                    split["fee_categories"]
+                    company_split[company]["amount"],
+                    company_split[company]["paid_from"],
+                    company_split[company]["paid_to"],
+                    company,
+                    company_split[company]["cost_center"],
+                    company_split[company].get("fee_categories")
                 )
             mark_payment_term_paid(fees, self.payment_term, self.grand_total)
-            
-        paid_amount = fees.outstanding_amount - self.grand_total
-        frappe.db.set_value(fees.doctype, fees.name, "outstanding_amount", paid_amount)
+        else:
+            company_split = json.loads(fees.company_split).get("Deposit")
+            if company_split:
+                for company in company_split:
+                    paid_amount += company_split[company]["amount"]
+                    payment_entry(
+                        self,
+                        fees,
+                        company_split[company]["amount"],
+                        company_split[company]["paid_from"],
+                        company_split[company]["paid_to"],
+                        company,
+                        company_split[company]["cost_center"],
+                        company_split[company].get("fee_categories")
+                    )
+
+        outstanding_amount = flt(fees.outstanding_amount) - paid_amount
+        frappe.db.set_value(fees.doctype, fees.name, "outstanding_amount", outstanding_amount)
         self.db_set("status", "Paid")
 
         try:
@@ -66,15 +83,20 @@ class CustomPaymentRequest(PaymentRequest):
         self.db_set("status", "Initiated")
 
     def get_payment_url(self, **kwargs):
-        if self.reference_doctype != "Fees":
-            data = frappe.db.get_value(
-                self.reference_doctype, self.reference_name, ["company", "customer_name"], as_dict=1
-            )
-        else:
+        if self.reference_doctype == "Fees":
             data = frappe.db.get_value(
                 self.reference_doctype, self.reference_name, ["student_name"], as_dict=1
             )
             data.update({"company": frappe.defaults.get_defaults().company})
+        elif self.reference_doctype == "Fee Advance":
+            data = frappe.db.get_value(
+                self.reference_doctype, self.reference_name, ["student"], as_dict=1
+            )
+            data.update({"company": frappe.defaults.get_defaults().company})
+        else:
+            data = frappe.db.get_value(
+                self.reference_doctype, self.reference_name, ["company", "customer_name"], as_dict=1
+            )
         controller = _get_payment_gateway_controller(self.payment_gateway)
         
         controller.validate_transaction_currency(self.currency)
@@ -117,6 +139,23 @@ class CustomPaymentRequest(PaymentRequest):
             
         elif self.payment_channel == "Phone":
             self.request_phone_payment()
+            
+    def make_communication_entry(self):
+        """Make communication entry"""
+        comm = frappe.get_doc({
+                "doctype": "Communication",
+                "subject": self.subject,
+                "content": self.get_message(),
+                "sent_or_received": "Sent",
+                "communication_type": "Communication",
+                "reference_doctype": self.reference_doctype,
+                "reference_name": self.reference_name,
+            })
+        comm.insert(ignore_permissions=True)
+            
+    def validate(self):
+        if self.get("__islocal"):
+            self.status = "Draft"
 
 
 def payment_entry(doc, ref_doc, party_amount, paid_from, paid_to, company, cost_center, fee_categories=None):
@@ -188,6 +227,11 @@ def payment_entry(doc, ref_doc, party_amount, paid_from, paid_to, company, cost_
                         "amount": amount,
                     },
                 )
+    payment_entry.update({
+        'reference_doctype': ref_doc.doctype, # 'Fees' or 'Fee Advance'
+        'reference_name': ref_doc.name,
+        'payment_request': doc.name
+    })
 
     payment_entry.insert(ignore_permissions=True)
     payment_entry.submit()
@@ -230,6 +274,9 @@ def get_amount(ref_doc, payment_account=None, is_deposit=False, payment_term=Non
     elif dt == "Fees":
         grand_total = ref_doc.outstanding_amount
 
+    elif dt == "Fee Advance":
+        grand_total = ref_doc.amount
+
     if grand_total > 0:
         return grand_total
     else:
@@ -252,7 +299,7 @@ def get_deposits(components):
     deposits = [component for component in components if component.fees_category in ["deposit", "Application fee"]]
     return deposits
 
-def get_categories(fees,payment_term,due_date=nowdate(),description='description',invoice_portion=100):
+def get_categories(fees,payment_term,due_date=None,description='description',invoice_portion=100):
     categories = []
     for schedule in fees.payment_schedule:
         if schedule.payment_term == payment_term:
@@ -302,6 +349,8 @@ def company_wise_split(fees, categories, due_date, payment_term=None, transactio
 
 
 def mark_payment_term_paid(fees, term, paid_amount):
+    if fees.doctype != "Fees":
+        return
     for schedule in fees.payment_schedule:
         if schedule.payment_term == term:
             if schedule.outstanding == paid_amount:
@@ -343,7 +392,6 @@ def make_payment_request(**args):
 
     if existing_payment_request_amount:
         grand_total -= existing_payment_request_amount
-    frappe.logger('pr').exception(grand_total)
     if draft_payment_request:
         frappe.db.set_value(
             "Payment Request", draft_payment_request, "grand_total", grand_total, update_modified=False
@@ -369,6 +417,7 @@ def make_payment_request(**args):
                 "party_type": args.get("party_type") or "Customer",
                 "party": args.get("party") or ref_doc.get("customer"),
                 "bank_account": bank_account,
+                "payment_term": args.payment_term
             }
         )
 

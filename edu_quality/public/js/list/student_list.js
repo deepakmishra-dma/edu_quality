@@ -21,67 +21,64 @@ frappe.listview_settings['Student'] = {
     },
 
     refresh: function (listview) {
-        listview.page.add_menu_item(__("Import Student"), function () {
-            let d = new frappe.ui.Dialog({
-                title: 'Import Students',
-                fields: [
-                    {
-                        label: 'School',
-                        fieldname: 'school',
-                        fieldtype: 'Link',
-                        options: "School",
-                        reqd: true
-                    },
-                    {
-                        label: 'Academic Year',
-                        fieldname: 'academic_year',
-                        fieldtype: 'Link',
-                        options: "Academic Year",
-                        reqd: true
-                    },
-                    {
-                        label: 'Class',
-                        fieldname: 'program',
-                        fieldtype: 'Link',
-                        options: "Program",
-                        reqd: true
-                    },
-                    {
-                        label: 'Division',
-                        fieldname: 'division',
-                        fieldtype: 'Link',
-                        options: "Student Group",
-                        reqd: true
-                    }
-                ],
-                size: 'large',
-                primary_action_label: 'Submit',
-                primary_action(values) {
-                    frappe.call({
-                        method: "edu_quality.public.py.student.import_student",
-                        type: "POST",
-                        args: {
-                            school: values.school,
-                            program: values.program,
-                            division: values.division,
-                            academic_year: values.academic_year
-                        },
-                        callback: function (response) {
-                            console.log(response);
-                            if (response.message.status == 'success') {
+        // listview.page.add_menu_item(__("Import Student"), function () {
+        //     frappe.confirm('Are you sure you want to proceed?',
+        //         () => {
+        //             frappe.call({
+        //                 method: "edu_quality.common.utils.student_import.student_import.import_student",
+        //                 type: "POST",
+        //                 callback: function (response) {
+        //                     console.log(response);
+        //                     if (response.message.status == 'success') {
+        //                         frappe.show_alert({
+        //                             message: __(response.message.res),
+        //                             indicator: 'green'
+        //                         });
+        //                     }
+        //                 }
+        //             });
+        //         }, () => {
+        //             frappe.show_alert({
+        //                 message: __('Import Student cancelled.'),
+        //                 indicator: 'orange'
+        //             });
+        //         });
+        // });
+
+        listview.page.add_menu_item(__('Create Fee Advance'), function () {
+            let students = listview.get_checked_items();
+            if (students.length > 0) {
+                frappe.confirm('Are you sure you want to proceed?',
+                    () => {
+                        frappe.call({
+                            method: "edu_quality.fees.doctype.fee_advance.fee_advance.fee_advance",
+                            type: "POST",
+                            args: {
+                                students: students
+                            },
+                            callback: function (response) {
                                 frappe.show_alert({
-                                    message: __(response.message.res),
+                                    message: __('Fee Advance Creation Scheduled Successfully'),
                                     indicator: 'green'
                                 });
                             }
-                        }
-                    });
-                    d.hide();
-                }
-            });
+                        });
+                    }, () => {
+                        frappe.show_alert({
+                            message: __('Action Cancelled'),
+                            indicator: 'orange'
+                        });
+                    })
+            } else {
+                frappe.show_alert({
+                    message: __('Please select at least one Students.'),
+                    indicator: 'orange'
+                });
+            }
+        }
+        );
 
-            d.show();
-            frappe.set_route("List", "Student");
-        });
+
     }
-}
+    
+};

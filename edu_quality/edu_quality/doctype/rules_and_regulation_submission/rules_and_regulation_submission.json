@@ -10,6 +10,7 @@
  "field_order": [
   "reference_no",
   "student",
+  "program",
   "fathers_name",
   "mothers_name",
   "submitted_with_response",
@@ -30,7 +31,7 @@
    "options": "Student"
   },
   {
-   "fetch_from": "student.custom_fathers_first_name",
+   "fetch_from": "",
    "fieldname": "fathers_name",
    "fieldtype": "Data",
    "label": "Father's Name"
@@ -46,13 +47,13 @@
    "options": "Rules and Regulation Template"
   },
   {
-   "fetch_from": "student.custom_reference_number",
+   "fetch_from": "student.reference_number",
    "fieldname": "reference_no",
    "fieldtype": "Data",
    "label": "Reference No"
   },
   {
-   "fetch_from": "student.custom_mothers_first_name",
+   "fetch_from": "",
    "fieldname": "mothers_name",
    "fieldtype": "Data",
    "label": "Mother's Name"
@@ -92,11 +93,17 @@
    "fieldname": "user_info",
    "fieldtype": "Data",
    "label": "User Info"
+  },
+  {
+   "fieldname": "program",
+   "fieldtype": "Link",
+   "label": "Class",
+   "options": "Program"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-10-05 22:56:39.220979",
+ "modified": "2023-11-28 20:06:51.321253",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Rules and Regulation Submission",

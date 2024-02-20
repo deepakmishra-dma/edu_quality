@@ -4,38 +4,39 @@ from edu_quality.overrides import make_payment_request
 
 
 def before_save(doc, method=None):
-    # only deposit and application fee
-    if not frappe.db.exists("Payment Request", {"reference_name": doc.reference_name}):
-        fees = frappe.get_doc("Fees", doc.reference_name)
-        if not doc.payment_term and doc.grand_total > 0:
-            pass
+    if doc.reference_doctype == "Fees":
+        # only deposit and application fee
+        if not frappe.db.exists("Payment Request", {"reference_name": doc.reference_name}):
+            fees = frappe.get_doc("Fees", doc.reference_name)
+            if not doc.payment_term and doc.grand_total > 0:
+                pass
 
-    # if payment request has payment_term and reference_doctype is Fees
-    if doc.payment_term and doc.reference_doctype == "Fees":
-        fees = frappe.get_doc("Fees", doc.reference_name)
-        previous_payment_term = get_previous_term(fees, doc.payment_term)
-        # filter for not paid payment request
-        not_paid_filter = {
-            "reference_name": doc.reference_name,
-            "status": ["!=", "Paid"],
-        }
-        # filter for paid payment request and previous payment term
-        paid_filter = {
-            "reference_name": doc.reference_name,
-            "status": "Paid",
-            "payment_term": previous_payment_term,
-        }
-        # if payment request is not paid
-        if frappe.db.exists("Payment Request", not_paid_filter):
-            payment_request_not_paid(doc, fees, not_paid_filter)
+        # if payment request has payment_term and reference_doctype is Fees
+        if doc.payment_term and doc.reference_doctype == "Fees":
+            fees = frappe.get_doc("Fees", doc.reference_name)
+            previous_payment_term = get_previous_term(fees, doc.payment_term)
+            # filter for not paid payment request
+            not_paid_filter = {
+                "reference_name": doc.reference_name,
+                "status": ["!=", "Paid"],
+            }
+            # filter for paid payment request and previous payment term
+            paid_filter = {
+                "reference_name": doc.reference_name,
+                "status": "Paid",
+                "payment_term": previous_payment_term,
+            }
+            # if payment request is not paid
+            if frappe.db.exists("Payment Request", not_paid_filter):
+                payment_request_not_paid(doc, fees, not_paid_filter)
 
-        # if payment request is paid
-        elif frappe.db.exists("Payment Request", paid_filter):
-            payment_request_paid(doc, fees, paid_filter, previous_payment_term)
+            # if payment request is paid
+            elif frappe.db.exists("Payment Request", paid_filter):
+                payment_request_paid(doc, fees, paid_filter, previous_payment_term)
 
-        # if payment request does not exists
-        else:
-            create_pr_new_term(doc, fees)
+            # if payment request does not exists
+            else:
+                create_pr_new_term(doc, fees)
 
 
 def get_discounted_amount(term, amount, previous_installment_paid=False):
@@ -211,13 +212,13 @@ def update_not_paid_payment_request(doc, not_paid_filter):
     pr = frappe.get_doc("Payment Request", not_paid_filter)
     if not pr.docstatus.is_cancelled() and not pr.docstatus.is_draft():
         pr.cancel()
-
+        student_email = frappe.get_value("Student", doc.student, "student_email_id")
         make_payment_request(
             party_type="Student",
             party=doc.student,
-            dt="Fees",
+            dt=doc.doctype,
             dn=doc.name,
             payment_term=pr.payment_term,
-            recipient_id=doc.student_email,
+            recipient_id=student_email,
             submit_doc=True
         )
