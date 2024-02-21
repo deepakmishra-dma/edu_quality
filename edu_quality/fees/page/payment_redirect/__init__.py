@@ -23,6 +23,8 @@ def cache_data(ttl):
 def get_payment_details(**kwargs):
     payment_request = frappe.get_value("Payment Request",{'payment_hash': kwargs.get('doc')})
     payment_request = frappe.get_doc("Payment Request",payment_request)
+    if payment_request.docstatus=="2":
+        return "cancelled"
     fees = frappe.get_doc(payment_request.reference_doctype, payment_request.reference_name)
     breakup = []
     if payment_request.payment_term:
