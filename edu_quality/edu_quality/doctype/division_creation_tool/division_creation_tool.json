@@ -1,0 +1,81 @@
+{
+ "actions": [],
+ "allow_copy": 1,
+ "creation": "2023-11-18 19:02:44.279116",
+ "default_view": "List",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "academic_year",
+  "next_academic_year",
+  "column_break_ljnuz",
+  "school",
+  "get_courses",
+  "section_break_4",
+  "courses"
+ ],
+ "fields": [
+  {
+   "fieldname": "academic_year",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Current Academic Year",
+   "options": "Academic Year",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_ljnuz",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_4",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "get_courses",
+   "fieldtype": "Button",
+   "label": "Get Divisions"
+  },
+  {
+   "fieldname": "courses",
+   "fieldtype": "Table",
+   "label": "Divisions",
+   "options": "Student Group Creation Tool Course",
+   "reqd": 1
+  },
+  {
+   "fieldname": "next_academic_year",
+   "fieldtype": "Link",
+   "label": "Next Academic Year",
+   "options": "Academic Year",
+   "reqd": 1
+  },
+  {
+   "fieldname": "school",
+   "fieldtype": "Link",
+   "label": "School",
+   "options": "School",
+   "reqd": 1
+  }
+ ],
+ "hide_toolbar": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2023-11-19 07:42:54.774044",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "Division Creation Tool",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "read": 1,
+   "role": "Education Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
