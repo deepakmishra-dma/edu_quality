@@ -85,13 +85,13 @@ def add_discount(fee_name, discount, fees=None, doctype="Fees"):
                     frappe.response['message'] = message
     if discount_applied:
         if doctype == "Fees":
-            fees.add_discount_entry(company, grand_discount_amount)
             update_total_discount_in_fees(fees.name)
             if dis.needs_admin_approval:
                 frappe.db.set_value("Fees",fee_name,"workflow_state","Pending")
                 update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=True,dis=dis)
             else:
                 update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=True,dis=dis)
+        fees.add_discount_entry(company, grand_discount_amount)
         update_payment_request_after_discount(fees)
 
 
@@ -138,11 +138,11 @@ def remove_discount(fee_name, discount, update_payment_request=True, doctype="Fe
                 frappe.response['message'] = message
     if discount_removed:
         if doctype == "Fees":
-            fees.remove_discount_entry(company, grand_discount_amount)
             update_total_discount_in_fees(fees.name)
             update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=False,dis=dis)
         if update_payment_request:
             update_payment_request_after_discount(fees)
+        fees.remove_discount_entry(company, grand_discount_amount)
 
 
 def update_total_discount_in_fees(fee_name):
