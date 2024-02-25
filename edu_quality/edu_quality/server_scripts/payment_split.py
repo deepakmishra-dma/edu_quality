@@ -156,7 +156,7 @@ def get_split_fee_advance(fees):
         component_wise = []
         for component in fees.components:
             label = component.label
-            amount = component.amount
+            amount = component.custom_amount_after_discount or component.amount
             if label:
                 label = label.split("-")[0].strip()
 
