@@ -1,13 +1,14 @@
 # Copyright (c) 2023, Hybrowlabs Technologies and contributors
 # For license information, please see license.txt
 
-import json
-from edu_quality.public.py.fee import payment_split
+from datetime import datetime
+from edu_quality.public.py.discount import calculate_discount, get_discount_list
 from erpnext.accounts.doctype.account.account import get_account_currency
 from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
     get_accounting_dimensions,
 )
 from erpnext.accounts.utils import get_fiscal_years
+from erpnext.accounts.general_ledger import make_reverse_gl_entries, make_gl_entries
 import frappe
 import erpnext
 from erpnext.controllers.accounts_controller import (
@@ -30,9 +31,6 @@ class FeeAdvance(AccountsController):
     def generate_split(self):
         generate_split_payment(self)
 
-    def update_split(self):
-        generate_split_payment(self,update=1)
-
 
     def before_save(self):
         percent = get_percent(self.payment_term, self.payment_plan)
@@ -44,6 +42,13 @@ class FeeAdvance(AccountsController):
             self.append('components', component)
 
     def before_submit(self):
+        referal_discount(self)
+        payment_plan(self)
+        self.generate_split()
+
+    def before_update_after_submit(self):
+        referal_discount(self)
+        payment_plan(self)
         self.generate_split()
 
     def validate(self):
@@ -243,6 +248,69 @@ class FeeAdvance(AccountsController):
             frappe.logger('fee').exception(e)
 
 
+    def remove_discount_entry(self, company, amount):
+        liability_account, discount_account = frappe.db.get_value("Company", company,["default_liability_account","default_discount_account"])
+        entries = []
+        debit_filter = {'voucher_type':self.doctype,'voucher_no':self.name,'account': discount_account, 'debit':amount}
+        credit_filter = {'voucher_type':self.doctype,'voucher_no':self.name,'account': liability_account, 'credit':amount}
+        if frappe.db.exists("GL Entry",debit_filter):
+            entries.append(frappe.get_doc("GL Entry",debit_filter).as_dict())
+        if frappe.db.exists("GL Entry",credit_filter):
+            entries.append(frappe.get_doc("GL Entry",credit_filter).as_dict())
+        make_reverse_gl_entries(entries)
+
+
+    def remove_all_discount_entries(self):
+        entries = []
+        debit_filter = {'voucher_type':self.doctype,'voucher_no':self.name}
+        credit_filter = {'voucher_type':self.doctype,'voucher_no':self.name}
+        if frappe.db.exists("GL Entry",debit_filter):
+            gl_list = frappe.get_all("GL Entry",debit_filter)
+            for gl in gl_list:
+                entries.append(frappe.get_doc("GL Entry",gl).as_dict())
+        if frappe.db.exists("GL Entry",credit_filter):
+            gl_list = frappe.get_all("GL Entry",credit_filter)
+            for gl in gl_list:
+                entries.append(frappe.get_doc("GL Entry",gl).as_dict())
+        make_reverse_gl_entries(entries)
+        
+
+    def add_discount_entry(self, company, amount):
+        liability_account, discount_account, cost_center = frappe.db.get_value("Company", company,["default_liability_account","default_discount_account","cost_center"])
+        debit_entry = (self.get_gl_dict(
+                {
+                    "company": company,
+                    "account":discount_account ,
+                    "party_type": "Student",
+                    "party": self.student,
+                    "against": liability_account,
+                    "debit": amount,
+                    "debit_in_account_currency": amount,
+                    "against_voucher": self.name,
+                    "against_voucher_type": self.doctype,
+                },
+                item=self,
+            ))
+        credit_entry = (self.get_gl_dict(
+                        {
+                            "company": company,
+                            "account": liability_account,
+                            "against": self.student,
+                            "credit": amount,
+                            "credit_in_account_currency":amount,
+                            "cost_center": cost_center,
+                        },
+                        item=self,
+                    ))
+        make_gl_entries(
+        [debit_entry,credit_entry],
+        cancel=(self.docstatus == 2),
+        update_outstanding="No",
+        merge_entries=False,
+    )
+    
+
+
 def get_components(fee_structure, percent, is_rte):
     fee_structure_doc = frappe.get_doc("Fee Structure", fee_structure)
     components = []
@@ -366,3 +434,114 @@ def get_payment_plan(fee_structure=None, program_enrollment=None):
         return payment_plan
     else:
         return frappe.get_value("Payment Plan", {"fee_structure": fee_structure}, "name")
+
+
+def referal_discount(doc, method=None):
+    """
+    Apply referral discount to eligible fee components and update the document when creating fee document.
+
+    Parameters:
+    - doc (frappe.model.document.Document): The document to which the referral discount is applied.
+    - method (str, optional): The method triggering the referral discount application.
+
+    Returns:
+    dict: A dictionary containing information about the applied referral discount per fee category.
+    """
+    grand_total = doc.amount
+    student = frappe.get_doc("Student", doc.student)
+
+    if student.is_rte or student.referral_amount == 0:
+        return
+    
+    discount = float(student.referral_amount)
+
+    for component in doc.components:
+        if not component.fees_category != "Tuition Fee":
+            continue
+
+        if component.amount > discount and discount != 0:
+            amount = component.custom_amount_after_discount or component.amount
+            amount_after_discount = amount - discount
+            previous_discount = component.custom_discount_amount or 0
+            new_discount = previous_discount + discount
+            discount_percentage = calculate_discount(component.amount, new_discount)
+
+            discount_name = component.custom_discounts
+            discount_list = get_discount_list(discount_name)
+
+            if discount_list and "Referral" not in discount_list:
+                discount_list.append("Referral")
+                discount_name = ", ".join(discount_list)
+            else:
+                discount_name = "Referral"
+
+            grand_total = doc.amount - discount
+
+            component.custom_discounts = discount_name
+            component.custom_discount_amount = new_discount
+            component.custom_amount_after_discount = amount_after_discount
+            component.custom_discount_percentage = discount_percentage
+
+            doc.amount = grand_total
+            doc.outstanding_amount = grand_total
+            doc.add_discount_entry(component.custom_company, discount)
+            break  
+
+
+def payment_plan(doc, method=None):
+    payment_plan_doc = frappe.get_doc("Payment Plan", doc.payment_plan)
+    payplan_discount = get_payplan_discount(doc, payment_plan_doc)
+    if not payplan_discount:
+        frappe.response["message"] = f"Payment Plan Discount not found for {doc.payment_plan}"
+        return
+    discount_amount, discount = payplan_discount
+    if discount_amount:
+        for component in doc.components:
+            if component.fees_category == discount.fee_category:
+                amount = component.custom_amount_after_discount or component.amount
+                amount_after_discount = amount - discount_amount
+                previous_discount = component.custom_discount_amount or 0
+                new_discount = previous_discount + discount_amount
+                discount_percentage = calculate_discount(component.amount, new_discount)
+
+                discount_name = component.custom_discounts
+                discount_list = get_discount_list(discount_name)
+
+                if discount_list and discount.name not in discount_list:
+                    discount_list.append(discount.name)
+                    discount_name = ", ".join(discount_list)
+                else:
+                    discount_name = discount.name
+
+                grand_total = doc.amount - discount_amount
+
+                component.custom_discounts = discount_name
+                component.custom_discount_amount = new_discount
+                component.custom_amount_after_discount = amount_after_discount
+                component.custom_discount_percentage = discount_percentage
+
+                doc.amount = grand_total
+                doc.outstanding_amount = grand_total
+                doc.add_discount_entry(component.custom_company, discount_amount)
+                break
+
+
+def get_payplan_discount(doc, payment_plan):
+    """
+    update time based discount and referal discount in the payment schedule
+    """
+    for ps in payment_plan.payment_schedule:
+        if ps.due_date < datetime.today().date():
+            frappe.msgprint("Cannot Apply new Payment Plan Discount As Due Date is Passed!")
+            return
+        
+    for component in doc.components:
+        dis_filter = {"payment_plan": payment_plan.name, "fee_structure":doc.fee_structure, "fee_category": component.fees_category, "enabled":1}
+        if frappe.db.exists("Discount Configuration", dis_filter):
+            dis = frappe.get_doc("Discount Configuration", dis_filter)
+            if dis.discount_amount:
+                return dis.discount_amount, dis
+            else:
+                discount_amount = (component.amount * float(dis.discount)) / 100
+                return discount_amount, dis
+    return None

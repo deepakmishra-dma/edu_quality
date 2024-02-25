@@ -151,19 +151,25 @@
    "label": "Splits"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "split_payments",
    "fieldtype": "JSON",
-   "label": "Split Payments"
+   "label": "Split Payments",
+   "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "company_split",
    "fieldtype": "JSON",
-   "label": "Company Split"
+   "label": "Company Split",
+   "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "component_split",
    "fieldtype": "JSON",
-   "label": "Component Split"
+   "label": "Component Split",
+   "read_only": 1
   },
   {
    "fieldname": "column_break_xjtbl",
@@ -264,7 +270,7 @@
    "link_fieldname": "reference_name"
   }
  ],
- "modified": "2023-12-15 11:52:48.368559",
+ "modified": "2023-12-15 16:58:25.393419",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Fee Advance",
