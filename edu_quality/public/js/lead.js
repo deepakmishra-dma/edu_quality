@@ -59,6 +59,13 @@ frappe.ui.form.on("Lead", {
 
             frm.add_custom_button(__("Push To MGR"), function () {
                 var errorKey = Object.keys(error_msg).find(error => frm.doc[error] === null || frm.doc[error] === undefined || frm.doc[error] === '')
+                if (String(frm.doc.fathers_phone).length != 10) {
+                    frappe.msgprint({
+                        message: __("Fathers Phone Number format is invalid, Please check the spacing is according to standard phone number spacing or none at all, and country code shouldn't be there for Indian numbers only for foreign numbers. and please make sure the number is 10 digits only before pushing to MGR"),
+                        indicator: "red",
+                        title: __("Incorrect Field")
+                    });
+                }
                 if (errorKey) {
                     frappe.msgprint({
                         title: __('Error'),
@@ -97,9 +104,9 @@ frappe.ui.form.on("Lead", {
     validate: function (frm) {
         const temp_fathers_phone = frm.doc.fathers_phone.replace(/\s/g, '');
         const re = /^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/
-        if (!re.test(temp_fathers_phone) || String(frm.doc.fathers_phone).length != 10) {
+        if (!re.test(temp_fathers_phone)) {
             frappe.msgprint({
-                message: __("Fathers Phone Number format is invalid, Please check the spacing is according to standard phone number spacing or none at all, and country code shouldn't be there for Indian numbers only for foreign numbers. and please make sure they are 10 digits only before pushing to MGR"),
+                message: __("Fathers Phone Number format is invalid, Please check the spacing is according to standard phone number spacing or none at all, and country code shouldn't be there for Indian numbers only for foreign numbers. and please make sure the number is 10 digits only before pushing to MGR"),
                 indicator: "red",
                 title: __("Incorrect Field")
             });
