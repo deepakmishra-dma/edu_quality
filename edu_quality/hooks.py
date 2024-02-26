@@ -100,6 +100,7 @@ doctype_list_js = {
 
 permission_query_conditions = {
     "Contact": "edu_quality.permissions.contacts.contact_query",
+    "Purchase Order": "edu_quality.permissions.purchase_orders.purchase_query",
 }
 #
 # has_permission = {
@@ -280,7 +281,13 @@ fixtures = [
     {"dt": "Accounting Dimension"},
     {
         "dt": "Role",
-        "filters": [["name", "in", ["Head Administration", "Councellor", "Teacher","Printer","Watchman"]]],
+        "filters": [
+            [
+                "name",
+                "in",
+                ["Head Administration", "Councellor", "Teacher", "Printer", "Watchman"],
+            ]
+        ],
     },
     {
         "dt": "Role",
@@ -288,7 +295,14 @@ fixtures = [
             [
                 "name",
                 "in",
-                ["Head Administration", "Councellor", "Teacher", "Content Creator","Printer","Watchman"],
+                [
+                    "Head Administration",
+                    "Councellor",
+                    "Teacher",
+                    "Content Creator",
+                    "Printer",
+                    "Watchman",
+                ],
             ]
         ],
     },
@@ -325,11 +339,15 @@ fixtures = [
     },
     {
         "dt": "Module Profile",
-        "filters": [["name", "in", ["Councellor", "Content Creator","Printer","Watchman"]]],
+        "filters": [
+            ["name", "in", ["Councellor", "Content Creator", "Printer", "Watchman"]]
+        ],
     },
     {
         "dt": "Role Profile",
-        "filters": [["name", "in", ["Councellor", "Content Creator","Printer","Watchman"]]],
+        "filters": [
+            ["name", "in", ["Councellor", "Content Creator", "Printer", "Watchman"]]
+        ],
     },
 ]
 
