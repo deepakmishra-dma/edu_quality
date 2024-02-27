@@ -15,11 +15,11 @@ def get_discount_applicable_term(dis):
     return "All"
 
 @frappe.whitelist()
-def add_discount(fee_name, discount,fees=None):
+def add_discount(fee_name, discount, fees=None, doctype="Fees"):
     discount_applied = False
     grand_discount_amount = 0
     if not fees:
-        fees = frappe.get_doc("Fees", fee_name)
+        fees = frappe.get_doc(doctype, fee_name)
     dis = frappe.get_doc("Discount Configuration", discount)
     company = None
     for component in fees.components:
@@ -84,21 +84,22 @@ def add_discount(fee_name, discount,fees=None):
                     discount_applied = True
                     frappe.response['message'] = message
     if discount_applied:
+        if doctype == "Fees":
+            update_total_discount_in_fees(fees.name)
+            if dis.needs_admin_approval:
+                frappe.db.set_value("Fees",fee_name,"workflow_state","Pending")
+                update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=True,dis=dis)
+            else:
+                update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=True,dis=dis)
         fees.add_discount_entry(company, grand_discount_amount)
-        update_total_discount_in_fees(fees.name)
-        if dis.needs_admin_approval:
-            frappe.db.set_value("Fees",fee_name,"workflow_state","Pending")
-            update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=True,dis=dis)
-        else:
-            update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=True,dis=dis)
-            update_payment_request_after_discount(fees)
+        update_payment_request_after_discount(fees)
 
 
 @frappe.whitelist()
-def remove_discount(fee_name, discount, update_payment_request=True):
+def remove_discount(fee_name, discount, update_payment_request=True, doctype="Fees"):
     discount_removed = False
     grand_discount_amount = 0
-    fees = frappe.get_doc("Fees", fee_name)
+    fees = frappe.get_doc(doctype, fee_name)
     dis = frappe.get_doc("Discount Configuration", discount)
     company = None
 
@@ -136,11 +137,12 @@ def remove_discount(fee_name, discount, update_payment_request=True):
                 message = dis.name + " Discount does not present"
                 frappe.response['message'] = message
     if discount_removed:
-        fees.remove_discount_entry(company, grand_discount_amount)
-        update_total_discount_in_fees(fees.name)
-        update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=False,dis=dis)
+        if doctype == "Fees":
+            update_total_discount_in_fees(fees.name)
+            update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=False,dis=dis)
         if update_payment_request:
             update_payment_request_after_discount(fees)
+        fees.remove_discount_entry(company, grand_discount_amount)
 
 
 def update_total_discount_in_fees(fee_name):
@@ -170,35 +172,53 @@ def calculate_discount(amount, discounted_amount):
 
 # updating the data in the database
 def update_component(component_name, discount_name, final_discount, discounted_amount, grand_discount_amount, amount, fees):
-    frappe.db.set_value("Fee Component", component_name, "custom_discounts", discount_name)
-    frappe.db.set_value("Fee Component", component_name, "custom_discount_percentage", final_discount)
-    frappe.db.set_value("Fee Component", component_name, "custom_discount_amount", discounted_amount)
-    frappe.db.set_value("Fee Component", component_name, "custom_amount_after_discount", amount)
-    grand_total = fees.grand_total - grand_discount_amount
-    outstanding_amount = fees.outstanding_amount - grand_discount_amount
-    grand_total_in_words = str(frappe.utils.in_words(grand_total)).title()
-    frappe.db.set_value("Fees", fees.name, "grand_total", grand_total)
-    frappe.db.set_value("Fees", fees.name, "grand_total_in_words", grand_total_in_words)
-    frappe.db.set_value("Fees", fees.name, "outstanding_amount", outstanding_amount)
+    fee_component_fields = {
+        "custom_discounts": discount_name,
+        "custom_discount_percentage": final_discount,
+        "custom_discount_amount": discounted_amount,
+        "custom_amount_after_discount": amount
+    }
+    frappe.db.set_value("Fee Component", component_name, fee_component_fields)
+
+    if fees.doctype == "Fees":
+        grand_total = fees.grand_total - grand_discount_amount
+        fees_fields = {
+            "grand_total": grand_total,
+            "grand_total_in_words": str(frappe.utils.in_words(grand_total)).title(),
+            "outstanding_amount": fees.outstanding_amount - grand_discount_amount
+        }
+        frappe.db.set_value("Fees", fees.name, fees_fields)
+    elif fees.doctype == "Fee Advance":
+        fee_advance_fields = {
+            "amount": fees.amount - grand_discount_amount,
+            "outstanding_amount": fees.outstanding_amount - grand_discount_amount
+        }
+        frappe.db.set_value("Fee Advance", fees.name, fee_advance_fields)
 
 
 def remove_and_update_component(component_name, discount_name, discount, discounted_amount, grand_discount_amount, amount, fees):
-    frappe.db.set_value("Fee Component", component_name, "custom_discounts", discount_name)
-    frappe.db.set_value("Fee Component", component_name, "custom_discount_percentage", discount)
-    frappe.db.set_value("Fee Component", component_name, "custom_amount_after_discount", amount)
-    if discounted_amount:
-        frappe.db.set_value("Fee Component", component_name, "custom_discount_amount", discounted_amount)
-        grand_total = fees.grand_total + grand_discount_amount
-        outstanding_amount = fees.outstanding_amount + grand_discount_amount
-    else:
-        frappe.db.set_value("Fee Component", component_name, "custom_discount_amount", 0)
-        grand_total = fees.grand_total + grand_discount_amount
-        outstanding_amount = fees.outstanding_amount + grand_discount_amount
+    fee_component_update = {
+        "custom_discounts": discount_name,
+        "custom_discount_percentage": discount,
+        "custom_amount_after_discount": amount,
+        "custom_discount_amount": discounted_amount if discounted_amount else 0
+    }
+    frappe.db.set_value("Fee Component", component_name, fee_component_update)
 
-    grand_total_in_words = str(frappe.utils.in_words(grand_total)).title()
-    frappe.db.set_value("Fees", fees.name, "grand_total", grand_total)
-    frappe.db.set_value("Fees", fees.name, "grand_total_in_words", grand_total_in_words)
-    frappe.db.set_value("Fees", fees.name, "outstanding_amount", outstanding_amount)
+    if fees.doctype == "Fees":
+        grand_total = fees.grand_total + grand_discount_amount
+        fees_update = {
+            "grand_total": grand_total,
+            "grand_total_in_words": str(frappe.utils.in_words(grand_total)).title(),
+            "outstanding_amount": fees.outstanding_amount + grand_discount_amount
+        }
+        frappe.db.set_value("Fees", fees.name, fees_update)
+    elif fees.doctype == "Fee Advance":
+        fee_advance_update = {
+            "amount": fees.amount + grand_discount_amount,
+            "outstanding_amount": fees.outstanding_amount + grand_discount_amount
+        }
+        frappe.db.set_value("Fee Advance", fees.name, fee_advance_update)
 
 
 def get_label(fee_category):
@@ -454,6 +474,8 @@ class AttributeDict(dict):
 
 
 def update_breakups(dis, component, fees, term="All", update=0,remove=0):
+    if fees.doctype == "Fee Advance":
+        return
     try:
         if str(type(dis))=="<class 'dict'>":
             dis = AttributeDict(dis)
