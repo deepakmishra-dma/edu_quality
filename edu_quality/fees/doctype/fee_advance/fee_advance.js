@@ -110,9 +110,9 @@ frappe.ui.form.on('Fee Advance', {
 						d.hide();
 					}
 				});
-	
+
 				d.show();
-	
+
 			}, __("Discount"));
 			frm.add_custom_button(__('Remove Discount'), function () {
 				let d = new frappe.ui.Dialog({
@@ -156,10 +156,10 @@ frappe.ui.form.on('Fee Advance', {
 						d.hide();
 					}
 				});
-	
+
 				d.show();
 			}, __("Discount"));
-			
+
 			const table_fields = [
 				{ fieldname: "company", fieldtype: "Link", in_list_view: 1, label: "Company", options: "Company", reqd: 1 },
 				{ fieldname: "amount", fieldtype: "Currency", in_list_view: 1, label: "Amount", reqd: 1 },
@@ -171,17 +171,151 @@ frappe.ui.form.on('Fee Advance', {
 			let pdf_url = '';
 			let is_rules_and_re = 0;
 			let hide_check_reg = 1;
-
+			frappe.call({
+                method: "edu_quality.edu_quality.server_scripts.manual_payment.get_unpaid_terms",
+                type: "POST",
+                args: {
+                    fee: frm.doc.name,
+					doctype: "Fee Advance"
+                },
+                callback: function (response) {
+                    console.log(response)
+                    pdf_url = response.message.undertaking_url
+                    if(response.message.undertaking_accepted){
+                        check=true
+                    }
+                    if(response.message.undertaking_url){
+                        is_rules_and_re = 1
+                        hide_check_reg = 0
+                    }
+                }
+            });
 
 			frm.add_custom_button("Manual Collection", function () {
 				let d = new frappe.ui.Dialog({
 					title: 'Manual Collection',
 					fields: [
-						{ label: 'Payment Term', fieldname: 'payment_term', fieldtype: 'Select', options: frm.doc.payment_term, onchange: onPaymentTermChange },
-						{ label: 'Payment Mode', fieldname: 'payment_mode', fieldtype: 'Link', options: "Mode of Payment" },
-						{ fieldtype: "Table", fieldname: "table", label: "Cheque/ DD Details", cannot_add_rows: true, in_place_edit: true, reqd: 1, data: [], fields: table_fields },
-						{ fieldtype: "Check", fieldname: "undertaking_check", label: `Accept Undertaking Before Making Payment <a href="${pdf_url}">Click here</a>`, hidden: hide_check_reg, reqd: is_rules_and_re, default: check, read_only: check, onchange: onUndertakingCheckChange },
-						{ fieldtype: "HTML", fieldname: "undertaking_content", label: "", options: html_content }
+						{	label: 'Payment Term',
+							fieldname: 'payment_term', 
+							fieldtype: 'Select', 
+							options: frm.doc.payment_term, 
+							onchange: function(e){
+								frappe.call({
+									method: "edu_quality.edu_quality.server_scripts.manual_payment.get_payment_details",
+									type: "POST",
+									args: { fee: frm.doc.name, doctype: frm.doc.doctype, term: frm.doc.payment_term },
+									callback: function (response) {
+										console.log(response.message);
+										d.set_df_property('table', 'data', response.message);
+									}
+								});
+							}
+						},
+						{ 	label: 'Payment Mode', 
+							fieldname: 'payment_mode', 
+							fieldtype: 'Link', 
+							options: "Mode of Payment"
+						},
+						{ 	fieldtype: "Table", 
+							fieldname: "table", 
+							label: "Cheque/ DD Details", 
+							cannot_add_rows: true, 
+							in_place_edit: true, 
+							reqd: 1, 
+							data: [], 
+							fields: table_fields 
+						},
+						{ 	fieldtype: "Check", 
+							fieldname: "undertaking_check", 
+							label: `Accept Undertaking Before Making Payment <a href="${pdf_url}" target='_black'>Click here</a>`, 
+							hidden: hide_check_reg, 
+							reqd: is_rules_and_re, 
+							default: check, 
+							read_only: check, 
+							onchange: function(e){
+								if (this.value) {
+									d.set_df_property(
+										'undertaking_content',
+										'options',
+										`<script>function verifyOtp(){
+											const btn_value = document.getElementById('doc_value');
+											const otp = document.getElementById('otp');
+											const otp_area = document.getElementById('otp-area');
+											
+											frappe.call({
+												method:"edu_quality.public.py.undertaking.verify_undertaking_otp",
+												args: {
+													"otp": otp.value,
+													"fee_advance":btn_value.value
+												},
+												callback: function(r) {
+													if(r.message === true){
+														showAlert('OTP Verified Successfully', 'green');
+														const x = document.querySelector(".btn-modal-primary")
+														x.style.display = 'inline-block';
+														otp_area.classList.add('hidden');
+														$("input[data-fieldname='undertaking_check']").prop('readonly', true);
+														submitUndertaking();
+													}else{
+														showAlert('Incorrect OTP Entered, please try again.', 'red');
+														otp.style.border = "border-danger";
+														
+													}
+												}
+											});
+										}function showAlert(message, indicator){
+											frappe.show_alert({
+												message: __(message),
+												indicator: indicator
+											});
+										}
+										function submitUndertaking() {
+										const otp = document.getElementById('otp').value;
+										fetch('https://ipinfo.io/json')
+											.then(response => response.json())
+											.then(data => {
+												let userIpAddress = data.ip;
+												let userAgentInfo = navigator.userAgent;
+												frappe.call({
+													method: 'edu_quality.public.py.utils.handle_undertaking_submission',
+													args: {
+														ip_address: userIpAddress,
+														browser_info: userAgentInfo,
+														fee_advance: document.getElementById('doc_value').value,
+														otp: otp
+													},
+													callback: function (response) {
+														if (response.message === 'success') {
+															// Data sent successfully.
+														} else {
+															// Handle the error here.
+														}
+													},
+													error: function (xhr, textStatus, errorThrown) {
+														console.error('Error sending data:', errorThrown);
+													},
+												});
+											});
+									}</script><div class="form-inline m-1" id="otp-area">
+                                        <input type="text" class="form-control p-1" id="otp" placeholder="Enter OTP">
+                                        <textarea id="doc_value" rows="15" class="hidden">${frm.doc.name}</textarea>
+                                        <button id="btn_value" class="form-control btn-dark m-3 p-1" onclick="verifyOtp()">Submit OTP</button>
+                                    </div>`
+									);
+								}
+								else{
+									d.set_df_property(
+										'undertaking_content',
+										'options',
+										``);
+								}
+							} 
+						},
+						{ 	fieldtype: "HTML", 
+							fieldname: "undertaking_content", 
+							label: "", 
+							options: html_content 
+						}
 					],
 					size: 'large',
 					primary_action_label: 'Submit',
@@ -198,7 +332,7 @@ frappe.ui.form.on('Fee Advance', {
 
 				d.show();
 
-				if (!hide_check_reg) {
+				if (!hide_check_reg && !check) {
 					setTimeout(() => {
 						console.log("Delayed for 1 second.");
 						console.log(document.querySelector(".btn-modal-primary"));
@@ -207,30 +341,9 @@ frappe.ui.form.on('Fee Advance', {
 					}, 1000);
 				}
 			});
-
-			function onPaymentTermChange(e) {
-				frappe.call({
-					method: "edu_quality.edu_quality.server_scripts.manual_payment.get_payment_details",
-					type: "POST",
-					args: { fee: frm.doc.name, doctype:frm.doc.doctype, term: frm.doc.payment_term },
-					callback: function (response) {
-						console.log(response.message);
-						d.set_df_property('table', 'data', response.message);
-					}
-				});
-			}
-
-			function onUndertakingCheckChange(e) {
-				if (e.value) {
-					d.set_df_property(
-						'undertaking_content',
-						'options',
-						`<script>... </script><div class="form-inline m-1" id="otp-area">...</div>`
-					);
-				}
-			}
-
+			
 			function onDialogSubmit(values) {
+				console.log(values)
 				if (!values.undertaking_check && !hide_check_reg) {
 					frappe.throw("Please select Terms and conditions");
 				} else {
@@ -243,8 +356,56 @@ frappe.ui.form.on('Fee Advance', {
 							frm.reload_doc();
 						}
 					});
-					d.hide();
 				}
+			}
+			function sendOtp(frm){
+				frappe.call({
+					method:"edu_quality.public.py.undertaking.generate_undertaking_otp",
+					args: {
+						"fee_advance":frm.doc.name,
+					},
+					callback: function(r) {
+						if (r.message === true){
+							showAlert("OTP has been sent successfully.", 'green');
+						}
+						else{
+							  showAlert("Error while sending OTP.", 'red');
+						}
+					}
+				});
+			}
+			function showAlert(message, indicator){
+				frappe.show_alert({
+					message: __(message),
+					indicator: indicator
+				});
+			}
+			function verifyOtp(){
+				const btn_value = document.getElementById('doc_value');
+				const otp = document.getElementById('otp');
+				const otp_area = document.getElementById('otp-area');
+				
+				frappe.call({
+					method:"edu_quality.public.py.undertaking.verify_undertaking_otp",
+					args: {
+						"otp": otp.value,
+						"fee_advance":btn_value.value
+					},
+					callback: function(r) {
+						if(r.message === true){
+							showAlert('OTP Verified Successfully', 'green');
+							const x = document.querySelector(".btn-modal-primary")
+							x.style.display = 'inline-block';
+							otp_area.classList.add('hidden');
+							$("input[data-fieldname='undertaking_check']").prop('readonly', true);
+							submitUndertaking();
+						}else{
+							showAlert('Incorrect OTP Entered, please try again.', 'red');
+							otp.style.border = "border-danger";
+							
+						}
+					}
+				});
 			}
 		}
 	}

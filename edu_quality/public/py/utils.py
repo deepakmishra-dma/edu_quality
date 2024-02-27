@@ -323,6 +323,11 @@ def handle_undertaking_submission(**kwargs):
         student = doc.student
         doctype = "Fees"
         docname = doc.name
+    elif kwargs.get("fee_advance"):
+        doc = frappe.get_doc("Fee Advance", kwargs.get("fee_advance"))
+        student = doc.student
+        doctype = "Fee Advance"
+        docname = doc.name
     else:
         payment_hash = kwargs.get("payment_request")
         student, doctype, docname = frappe.get_value(

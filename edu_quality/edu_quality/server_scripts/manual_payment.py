@@ -38,7 +38,7 @@ def update_reference(reference_no, entry):
     frappe.db.set_value("Payment Entry", entry.name, "reference_date", date)
     frappe.db.set_value("Payment Entry", entry.name, "remarks", remarks)
 
-
+ 
 @frappe.whitelist()
 def get_payment_details(fee, doctype, term):
     try:
@@ -87,7 +87,12 @@ def get_unpaid_terms(fee, doctype):
     if fee_doc.component_split:
         component = json.loads(fee_doc.component_split)["Term 1"]
         is_deposit = component['is_deposit']
-    if frappe.db.exists("Rules and Regulation Submission", {"student": fee_doc.student,"program":fee_doc.program},"name"):
+    if doctype =="Fees":
+        filters = {"student": fee_doc.student,"program":fee_doc.program}
+    else:
+        filters = {"student": fee_doc.student,"program":fee_doc.next_program}
+
+    if frappe.db.exists("Rules and Regulation Submission", filters,"name"):
         undertaking_accepted = True
     else:
         undertaking_accepted= False
