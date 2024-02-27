@@ -40,10 +40,10 @@ def update_reference(reference_no, entry):
 
 
 @frappe.whitelist()
-def get_payment_details(fee,term):
+def get_payment_details(fee, doctype, term):
     try:
         data = []
-        company_wise =  json.loads(frappe.db.get_value("Fees",fee,"company_split"))[term]
+        company_wise =  json.loads(frappe.db.get_value(doctype,fee,"company_split"))[term]
         for i in company_wise:
             data.append({
                     "company": i,
@@ -68,8 +68,9 @@ def company_wise(data, component):
 
 
 @frappe.whitelist()
-def get_unpaid_terms(fee):
+def get_unpaid_terms(fee, doctype):
     filters = [
+        ["reference_doctype",'=',doctype],
         ["reference_name",'=',fee],
         ["status",'!=','Paid'],
         ['docstatus','=',1]
@@ -81,7 +82,7 @@ def get_unpaid_terms(fee):
             result.append("Deposit")
         else:
             result.append(term.payment_term)
-    fee_doc = frappe.get_doc("Fees",fee)
+    fee_doc = frappe.get_doc(doctype,fee)
     is_deposit = False
     if fee_doc.component_split:
         component = json.loads(fee_doc.component_split)["Term 1"]
@@ -90,5 +91,5 @@ def get_unpaid_terms(fee):
         undertaking_accepted = True
     else:
         undertaking_accepted= False
-    data = {"terms": result,"undertaking_accepted":undertaking_accepted,"undertaking_url": get_undertaking_template(is_deposit=is_deposit,fee=fee_doc.name)}
+    data = {"terms": result,"undertaking_accepted":undertaking_accepted,"undertaking_url": get_undertaking_template(is_deposit=is_deposit,fee=fee_doc)}
     return data

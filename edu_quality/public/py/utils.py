@@ -235,8 +235,8 @@ def verify_otp(fee, otp):
 
 def get_undertaking_template(doc=None, is_deposit=False, fee=None):
     if fee:
-        doctype = "Fees"
-        docname = fee
+        doctype = fee.doctype
+        docname = fee.name
     else:
         doctype, docname = frappe.get_value(
             "Payment Request", doc.name, ["reference_doctype", "reference_name"]
