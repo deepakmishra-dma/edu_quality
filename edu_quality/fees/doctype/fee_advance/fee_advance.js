@@ -192,6 +192,10 @@ frappe.ui.form.on('Fee Advance', {
             });
 
 			frm.add_custom_button("Manual Collection", function () {
+				if (frm.doc.outstanding_amount == 0){
+					frappe.msgprint(`Fee Advance ${frm.doc.name} is Already Paid`);
+					return;
+				}
 				let d = new frappe.ui.Dialog({
 					title: 'Manual Collection',
 					fields: [
@@ -340,24 +344,27 @@ frappe.ui.form.on('Fee Advance', {
 						x.style.display = 'none';
 					}, 1000);
 				}
-			});
-			
-			function onDialogSubmit(values) {
-				console.log(values)
-				if (!values.undertaking_check && !hide_check_reg) {
-					frappe.throw("Please select Terms and conditions");
-				} else {
-					frappe.call({
-						method: "edu_quality.edu_quality.server_scripts.manual_payment.manual_payment",
-						type: "POST",
-						args: { term: values.payment_term, fee: frm.doc.name, data: values.table, payment_mode: values.payment_mode },
-						callback: function (response) {
-							showAlert(response.message, 'green');
-							frm.reload_doc();
-						}
-					});
+
+				function onDialogSubmit(values) {
+					console.log(values)
+					if (!values.undertaking_check && !hide_check_reg) {
+						frappe.throw("Please select Terms and conditions");
+					} else {
+						frappe.call({
+							method: "edu_quality.edu_quality.server_scripts.manual_payment.manual_payment",
+							type: "POST",
+							args: { term: values.payment_term, fee: frm.doc.name, data: values.table, payment_mode: values.payment_mode },
+							callback: function (response) {
+								showAlert(response.message, 'green');
+								frm.reload_doc();
+							}
+						});
+					}
+					d.hide();
 				}
-			}
+			});
+
+
 			function sendOtp(frm){
 				frappe.call({
 					method:"edu_quality.public.py.undertaking.generate_undertaking_otp",
