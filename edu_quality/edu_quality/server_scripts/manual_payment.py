@@ -8,18 +8,20 @@ def manual_payment(fee,term,data,payment_mode):
     try:
         data = frappe.parse_json(data)
         if term == "Deposit":
-            filter = [["Payment Request","payment_term","is","not set"],["Payment Request","reference_name","=",fee],["Payment Request","docstatus","=",1]]
+            filters = [["Payment Request","payment_term","is","not set"],["Payment Request","reference_name","=",fee],["Payment Request","docstatus","=",1]]
         else:
-            filter = {'reference_name':fee,'payment_term':term,'docstatus':1}
-        if frappe.db.exists("Payment Request",filter):
-            frappe.enqueue(set_as_paid,queue='long',filter=filter,data=data,payment_mode=payment_mode)
+            filters = {'reference_name':fee,'payment_term':term,'docstatus':1}
+        if frappe.db.exists("Payment Request",filters):
+            frappe.enqueue(set_as_paid,queue='long',filters=filters,data=data,payment_mode=payment_mode)
+        frappe.response["message"] = "Manual Payment Received Successfully"
     except Exception as e:
         frappe.logger('manual').exception(e)
+        frappe.response["message"] = "Error Occured"
         return e
     
-def set_as_paid(filter,data,payment_mode):
-    frappe.db.set_value("Payment Request",filter,'mode_of_payment',payment_mode)
-    pr = frappe.get_doc("Payment Request",filter)
+def set_as_paid(filters,data,payment_mode):
+    frappe.db.set_value("Payment Request",filters,'mode_of_payment',payment_mode)
+    pr = frappe.get_doc("Payment Request",filters)
     pr.save()
     pr.set_as_paid()
     entries = frappe.get_all("Payment Entry", {"reference_no": pr.name},['name','company', 'party', 'paid_amount'])
