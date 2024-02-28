@@ -7,14 +7,14 @@ from frappe.model.document import Document
 from frappe.utils import cint
 
 from education.education.api import enroll_student
+from edu_quality.edu_quality.server_scripts.utils import current_academic_year,next_academic_year, next_class
 
 
 class WalnutProgramEnrollment(Document):
-	def onload(self):
-		academic_term_reqd = cint(
-			frappe.db.get_single_value("Education Settings", "academic_term_reqd")
-		)
-		self.set_onload("academic_term_reqd", academic_term_reqd)
+	@frappe.whitelist()
+	def get_current_academic_year(self):
+		return current_academic_year()
+	
 
 	@frappe.whitelist()
 	def get_students(self):
@@ -71,7 +71,10 @@ class WalnutProgramEnrollment(Document):
 	@frappe.whitelist()
 	def enroll_students(self):
 		total = len(self.students)
-		for i, stud in enumerate(self.students):
+		if not total:
+			return self.school_wise()
+		
+		for i, stud in enumerate(self.students): #edge cases(senior.others) - manual assignment
 			frappe.publish_realtime(
 				"program_enrollment_tool", dict(progress=[i + 1, total]), user=frappe.session.user
 			)
@@ -79,29 +82,68 @@ class WalnutProgramEnrollment(Document):
 				prog_enrollment = frappe.new_doc("Program Enrollment")
 				prog_enrollment.student = stud.student
 				prog_enrollment.student_name = stud.student_name
-				prog_enrollment.student_category = stud.student_category
-				prog_enrollment.program = self.new_program
-				prog_enrollment.academic_year = self.new_academic_year
-				prog_enrollment.academic_term = self.new_academic_term
-				prog_enrollment.student_group = self.get_division()
-				prog_enrollment.student_batch_name = (
-					stud.student_batch_name if stud.student_batch_name else self.new_student_batch
-				)
+				prog_enrollment.program = stud.next_class
+				prog_enrollment.academic_year = next_academic_year()
+				prog_enrollment.student_group = stud.next_division
 				prog_enrollment.save()
-			elif stud.student_applicant:
-				prog_enrollment = enroll_student(stud.student_applicant)
-				prog_enrollment.academic_year = self.academic_year
-				prog_enrollment.academic_term = self.academic_term
-				prog_enrollment.student_batch_name = (
-					stud.student_batch_name if stud.student_batch_name else self.new_student_batch
-				)
-				prog_enrollment.save()
+				prog_enrollment.submit()
 		frappe.msgprint(_("{0} Students have been enrolled").format(total))
+	
+	def school_wise(self):
+		programs = frappe.get_all("Program",{'school':self.school},fields=["name","sequence","school"],order_by="sequence")
+		i=0
+		for program in programs:
+			#skip senior kg and last class in school
+			if i== len(programs)-1 or "Senior KG" in program.name:
+				continue
+			else:
+				next_program = programs[i+1]
+				next_yr =  next_academic_year(self.get_current_academic_year)
+				students = self.get_students(program.name)
+				total = len(students)
+				for j,student in enumerate(students):
+					frappe.publish_realtime(
+						"program_enrollment_tool", dict(progress=[i + 1, total]), user=frappe.session.user
+							)
+					division = self.get_division(student,next_program.name)
+					if not division:
+						pass #add to error table
+					else:
+						prog_enrollment = frappe.new_doc("Program Enrollment")
+						prog_enrollment.student = student.student
+						prog_enrollment.student_name = student.student_name
+						prog_enrollment.program = next_program.name
+						prog_enrollment.academic_year = next_yr
+						prog_enrollment.student_group = division
+						prog_enrollment.save()
+						prog_enrollment.submit()
+			i+=1
 
-	def get_division(self):
-			divisions = frappe.get_all("Student Group",{'academic_year':self.new_academic_year,'program':self.new_program})
-			frappe.logger("enrollment").exception(divisions)
-			for division in divisions:
-				division = frappe.get_doc("Student Group",division.name)
-				if division.max_strength and division.max_strength > len(division.students):
-					return division.name
+
+
+	def get_students(self,program):
+		query = """
+					SELECT pe.student, pe.student_name,  pe.student_group, pe.program from 
+						`tabProgram Enrollment` as pe
+					LEFT JOIN `tabProgram` ON pe.program = `tabProgram`.name
+					WHERE pe.program="%s" AND pe.academic_year="%s"
+					ORDER BY `tabProgram`.sequence
+				""" % (program,self.academic_year)
+		result = frappe.db.sql(query,as_dict=1)
+		return result
+
+
+	def get_division(self,student,next_class):
+		division = str(student.student_group[0])
+		filters = {
+			"academic_year": next_academic_year(self.academic_year),
+			"program": next_class,
+			"student_group_name": division
+		}
+
+		if frappe.db.exists("Student Group",filters):
+			doc = frappe.get_doc("Student Group",filters)
+			if doc.max_strength and doc.max_strength > len(doc.students):
+					return doc.name
+		return None
+		

@@ -2,6 +2,21 @@ import frappe
 from frappe.utils import today
 
 
+
+def current_academic_year():
+    filter = [["Academic Year","year_start_date","<=",today()],
+			      ["Academic Year","year_end_date",">=",today()]]
+    if frappe.db.exists("Academic Year",filter):
+        return frappe.db.get_value("Academic Year",filter)
+    
+def next_academic_year(current=None):
+    if not current:
+        current = current_academic_year()
+    current_end_date = frappe.db.get_value("Academic Year",current,"year_end_date")
+    filters = [["Academic Year","year_start_date",">",current_end_date]]
+    if frappe.db.exists("Academic Year",filters):
+        return frappe.db.get_value("Academic Year",filters,order_by="year_start_date")
+
 def is_rolled_over():
     filter = [["Academic Year","year_start_date","<=",today()],
 			      ["Academic Year","year_end_date",">=",today()]]
@@ -19,6 +34,14 @@ def get_previous_class(program):
     filters = [
         ["Program","school","=",program.school],
         ["Program","sequence","=",program.sequence-1]
+    ]
+    if frappe.db.exists("Program",filters):
+        return frappe.db.get_value("Program",filters)
+    
+def next_class(program):
+    filters = [
+        ["Program","school","=",program.school],
+        ["Program","sequence","=",program.sequence+1]
     ]
     if frappe.db.exists("Program",filters):
         return frappe.db.get_value("Program",filters)

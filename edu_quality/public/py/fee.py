@@ -182,6 +182,7 @@ def create_fees(doc, method=None):
 
 
 def append_program_enrollment(doc, method=None):
+    return
     student = frappe.get_doc("Student", doc.student)
     # create id card
     qrcode_image = gen_qr_code_b64(
