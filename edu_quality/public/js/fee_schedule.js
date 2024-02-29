@@ -30,7 +30,8 @@ function student_group(frm){
                         args: {
                             doctype: 'Student Group',
                             filters: {
-                                program: response.message[0].program
+                                program: response.message[0].program,
+                                academic_year: frm.doc.academic_year
                             },
                             fields: ['name']  // Assuming 'name' is the student group identifier
                         },

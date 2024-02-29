@@ -179,8 +179,12 @@ def get_data_from_queries(filters=None):
         .inner_join(program_enrollment)
         .on(student.name == program_enrollment.student)
         .where(
-            (student.student_state.isin(["Current", "Defaulter"]))
+            (student.student_status.isin(["Current Student", "Defaulter"]))
             & (program_enrollment.academic_year == filters.get("academic_year"))
+            & (
+                program_enrollment.get("program")
+                == f'{filters.get("class")}-{student.school}'
+            )
         )
         .groupby(program_enrollment.program)
         .select(count_all, program_enrollment.program)

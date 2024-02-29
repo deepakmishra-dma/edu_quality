@@ -393,11 +393,14 @@ def get_undertaking_submission_pdf(student):
 
 def is_old_student(student, academic_year):
     previous_academic_year = get_previous_academic_year(academic_year)
-    if frappe.db.exists(
-        "Program Enrollment",
-        {"student": student, "academic_year": previous_academic_year},
-    ):
-        return True
+    if previous_academic_year:
+        if frappe.db.exists(
+            "Program Enrollment",
+            {"student": student, "academic_year": previous_academic_year},
+        ):
+            return True
+        else:
+            return False
     else:
         return False
 
@@ -408,10 +411,7 @@ def get_previous_academic_year(academic_year):
 
     start_year, end_year = map(int, academic_year.split("-"))
     previous_academic_year = f"{start_year - 1}-{end_year - 1}"
-
-    return bool(
-        frappe.get_value("Academic Year", {"name": previous_academic_year}, "name")
-    )
+    return frappe.get_value("Academic Year", {"name": previous_academic_year}, "name")
 
 
 # edu_quality.public.py.utils.generate_fields_map
