@@ -8,18 +8,20 @@ def manual_payment(fee,term,data,payment_mode):
     try:
         data = frappe.parse_json(data)
         if term == "Deposit":
-            filter = [["Payment Request","payment_term","is","not set"],["Payment Request","reference_name","=",fee],["Payment Request","docstatus","=",1]]
+            filters = [["Payment Request","payment_term","is","not set"],["Payment Request","reference_name","=",fee],["Payment Request","docstatus","=",1]]
         else:
-            filter = {'reference_name':fee,'payment_term':term,'docstatus':1}
-        if frappe.db.exists("Payment Request",filter):
-            frappe.enqueue(set_as_paid,queue='long',filter=filter,data=data,payment_mode=payment_mode)
+            filters = {'reference_name':fee,'payment_term':term,'docstatus':1}
+        if frappe.db.exists("Payment Request",filters):
+            frappe.enqueue(set_as_paid,queue='long',filters=filters,data=data,payment_mode=payment_mode)
+        frappe.response["message"] = "Manual Payment Received Successfully"
     except Exception as e:
         frappe.logger('manual').exception(e)
+        frappe.response["message"] = "Error Occured"
         return e
     
-def set_as_paid(filter,data,payment_mode):
-    frappe.db.set_value("Payment Request",filter,'mode_of_payment',payment_mode)
-    pr = frappe.get_doc("Payment Request",filter)
+def set_as_paid(filters,data,payment_mode):
+    frappe.db.set_value("Payment Request",filters,'mode_of_payment',payment_mode)
+    pr = frappe.get_doc("Payment Request",filters)
     pr.save()
     pr.set_as_paid()
     entries = frappe.get_all("Payment Entry", {"reference_no": pr.name},['name','company', 'party', 'paid_amount'])
@@ -38,12 +40,12 @@ def update_reference(reference_no, entry):
     frappe.db.set_value("Payment Entry", entry.name, "reference_date", date)
     frappe.db.set_value("Payment Entry", entry.name, "remarks", remarks)
 
-
+ 
 @frappe.whitelist()
-def get_payment_details(fee,term):
+def get_payment_details(fee, doctype, term):
     try:
         data = []
-        company_wise =  json.loads(frappe.db.get_value("Fees",fee,"company_split"))[term]
+        company_wise =  json.loads(frappe.db.get_value(doctype,fee,"company_split"))[term]
         for i in company_wise:
             data.append({
                     "company": i,
@@ -68,8 +70,9 @@ def company_wise(data, component):
 
 
 @frappe.whitelist()
-def get_unpaid_terms(fee):
+def get_unpaid_terms(fee, doctype):
     filters = [
+        ["reference_doctype",'=',doctype],
         ["reference_name",'=',fee],
         ["status",'!=','Paid'],
         ['docstatus','=',1]
@@ -81,14 +84,19 @@ def get_unpaid_terms(fee):
             result.append("Deposit")
         else:
             result.append(term.payment_term)
-    fee_doc = frappe.get_doc("Fees",fee)
+    fee_doc = frappe.get_doc(doctype,fee)
     is_deposit = False
     if fee_doc.component_split:
         component = json.loads(fee_doc.component_split)["Term 1"]
         is_deposit = component['is_deposit']
-    if frappe.db.exists("Rules and Regulation Submission", {"student": fee_doc.student,"program":fee_doc.program},"name"):
+    if doctype =="Fees":
+        filters = {"student": fee_doc.student,"program":fee_doc.program}
+    else:
+        filters = {"student": fee_doc.student,"program":fee_doc.next_program}
+
+    if frappe.db.exists("Rules and Regulation Submission", filters,"name"):
         undertaking_accepted = True
     else:
         undertaking_accepted= False
-    data = {"terms": result,"undertaking_accepted":undertaking_accepted,"undertaking_url": get_undertaking_template(is_deposit=is_deposit,fee=fee_doc.name)}
+    data = {"terms": result,"undertaking_accepted":undertaking_accepted,"undertaking_url": get_undertaking_template(is_deposit=is_deposit,fee=fee_doc)}
     return data

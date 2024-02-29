@@ -1086,7 +1086,7 @@
    "idx": 0,
    "is_child_table": 0,
    "link_doctype": "Payment Entry",
-   "link_fieldname": "fees",
+   "link_fieldname": "reference_name",
    "modified": "2023-12-08 07:48:26.249040",
    "modified_by": "Administrator",
    "name": "f5ec145e49",
