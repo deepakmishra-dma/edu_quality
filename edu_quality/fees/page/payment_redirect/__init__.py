@@ -91,9 +91,13 @@ def payment_receipt(payment_request,category):
         company = frappe.db.get_value("Fee Category",category,"custom_company")
         if not company:
             company = "Unique Educational and Sports Foundation"
-        doc = frappe.db.get_value("Payment Entry",{'reference_no':payment_request,"company":company},'name')
+        doc = frappe.db.get_value("Payment Entry",{'payment_request':payment_request,"company":company},'name')
         fee_name = frappe.db.get_value("Payment Request", payment_request, 'reference_name')
-        program_name = frappe.db.get_value("Fees", fee_name, 'program')
+        doctype = frappe.db.get_value("Payment Request", payment_request, 'reference_doctype')
+        if doctype == "Fees":
+            program_name = frappe.db.get_value("Fees", fee_name, 'program')
+        elif doctype == "Fee Advance":
+            program_name = frappe.db.get_value("Fee Advance", fee_name, 'next_program')
         print_format = frappe.db.get_value("Program", program_name, 'print_format')
         letter_head = frappe.db.get_value("Program", program_name, 'letter_head')
         letter_head_doc = frappe.get_doc("Letter Head", letter_head)
