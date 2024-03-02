@@ -37,6 +37,7 @@ doctype_js = {
     "Fee Schedule": "public/js/fee_schedule.js",
     "Student": "public/js/student.js",
     "Item": "public/js/item.js",
+    "Purchase Order": "public/js/purchase_order.js",
     "Topic": "public/js/topic.js",
 }
 doctype_list_js = {

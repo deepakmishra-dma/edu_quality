@@ -65,6 +65,7 @@ frappe.ui.form.on("Lead", {
                         indicator: "red",
                         title: __("Incorrect Field")
                     });
+                    return
                 }
                 if (errorKey) {
                     frappe.msgprint({
