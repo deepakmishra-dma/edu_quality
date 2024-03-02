@@ -131,6 +131,11 @@ def get_split(fees, schedule, case=0,apply_deposit=0):
                     'cost_center': cost_center
                 }
                 company_wise[component.custom_company] = company_wise_breakup
+            fee_catogory = {component.fees_category:amount}
+            if company_wise[component.custom_company].get('fee_categories'):
+                company_wise[component.custom_company]['fee_categories'].append(fee_catogory)
+            else:
+                company_wise[component.custom_company]['fee_categories'] = [fee_catogory]
         return split,company_wise, component_wise
     except Exception as e:
         frappe.logger('split').exception(e)
@@ -184,6 +189,11 @@ def get_split_fee_advance(fees):
                     'cost_center': cost_center
                 }
                 company_wise[component.custom_company] = company_wise_breakup
+            fee_catogory = {component.fees_category:amount}
+            if company_wise[component.custom_company].get('fee_categories'):
+                company_wise[component.custom_company]['fee_categories'].append(fee_catogory)
+            else:
+                company_wise[component.custom_company]['fee_categories'] = [fee_catogory]
         return split,company_wise, component_wise
     except Exception as e:
         frappe.logger('split').exception(e)
