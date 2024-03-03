@@ -243,7 +243,7 @@ def referal_discount(doc, method=None):
 
             amount = component.custom_amount_after_discount or component.amount
             amount_after_discount = amount - discount
-            new_discount = component.custom_discount_amount + discount
+            new_discount = component.custom_discount_amount or 0 + discount
             discount_percentage = calculate_discount(component.amount, new_discount)
 
             discount_name = component.custom_discounts

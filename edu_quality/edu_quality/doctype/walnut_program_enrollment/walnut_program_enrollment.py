@@ -90,36 +90,56 @@ class WalnutProgramEnrollment(Document):
 		frappe.msgprint(_("{0} Students have been enrolled").format(total))
 	
 	def school_wise(self):
-		programs = frappe.get_all("Program",{'school':self.school},fields=["name","sequence","school"],order_by="sequence")
-		i=0
-		for program in programs:
-			#skip senior kg and last class in school
-			if i== len(programs)-1 or "Senior KG" in program.name:
-				continue
-			else:
-				next_program = programs[i+1]
-				next_yr =  next_academic_year(self.get_current_academic_year)
-				students = self.get_students(program.name)
-				total = len(students)
-				for j,student in enumerate(students):
-					frappe.publish_realtime(
-						"program_enrollment_tool", dict(progress=[i + 1, total]), user=frappe.session.user
-							)
-					division = self.get_division(student,next_program.name)
-					if not division:
-						pass #add to error table
-					else:
-						prog_enrollment = frappe.new_doc("Program Enrollment")
-						prog_enrollment.student = student.student
-						prog_enrollment.student_name = student.student_name
-						prog_enrollment.program = next_program.name
-						prog_enrollment.academic_year = next_yr
-						prog_enrollment.student_group = division
-						prog_enrollment.save()
-						prog_enrollment.submit()
-			i+=1
+		try:
+			programs = frappe.get_all("Program",filters={'school':self.school},fields=["name","sequence","school"],order_by="sequence")
+			i=0
+			total = len(programs)
+			for program in programs:
+				error_data = []
+				frappe.publish_realtime(
+							"program_enrollment_tool", dict(progress=[i + 1, total]), user=frappe.session.user
+								)
+				#skip senior kg and last class in school
+				if i== len(programs)-1 or "Senior KG" in program.name:
+					continue
+				else:
+					next_program = programs[i+1]
+					next_yr =  next_academic_year(self.academic_year)
+					students = self.get_students(program.name)
+					for j,student in enumerate(students):
+						if student.student == "WAAB56":
+							continue
+						division = self.get_division(student,next_program.name)
+						if not division:
+							error_data.append({
+										"student": student.student,
+										"student_name": student.student_name,
+										"current_class": program.name,
+										"next_class": next_program.name,
+										"current_division": frappe.db.get_value("Program Enrollment",{"student":student.student,"academic_year":self.academic_year},'student_group'),
+									})
+						else:
+							if not frappe.db.exists("Program Enrollment",{"student":student.student,"academic_year":next_yr}):
+								prog_enrollment = frappe.new_doc("Program Enrollment")
+								prog_enrollment.student = student.student
+								prog_enrollment.student_name = student.student_name
+								prog_enrollment.program = next_program.name
+								prog_enrollment.academic_year = next_yr
+								prog_enrollment.student_group = division
+								prog_enrollment.save()
+								prog_enrollment.submit()
+				i+=1
+				frappe.logger("enrollment").exception(error_data)
+				if error_data:
+					self.add_to_table(error_data)
+		except Exception as e:
+			frappe.logger("enrollment").exception(e)
 
-
+	def add_to_table(self,data):
+		for i in data:
+			self.append("students",i)
+		self.save()
+		
 
 	def get_students(self,program):
 		query = """
@@ -142,8 +162,8 @@ class WalnutProgramEnrollment(Document):
 		}
 
 		if frappe.db.exists("Student Group",filters):
-			doc = frappe.get_doc("Student Group",filters)
-			if doc.max_strength and doc.max_strength > len(doc.students):
-					return doc.name
+			group,max_strength = frappe.db.get_value("Student Group",filters,["name","max_strength"])
+			if frappe.db.count("Program Enrollment",{"student_group":group})<max_strength:
+				return group
 		return None
 		

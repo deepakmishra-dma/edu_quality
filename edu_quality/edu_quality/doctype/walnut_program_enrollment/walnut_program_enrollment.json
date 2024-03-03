@@ -22,7 +22,7 @@
    "fieldname": "academic_year",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Academic Year",
+   "label": "Current Academic Year",
    "options": "Academic Year",
    "reqd": 1
   },
@@ -52,7 +52,7 @@
  "hide_toolbar": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-12-20 08:40:55.007762",
+ "modified": "2023-12-20 11:16:00.018515",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Walnut Program Enrollment",

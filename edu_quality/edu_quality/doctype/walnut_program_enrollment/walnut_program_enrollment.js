@@ -9,6 +9,7 @@ frappe.ui.form.on("Walnut Program Enrollment", {
 			frappe.hide_msgprint(true);
 			frappe.show_progress(__("Enrolling students"), data.progress[0], data.progress[1]);
 		});
+		if(frm.doc.academic_year == "") {
 		frappe.call({
 			method: "get_current_academic_year",
 			doc:frm.doc,
@@ -19,6 +20,7 @@ frappe.ui.form.on("Walnut Program Enrollment", {
 				}
 			}
 		})
+	}
 	},
 	
 
