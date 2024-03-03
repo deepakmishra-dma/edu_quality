@@ -314,7 +314,7 @@ fixtures = [
     {"dt": "School"},
     {"dt": "Academic Year"},
     # {"dt": "Funnel Node", "filters": [["class_name", "=", "edu_quality"]]},
-    {"dt": "Funnel"},
+    # {"dt": "Funnel"},
     {"dt": "Email Template"},
     {"dt": "Letter Head"},
     {"dt": "Class Type"},
