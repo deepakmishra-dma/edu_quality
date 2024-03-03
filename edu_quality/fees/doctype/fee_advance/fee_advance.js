@@ -191,7 +191,24 @@ frappe.ui.form.on('Fee Advance', {
                 }
             });
 
-			frm.add_custom_button("Manual Collection", function () {
+			async function getPaymentRequest(reference_name, docstatus) {
+				let found = false;
+				const result = await frappe.db.get_value('Payment Request', { reference_name: reference_name, docstatus: docstatus }, 'name');
+				
+				if (result && result.message && result.message.name) {
+					found = true;
+				}
+				
+				return found;
+			}
+
+			frm.add_custom_button("Manual Collection", async function () {				
+				let paymentRequestExists = await getPaymentRequest(frm.doc.name, 1);
+				if (!paymentRequestExists) {
+					frappe.msgprint(`Payment Request for ${frm.doc.name} does not Exists`);
+					return;
+				}
+
 				if (frm.doc.outstanding_amount == 0){
 					frappe.msgprint(`Fee Advance ${frm.doc.name} is Already Paid`);
 					return;
