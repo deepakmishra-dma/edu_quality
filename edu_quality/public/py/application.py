@@ -80,6 +80,8 @@ def before_save(doc, method=None):
                         "fees_category": component.fees_category,
                         "amount": component.amount,
                         "description": component.description,
+                        "custom_company": component.custom_company,
+                        "school": component.school
                     },
                 )
     calculate_total(doc)

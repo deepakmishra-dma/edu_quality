@@ -154,6 +154,8 @@ def create_fees(doc, method=None):
                             "fees_category": component.fees_category,
                             "amount": component.amount,
                             "description": component.description,
+                            "custom_company": component.custom_company,
+                            "school": component.school
                         },
                     )
             else:
@@ -167,6 +169,8 @@ def create_fees(doc, method=None):
                             "fees_category": component.fees_category,
                             "amount": component.amount,
                             "description": component.description,
+                            "custom_company": component.custom_company,
+                            "school": component.school
                         },
                     )
             fees.insert()
