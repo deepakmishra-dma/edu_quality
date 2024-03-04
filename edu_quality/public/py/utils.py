@@ -124,6 +124,7 @@ def send_receipt_over_email(payment_request):
             file_name=pe.name,
             print_format=print_format,
             print_letterhead=True,
+            letterhead=letter_head,
         )
         for pe in payment_entries
     ]
