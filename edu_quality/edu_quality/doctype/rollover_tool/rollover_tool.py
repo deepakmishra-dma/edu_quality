@@ -10,7 +10,7 @@ from education.education.api import enroll_student
 from edu_quality.edu_quality.server_scripts.utils import current_academic_year,next_academic_year, next_class
 
 
-class WalnutProgramEnrollment(Document):
+class RolloverTool(Document):
 	@frappe.whitelist()
 	def get_current_academic_year(self):
 		return current_academic_year()
@@ -91,7 +91,7 @@ class WalnutProgramEnrollment(Document):
 	
 	def school_wise(self):
 		try:
-			programs = frappe.get_all("Program",filters={'school':self.school},fields=["name","sequence","school"],order_by="sequence")
+			programs = frappe.get_all("Program",filters={'school':self.school,"class_group":self.class_group},fields=["name","sequence","school"],order_by="sequence")
 			i=0
 			total = len(programs)
 			for program in programs:
@@ -129,7 +129,6 @@ class WalnutProgramEnrollment(Document):
 								prog_enrollment.save()
 								prog_enrollment.submit()
 				i+=1
-				frappe.logger("enrollment").exception(error_data)
 				if error_data:
 					self.add_to_table(error_data)
 		except Exception as e:

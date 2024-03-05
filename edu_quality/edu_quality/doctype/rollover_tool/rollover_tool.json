@@ -7,6 +7,7 @@
  "engine": "InnoDB",
  "field_order": [
   "school",
+  "class_group",
   "column_break_3",
   "academic_year",
   "section_break_5",
@@ -47,15 +48,22 @@
    "label": "School",
    "options": "School",
    "reqd": 1
+  },
+  {
+   "fieldname": "class_group",
+   "fieldtype": "Select",
+   "label": "Class Group",
+   "options": "Primary\nSecondary",
+   "reqd": 1
   }
  ],
  "hide_toolbar": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-12-20 11:16:00.018515",
+ "modified": "2023-12-21 13:36:48.541769",
  "modified_by": "Administrator",
  "module": "Edu Quality",
- "name": "Walnut Program Enrollment",
+ "name": "Rollover Tool",
  "owner": "Administrator",
  "permissions": [
   {

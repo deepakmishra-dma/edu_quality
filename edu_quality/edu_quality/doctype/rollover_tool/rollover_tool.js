@@ -1,7 +1,7 @@
 // Copyright (c) 2016, Frappe and contributors
 // For license information, please see license.txt
 
-frappe.ui.form.on("Walnut Program Enrollment", {
+frappe.ui.form.on("Rollover Tool", {
 	"refresh": function(frm) {
 		// frm.disable_save();
 		frm.fields_dict.enroll_students.$input.addClass(' btn btn-primary');
