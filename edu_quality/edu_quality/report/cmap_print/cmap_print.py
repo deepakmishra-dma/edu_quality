@@ -3,7 +3,7 @@
 
 import frappe
 from frappe.query_builder.functions import Count
-from frappe.utils import parse_json
+from frappe.utils import parse_json, today
 
 
 def generate_school_fields():
@@ -127,6 +127,18 @@ def transform_data(program_enrollments, CMAPS):
 
         data.append(i)
     return data
+
+
+def check_if_academic_year_is_next(academic_year):
+    try:
+        academic_year = frappe.db.get_doc(
+            "Academic Year", filters={"name": academic_year}, fields=["year_start_date"]
+        )
+        if get_date(academic_year.get("year_start_date"), "") > today():
+            return True
+        return False
+    except Exception as e:
+        return False
 
 
 def get_data_from_queries(filters=None):

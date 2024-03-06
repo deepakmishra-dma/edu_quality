@@ -154,14 +154,18 @@ def generate_html_table(self):
 
 # edu_quality.overrides_hooks.purchase_order.create_purchase_receipt
 @frappe.whitelist()
-def create_purchase_receipt(self, school="Walnut School at Shivane"):
+def create_purchase_receipt(self, school="Walnut School at Shivane", selected_items=[]):
     self = json.loads(self) if isinstance(self, str) else self
+
+    if not len(selected_items):
+        frappe.throw("No items selected")
 
     warehouse_to_name_map = get_warehouse_to_school_map(self.get("items"))
     receipt = make_purchase_receipt(source_name=self.get("name"))
     filtered_items = list(
         filter(
-            lambda item: warehouse_to_name_map.get(item.get("warehouse")) == school,
+            lambda item: warehouse_to_name_map.get(item.get("warehouse")) == school
+            and item.item_code in selected_items,
             receipt.get("items"),
         )
     )
