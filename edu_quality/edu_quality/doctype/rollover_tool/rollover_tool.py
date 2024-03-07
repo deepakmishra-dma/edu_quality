@@ -14,7 +14,6 @@ class RolloverTool(Document):
 	@frappe.whitelist()
 	def get_current_academic_year(self):
 		return current_academic_year()
-	
 
 	@frappe.whitelist()
 	def get_students(self):
@@ -89,11 +88,23 @@ class RolloverTool(Document):
 				prog_enrollment.submit()
 		frappe.msgprint(_("{0} Students have been enrolled").format(total))
 	
+	def fees_setup_validation(self,programs):
+		year = next_academic_year(self.academic_year)
+		errors = []
+		for program in programs:
+			if not frappe.db.exists("Fee Schedule",{"program":program.name,"academic_year":year}):
+				errors.append(program.name)
+		if errors:
+			frappe.throw(_("Fees Setup is not done for the following classes - {0}").format(errors.join(", ")))
+				
+			
+		
 	def school_wise(self):
 		try:
 			programs = frappe.get_all("Program",filters={'school':self.school,"class_group":self.class_group},fields=["name","sequence","school"],order_by="sequence")
 			i=0
 			total = len(programs)
+			self.fees_setup_validation(programs)
 			for program in programs:
 				error_data = []
 				frappe.publish_realtime(

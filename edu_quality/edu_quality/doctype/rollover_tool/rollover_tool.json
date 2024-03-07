@@ -12,7 +12,11 @@
   "academic_year",
   "section_break_5",
   "enroll_students",
-  "students"
+  "students",
+  "other_rollover_functions_section",
+  "shift_reference_series",
+  "column_break_pst16",
+  "mark_as_rolled_over"
  ],
  "fields": [
   {
@@ -38,6 +42,7 @@
    "options": "Program Enrollment Tool Student"
   },
   {
+   "description": "Moves Students from section of one class to Another",
    "fieldname": "enroll_students",
    "fieldtype": "Button",
    "label": "Enroll Students"
@@ -55,12 +60,33 @@
    "label": "Class Group",
    "options": "Primary\nSecondary",
    "reqd": 1
+  },
+  {
+   "fieldname": "other_rollover_functions_section",
+   "fieldtype": "Section Break",
+   "label": "Other Rollover Functions"
+  },
+  {
+   "description": "Shif Reference Series of Classes",
+   "fieldname": "shift_reference_series",
+   "fieldtype": "Button",
+   "label": "Shift Reference Series"
+  },
+  {
+   "description": "Mark Current Academic Year as Rolled Over",
+   "fieldname": "mark_as_rolled_over",
+   "fieldtype": "Button",
+   "label": "Mark as Rolled Over"
+  },
+  {
+   "fieldname": "column_break_pst16",
+   "fieldtype": "Column Break"
   }
  ],
  "hide_toolbar": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-12-21 13:36:48.541769",
+ "modified": "2023-12-21 14:18:46.652765",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Rollover Tool",

@@ -17,17 +17,26 @@ def next_academic_year(current=None):
     if frappe.db.exists("Academic Year",filters):
         return frappe.db.get_value("Academic Year",filters,order_by="year_start_date")
 
-def is_rolled_over():
-    filter = [["Academic Year","year_start_date","<=",today()],
-			      ["Academic Year","year_end_date",">=",today()]]
+def previous_academic_year(current=None):
+    if not current:
+        current = current_academic_year()
+    current_start_date = frappe.db.get_value("Academic Year",current,"year_start_date")
+    filters = [["Academic Year","year_end_date","<=",current_start_date]]
+    if frappe.db.exists("Academic Year",filters):
+        return frappe.db.get_value("Academic Year",filters,order_by="year_end_date")
+    
+
+def is_rolled_over(academic_year=None):
+    if academic_year:
+        filter = academic_year
+    else:
+        filter = [["Academic Year","year_start_date","<=",today()],
+                    ["Academic Year","year_end_date",">=",today()]]
     if frappe.db.exists("Academic Year",filter):
         return frappe.db.get_value("Academic Year",filter,"rolled_over")
     
 
-def previous_academic_year():
-    filter = [["Academic Year","year_end_date","<=",today()]]
-    if frappe.db.exists("Academic Year",filter):
-        return frappe.db.get_value("Academic Year",filter,order_by="year_start_date")
+
     
 
 def get_previous_class(program):
@@ -65,3 +74,25 @@ def class_count_before_rollover(program_enrollment):
         ["Program Enrollment", "program","=",program_enrollment.program],
         ["Program Enrollment", "student_group","=",division],
     ]
+
+
+def mark_rolled_over(academic_year):
+    next_academic_year = next_academic_year(academic_year)
+    if next_academic_year:
+        frappe.db.set_value("Academic Year",next_academic_year,"rolled_over",1)
+
+
+def shift_reference_series(school):
+    programs = frappe.get_all("Program",filters={"school":school},fields=["name","reference_series"],order_by="sequence")
+    previous_series = ""
+    for i in programs:
+        if previous_series:
+            frappe.db.set_value("Program",i.name,"reference_series",previous_series)
+            previous_series = i.reference_series
+    previous_series = chr(ord(previous_series[0])+1) + chr(ord(previous_series[1])+1)     
+    for i in programs:
+        frappe.db.set_value("Program",i.name,"reference_series",previous_series)
+        break
+
+
+

@@ -2,6 +2,17 @@
  {
   "docstatus": 0,
   "doctype": "Client Script",
+  "dt": "Student Group",
+  "enabled": 1,
+  "modified": "2023-12-18 09:55:03.119407",
+  "module": "Edu Quality",
+  "name": "Roll Number Allocation",
+  "script": "frappe.ui.form.on('Student Group', {\n    \n\trefresh(frm) {\n\t    frm.add_custom_button(__('Sort Students'), function(){\n    \t\tvar idx = 1;\n            var sortedEntries = frm.doc.students.sort(function(a,b){\n              if (a.student_name < b.student_name){ return -1 }\n              else if ( a.student_name > b.student_name){ return 1 }\n              return 1;\n            });\n        frm.set_value('students', sortedEntries);\n        \n            \n            frm.doc.students.map(function(item){\n              item.idx = idx++;\n              item.group_roll_number = item.idx;\n            });\n            frm.refresh_field('students');\n        \n\t    });\n\t}\n\t\n})",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
   "dt": "Fees",
   "enabled": 1,
   "modified": "2023-12-07 12:33:23.604673",
