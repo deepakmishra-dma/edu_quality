@@ -3,7 +3,7 @@
 
 import frappe
 from frappe.query_builder.functions import Count
-from frappe.utils import parse_json
+from frappe.utils import parse_json, today
 
 
 def generate_school_fields():
@@ -129,6 +129,18 @@ def transform_data(program_enrollments, CMAPS):
     return data
 
 
+def check_if_academic_year_is_next(academic_year):
+    try:
+        academic_year = frappe.db.get_doc(
+            "Academic Year", filters={"name": academic_year}, fields=["year_start_date"]
+        )
+        if get_date(academic_year.get("year_start_date"), "") > today():
+            return True
+        return False
+    except Exception as e:
+        return False
+
+
 def get_data_from_queries(filters=None):
     # gets list of cmaps
 
@@ -174,17 +186,58 @@ def get_data_from_queries(filters=None):
     count_all = Count("*").as_("count")
 
     # gets count of students on on basis of program/class not class type
-    qty_needed_for_schools_query = (
-        frappe.qb.from_(student)
-        .inner_join(program_enrollment)
-        .on(student.name == program_enrollment.student)
-        .where(
-            (student.student_state.isin(["Current", "Defaulter"]))
-            & (program_enrollment.academic_year == filters.get("academic_year"))
-        )
-        .groupby(program_enrollment.program)
-        .select(count_all, program_enrollment.program)
+    # TODO: Implement new academic year students logic
+    academic_year_doc = frappe.get_doc(
+        "Academic Year",
+        filters.get("academic_year"),
+        fields=["custom_current_academic_year", "custom_next_academic_year"],
     )
+    current_academic_year = frappe.get_value(
+        "Academic Year", {"custom_current_academic_year": 1}, "name"
+    )
+
+    if academic_year_doc.custom_next_academic_year:
+        qty_needed_for_schools_query = (
+            frappe.qb.from_(student)
+            .inner_join(program_enrollment)
+            .on(student.name == program_enrollment.student)
+            .where(
+                (
+                    (
+                        (student.student_status.isin(["New student"]))
+                        & (
+                            program_enrollment.academic_year
+                            == filters.get("academic_year")
+                        )
+                    )
+                    | (
+                        (program_enrollment.academic_year == current_academic_year)
+                        & (
+                            student.student_status.isin(
+                                ["Current Student", "Defaulter"]
+                            )
+                        )
+                    )
+                )
+                & (program_enrollment.program.like(f'{filters.get("class")}-%'))
+            )
+            .groupby(program_enrollment.program)
+            .select(count_all, program_enrollment.program)
+        )
+
+    else:
+        qty_needed_for_schools_query = (
+            frappe.qb.from_(student)
+            .inner_join(program_enrollment)
+            .on(student.name == program_enrollment.student)
+            .where(
+                (student.student_status.isin(["Current Student", "Defaulter"]))
+                & (program_enrollment.academic_year == filters.get("academic_year"))
+                & (program_enrollment.program.like(f'{filters.get("class")}-%'))
+            )
+            .groupby(program_enrollment.program)
+            .select(count_all, program_enrollment.program)
+        )
 
     frappe.errprint(str(qty_needed_for_schools_query))
     qty_needed_for_schools = qty_needed_for_schools_query.run(as_dict=True)

@@ -45,7 +45,7 @@ def transform_data(items):
         )
         if not item_map.get(item.get("item_code"), False):
             item_map[item.get("item_code")] = {
-                "field_name": item.get("item_code"),
+                "item_code": item.get("item_code"),
                 "chapter": item_code_data.get(item.get("item_code"), {}).custom_chapter,
                 "subject": item_code_data.get(item.get("item_code"), {}).custom_subject,
                 school_name: item.get("qty", 0),
@@ -74,74 +74,98 @@ def before_validate(self, method=None):
     self.custom_qr_code_base = gen_qr_code_b64(self.name)
 
 
+def get_columns(school_fields):
+    school_array = []
+    for i in school_fields:
+        school_array.append(
+            {
+                "name": f"{i.get('name')}",
+                "label": f"{i.get('name')}",
+                "editable": False,
+                "resizable": False,
+                "sortable": False,
+                "focusable": False,
+                "dropdown": False,
+                "width": 200,
+            }
+        ),
+    columns = [
+        {
+            "name": "Subject",
+            "id": "subject",
+            "editable": False,
+            "resizable": False,
+            "sortable": False,
+            "focusable": False,
+            "dropdown": False,
+            "width": 100,
+        },
+        {
+            "name": "Chapter",
+            "id": "chapter",
+            "editable": False,
+            "resizable": False,
+            "sortable": False,
+            "focusable": False,
+            "dropdown": False,
+            "width": 100,
+        },
+        {
+            "name": "Code",
+            "id": "item_code",
+            "editable": False,
+            "resizable": False,
+            "sortable": False,
+            "focusable": False,
+            "dropdown": False,
+            "width": 100,
+        },
+        {
+            "name": "Total Quantity",
+            "id": "total_qty",
+            "editable": False,
+            "resizable": False,
+            "sortable": False,
+            "focusable": False,
+            "dropdown": False,
+            "width": 100,
+        },
+        *school_array,
+    ]
+    return columns
+
+
 @frappe.whitelist()
 def generate_html_table(self):
     self = json.loads(self) if isinstance(self, str) else self
     self = transform_data(self.get("items"))
 
     all_schools = frappe.db.get_list("School", fields=["name"])
-    school_names = [name.get("name") for name in all_schools]
-    columns = ["Subject", "Chapter", "Code", *school_names, "Total Quantity"]
-    template = """<table border="2" cellspacing="2">
-  <thead>
-    {% for column in columns %}
-      <th>{{ column }}</th>
-    {% endfor %}
-  </thead>
-  <tbody>
-    {% for item in data %}
-      <tr>
-        <td>{{ item.get('subject') }}</td>
-        <td>{{ item.get('chapter') }}</td>
-        <td>{{ item.get('field_name') }}</td>
-        {% for school_name in school_names %}
-          <td>{{ item.get(school_name) }}</td>
-        {% endfor %}
-        <td>{{ item.get('total_qty') }}</td>
-      </tr>
-    {% endfor %}
-  </tbody>
-</table>"""
+    # school_names = [name.get("name") for name in all_schools]
+    columns = get_columns(all_schools)
+    frappe.errprint(columns)
+    frappe.errprint(self)
+    # HTML = frappe.render_template(
+    #     {"data": self, "school_names": school_names, "columns": columns}
+    # )
 
-    template = """<div class="form-grid-container"><div class="form-grid" style="overflow-x: scroll;">
-  <div class="grid-heading-row"><div class="grid-row"><div class="data-row row" style="flex-wrap:nowrap;">
-    {% for column in columns %}
-      <div class="col grid-static-col col-xs-2 static-area ellipsis"  title="{{column}}">{{ column }}</div>
-    {% endfor %}
-  </div></div></div>
-  <div class="grid-body">
-							<div class="rows">
-    {% for item in data %}
-      <div class="grid-row" data-name="cbbea21d3b" data-idx="1"><div class="data-row row" style="flex-wrap:nowrap;">
-        <div class="col grid-static-col col-xs-2 bold" style="max-width:100%;">{{ item.get('subject') }}</div>
-        <div class="col grid-static-col col-xs-2 bold" style="max-width:100%;">{{ item.get('chapter') }}</div>
-        <div class="col grid-static-col col-xs-2 bold" style="max-width:100%;">{{ item.get('field_name') }}</div>
-        {% for school_name in school_names %}
-          <div class="col grid-static-col col-xs-2 bold" style="max-width:100%;">{{ item.get(school_name) }}</div>
-        {% endfor %}
-        <div class="col grid-static-col col-xs-2 bold" style="max-width:100%;">{{ item.get('total_qty') }}</div>
-      </div></div>
-    {% endfor %}
-  </div></div>
-</div>
-</div>"""
-    HTML = frappe.render_template(
-        template, {"data": self, "school_names": school_names, "columns": columns}
-    )
-
-    return HTML, all_schools, columns, self
+    return all_schools, columns, self
 
 
 # edu_quality.overrides_hooks.purchase_order.create_purchase_receipt
 @frappe.whitelist()
-def create_purchase_receipt(self, school="Walnut School at Shivane"):
+def create_purchase_receipt(self, school="Walnut School at Shivane", selected_items=[]):
     self = json.loads(self) if isinstance(self, str) else self
+
+    if not len(selected_items):
+        frappe.throw("No items selected")
 
     warehouse_to_name_map = get_warehouse_to_school_map(self.get("items"))
     receipt = make_purchase_receipt(source_name=self.get("name"))
     filtered_items = list(
         filter(
-            lambda item: warehouse_to_name_map.get(item.get("warehouse")) == school,
+            lambda item: warehouse_to_name_map.get(item.get("warehouse")) == school
+            and item.item_code in selected_items,
             receipt.get("items"),
         )
     )

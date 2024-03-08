@@ -124,6 +124,7 @@ def send_receipt_over_email(payment_request):
             file_name=pe.name,
             print_format=print_format,
             print_letterhead=True,
+            letterhead=letter_head,
         )
         for pe in payment_entries
     ]
@@ -235,8 +236,8 @@ def verify_otp(fee, otp):
 
 def get_undertaking_template(doc=None, is_deposit=False, fee=None):
     if fee:
-        doctype = "Fees"
-        docname = fee
+        doctype = fee.doctype
+        docname = fee.name
     else:
         doctype, docname = frappe.get_value(
             "Payment Request", doc.name, ["reference_doctype", "reference_name"]
@@ -322,6 +323,11 @@ def handle_undertaking_submission(**kwargs):
         doc = frappe.get_doc("Fees", kwargs.get("fee"))
         student = doc.student
         doctype = "Fees"
+        docname = doc.name
+    elif kwargs.get("fee_advance"):
+        doc = frappe.get_doc("Fee Advance", kwargs.get("fee_advance"))
+        student = doc.student
+        doctype = "Fee Advance"
         docname = doc.name
     else:
         payment_hash = kwargs.get("payment_request")

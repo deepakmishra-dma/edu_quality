@@ -606,6 +606,7 @@ id_to_location_map_fb = {
     "wakad": "Wakad",
     "shivane": "Shivane",
     "fursungi": "Fursungi",
+    "walnut school at wakad": "Wakad",
     "walnut school at shivane": "Shivane",
     "walnut school at fursungi": "Fursungi",
 }
@@ -749,7 +750,9 @@ def create_lead(kwargs):
             else "Chat"
             if kwargs.get("communication_mode", "").lower() == "no"
             else "Call",
-            "custom_preferred_communication_day": kwargs.get("communication_day","Monday"),
+            "custom_preferred_communication_day": kwargs.get(
+                "communication_day", "Monday"
+            ),
             "custom_preferred_communication_time": kwargs.get("communication_time"),
         }
     )
@@ -851,7 +854,7 @@ def update_communication(lead, kwargs):
         if kwargs.get("communication_mode", "").lower() == "no"
         else "Call"
     )
-    lead.custom_preferred_communication_day = kwargs.get("communication_day","Monday")
+    lead.custom_preferred_communication_day = kwargs.get("communication_day", "Monday")
     lead.custom_preferred_communication_time = kwargs.get("communication_time")
 
 
@@ -880,31 +883,34 @@ def insert_walk_in_date(lead):
 # api for only updating all leads belonging to phone number and processing them
 @frappe.whitelist(allow_guest=True)
 def handle_school_visit(**kwargs):
-    school_visited = get_school(kwargs.get("location", ""))
-    existing_leads = frappe.db.get_list(
-        "Lead",
-        filters=[
-            [
-                "fathers_phone",
-                "Like",
-                f'%{remove_indian_country_code(kwargs.get("phone_number"))}%',
+    try:
+        school_visited = get_school(kwargs.get("location", ""))
+        existing_leads = frappe.db.get_list(
+            "Lead",
+            filters=[
+                [
+                    "fathers_phone",
+                    "Like",
+                    f'%{remove_indian_country_code(kwargs.get("phone_number"))}%',
+                ],
+                ["status", "NOT IN", ["Closed", "Enrolled"]],
+                ["center", "Like", school_visited],
             ],
-            ["status", "NOT IN", ["Closed", "Enrolled"]],
-            ["center", "Like", school_visited],
-        ],
-        ignore_permissions=True,
-    )
-    # return len(existing_leads)
-    # unoptimized to reduce from n+1 queries to 1
-    if len(existing_leads):
-        for lead in existing_leads:
-            lead_doc = frappe.get_doc("Lead", lead.get("name"))
-            if not lead_doc.custom_lead_scheduled:
-                lead_doc.custom_walked_out_time = frappe.utils.now()
-                lead_doc.custom_lead_scheduled = 1
-            process_lead(
-                "school_walkin", lead_doc, f"whatsapp {kwargs.get('location')}"
-            )
+            ignore_permissions=True,
+        )
+        # return len(existing_leads)
+        # unoptimized to reduce from n+1 queries to 1
+        if len(existing_leads):
+            for lead in existing_leads:
+                lead_doc = frappe.get_doc("Lead", lead.get("name"))
+                # if not lead_doc.custom_lead_scheduled:
+                # lead_doc.custom_walked_out_time = frappe.utils.now()
+                # lead_doc.custom_lead_scheduled = 1
+                process_lead(
+                    "school_walkin", lead_doc, f"whatsapp {kwargs.get('location')}"
+                )
+    except Exception as e:
+        frappe.logger("Error handling walkin/school visit").exception(e)
 
 
 @frappe.whitelist(allow_guest=True)

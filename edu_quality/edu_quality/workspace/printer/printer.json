@@ -1,11 +1,11 @@
 {
  "charts": [],
- "content": "[{\"id\":\"imx0vUcMzv\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Printer</span>\",\"col\":12}},{\"id\":\"Cnq1SyvY6X\",\"type\":\"custom_block\",\"data\":{\"custom_block_name\":\"Scanner\",\"col\":12}}]",
+ "content": "[{\"id\":\"imx0vUcMzv\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Printer</span>\",\"col\":12}},{\"id\":\"Cnq1SyvY6X\",\"type\":\"custom_block\",\"data\":{\"custom_block_name\":\"Printer Scanner\",\"col\":12}}]",
  "creation": "2023-12-14 01:40:57.237606",
  "custom_blocks": [
   {
-   "custom_block_name": "Scanner",
-   "label": "Scanner"
+   "custom_block_name": "Printer Scanner",
+   "label": "Printer Scanner"
   }
  ],
  "docstatus": 0,
@@ -18,7 +18,7 @@
  "is_hidden": 0,
  "label": "Printer",
  "links": [],
- "modified": "2023-12-14 02:01:44.303910",
+ "modified": "2023-12-21 10:54:24.073537",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Printer",

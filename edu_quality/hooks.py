@@ -37,6 +37,7 @@ doctype_js = {
     "Fee Schedule": "public/js/fee_schedule.js",
     "Student": "public/js/student.js",
     "Item": "public/js/item.js",
+    "Purchase Order": "public/js/purchase_order.js",
     "Topic": "public/js/topic.js",
 }
 doctype_list_js = {
@@ -100,6 +101,7 @@ doctype_list_js = {
 
 permission_query_conditions = {
     "Contact": "edu_quality.permissions.contacts.contact_query",
+    "Purchase Order": "edu_quality.permissions.purchase_orders.purchase_query",
 }
 #
 # has_permission = {
@@ -282,7 +284,13 @@ fixtures = [
     {"dt": "Accounting Dimension"},
     {
         "dt": "Role",
-        "filters": [["name", "in", ["Head Administration", "Councellor", "Teacher","Printer","Watchman"]]],
+        "filters": [
+            [
+                "name",
+                "in",
+                ["Head Administration", "Councellor", "Teacher", "Printer", "Watchman"],
+            ]
+        ],
     },
     {
         "dt": "Role",
@@ -290,7 +298,14 @@ fixtures = [
             [
                 "name",
                 "in",
-                ["Head Administration", "Councellor", "Teacher", "Content Creator","Printer","Watchman"],
+                [
+                    "Head Administration",
+                    "Councellor",
+                    "Teacher",
+                    "Content Creator",
+                    "Printer",
+                    "Watchman",
+                ],
             ]
         ],
     },
@@ -300,7 +315,7 @@ fixtures = [
     {"dt": "School"},
     {"dt": "Academic Year"},
     # {"dt": "Funnel Node", "filters": [["class_name", "=", "edu_quality"]]},
-    {"dt": "Funnel"},
+    # {"dt": "Funnel"},
     {"dt": "Email Template"},
     {"dt": "Letter Head"},
     {"dt": "Class Type"},
@@ -327,11 +342,15 @@ fixtures = [
     },
     {
         "dt": "Module Profile",
-        "filters": [["name", "in", ["Councellor", "Content Creator","Printer","Watchman"]]],
+        "filters": [
+            ["name", "in", ["Councellor", "Content Creator", "Printer", "Watchman"]]
+        ],
     },
     {
         "dt": "Role Profile",
-        "filters": [["name", "in", ["Councellor", "Content Creator","Printer","Watchman"]]],
+        "filters": [
+            ["name", "in", ["Councellor", "Content Creator", "Printer", "Watchman"]]
+        ],
     },
 ]
 
