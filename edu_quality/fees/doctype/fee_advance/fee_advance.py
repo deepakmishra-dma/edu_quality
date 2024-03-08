@@ -325,14 +325,14 @@ def get_components(fee_structure, percent, is_rte):
 
         component_amount = component.amount * percent / 100
         amount += component_amount
+        company = frappe.get_value("Fee Category",component.fees_category, "custom_company")
         components.append(
             {
                 "fees_category": component.fees_category,
                 "description": component.description,
                 "amount": component_amount,
-                "custom_company": component.custom_company,
+                "custom_company": company,
                 "label": label or default_account,
-                "custom_company": component.custom_company,
                 "fee_type": component.fee_type,
             }
         )

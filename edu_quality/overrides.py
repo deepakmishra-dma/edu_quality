@@ -417,7 +417,8 @@ def make_payment_request(**args):
                 "party_type": args.get("party_type") or "Customer",
                 "party": args.get("party") or ref_doc.get("customer"),
                 "bank_account": bank_account,
-                "payment_term": args.payment_term
+                "payment_term": args.payment_term,
+                "company": ref_doc.get("company"),
             }
         )
 

@@ -3,6 +3,7 @@ from frappe.utils import today
 
 
 
+
 def current_academic_year():
     filter = [["Academic Year","year_start_date","<=",today()],
 			      ["Academic Year","year_end_date",">=",today()]]
@@ -33,10 +34,7 @@ def is_rolled_over(academic_year=None):
         filter = [["Academic Year","year_start_date","<=",today()],
                     ["Academic Year","year_end_date",">=",today()]]
     if frappe.db.exists("Academic Year",filter):
-        return frappe.db.get_value("Academic Year",filter,"rolled_over")
-    
-
-
+        return frappe.db.get_value("Academic Year",filter,order_by="year_start_date")
     
 
 def get_previous_class(program):
@@ -95,4 +93,18 @@ def shift_reference_series(school):
         break
 
 
+def get_next_class(current_class):
+    school,current_sequence = frappe.db.get_value("Program",current_class,["school","sequence"])
+    if frappe.db.exists("Program",{"school":school,"sequence":current_sequence+1}):
+        return frappe.db.get_value("Program",{"school":school,"sequence":current_sequence+1})
+    return None
+
+
+@frappe.whitelist()
+def projected_strength(current_class):
+    next_class = get_next_class(current_class)
+    strength = frappe.db.count("Program Enrollment",{"program":current_class,'academic_year':current_academic_year()})
+    if next_class:
+        strength += frappe.db.count("Program Enrollment",{"program":next_class,'academic_year':next_academic_year()})
+    return strength
 
