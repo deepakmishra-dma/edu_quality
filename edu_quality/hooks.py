@@ -276,6 +276,7 @@ fixtures = [
     {"dt": "Property Setter", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
     {"dt": "Client Script", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
     {"dt": "DocType Layout"},
+    {"dt": "Translation"},
     {"dt": "Lead Source"},
     {"dt": "Student Batch Name"},
     {"dt": "Custom Field", "filters": [["module", "=", "Edu Quality"]]},

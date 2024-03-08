@@ -24,5 +24,18 @@
   "name": "1fff27ca81",
   "source_text": "Student Group",
   "translated_text": "Division"
+ },
+ {
+  "context": null,
+  "contributed": 0,
+  "contribution_docname": null,
+  "contribution_status": "",
+  "docstatus": 0,
+  "doctype": "Translation",
+  "language": "en",
+  "modified": "2023-12-24 15:06:05.453695",
+  "name": "abe3081ea0",
+  "source_text": "Fee Category",
+  "translated_text": "Fee Head"
  }
 ]

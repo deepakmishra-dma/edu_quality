@@ -7,25 +7,17 @@ from education.education.doctype.student_group.student_group import \
     get_students
 from frappe import _
 from frappe.utils import nowdate,today
+from edu_quality.edu_quality.server_scripts.utils import current_academic_year,next_academic_year
 
 class DivisionCreationTool(Document):
 	@frappe.whitelist()
 	def get_current_academic_year(self):
-		filter = [["Academic Year","year_start_date","<=",today()],
-			      ["Academic Year","year_end_date",">=",today()]]
-		if frappe.db.exists("Academic Year",filter):
-			return frappe.db.get_value("Academic Year",filter)
+		return current_academic_year()
 		
 	@frappe.whitelist()
 	def get_next_academic_year(self):
-		current = self.get_current_academic_year()
-		current_end_date = frappe.db.get_value("Academic Year",current,"year_end_date")
-		filters = [["Academic Year","year_start_date",">",current_end_date]]
-		if frappe.db.exists("Academic Year",filters):
-			return frappe.db.get_value("Academic Year",filters,order_by="year_start_date")
+		return next_academic_year()
 		
-
-
 
 	@frappe.whitelist()
 	def get_courses(self):

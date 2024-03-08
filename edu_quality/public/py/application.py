@@ -12,6 +12,8 @@ from edu_quality.edu_quality.server_scripts.student_applicant import (
 )
 from edu_quality.api.google_admin import create_google_user
 
+from edu_quality.edu_quality.server_scripts.utils import is_rolled_over, get_previous_class, previous_academic_year
+
 
 def autoname(doc, method=None):
     if doc.school_code and doc.class_name:
@@ -80,6 +82,8 @@ def before_save(doc, method=None):
                         "fees_category": component.fees_category,
                         "amount": component.amount,
                         "description": component.description,
+                        "custom_company": component.custom_company,
+                        "school": component.school
                     },
                 )
     calculate_total(doc)
@@ -129,15 +133,7 @@ def enroll_student(source_name):
     if student_applicant.custom_referred_by:
         add_referral_discount(student_applicant.custom_referred_by)
 
-    fee_schedule = frappe.get_doc("Fee Schedule", student_applicant.fee_schedule)
     student_group = get_student_group(student_applicant)
-    student_count = get_student_count(fee_schedule, student_group)
-    max_strength = get_max_strength(student_group)
-    if student_count >= max_strength and max_strength != 0:
-        frappe.throw(
-            title="Division Full",
-            msg="Division {0} has reached maximum strength".format(student_group),
-        )
     student.save()
     create_student_account(student, student_applicant)
     program_enrollment = frappe.new_doc("Program Enrollment")
@@ -158,8 +154,26 @@ def enroll_student(source_name):
 
 
 def get_student_group(doc):
-    filters = {"academic_year": doc.academic_year, "program": doc.program}
-    return frappe.db.get_value("Student Group", filters, "name")
+    query = """
+            select sg.name,sg.student_group_name,sg.current_count,sg.max_count from `tabStudent Group` as sg
+            where sg.academic_year = %(academic_year)s
+            and sg.program = %(program)s
+            and sg.batch = %(batch)s
+            and sg.current_count<sg.max_count
+            """
+    result = frappe.db.sql(query, doc.as_dict(), as_dict=True)
+    if not is_rolled_over(doc.academic_year):
+        for i in result:
+            previous_class = get_previous_class(doc.program)
+            previous_academic_yr = previous_academic_year(doc.academic_year)
+            previous_count = frappe.db.get_value("Student Group",{'program':previous_class,'academic_year':previous_academic_yr,'student_group_name':i.student_group_name})
+            if previous_count+ i.current_count < i.max_count:
+                return i.name 
+    else:
+        if i.current_count < i.max_count:
+            return i.name
+    return frappe.throw("No Student Group Available! Please Change the Batch and check again.")
+
 
 
 def get_max_strength(student_group):

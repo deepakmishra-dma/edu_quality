@@ -1,0 +1,105 @@
+{
+ "actions": [],
+ "allow_copy": 1,
+ "creation": "2023-12-19 13:55:01.432660",
+ "default_view": "List",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "school",
+  "class_group",
+  "column_break_3",
+  "academic_year",
+  "section_break_5",
+  "enroll_students",
+  "students",
+  "other_rollover_functions_section",
+  "shift_reference_series",
+  "column_break_pst16",
+  "mark_as_rolled_over"
+ ],
+ "fields": [
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "academic_year",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Current Academic Year",
+   "options": "Academic Year",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_5",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "students",
+   "fieldtype": "Table",
+   "label": "Students",
+   "options": "Program Enrollment Tool Student"
+  },
+  {
+   "description": "Moves Students from section of one class to Another",
+   "fieldname": "enroll_students",
+   "fieldtype": "Button",
+   "label": "Enroll Students"
+  },
+  {
+   "fieldname": "school",
+   "fieldtype": "Link",
+   "label": "School",
+   "options": "School",
+   "reqd": 1
+  },
+  {
+   "fieldname": "class_group",
+   "fieldtype": "Select",
+   "label": "Class Group",
+   "options": "Primary\nSecondary",
+   "reqd": 1
+  },
+  {
+   "fieldname": "other_rollover_functions_section",
+   "fieldtype": "Section Break",
+   "label": "Other Rollover Functions"
+  },
+  {
+   "description": "Shif Reference Series of Classes",
+   "fieldname": "shift_reference_series",
+   "fieldtype": "Button",
+   "label": "Shift Reference Series"
+  },
+  {
+   "description": "Mark Current Academic Year as Rolled Over",
+   "fieldname": "mark_as_rolled_over",
+   "fieldtype": "Button",
+   "label": "Mark as Rolled Over"
+  },
+  {
+   "fieldname": "column_break_pst16",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "hide_toolbar": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2023-12-21 14:18:46.652765",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "Rollover Tool",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "read": 1,
+   "role": "Education Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
