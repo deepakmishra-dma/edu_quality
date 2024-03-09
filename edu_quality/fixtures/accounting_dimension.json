@@ -1,1 +1,24 @@
-[]
+[
+ {
+  "dimension_defaults": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Accounting Dimension",
+  "document_type": "School",
+  "fieldname": "school",
+  "label": "School",
+  "modified": "2023-12-22 12:08:18.614931",
+  "name": "School"
+ },
+ {
+  "dimension_defaults": [],
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Accounting Dimension",
+  "document_type": "Program",
+  "fieldname": "program",
+  "label": "Class",
+  "modified": "2023-12-22 12:08:40.451094",
+  "name": "Class"
+ }
+]
