@@ -7,13 +7,22 @@ from frappe.model.document import Document
 from frappe.utils import cint
 
 from education.education.api import enroll_student
-from edu_quality.edu_quality.server_scripts.utils import current_academic_year,next_academic_year, next_class
+from edu_quality.edu_quality.server_scripts.utils import current_academic_year,next_academic_year, shift_reference_series, mark_rolled_over
 
 
 class RolloverTool(Document):
 	@frappe.whitelist()
 	def get_current_academic_year(self):
 		return current_academic_year()
+	
+
+	@frappe.whitelist()
+	def shift_series(self):
+		shift_reference_series(self.school)
+
+	@frappe.whitelist()
+	def mark_rolled(self):
+		mark_rolled_over(next_academic_year(self.academic_year))
 
 	@frappe.whitelist()
 	def get_students(self):
@@ -67,8 +76,14 @@ class RolloverTool(Document):
 		else:
 			frappe.throw(_("No students Found"))
 
+	def validate_rolled_over(self):
+		yr = next_academic_year(self.academic_year)
+		if frappe.db.get_value("Academic Year", yr, "roller_over"):
+			frappe.throw(_("Academic Year {0} is already rolled over").format(yr))
+
 	@frappe.whitelist()
 	def enroll_students(self):
+		self.validate_rolled_over()
 		total = len(self.students)
 		if not total:
 			return self.school_wise()
@@ -138,7 +153,8 @@ class RolloverTool(Document):
 								prog_enrollment.academic_year = next_yr
 								prog_enrollment.student_group = division
 								prog_enrollment.save()
-								prog_enrollment.submit()
+								if not student.possible_dropout:
+									prog_enrollment.submit()
 				i+=1
 				if error_data:
 					self.add_to_table(error_data)
@@ -153,10 +169,12 @@ class RolloverTool(Document):
 
 	def get_students(self,program):
 		query = """
-					SELECT pe.student, pe.student_name,  pe.student_group, pe.program from 
+					SELECT pe.student, pe.student_name,  pe.student_group, pe.program,`tabStudent`.possible_dropout from 
 						`tabProgram Enrollment` as pe
 					LEFT JOIN `tabProgram` ON pe.program = `tabProgram`.name
+					LEFT JOIN `tabStudent` ON pe.student = `tabStudent`.name
 					WHERE pe.program="%s" AND pe.academic_year="%s"
+					AND `tabStudent`.enabled = 1 AND confirm_for_next_year = "Yes"
 					ORDER BY `tabProgram`.sequence
 				""" % (program,self.academic_year)
 		result = frappe.db.sql(query,as_dict=1)

@@ -51,5 +51,24 @@ frappe.ui.form.on("Rollover Tool", {
 				frappe.hide_msgprint(true);
 			}
 		});
+	},
+
+	"shift_reference_series": function(frm) {
+		frappe.call({
+			method: "shift_series",
+			doc:frm.doc,
+			callback: function(r) {
+				frappe.msgprint("Shifted Reference Series for the classes!");
+			}
+		});
+	},
+	"mark_as_rolled_over": function(frm) {
+		frappe.call({
+			method: "mark_rolled",
+			doc:frm.doc,
+			callback: function(r) {
+				frappe.msgprint("Academic Year has been marked as Rollovered!");
+			}
+		});
 	}
 });
