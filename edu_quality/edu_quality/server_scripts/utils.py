@@ -75,9 +75,8 @@ def class_count_before_rollover(program_enrollment):
 
 
 def mark_rolled_over(academic_year):
-    next_academic_year = next_academic_year(academic_year)
-    if next_academic_year:
-        frappe.db.set_value("Academic Year",next_academic_year,"rolled_over",1)
+    if academic_year:
+        frappe.db.set_value("Academic Year",academic_year,"rolled_over",1)
 
 
 def shift_reference_series(school):
