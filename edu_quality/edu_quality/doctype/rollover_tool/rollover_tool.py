@@ -78,7 +78,7 @@ class RolloverTool(Document):
 
 	def validate_rolled_over(self):
 		yr = next_academic_year(self.academic_year)
-		if frappe.db.get_value("Academic Year", yr, "roller_over"):
+		if frappe.db.get_value("Academic Year", yr, "rolled_over"):
 			frappe.throw(_("Academic Year {0} is already rolled over").format(yr))
 
 	@frappe.whitelist()
