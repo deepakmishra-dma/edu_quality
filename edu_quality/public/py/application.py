@@ -155,11 +155,11 @@ def enroll_student(source_name):
 
 def get_student_group(doc):
     query = """
-            select sg.name,sg.student_group_name,sg.current_count,sg.max_count from `tabStudent Group` as sg
+            select sg.name,sg.student_group_name,sg.current_count,sg.max_strength from `tabStudent Group` as sg
             where sg.academic_year = %(academic_year)s
             and sg.program = %(program)s
             and sg.batch = %(batch)s
-            and sg.current_count<sg.max_count
+            and sg.current_count<sg.max_strength
             """
     result = frappe.db.sql(query, doc.as_dict(), as_dict=True)
     if not is_rolled_over(doc.academic_year):
@@ -167,10 +167,10 @@ def get_student_group(doc):
             previous_class = get_previous_class(doc.program)
             previous_academic_yr = previous_academic_year(doc.academic_year)
             previous_count = frappe.db.get_value("Student Group",{'program':previous_class,'academic_year':previous_academic_yr,'student_group_name':i.student_group_name})
-            if previous_count+ i.current_count < i.max_count:
+            if previous_count+ i.current_count < i.max_strength:
                 return i.name 
     else:
-        if i.current_count < i.max_count:
+        if i.current_count < i.max_strength:
             return i.name
     return frappe.throw("No Student Group Available! Please Change the Batch and check again.")
 
