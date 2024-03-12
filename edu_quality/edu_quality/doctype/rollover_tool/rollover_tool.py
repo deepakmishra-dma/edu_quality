@@ -110,7 +110,7 @@ class RolloverTool(Document):
 			if not frappe.db.exists("Fee Schedule",{"program":program.name,"academic_year":year}):
 				errors.append(program.name)
 		if errors:
-			frappe.throw(_("Fees Setup is not done for the following classes - {0}").format(errors.join(", ")))
+			frappe.throw(_("Fees Setup is not done for the following classes - {0}".format(errors.join(", "))))
 				
 			
 		
