@@ -96,7 +96,7 @@ def payment_receipt(payment_request, category):
         ref_doc = frappe.get_doc(doctype, fee_name)
         letter_head = frappe.get_value("School", ref_doc.school, 'letter_head') or frappe.get_value("Company", ref_doc.company, "default_letter_head")
 
-        print_format = frappe.get_value("Print Format", {"doc_type": "Payment Entry", "standard": 1}, "name")
+        print_format = frappe.get_value("Fees Settings", None, "print_format")
 
         if frappe.session.user == "Guest":
             frappe.set_user("Administrator")
