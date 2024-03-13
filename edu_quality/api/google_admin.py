@@ -31,14 +31,19 @@ def get_google_users():
 
 def create_google_user(email_key, first_name, last_name, recovery_mail, phone_no):
     user_service = get_google_admin_object()
-    existing_user = (
-        user_service.users()
-        .get(
-            userKey=f"{email_key}@walnutedu.in",
+    exception = False
+    try:
+        existing_user = (
+            user_service.users()
+            .get(
+                userKey=f"{email_key}@walnutedu.in",
+            )
+            .execute()
         )
-        .execute()
-    )
-    if existing_user.get("exception"):
+    except:
+        exception = True
+
+    if exception:
         new_user = {
             "primaryEmail": f"{email_key}@walnutedu.in",
             "name": {
@@ -54,10 +59,10 @@ def create_google_user(email_key, first_name, last_name, recovery_mail, phone_no
         }
         if recovery_mail:
             new_user["recoveryEmail"] = recovery_mail
-        
+
         if phone_no:
             new_user["recoveryPhone"] = add_indian_country_code(phone_no, True)
-            
+
         return (
             user_service.users()
             .insert(

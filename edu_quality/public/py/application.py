@@ -12,7 +12,11 @@ from edu_quality.edu_quality.server_scripts.student_applicant import (
 )
 from edu_quality.api.google_admin import create_google_user
 
-from edu_quality.edu_quality.server_scripts.utils import is_rolled_over, get_previous_class, previous_academic_year
+from edu_quality.edu_quality.server_scripts.utils import (
+    is_rolled_over,
+    get_previous_class,
+    previous_academic_year,
+)
 
 
 def autoname(doc, method=None):
@@ -83,7 +87,7 @@ def before_save(doc, method=None):
                         "amount": component.amount,
                         "description": component.description,
                         "custom_company": component.custom_company,
-                        "school": component.school
+                        "school": component.school,
                     },
                 )
     calculate_total(doc)
@@ -167,14 +171,22 @@ def get_student_group(doc):
         if not rolled_over:
             previous_class = get_previous_class(doc.program)
             previous_academic_yr = previous_academic_year(doc.academic_year)
-            previous_count = frappe.db.get_value("Student Group",{'program':previous_class,'academic_year':previous_academic_yr,'student_group_name':i.student_group_name})
-            if previous_count+ i.current_count < i.max_strength:
-                return i.name 
+            previous_count = frappe.db.get_value(
+                "Student Group",
+                {
+                    "program": previous_class,
+                    "academic_year": previous_academic_yr,
+                    "student_group_name": i.student_group_name,
+                },
+            )
+            if previous_count + i.current_count < i.max_strength:
+                return i.name
         else:
             if i.current_count < i.max_strength:
                 return i.name
-    return frappe.throw("No Student Group Available! Please Change the Batch and check again.")
-
+    return frappe.throw(
+        "No Student Group Available! Please Change the Batch and check again."
+    )
 
 
 def get_max_strength(student_group):
@@ -205,7 +217,7 @@ def create_student_account(student, student_applicant):
         first_name = student_applicant.get("first_name")
         last_name = student_applicant.get("last_name")
         created_email = create_google_user(
-            google_service_settings.get("google_account_prefix") + email_key,
+            google_service_settings.get("google_account_prefix", "") + email_key,
             first_name,
             last_name,
             email_address,
