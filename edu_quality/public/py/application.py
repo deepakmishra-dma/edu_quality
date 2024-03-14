@@ -222,7 +222,7 @@ def create_student_account(student, student_applicant):
             last_name,
             email_address,
             mobile_number,
-        ).get("primary_email")
+        ).get("primaryEmail", "")
 
         student.student_email_id = created_email
         student.save()
