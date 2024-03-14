@@ -1,4 +1,5 @@
 import json
+from edu_quality.fees.doctype.fee_advance.fee_advance import convert_liability_to_sales
 from edu_quality.public.py.discount import (
     add_discount,
     get_all_discounts,
@@ -9,6 +10,7 @@ from edu_quality.public.py.discount import (
 )
 
 from edu_quality.edu_quality.server_scripts.student_applicant import referal_discount
+from erpnext.accounts.general_ledger import make_reverse_gl_entries
 
 
 import frappe
@@ -37,11 +39,20 @@ def before_submit(doc, method=None):
     time_dis = time_based_discount(doc)
     ref_dis = referal_discount(doc)
     payplan_discount = update_payment_schedule(doc)
+    check_fee_advance(doc)
     doc.generate_split()
 
     # payment_split(doc, ref_dis, time_dis, payplan_discount)
     doc.total_discount = get_all_discounts(doc)
 
+
+def check_fee_advance(doc):
+    if frappe.db.exists("Fee Advance", {"student": doc.student, "outstanding_amount": 0}):
+        doc.payment_schedule[0].outstanding = 0
+        fee = frappe.get_doc("Fee Advance", {"student": doc.student})
+        convert_liability_to_sales(fee.name, fee.company)
+
+        
 
 def verify_invoice_portion(payment_schedule):
     total_portion = sum([ps.invoice_portion for ps in payment_schedule])

@@ -545,3 +545,17 @@ def get_payplan_discount(doc, payment_plan):
                 discount_amount = (component.amount * float(dis.discount)) / 100
                 return discount_amount, dis
     return None
+
+
+def convert_liability_to_sales(fee_advance, company):
+    liability_account, discount_account = frappe.db.get_value("Company", company,["default_liability_account","default_discount_account"])
+    entries = []
+    debit_filter = {'voucher_type':"Fee Advance",'voucher_no':fee_advance,'account': discount_account}
+    credit_filter = {'voucher_type':"Fee Advance",'voucher_no':fee_advance,'account': liability_account}
+    if frappe.db.exists("GL Entry",debit_filter):
+        for entry in frappe.get_all("GL Entry",debit_filter):
+            entries.append(frappe.get_doc("GL Entry",entry.name).as_dict())
+    if frappe.db.exists("GL Entry",credit_filter):
+        for entry in frappe.get_all("GL Entry",credit_filter):
+            entries.append(frappe.get_doc("GL Entry",entry.name).as_dict())
+    make_reverse_gl_entries(entries)
