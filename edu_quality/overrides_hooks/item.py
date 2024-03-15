@@ -1,6 +1,7 @@
 import frappe
 from frappe.utils import strip
 import json
+from edu_quality.public.py.utils import im_2_b64, gen_qr_code_b64
 
 
 @frappe.whitelist()
@@ -73,3 +74,8 @@ def calculate_sheet_number(self):
 
 def before_insert(self, method=None):
     self.custom_sheet_number = calculate_sheet_number(self)
+
+
+@frappe.whitelist()
+def get_qr_code(name):
+    return gen_qr_code_b64(name)
