@@ -843,6 +843,7 @@ def process_lead(source, lead, page_location, detail="", kwargs={}):
     )
     lead.flags.ignore_mandatory = True
     lead.save(ignore_permissions=True)
+    frappe.db.commit()
     return lead
 
 
