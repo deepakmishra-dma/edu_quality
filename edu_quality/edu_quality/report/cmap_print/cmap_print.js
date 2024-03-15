@@ -30,7 +30,17 @@ frappe.query_reports["CMAP Print"] = {
 			"fieldname": "academic_year",
 			"fieldtype": "Link",
 			"options": "Academic Year",
-			"label": "Academic Year"
+			"label": "Academic Year",
+			get_data: function (year) {
+				console.log(frappe.db.get_link_options('Academic Year', year, {
+					custom_current_academic_year: 1,
+					custom_next_academic_year: 1,
+				}), 'haha')
+				return frappe.db.get_link_options('Academic Year', year, {
+					custom_current_academic_year: 1,
+					custom_next_academic_year: 1,
+				});
+			},
 		},
 		{
 			"fieldname": "class",

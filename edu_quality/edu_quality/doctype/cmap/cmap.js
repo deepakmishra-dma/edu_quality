@@ -19,6 +19,18 @@ function queryTopic(frm) {
         }
     })
 }
+function getNoteQuery(cur_frm, fieldName, fieldGroup) {
+    cur_frm.fields_dict['products'].grid.get_field(fieldName).get_query = function (doc, cdt, dn) {
+        let d = locals[cdt][dn];
+        return {
+            "filters": {
+                "parent": d.item,
+                "material_type": fieldGroup,
+
+            }
+        };
+    }
+}
 async function getProduct(id) {
     const headers = new Headers()
     headers.append('X-Frappe-CSRF-Token', frappe.csrf_token)
@@ -81,10 +93,22 @@ frappe.ui.form.on("CMAP", {
             return {
                 "filters": {
 
-                    "item_group": d.item_group
+                    "item_group": d.item_group,
+                    "custom_chapter": d.chapter,
+                    "custom_textbook": d.textbook,
                 }
             };
         }
+        cur_frm.fields_dict['products'].grid.get_field('chapter').get_query = function (doc, cdt, dn) {
+            let d = locals[cdt][dn];
+            return {
+                "filters": {
+                    "custom_textbook": d.textbook
+                },
+
+            };
+        }
+        getNoteQuery(cur_frm, "broadcast", "Broadcast")
         cur_frm.fields_dict['table_vwbr'].grid.get_field('division').get_query = function (doc, cdt, dn) {
             let d = locals[cdt][dn];
 

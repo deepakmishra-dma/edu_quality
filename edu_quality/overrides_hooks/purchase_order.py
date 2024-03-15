@@ -19,20 +19,28 @@ def get_warehouse_to_school_map(items):
     return warehouse_to_name_map
 
 
-def transform_data(items):
+def get_warehouse_to_item_map(items):
+    return {f"{item.get('item_code')}-{item.get('warehouse')}": True for item in items}
+
+
+def get_selected_item_map(items):
+    return {item: True for item in items}
+
+
+def transform_data(items, selected_items, purchase_receipt_items=None):
     item_map = {}
     item_codes = [item.get("item_code") for item in items]
-    # school_warehouses = [item.get("warehouse") for item in items]
 
-    # school_data = frappe.db.get_list(
-    #     "School",
-    #     filters=[["warehouse", "in", school_warehouses]],
-    #     fields=["name", "warehouse"],
-    # )
     item_data = frappe.db.get_list(
         "Item",
         filters=[["item_code", "in", item_codes]],
-        fields=["name", "custom_chapter", "custom_subject", "item_code"],
+        fields=[
+            "name",
+            "custom_chapter",
+            "custom_subject",
+            "item_code",
+            "custom_product_url",
+        ],
     )
     item_code_data = {}
     warehouse_to_name_map = get_warehouse_to_school_map(items)
@@ -48,6 +56,12 @@ def transform_data(items):
                 "item_code": item.get("item_code"),
                 "chapter": item_code_data.get(item.get("item_code"), {}).custom_chapter,
                 "subject": item_code_data.get(item.get("item_code"), {}).custom_subject,
+                "product_url": item_code_data.get(
+                    item.get("item_code", {})
+                ).custom_product_url,
+                "receipt_created": purchase_receipt_items.get(item.get("item_code"))
+                if purchase_receipt_items
+                else False,
                 school_name: item.get("qty", 0),
                 "total_qty": item.get("qty", 0),
             }
@@ -64,9 +78,18 @@ def transform_data(items):
             item_map[item.get("item_code")]["total_qty"] = total_qty + item.get(
                 "qty", 0
             )
-
+    selected_items_hash = {}
+    if selected_items:
+        selected_items_hash = {i: True for i in selected_items}
     frappe.errprint(item_map)
-    transformed_items = [item_map.get(item) for item in item_map]
+    frappe.errprint(selected_items_hash)
+
+    transformed_items = [
+        item_map.get(item)
+        for item in item_map
+        if selected_items_hash.get(item) or selected_items == None
+    ]
+    frappe.errprint(transformed_items)
     return transformed_items
 
 
@@ -136,45 +159,80 @@ def get_columns(school_fields):
 
 
 @frappe.whitelist()
-def generate_html_table(self):
+def generate_challan_list(self, selected_items=None):
     self = json.loads(self) if isinstance(self, str) else self
-    self = transform_data(self.get("items"))
+    selected_items = (
+        json.loads(selected_items)
+        if isinstance(selected_items, str)
+        else selected_items
+    )
+    purchase_receipt_items = None
+    # purchase_receipt_item_doc = frappe.qb.docType("Purchase Receipt Item")
+    purchase_receipt_items = frappe.db.get_list(
+        "Purchase Receipt Item",
+        filters={"purchase_order": self.get("name")},
+        fields=["name", "item_code"],
+    )
+    frappe.errprint(purchase_receipt_items)
+    if len(purchase_receipt_items):
+        purchase_receipt_items = {
+            i.get("item_code"): True for i in purchase_receipt_items
+        }
+    else:
+        purchase_receipt_items = None
+    self = transform_data(self.get("items"), selected_items, purchase_receipt_items)
 
     all_schools = frappe.db.get_list("School", fields=["name"])
     # school_names = [name.get("name") for name in all_schools]
     columns = get_columns(all_schools)
-    frappe.errprint(columns)
-    frappe.errprint(self)
-    # HTML = frappe.render_template(
-    #     {"data": self, "school_names": school_names, "columns": columns}
-    # )
 
     return all_schools, columns, self
 
 
 # edu_quality.overrides_hooks.purchase_order.create_purchase_receipt
 @frappe.whitelist()
-def create_purchase_receipt(self, school="Walnut School at Shivane", selected_items=[]):
+def create_purchase_receipt(self, school, selected_items=[]):
     self = json.loads(self) if isinstance(self, str) else self
 
-    if not len(selected_items):
-        frappe.throw("No items selected")
-
+    # if not len(selected_items):
+    #     frappe.throw("No items selected")
+    school_prefix = frappe.db.get_value("School", school, "prefix")
+    purchase_receipt_items = frappe.db.get_list(
+        "Purchase Receipt Item",
+        filters={"purchase_order": self.get("name")},
+        fields=["name", "item_code", "warehouse"],
+    )
+    selected_item_map = get_selected_item_map(selected_items)
+    warehouse_to_item_map = get_warehouse_to_item_map(purchase_receipt_items)
     warehouse_to_name_map = get_warehouse_to_school_map(self.get("items"))
     receipt = make_purchase_receipt(source_name=self.get("name"))
     filtered_items = list(
         filter(
             lambda item: warehouse_to_name_map.get(item.get("warehouse")) == school
-            and item.item_code in selected_items,
+            and f"{item.get('item_code')}-{item.get('warehouse')}"
+            not in warehouse_to_item_map
+            and item.get("item_code") in selected_item_map,
             receipt.get("items"),
         )
     )
     if len(filtered_items) == 0:
         frappe.msgprint(
-            f"Quantity is 0 for the selected {school}, Please create receipt for another one"
+            f"Quantity is 0 or receipt already created for the selected {school} and selected items, Please create receipt for another one"
         )
         return
     receipt.items = filtered_items
     receipt.rounded_total = 0
+    frappe.errprint(receipt.as_dict())
+    last = self.get("name").split("-")[-1]
+    receipt.naming_series = f"MAT-PRE-.YYYY.-{last}-{school_prefix}-"
     receipt.insert()
     return receipt
+
+
+@frappe.whitelist()
+def create_purchase_receipt_for_all_schools(self, selected_items=None):
+    schools = frappe.db.get_list("School")
+    schools = [school.get("name") for school in schools]
+    for school in schools:
+        create_purchase_receipt(self, school, selected_items)
+    return "Receipts Created Successfully"
