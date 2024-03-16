@@ -1,5 +1,5 @@
 import json
-from edu_quality.fees.doctype.fee_advance.fee_advance import convert_liability_to_sales
+from edu_quality.fees.doctype.fee_advance.fee_advance import cancel_liability_entries, get_one_time_discounts
 from edu_quality.public.py.discount import (
     add_discount,
     get_all_discounts,
@@ -39,18 +39,27 @@ def before_submit(doc, method=None):
     time_dis = time_based_discount(doc)
     ref_dis = referal_discount(doc)
     payplan_discount = update_payment_schedule(doc)
-    check_fee_advance(doc)
     doc.generate_split()
 
     # payment_split(doc, ref_dis, time_dis, payplan_discount)
     doc.total_discount = get_all_discounts(doc)
 
 
-def check_fee_advance(doc):
-    if frappe.db.exists("Fee Advance", {"student": doc.student, "outstanding_amount": 0}):
-        doc.payment_schedule[0].outstanding = 0
-        fee = frappe.get_doc("Fee Advance", {"student": doc.student})
-        convert_liability_to_sales(fee.name, fee.company)
+def on_submit(doc, method=None):
+    filters = {"student": doc.student, "outstanding_amount": 0, "program":doc.program}
+    if frappe.db.exists("Fee Advance", filters):
+        total_discount = 0
+        payment_amount = doc.payment_schedule[0].payment_amount
+        fee_advance = frappe.get_doc("Fee Advance", filters)
+        cancel_liability_entries(fee_advance)
+        discount_applied = get_one_time_discounts(fee_advance)
+        for discount in discount_applied.keys():
+            add_discount(doc.name, discount)
+            total_discount += discount_applied.get(discount)
+
+        frappe.db.set_value("Payment Schedule", doc.payment_schedule[0].name, "outstanding", 0)
+        frappe.db.set_value("Payment Schedule", doc.payment_schedule[0].name, "payment_amount", payment_amount - total_discount)
+        doc.reload()
 
         
 

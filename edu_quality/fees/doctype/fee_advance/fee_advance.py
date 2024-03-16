@@ -79,15 +79,17 @@ class FeeAdvance(AccountsController):
     
 
     def on_cancel(self):
-        if frappe.db.exists("Payment Request", {"reference_name": self.name}):
-            doc = frappe.get_doc("Payment Request", {"reference_name": self.name})
+        if frappe.db.exists("Payment Request", {"reference_name": self.name, "docstatus": 1}):
+            doc = frappe.get_doc("Payment Request", {"reference_name": self.name, "docstatus": 1})
             doc.cancel()
-  
-
+        
+        
     def on_trash(self):
         if frappe.db.exists("Payment Request", {"reference_name": self.name}):
-            doc = frappe.get_doc("Payment Request", {"reference_name": self.name})
-            doc.delete()
+            pr_list = frappe.get_all("Payment Request", {"reference_name": self.name})
+            for pr in pr_list:
+                frappe.delete_doc("Payment Request", pr.name)
+    
     
         
     def set_missing_accounts_and_fields(self):
@@ -547,15 +549,19 @@ def get_payplan_discount(doc, payment_plan):
     return None
 
 
-def convert_liability_to_sales(fee_advance, company):
-    liability_account, discount_account = frappe.db.get_value("Company", company,["default_liability_account","default_discount_account"])
+def cancel_liability_entries(doc):
     entries = []
-    debit_filter = {'voucher_type':"Fee Advance",'voucher_no':fee_advance,'account': discount_account}
-    credit_filter = {'voucher_type':"Fee Advance",'voucher_no':fee_advance,'account': liability_account}
-    if frappe.db.exists("GL Entry",debit_filter):
-        for entry in frappe.get_all("GL Entry",debit_filter):
-            entries.append(frappe.get_doc("GL Entry",entry.name).as_dict())
-    if frappe.db.exists("GL Entry",credit_filter):
-        for entry in frappe.get_all("GL Entry",credit_filter):
+    filters = {'voucher_type':doc.doctype,'voucher_no':doc.name}
+    if frappe.db.exists("GL Entry",filters):
+        for entry in frappe.get_all("GL Entry",filters):
             entries.append(frappe.get_doc("GL Entry",entry.name).as_dict())
     make_reverse_gl_entries(entries)
+
+
+def get_one_time_discounts(doc):
+    return {
+        discount: component.custom_discount_amount
+        for component in doc.components if component.custom_discounts
+        for discount in map(str.lower, component.custom_discounts.split(", "))
+        if "one time" in discount
+    }
