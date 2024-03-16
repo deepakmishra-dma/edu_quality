@@ -79,15 +79,17 @@ class FeeAdvance(AccountsController):
     
 
     def on_cancel(self):
-        if frappe.db.exists("Payment Request", {"reference_name": self.name}):
-            doc = frappe.get_doc("Payment Request", {"reference_name": self.name})
+        if frappe.db.exists("Payment Request", {"reference_name": self.name, "docstatus": 1}):
+            doc = frappe.get_doc("Payment Request", {"reference_name": self.name, "docstatus": 1})
             doc.cancel()
-  
-
+        
+        
     def on_trash(self):
         if frappe.db.exists("Payment Request", {"reference_name": self.name}):
-            doc = frappe.get_doc("Payment Request", {"reference_name": self.name})
-            doc.delete()
+            pr_list = frappe.get_all("Payment Request", {"reference_name": self.name})
+            for pr in pr_list:
+                frappe.delete_doc("Payment Request", pr.name)
+    
     
         
     def set_missing_accounts_and_fields(self):
@@ -545,3 +547,21 @@ def get_payplan_discount(doc, payment_plan):
                 discount_amount = (component.amount * float(dis.discount)) / 100
                 return discount_amount, dis
     return None
+
+
+def cancel_liability_entries(doc):
+    entries = []
+    filters = {'voucher_type':doc.doctype,'voucher_no':doc.name}
+    if frappe.db.exists("GL Entry",filters):
+        for entry in frappe.get_all("GL Entry",filters):
+            entries.append(frappe.get_doc("GL Entry",entry.name).as_dict())
+    make_reverse_gl_entries(entries)
+
+
+def get_one_time_discounts(doc):
+    return {
+        discount: component.custom_discount_amount
+        for component in doc.components if component.custom_discounts
+        for discount in map(str.lower, component.custom_discounts.split(", "))
+        if "one time" in discount
+    }
