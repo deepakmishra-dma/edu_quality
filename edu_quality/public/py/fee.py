@@ -46,7 +46,7 @@ def before_submit(doc, method=None):
 
 
 def on_submit(doc, method=None):
-    filters = {"student": doc.student, "outstanding_amount": 0, "next_program":doc.program}
+    filters = {"student": doc.student, "outstanding_amount": 0, "next_program":doc.program, "academic_year": doc.academic_year}
     if frappe.db.exists("Fee Advance", filters):
         total_discount = 0
         payment_amount = doc.payment_schedule[0].payment_amount
