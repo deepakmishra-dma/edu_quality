@@ -17,11 +17,11 @@
   "products",
   "table_vwbr",
   "notes_section",
-  "broadcast",
+  "broadcast_text",
   "home_work",
   "material_required",
   "column_break_vgpi",
-  "parent_note",
+  "parent_notes",
   "class_work",
   "comments_and_assignments_section",
   "column_break_ycni",
@@ -37,11 +37,6 @@
    "fieldtype": "Date",
    "label": "Plan Date",
    "reqd": 1
-  },
-  {
-   "fieldname": "broadcast",
-   "fieldtype": "Select",
-   "label": "Broadcast"
   },
   {
    "fieldname": "period",
@@ -149,24 +144,22 @@
    "label": "Notes"
   },
   {
-   "fieldname": "parent_note",
-   "fieldtype": "Select",
-   "label": "Parent Note"
-  },
-  {
    "fieldname": "home_work",
-   "fieldtype": "Select",
-   "label": "Home Work"
+   "fieldtype": "Long Text",
+   "label": "Home Work",
+   "read_only": 1
   },
   {
    "fieldname": "class_work",
-   "fieldtype": "Select",
-   "label": "Class Work"
+   "fieldtype": "Long Text",
+   "label": "Class Work",
+   "read_only": 1
   },
   {
    "fieldname": "material_required",
-   "fieldtype": "Select",
-   "label": "Material Required"
+   "fieldtype": "Long Text",
+   "label": "Material Required",
+   "read_only": 1
   },
   {
    "fieldname": "comment",
@@ -176,11 +169,23 @@
   {
    "fieldname": "column_break_vgpi",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "parent_notes",
+   "fieldtype": "Long Text",
+   "label": "Parent Notes",
+   "read_only": 1
+  },
+  {
+   "fieldname": "broadcast_text",
+   "fieldtype": "Long Text",
+   "label": "Broadcast Text",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-12-27 03:26:00.511189",
+ "modified": "2023-12-28 09:22:16.369395",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "CMAP",
