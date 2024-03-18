@@ -91,6 +91,10 @@ def add_discount(fee_name, discount, fees=None, doctype="Fees"):
                 update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=True,dis=dis)
             else:
                 update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=True,dis=dis)
+        elif doctype == "Fee Advance":
+            fees.generate_split()
+            fees.reload()
+            fees.save(ignore_permissions=True)
         fees.add_discount_entry(company, grand_discount_amount)
         update_payment_request_after_discount(fees)
 
@@ -140,6 +144,10 @@ def remove_discount(fee_name, discount, update_payment_request=True, doctype="Fe
         if doctype == "Fees":
             update_total_discount_in_fees(fees.name)
             update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=False,dis=dis)
+        elif doctype == "Fee Advance":
+            fees.generate_split()
+            fees.reload()
+            fees.save(ignore_permissions=True)
         if update_payment_request:
             update_payment_request_after_discount(fees)
         fees.remove_discount_entry(company, grand_discount_amount)
