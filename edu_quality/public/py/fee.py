@@ -46,9 +46,9 @@ def before_submit(doc, method=None):
 
 
 def on_submit(doc, method=None):
+    total_discount = 0
     filters = {"student": doc.student, "outstanding_amount": 0, "next_program":doc.program, "academic_year": doc.academic_year}
     if frappe.db.exists("Fee Advance", filters):
-        total_discount = 0
         payment_amount = doc.payment_schedule[0].payment_amount
         fee_advance = frappe.get_doc("Fee Advance", filters)
         cancel_liability_entries(fee_advance)
@@ -154,6 +154,9 @@ def get_deposit(doc_payment_plan, payment_plan):
 def create_fees(doc, method=None):
     try:
         doc = frappe.get_doc("Student", doc.student)
+        fee_structure = frappe.get_value("Fee Structure", {"program": doc.program, "academic_year": doc.academic_year}, 'name')
+        fee_schedule = frappe.get_value("Fee Structure", {"fee_structure": fee_structure}, 'name')
+        
         if doc.student_applicant:
             student_applicant = frappe.get_doc(
                 "Student Applicant", doc.student_applicant

@@ -85,9 +85,9 @@ def get_split(fees, schedule, case=0,apply_deposit=0):
             else:
                 portion = schedule.invoice_portion
 
-            amount = flt(component.custom_amount_after_discount or component.amount * portion/100,2)
+            amount = flt(component.amount * portion/100,2)
             if component.fee_type != "Regular":
-                amount = component.custom_amount_after_discount or component.amount
+                amount = component.amount
             discount_amount = 0
             if case != 1:
                 if schedule.discount_breakup:
