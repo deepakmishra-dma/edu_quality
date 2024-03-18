@@ -61,6 +61,13 @@ def on_submit(doc, method=None):
         frappe.db.set_value("Payment Schedule", doc.payment_schedule[0].name, "payment_amount", payment_amount - total_discount)
         doc.reload()
 
+    elif frappe.db.exists("Fee Advance", {"student": doc.student, "next_program":doc.program, "academic_year": doc.academic_year}):
+        fee_advance = frappe.get_doc("Fee Advance", {"student": doc.student, "next_program":doc.program, "academic_year": doc.academic_year})
+        cancel_liability_entries(fee_advance)
+        discount_applied = get_one_time_discounts(fee_advance)
+        for discount in discount_applied.keys():
+            add_discount(doc.name, discount)
+            total_discount += discount_applied.get(discount)
         
 
 def verify_invoice_portion(payment_schedule):
