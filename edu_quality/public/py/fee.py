@@ -57,12 +57,17 @@ def verify_payment_term(payment_schedule):
         else:
             terms.append(ps.payment_term)
 
+def validate_discounts(doc):
+    for component in doc.components:
+        if "Payment Plan" in component.custom_discounts:
+            frappe.throw("Remove Payment Plan Discount to customize payment plan!")
 
 
 def before_update(doc, method=None):
     old_doc = doc.get_doc_before_save()
     if doc.parent_otp == 0 and old_doc.payment_schedule != doc.payment_schedule:
         if old_doc.payment_plan == doc.payment_plan:
+            validate_discounts(doc)
             doc.need_otp = 1
             # frappe.msgprint(
             #     title="Payment Schedule",
