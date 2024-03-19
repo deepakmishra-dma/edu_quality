@@ -1,4 +1,5 @@
 import json
+from edu_quality.fees.doctype.fee_advance.fee_advance import cancel_liability_entries, get_one_time_discounts
 from edu_quality.public.py.discount import (
     add_discount,
     get_all_discounts,
@@ -9,6 +10,7 @@ from edu_quality.public.py.discount import (
 )
 
 from edu_quality.edu_quality.server_scripts.student_applicant import referal_discount
+from erpnext.accounts.general_ledger import make_reverse_gl_entries
 
 
 import frappe
@@ -42,6 +44,31 @@ def before_submit(doc, method=None):
     # payment_split(doc, ref_dis, time_dis, payplan_discount)
     doc.total_discount = get_all_discounts(doc)
 
+
+def on_submit(doc, method=None):
+    total_discount = 0
+    filters = {"student": doc.student, "outstanding_amount": 0, "next_program":doc.program, "academic_year": doc.academic_year}
+    if frappe.db.exists("Fee Advance", filters):
+        payment_amount = doc.payment_schedule[0].payment_amount
+        fee_advance = frappe.get_doc("Fee Advance", filters)
+        cancel_liability_entries(fee_advance)
+        discount_applied = get_one_time_discounts(fee_advance)
+        for discount in discount_applied.keys():
+            add_discount(doc.name, discount)
+            total_discount += discount_applied.get(discount)
+
+        frappe.db.set_value("Payment Schedule", doc.payment_schedule[0].name, "outstanding", 0)
+        frappe.db.set_value("Payment Schedule", doc.payment_schedule[0].name, "payment_amount", payment_amount - total_discount)
+        doc.reload()
+
+    elif frappe.db.exists("Fee Advance", {"student": doc.student, "next_program":doc.program, "academic_year": doc.academic_year}):
+        fee_advance = frappe.get_doc("Fee Advance", {"student": doc.student, "next_program":doc.program, "academic_year": doc.academic_year})
+        cancel_liability_entries(fee_advance)
+        discount_applied = get_one_time_discounts(fee_advance)
+        for discount in discount_applied.keys():
+            add_discount(doc.name, discount)
+            total_discount += discount_applied.get(discount)
+        
 
 def verify_invoice_portion(payment_schedule):
     total_portion = sum([ps.invoice_portion for ps in payment_schedule])
@@ -132,6 +159,9 @@ def get_deposit(doc_payment_plan, payment_plan):
 def create_fees(doc, method=None):
     try:
         doc = frappe.get_doc("Student", doc.student)
+        fee_structure = frappe.get_value("Fee Structure", {"program": doc.program, "academic_year": doc.academic_year}, 'name')
+        fee_schedule = frappe.get_value("Fee Structure", {"fee_structure": fee_structure}, 'name')
+        
         if doc.student_applicant:
             student_applicant = frappe.get_doc(
                 "Student Applicant", doc.student_applicant

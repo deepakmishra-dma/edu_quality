@@ -3,7 +3,8 @@
 
 import frappe
 from frappe.query_builder.functions import Count
-from frappe.utils import parse_json, today
+from frappe.utils import parse_json, today, getdate
+from edu_quality.edu_quality.server_scripts.utils import projected_strength
 
 
 def generate_school_fields():
@@ -134,7 +135,7 @@ def check_if_academic_year_is_next(academic_year):
         academic_year = frappe.db.get_doc(
             "Academic Year", filters={"name": academic_year}, fields=["year_start_date"]
         )
-        if get_date(academic_year.get("year_start_date"), "") > today():
+        if getdate(academic_year.get("year_start_date"), "") > today():
             return True
         return False
     except Exception as e:
@@ -150,6 +151,7 @@ def get_data_from_queries(filters=None):
     class_filter = filters.get("class")
     subject_filter = filters.get("subject")
     unit_filter = filters.get("unit")
+
     cmap_query = (
         frappe.qb.from_(cmap)
         .inner_join(item_detail)
@@ -158,7 +160,7 @@ def get_data_from_queries(filters=None):
         .on(item_detail.item == item.name)
         .where(
             (cmap.academic_year == filters.get("academic_year"))
-            & (cmap["class"].isin([class_filter] if len(class_filter) else [None]))
+            & (cmap["class"] == class_filter)
             & (cmap.subject.isin(subject_filter if len(subject_filter) else [None]))
             & (cmap.unit.isin(unit_filter if len(unit_filter) else [None]))
             & (
@@ -171,7 +173,7 @@ def get_data_from_queries(filters=None):
         )
         .select(
             cmap.period,
-            cmap.chapter,
+            item.custom_chapter.as_("chapter"),
             cmap.name,
             cmap["class"],
             cmap.plan_date,
@@ -192,38 +194,23 @@ def get_data_from_queries(filters=None):
         filters.get("academic_year"),
         fields=["custom_current_academic_year", "custom_next_academic_year"],
     )
+
     current_academic_year = frappe.get_value(
         "Academic Year", {"custom_current_academic_year": 1}, "name"
     )
 
     if academic_year_doc.custom_next_academic_year:
-        qty_needed_for_schools_query = (
-            frappe.qb.from_(student)
-            .inner_join(program_enrollment)
-            .on(student.name == program_enrollment.student)
-            .where(
-                (
-                    (
-                        (student.student_status.isin(["New student"]))
-                        & (
-                            program_enrollment.academic_year
-                            == filters.get("academic_year")
-                        )
-                    )
-                    | (
-                        (program_enrollment.academic_year == current_academic_year)
-                        & (
-                            student.student_status.isin(
-                                ["Current Student", "Defaulter"]
-                            )
-                        )
-                    )
-                )
-                & (program_enrollment.program.like(f'{filters.get("class")}-%'))
+        qty_needed_for_schools = []
+        schools = frappe.db.get_list("School")
+        schools = [school.get("name") for school in schools]
+
+        for school in schools:
+            qty_needed_for_schools.append(
+                {
+                    "count": projected_strength(f"{class_filter}-{school}"),
+                    "program": f"{class_filter}-{school}",
+                }
             )
-            .groupby(program_enrollment.program)
-            .select(count_all, program_enrollment.program)
-        )
 
     else:
         qty_needed_for_schools_query = (
@@ -238,9 +225,8 @@ def get_data_from_queries(filters=None):
             .groupby(program_enrollment.program)
             .select(count_all, program_enrollment.program)
         )
-
+        qty_needed_for_schools = qty_needed_for_schools_query.run(as_dict=True)
     frappe.errprint(str(qty_needed_for_schools_query))
-    qty_needed_for_schools = qty_needed_for_schools_query.run(as_dict=True)
 
     frappe.errprint(qty_needed_for_schools)
     return transform_data(qty_needed_for_schools, cmap_data)

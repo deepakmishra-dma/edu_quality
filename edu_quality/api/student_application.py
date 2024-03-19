@@ -806,6 +806,7 @@ def process_lead(source, lead, page_location, detail="", kwargs={}):
             lead.status = "Hot"
         insert_walk_in_date(lead)
         # if lead 3 there replace it otherwise find first empty and put there
+
     if lead.first_name == "Partial_Lead" or lead.custom_is_partial:
         school_name = get_school(kwargs.get("school")) or kwargs.get("school", "")
         class_name = get_class(school_name, kwargs.get("class", "")) or kwargs.get(
@@ -840,9 +841,11 @@ def process_lead(source, lead, page_location, detail="", kwargs={}):
             "note": f'<div class="ql-editor read-mode"><p>Lead Re-Registered from <b>{source.capitalize()}  {("at location " + page_location.lower()) if page_location else ""}</b> at <b>{datetime.datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%d-%m-%Y , %H:%M IST")}</b> </p>{ " "+detail if detail else ""}</div>'
         },
     )
+    frappe.logger("Handle_School_Visit_Existing_Leads").exception(lead.as_dict())
+    frappe.logger("Handle_School_Visit_Existing_Leads").exception(source)
     lead.flags.ignore_mandatory = True
     lead.save(ignore_permissions=True)
-
+    frappe.db.commit()
     return lead
 
 
@@ -891,7 +894,7 @@ def handle_school_visit(**kwargs):
                 [
                     "fathers_phone",
                     "Like",
-                    f'%{remove_indian_country_code(kwargs.get("phone_number"))}%',
+                    f'%{remove_indian_country_code(kwargs.get("phone_number") or kwargs.get("fathers_phone"))}%',
                 ],
                 ["status", "NOT IN", ["Closed", "Enrolled"]],
                 ["center", "Like", school_visited],
@@ -900,17 +903,22 @@ def handle_school_visit(**kwargs):
         )
         # return len(existing_leads)
         # unoptimized to reduce from n+1 queries to 1
+        frappe.logger("Handle_School_Visit_Existing_Leads").exception(existing_leads)
         if len(existing_leads):
             for lead in existing_leads:
                 lead_doc = frappe.get_doc("Lead", lead.get("name"))
                 # if not lead_doc.custom_lead_scheduled:
                 # lead_doc.custom_walked_out_time = frappe.utils.now()
                 # lead_doc.custom_lead_scheduled = 1
+
                 process_lead(
                     "school_walkin", lead_doc, f"whatsapp {kwargs.get('location')}"
                 )
+        frappe.logger("Handle_School_Visit_Existing_Leads").exception(kwargs)
     except Exception as e:
-        frappe.logger("Error handling walkin/school visit").exception(e)
+        frappe.errprint(e)
+        frappe.logger("Handle_School_Visit").exception(e)
+        frappe.error_log("Error handling walkin/school visit").exception(e)
 
 
 @frappe.whitelist(allow_guest=True)

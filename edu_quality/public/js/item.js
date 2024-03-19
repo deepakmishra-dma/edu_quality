@@ -57,6 +57,16 @@ frappe.ui.form.on("Item", {
     refresh: function (frm) {
         queryTextbook(frm)
         queryTopic(frm)
+        if (!frm.doc.__islocal)
+            frappe.call({
+                method: "edu_quality.overrides_hooks.item.get_qr_code",
+                args: {
+                    name: frm.doc.name
+                }, callback: function (r) {
+                    frm.fields_dict.custom_qr_code_preview.wrapper.innerHTML = `<img src="${r.message}"/>
+            `
+                }
+            })
 
     },
     onload: function (frm) {

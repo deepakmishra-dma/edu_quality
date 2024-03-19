@@ -9,14 +9,16 @@
  "field_order": [
   "student_applicant_section",
   "apply_deposits",
-  "apply_fees",
   "column_break_c6e9",
+  "apply_fees",
   "payment_methods_section",
   "payment_method",
   "surcharge_section",
   "surcharge",
   "default_account",
-  "application_fees"
+  "application_fees",
+  "fee_receipt_section",
+  "print_format"
  ],
  "fields": [
   {
@@ -44,7 +46,7 @@
   {
    "fieldname": "payment_method",
    "fieldtype": "Table",
-   "label": "payment method",
+   "label": "Payment Method",
    "options": "Payment Methods"
   },
   {
@@ -75,12 +77,23 @@
    "fieldtype": "Table",
    "label": "Application Fees",
    "options": "Application Fees List"
+  },
+  {
+   "fieldname": "fee_receipt_section",
+   "fieldtype": "Section Break",
+   "label": "Fee Receipt"
+  },
+  {
+   "fieldname": "print_format",
+   "fieldtype": "Link",
+   "label": "Print Format",
+   "options": "Print Format"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-09-13 08:14:08.168108",
+ "modified": "2023-12-26 15:22:40.394442",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Fees Settings",

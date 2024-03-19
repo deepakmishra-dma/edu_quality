@@ -86,28 +86,24 @@ def payment_charge(**kwargs):
     frappe.response['message'] = {'charge':charge,'url':payment_request.get_payment_url(payment_method=kwargs.get('pm'))}
 
 @frappe.whitelist(allow_guest=True)
-def payment_receipt(payment_request,category):
+def payment_receipt(payment_request, category):
     try:
-        company = frappe.db.get_value("Fee Category",category,"custom_company")
-        if not company:
-            company = "Unique Educational and Sports Foundation"
-        doc = frappe.db.get_value("Payment Entry",{'payment_request':payment_request,"company":company},'name')
-        fee_name = frappe.db.get_value("Payment Request", payment_request, 'reference_name')
-        doctype = frappe.db.get_value("Payment Request", payment_request, 'reference_doctype')
-        if doctype == "Fees":
-            program_name = frappe.db.get_value("Fees", fee_name, 'program')
-        elif doctype == "Fee Advance":
-            program_name = frappe.db.get_value("Fee Advance", fee_name, 'next_program')
-        print_format = frappe.db.get_value("Program", program_name, 'print_format')
-        letter_head = frappe.db.get_value("Program", program_name, 'letter_head')
-        letter_head_doc = frappe.get_doc("Letter Head", letter_head)
-        print_format_doc = frappe.get_doc("Print Format", print_format)
+        company = frappe.db.get_value("Fee Category", category, "custom_company") or "Unique Educational and Sports Foundation"
+        payment_entry = frappe.db.get_value("Payment Entry", {'payment_request': payment_request, "company": company}, 'name')
+
+        fee_name, doctype = frappe.get_value("Payment Request", payment_request, ["reference_name", "reference_doctype"])
+
+        ref_doc = frappe.get_doc(doctype, fee_name)
+        letter_head = frappe.get_value("School", ref_doc.school, 'letter_head') or frappe.get_value("Company", ref_doc.company, "default_letter_head")
+
+        print_format = frappe.get_value("Fees Settings", None, "print_format")
+
         if frappe.session.user == "Guest":
-            frappe.local.login_manager.login_as("Administrator")
-            pdf = download_pdf("Payment Entry", doc, format=print_format_doc, letterhead=letter_head_doc)
-            frappe.local.login_manager.login_as("Guest")
+            frappe.set_user("Administrator")
+            pdf = download_pdf("Payment Entry", payment_entry, format=print_format, letterhead=letter_head)
+            frappe.set_user("Guest")
         else:
-            pdf = download_pdf("Payment Entry", doc)
+            pdf = download_pdf("Payment Entry", payment_entry, format=print_format, letterhead=letter_head)
         return pdf
     except Exception as e:
         frappe.logger("download").exception(e)
