@@ -158,18 +158,52 @@ def get_deposit(doc_payment_plan, payment_plan):
 
 def create_fees(doc, method=None):
     try:
-        doc = frappe.get_doc("Student", doc.student)
-        fee_structure = frappe.get_value("Fee Structure", {"program": doc.program, "academic_year": doc.academic_year}, 'name')
-        fee_schedule = frappe.get_value("Fee Structure", {"fee_structure": fee_structure}, 'name')
-        
-        if doc.student_applicant:
+        student = frappe.get_doc("Student", doc.student)
+        fee_structure = frappe.get_value("Fee Structure", {"program": doc.program, "academic_year":doc.academic_year}, "name")
+        fee_schedule = frappe.get_value("Fee Schedule", {"fee_structure": fee_structure}, "name")
+        existing_pe = frappe.get_value("Program Enrollment", {"student": doc.student})
+        if existing_pe:
+            fee_data = {
+                "doctype": "Fees",
+                "student": student.name,
+                "posting_date": nowdate(),
+                "program_enrollment": doc.name,
+                "fee_structure": fee_structure,
+                "fee_schedule": fee_schedule,
+                "academic_year": doc.academic_year,
+                "custom_school": doc.custom_school,
+                "company": frappe.get_value("Fee Structure", fee_structure, "institution"),
+            }
+            fee = frappe.get_doc(fee_data)
+            fee_structure = frappe.get_doc(
+                    "Fee Structure", fee_structure
+                )
+            for component in fee_structure.components:
+                fee.append(
+                    "components",
+                    {
+                        "fees_category": component.fees_category,
+                        "amount": component.amount,
+                        "description": component.description,
+                        "custom_company": component.custom_company,
+                        "school": component.school
+                    },
+                )
+            fee.insert()
+            fee.submit()
+            from edu_quality.public.py.student import update_student_group
+
+            update_student_group(
+                doc.name, fee_structure=fee_structure.name
+            )
+        elif student.student_applicant:
             student_applicant = frappe.get_doc(
                 "Student Applicant", doc.student_applicant
             )
             fees = frappe.get_doc(
                 {
                     "doctype": "Fees",
-                    "student": doc.name,
+                    "student": student.name,
                     "posting_date": nowdate(),
                     "program_enrollment": frappe.db.get_value(
                         "Program Enrollment", {"student": doc.name}, "name"
