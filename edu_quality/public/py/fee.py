@@ -94,7 +94,6 @@ def before_update(doc, method=None):
     old_doc = doc.get_doc_before_save()
     if doc.parent_otp == 0 and old_doc.payment_schedule != doc.payment_schedule:
         if old_doc.payment_plan == doc.payment_plan:
-            validate_discounts(doc)
             doc.need_otp = 1
             # frappe.msgprint(
             #     title="Payment Schedule",
