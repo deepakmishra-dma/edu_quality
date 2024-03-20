@@ -46,9 +46,9 @@ def before_submit(doc, method=None):
 
 
 def on_submit(doc, method=None):
+    total_discount = 0
     filters = {"student": doc.student, "outstanding_amount": 0, "next_program":doc.program, "academic_year": doc.academic_year}
     if frappe.db.exists("Fee Advance", filters):
-        total_discount = 0
         payment_amount = doc.payment_schedule[0].payment_amount
         fee_advance = frappe.get_doc("Fee Advance", filters)
         cancel_liability_entries(fee_advance)
@@ -61,6 +61,13 @@ def on_submit(doc, method=None):
         frappe.db.set_value("Payment Schedule", doc.payment_schedule[0].name, "payment_amount", payment_amount - total_discount)
         doc.reload()
 
+    elif frappe.db.exists("Fee Advance", {"student": doc.student, "next_program":doc.program, "academic_year": doc.academic_year}):
+        fee_advance = frappe.get_doc("Fee Advance", {"student": doc.student, "next_program":doc.program, "academic_year": doc.academic_year})
+        cancel_liability_entries(fee_advance)
+        discount_applied = get_one_time_discounts(fee_advance)
+        for discount in discount_applied.keys():
+            add_discount(doc.name, discount)
+            total_discount += discount_applied.get(discount)
         
 
 def verify_invoice_portion(payment_schedule):
@@ -77,12 +84,17 @@ def verify_payment_term(payment_schedule):
         else:
             terms.append(ps.payment_term)
 
+def validate_discounts(doc):
+    for component in doc.components:
+        if "Payment Plan" in component.custom_discounts:
+            frappe.throw("Remove Payment Plan Discount to customize payment plan!")
 
 
 def before_update(doc, method=None):
     old_doc = doc.get_doc_before_save()
     if doc.parent_otp == 0 and old_doc.payment_schedule != doc.payment_schedule:
         if old_doc.payment_plan == doc.payment_plan:
+            validate_discounts(doc)
             doc.need_otp = 1
             # frappe.msgprint(
             #     title="Payment Schedule",

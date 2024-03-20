@@ -12,6 +12,7 @@
   "academic_year",
   "section_break_5",
   "enroll_students",
+  "see_possible_enrollments",
   "students",
   "other_rollover_functions_section",
   "shift_reference_series",
@@ -38,6 +39,7 @@
   {
    "fieldname": "students",
    "fieldtype": "Table",
+   "hidden": 1,
    "label": "Students",
    "options": "Program Enrollment Tool Student"
   },
@@ -58,7 +60,7 @@
    "fieldname": "class_group",
    "fieldtype": "Select",
    "label": "Class Group",
-   "options": "Primary\nSecondary",
+   "options": "KG\nSenior KG\nPrimary\nSecondary",
    "reqd": 1
   },
   {
@@ -81,12 +83,17 @@
   {
    "fieldname": "column_break_pst16",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "see_possible_enrollments",
+   "fieldtype": "Button",
+   "label": "See Possible Enrollments"
   }
  ],
  "hide_toolbar": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-12-21 14:18:46.652765",
+ "modified": "2023-12-28 14:46:23.734999",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Rollover Tool",

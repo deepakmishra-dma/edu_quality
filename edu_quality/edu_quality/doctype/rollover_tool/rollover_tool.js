@@ -70,5 +70,9 @@ frappe.ui.form.on("Rollover Tool", {
 				frappe.msgprint("Academic Year has been marked as Rollovered!");
 			}
 		});
+	},
+	"see_possible_enrollments": function(frm) {
+		let path = "/app/program-enrollment?docstatus=0&custom_school=" + encodeURIComponent(frm.doc.school)
+		window.open(path, '_blank');
 	}
 });
