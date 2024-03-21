@@ -73,9 +73,11 @@ def get_term_wise_discounts(fees,payment_plan):
             for dis in discount:
                 if "payment" not in str(dis).lower():
                     if dis == "Referral":
-                        discounts[terms[0]] = {
-                            dis: discount[dis]
-                        }
+                        for schedule in payment_plan.payment_schedule:
+                            if schedule.outstanding!=0:
+                                discounts[schedule.payment_term] = {
+                                    dis: discount[dis]
+                                }
                     else:
                         for schedule in payment_plan.payment_schedule:
                             discounts[schedule.payment_term] = {
@@ -93,7 +95,6 @@ def update_payment_plan(payment_plan, doc):
     deposit,apply_deposit = get_deposit_amount(doc)
     payment_plan = frappe.get_doc("Payment Plan", payment_plan)
     term_discounts = get_term_wise_discounts(doc,payment_plan)
-    frappe.logger('breakup').exception(term_discounts)
     doc.payment_plan = payment_plan.name
     doc.payment_schedule = []
    

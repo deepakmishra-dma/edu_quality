@@ -6,6 +6,7 @@ from frappe.utils import today, getdate, flt
 import json
 
 from edu_quality.public.py.term import get_first_unpaid_term,get_last_term
+from edu_quality.edu_quality.server_scripts.payment_plan import get_term_wise_discounts
 
 
 
@@ -144,10 +145,9 @@ def remove_discount(fee_name, discount, update_payment_request=True, doctype="Fe
         if doctype == "Fees":
             update_total_discount_in_fees(fees.name)
             update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=False,dis=dis)
-        elif doctype == "Fee Advance":
-            fees.generate_split()
-            fees.reload()
-            fees.save(ignore_permissions=True)
+        fees.generate_split()
+        fees.reload()
+        fees.save(ignore_permissions=True)
         if update_payment_request:
             update_payment_request_after_discount(fees)
         fees.remove_discount_entry(company, grand_discount_amount)

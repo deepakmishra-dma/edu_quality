@@ -29,6 +29,7 @@ from datetime import datetime
 from edu_quality.public.py.payment_request import update_payment_request_after_discount
 from edu_quality.public.py.utils import im_2_b64, gen_qr_code_b64
 import qrcode
+from edu_quality.public.py.discount import remove_discount
 
 
 def after_insert(doc, method=None):
@@ -90,11 +91,15 @@ def validate_discounts(doc):
             frappe.throw("Remove Payment Plan Discount to customize payment plan!")
 
 
+def remove_pp_discount(doc):
+    pass
+
 def before_update(doc, method=None):
     old_doc = doc.get_doc_before_save()
     if doc.parent_otp == 0 and old_doc.payment_schedule != doc.payment_schedule:
         if old_doc.payment_plan == doc.payment_plan:
             doc.need_otp = 1
+            remove_pp_discount(doc)
             # frappe.msgprint(
             #     title="Payment Schedule",
             #     msg="Please Verify parent OTP to Update Payment Schedule",
