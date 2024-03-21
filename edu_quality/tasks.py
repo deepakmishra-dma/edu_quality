@@ -32,16 +32,18 @@ def create_payment_request_before_due_date():
         before_days = frappe.get_value("Fee Schedule",fee_schedule.name,"create_payment_request_before")
         fee_list = frappe.get_all("Fees",{'fee_schedule':fee_schedule.name,'workflow_state':'Approved'})
         for fee in fee_list:
-            for schedule in fee.payment_schedule:
+            fee_doc = frappe.get_doc("Fees",fee.name)
+            for schedule in fee_doc.payment_schedule:
                 if (schedule.due_date - today).days == before_days:
                     frappe.enqueue(
                         "edu_quality.public.py.student.create_payment_request",
-                        fee=fee,
+                        fee=fee_doc,
                         term = schedule.payment_term,
                         is_async=True,
                         queue="long",
                         timeout=1800,
                     )
+
 
 def create_payment_request_before_due_date_fee_advance():
     today_date = frappe.utils.getdate(frappe.utils.today())
