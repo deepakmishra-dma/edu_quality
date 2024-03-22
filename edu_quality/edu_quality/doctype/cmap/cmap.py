@@ -20,17 +20,33 @@ class CMAP(Document):
     def before_validate(self, method=None):
         frappe.errprint(self.products)
         added_broadcasts = [product.get("broadcast") for product in self.products]
+        added_parent_notes = [product.get("parent_note") for product in self.products]
+        added_home_works = [product.get("home_work") for product in self.products]
+        added_material_required = [
+            product.get("material_required") for product in self.products
+        ]
+        added_class_works = [product.get("class_work") for product in self.products]
+        generate_text_from_unique_notes(self, "Broadcast", added_broadcasts)
+        generate_text_from_unique_notes(self, "Parent Note", added_parent_notes)
+        generate_text_from_unique_notes(self, "Home Work", added_home_works)
+        generate_text_from_unique_notes(self, "Class Work", added_class_works)
+        generate_text_from_unique_notes(
+            self, "Material Required", added_material_required
+        )
 
-        if check_if_note_added_unique("broadcast", added_broadcasts):
-            frappe.errprint(added_broadcasts)
-            descriptions = frappe.db.get_list(
-                "Item CMAP Material",
-                filters=[["name", "in", added_broadcasts]],
-                fields=["description", "description"],
-            )
-            self.broadcast_text = "\\n".join(
-                [item.get("description") for item in descriptions]
-            )
+
+def generate_text_from_unique_notes(self, type, added_broadcasts):
+    if check_if_note_added_unique(type, added_broadcasts):
+        frappe.errprint(added_broadcasts)
+        descriptions = frappe.db.get_list(
+            "Item CMAP Material",
+            filters=[["name", "in", added_broadcasts]],
+            fields=["description", "description"],
+        )
+        self.broadcast_text = "\\n".join(
+            [item.get("description") for item in descriptions]
+        )
+
 
 @frappe.whitelist()
 def check_if_note_added_unique(material_type, added_items):

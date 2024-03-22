@@ -18,6 +18,7 @@
  ],
  "fields": [
   {
+   "columns": 1,
    "fieldname": "item",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -35,6 +36,7 @@
    "options": "Item Group"
   },
   {
+   "columns": 1,
    "fieldname": "textbook",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -42,6 +44,7 @@
    "options": "Textbook"
   },
   {
+   "columns": 1,
    "fieldname": "chapter",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -49,6 +52,7 @@
    "options": "Topic"
   },
   {
+   "columns": 1,
    "fetch_from": ".brand",
    "fieldname": "broadcast",
    "fieldtype": "Link",
@@ -57,6 +61,7 @@
    "options": "Item CMAP Material"
   },
   {
+   "columns": 1,
    "fieldname": "parent_note",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -64,6 +69,7 @@
    "options": "Item CMAP Material"
   },
   {
+   "columns": 1,
    "fieldname": "home_work",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -71,6 +77,7 @@
    "options": "Item CMAP Material"
   },
   {
+   "columns": 1,
    "fieldname": "class_work",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -78,6 +85,7 @@
    "options": "Item CMAP Material"
   },
   {
+   "columns": 1,
    "fieldname": "material_required",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -88,7 +96,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2023-12-28 09:25:31.057823",
+ "modified": "2023-12-29 09:53:14.171645",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Item Detail",

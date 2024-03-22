@@ -154,5 +154,20 @@ frappe.ui.form.on("CMAP", {
 frappe.ui.form.on("Item Detail", {
     broadcast: async (frm) => {
         const res = await checkNotes("broadcast", frm, "Broadcast")
+    },
+    parent_note: async (frm) => {
+        const res = await checkNotes("parent_note", frm, "Parent Note")
+    },
+    home_work: async (frm) => {
+        const res = await checkNotes("home_work", frm, "Home Work")
+    },
+    class_work: async (frm) => {
+        const res = await checkNotes("class_work", frm, "Class Work")
+    },
+    material_required: async (frm) => {
+        const res = await checkNotes("material_required", frm, "Material Required")
     }
+
 })
+
+
