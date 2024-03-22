@@ -93,8 +93,13 @@ def payment_receipt(payment_request, category):
 
         fee_name, doctype = frappe.get_value("Payment Request", payment_request, ["reference_name", "reference_doctype"])
 
-        ref_doc = frappe.get_doc(doctype, fee_name)
-        letter_head = frappe.get_value("School", ref_doc.school, 'letter_head') or frappe.get_value("Company", ref_doc.company, "default_letter_head")
+        if doctype == "Fees":
+            school = frappe.get_value("Fees", fee_name, "custom_school")
+        elif doctype == "Fee Advance":
+            school = frappe.get_value("Fee Advance", fee_name, "school")
+
+        company = frappe.get_value(doctype, fee_name, "company")
+        letter_head = frappe.get_value("School", school, 'letter_head') or frappe.get_value("Company", company, "default_letter_head")
 
         print_format = frappe.get_value("Fees Settings", None, "print_format")
 
