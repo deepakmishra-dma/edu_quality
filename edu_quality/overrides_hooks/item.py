@@ -2,6 +2,7 @@ import frappe
 from frappe.utils import strip
 import json
 from edu_quality.public.py.utils import im_2_b64, gen_qr_code_b64
+from weasyprint import CSS, HTML
 
 
 @frappe.whitelist()
@@ -79,3 +80,20 @@ def before_insert(self, method=None):
 @frappe.whitelist()
 def get_qr_code(name):
     return gen_qr_code_b64(name)
+
+
+@frappe.whitelist()
+def get_worksheet_template():
+    base_url = frappe.utils.get_url()
+    template = frappe.render_template(
+        "edu_quality/templates/pdf/worksheet_header.html",
+    )
+    html = HTML(string=template, base_url=base_url)
+    main_doc = html.render()
+    main_png = main_doc.write_pdf()
+
+    frappe.local.response.filename = "Temporary Id Card.pdf".format(
+        name="Temporary Id Card.pdf".replace(" ", "-").replace("/", "-")
+    )
+    frappe.local.response.filecontent = main_png
+    frappe.local.response.type = "pdf"

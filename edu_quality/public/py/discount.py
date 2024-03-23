@@ -6,8 +6,6 @@ from frappe.utils import today, getdate, flt
 import json
 
 from edu_quality.public.py.term import get_first_unpaid_term,get_last_term
-from edu_quality.edu_quality.server_scripts.payment_plan import get_term_wise_discounts
-
 
 
 def get_discount_applicable_term(dis):
@@ -92,11 +90,11 @@ def add_discount(fee_name, discount, fees=None, doctype="Fees"):
                 update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=True,dis=dis)
             else:
                 update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=True,dis=dis)
+            fees.add_discount_entry(company, grand_discount_amount)
         elif doctype == "Fee Advance":
             fees.generate_split()
             fees.reload()
             fees.save(ignore_permissions=True)
-        fees.add_discount_entry(company, grand_discount_amount)
         update_payment_request_after_discount(fees)
 
 
@@ -145,12 +143,12 @@ def remove_discount(fee_name, discount, update_payment_request=True, doctype="Fe
         if doctype == "Fees":
             update_total_discount_in_fees(fees.name)
             update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=False,dis=dis)
+            fees.remove_discount_entry(company, grand_discount_amount)
         fees.generate_split()
         fees.reload()
         fees.save(ignore_permissions=True)
         if update_payment_request:
             update_payment_request_after_discount(fees)
-        fees.remove_discount_entry(company, grand_discount_amount)
 
 
 def update_total_discount_in_fees(fee_name):
