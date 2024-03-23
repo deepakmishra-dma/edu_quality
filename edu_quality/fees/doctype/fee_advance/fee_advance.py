@@ -82,6 +82,8 @@ class FeeAdvance(AccountsController):
         if frappe.db.exists("Payment Request", {"reference_name": self.name, "docstatus": 1}):
             doc = frappe.get_doc("Payment Request", {"reference_name": self.name, "docstatus": 1})
             doc.cancel()
+        self.ignore_linked_doctypes = ("GL Entry", "Payment Ledger Entry")
+        make_reverse_gl_entries(voucher_type=self.doctype, voucher_no=self.name)
         
         
     def on_trash(self):
