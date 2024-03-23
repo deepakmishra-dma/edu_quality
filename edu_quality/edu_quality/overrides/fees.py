@@ -160,11 +160,12 @@ class CustomFees(Fees):
     )
     
     
-         
 
-    
+
+
     def get_company_splits(self):
         try:
+            fee_advance_entries = get_fee_advance_entries(self)
             student_entries = {}
             fee_entries = {}
             for component in self.components:
@@ -205,6 +206,8 @@ class CustomFees(Fees):
                 entries.append(i)
             for j in fee_entries.values():
                 entries.append(j)
+            for k in fee_advance_entries:
+                entries.append(k)
             return entries
         except Exception as e:
             frappe.logger('fee').exception(e)
@@ -268,3 +271,57 @@ def set_balance_in_account_currency(
 			if account_currency == company_currency
 			else flt(gl_dict.credit / conversion_rate, 2)
 		)
+          
+
+def get_fee_advance_entries(fees):
+    fee_advance = frappe.db.get_value("Fee Advance",{"student":fees.student,"docstatus":1},"name")
+    gl_entries = frappe.db.get_all(
+        "GL Entry",
+        filters={
+            "voucher_type": "Fee Advance",
+            "voucher_no": fee_advance,
+        },
+        fields=["account", "debit", "credit", "company", "against", "against_voucher", "against_voucher_type"],
+    )
+
+    student_entries = {}
+    fee_entries = {}
+
+    for entry in gl_entries:
+        liability_account, income_account, cost_center = frappe.db.get_value("Company", entry.company,["default_liability_account", "default_income_account","cost_center"])
+        student_entries[income_account] = (fees.get_gl_dict(
+                                        {
+                                            "company": entry.company,
+                                            "account": liability_account,
+                                            "party_type": "Student",
+                                            "party": fees.student,
+                                            "against": income_account,
+                                            "debit": entry.credit if entry.credit else entry.debit,
+                                            "debit_in_account_currency": entry.credit if entry.credit else entry.debit,
+                                            "against_voucher": fees.name,
+                                            "against_voucher_type": fees.doctype,
+                                        },
+                                        item=fees,
+                                    ))
+        
+        fee_entries[liability_account] = (fees.get_gl_dict(
+                        {
+                            "company": entry.company,
+                            "account": income_account,
+                            "against": fees.student,
+                            "credit": entry.credit if entry.credit else entry.debit,
+                            "credit_in_account_currency": entry.credit if entry.credit else entry.debit,
+                            "cost_center": cost_center
+                        },
+                        item=fees,
+                    ))
+             
+        
+    entries = []
+    for i in student_entries.values():
+        entries.append(i)
+    for j in fee_entries.values():
+        entries.append(j)
+
+    return entries
+
