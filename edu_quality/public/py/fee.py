@@ -52,7 +52,7 @@ def on_submit(doc, method=None):
     if frappe.db.exists("Fee Advance", filters):
         payment_amount = doc.payment_schedule[0].payment_amount
         fee_advance = frappe.get_doc("Fee Advance", filters)
-        cancel_liability_entries(fee_advance)
+        # cancel_liability_entries(fee_advance)
         discount_applied = get_one_time_discounts(fee_advance)
         for discount in discount_applied.keys():
             add_discount(doc.name, discount)
