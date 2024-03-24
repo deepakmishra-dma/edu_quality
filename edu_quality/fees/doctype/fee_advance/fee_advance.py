@@ -82,6 +82,8 @@ class FeeAdvance(AccountsController):
         if frappe.db.exists("Payment Request", {"reference_name": self.name, "docstatus": 1}):
             doc = frappe.get_doc("Payment Request", {"reference_name": self.name, "docstatus": 1})
             doc.cancel()
+        self.ignore_linked_doctypes = ("GL Entry", "Payment Ledger Entry")
+        make_reverse_gl_entries(voucher_type=self.doctype, voucher_no=self.name)
         
         
     def on_trash(self):
@@ -278,14 +280,14 @@ class FeeAdvance(AccountsController):
         
 
     def add_discount_entry(self, company, amount):
-        liability_account, discount_account, cost_center = frappe.db.get_value("Company", company,["default_liability_account","default_discount_account","cost_center"])
+        receivable_account, discount_account, cost_center = frappe.db.get_value("Company", company,["default_receivable_account","default_discount_account","cost_center"])
         debit_entry = (self.get_gl_dict(
                 {
                     "company": company,
                     "account":discount_account ,
                     "party_type": "Student",
                     "party": self.student,
-                    "against": liability_account,
+                    "against": receivable_account,
                     "debit": amount,
                     "debit_in_account_currency": amount,
                     "against_voucher": self.name,
@@ -296,7 +298,7 @@ class FeeAdvance(AccountsController):
         credit_entry = (self.get_gl_dict(
                         {
                             "company": company,
-                            "account": liability_account,
+                            "account": receivable_account,
                             "against": self.student,
                             "credit": amount,
                             "credit_in_account_currency":amount,
@@ -486,7 +488,7 @@ def referal_discount(doc, method=None):
 
             doc.amount = grand_total
             doc.outstanding_amount = grand_total
-            doc.add_discount_entry(component.custom_company, discount)
+            # doc.add_discount_entry(component.custom_company, discount)
             break  
 
 
@@ -524,7 +526,7 @@ def payment_plan(doc, method=None):
 
                 doc.amount = grand_total
                 doc.outstanding_amount = grand_total
-                doc.add_discount_entry(component.custom_company, discount_amount)
+                # doc.add_discount_entry(component.custom_company, discount_amount)
                 break
 
 

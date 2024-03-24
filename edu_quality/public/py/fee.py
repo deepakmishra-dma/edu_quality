@@ -44,15 +44,15 @@ def before_submit(doc, method=None):
 
     # payment_split(doc, ref_dis, time_dis, payplan_discount)
     doc.total_discount = get_all_discounts(doc)
-
+    
 
 def on_submit(doc, method=None):
     total_discount = 0
-    filters = {"student": doc.student, "outstanding_amount": 0, "next_program":doc.program, "academic_year": doc.academic_year}
+    filters = {"student": doc.student, "outstanding_amount": 0, "next_program":doc.program, "academic_year": doc.academic_year, "docstatus": 1}
     if frappe.db.exists("Fee Advance", filters):
         payment_amount = doc.payment_schedule[0].payment_amount
         fee_advance = frappe.get_doc("Fee Advance", filters)
-        cancel_liability_entries(fee_advance)
+        # cancel_liability_entries(fee_advance)
         discount_applied = get_one_time_discounts(fee_advance)
         for discount in discount_applied.keys():
             add_discount(doc.name, discount)
@@ -60,6 +60,8 @@ def on_submit(doc, method=None):
 
         frappe.db.set_value("Payment Schedule", doc.payment_schedule[0].name, "outstanding", 0)
         frappe.db.set_value("Payment Schedule", doc.payment_schedule[0].name, "payment_amount", payment_amount - total_discount)
+        fee_outstanding_amount = doc.outstanding_amount - fee_advance.amount
+        frappe.db.set_value("Fees", doc.name, "outstanding_amount", fee_outstanding_amount)
         doc.reload()
 
     elif frappe.db.exists("Fee Advance", {"student": doc.student, "next_program":doc.program, "academic_year": doc.academic_year}):
