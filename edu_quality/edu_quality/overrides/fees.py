@@ -276,7 +276,7 @@ def set_balance_in_account_currency(
 def get_fee_advance_entries(fees):
     fee_advance = frappe.db.get_value("Fee Advance",{"student":fees.student,"docstatus":1, "outstanding_amount":0, "next_program": fees.program, "academic_year":fees.academic_year},"name")
     if not fee_advance:
-         return []
+         return [], None
     gl_entries = frappe.db.get_all(
         "GL Entry",
         filters={
