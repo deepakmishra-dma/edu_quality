@@ -44,7 +44,7 @@ def before_submit(doc, method=None):
 
     # payment_split(doc, ref_dis, time_dis, payplan_discount)
     doc.total_discount = get_all_discounts(doc)
-
+    
 
 def on_submit(doc, method=None):
     total_discount = 0

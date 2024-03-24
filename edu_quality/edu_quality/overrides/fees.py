@@ -165,7 +165,8 @@ class CustomFees(Fees):
 
     def get_company_splits(self):
         try:
-            fee_advance_entries = get_fee_advance_entries(self)
+            fee_advance_entries, fee_advance = get_fee_advance_entries(self)
+            update_componant(self, fee_advance)
             student_entries = {}
             fee_entries = {}
             for component in self.components:
@@ -206,8 +207,7 @@ class CustomFees(Fees):
                 entries.append(i)
             for j in fee_entries.values():
                 entries.append(j)
-            for k in fee_advance_entries:
-                entries.append(k)
+            entries.extend(fee_advance_entries if fee_advance_entries else [])
             return entries
         except Exception as e:
             frappe.logger('fee').exception(e)
@@ -325,5 +325,12 @@ def get_fee_advance_entries(fees):
     for j in fee_entries.values():
         entries.append(j)
 
-    return entries
+    return entries, fee_advance
 
+
+def update_componant(doc, fee_advance):
+    if fee_advance:
+        fee_advance = frappe.get_doc("Fee Advance", fee_advance)
+        for item1, item2 in zip(doc.components, fee_advance.components):
+            if item1.fees_category == item2.fees_category:
+                item1.amount = item1.amount-item2.amount
