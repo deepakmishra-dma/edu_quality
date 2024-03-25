@@ -222,29 +222,29 @@ class FeeAdvance(AccountsController):
                         "party_type": "Student",
                         "party": self.student,
                         "against": liability_account,
-                        "debit": component.amount,
-                        "debit_in_account_currency": component.amount,
+                        "debit":  component.custom_amount_after_discount or component.amount,
+                        "debit_in_account_currency": component.custom_amount_after_discount or component.amount,
                         "against_voucher": self.name,
                         "against_voucher_type": self.doctype
                     }, item=self)
 
                 else:
-                    student_entries[receivable_account]['debit'] += component.amount
-                    student_entries[receivable_account]['debit_in_account_currency'] += component.amount
+                    student_entries[receivable_account]['debit'] += component.custom_amount_after_discount or component.amount
+                    student_entries[receivable_account]['debit_in_account_currency'] += component.custom_amount_after_discount or component.amount
 
                 if liability_account not in fee_entries:
                     fee_entries[liability_account] = self.get_gl_dict({
                         "company": component.custom_company,
                         "account": liability_account,
                         "against": self.student,
-                        "credit": component.amount,
-                        "credit_in_account_currency": component.amount,
+                        "credit": component.custom_amount_after_discount or component.amount,
+                        "credit_in_account_currency": component.custom_amount_after_discount or component.amount,
                         "cost_center": cost_center
                     }, item=self)
 
                 else:
-                    fee_entries[liability_account]['credit'] += component.amount
-                    fee_entries[liability_account]['credit_in_account_currency'] += component.amount
+                    fee_entries[liability_account]['credit'] += component.custom_amount_after_discount or component.amount
+                    fee_entries[liability_account]['credit_in_account_currency'] += component.custom_amount_after_discount or component.amount
 
             entries = list(student_entries.values()) + list(fee_entries.values())
             return entries
