@@ -532,8 +532,19 @@ def payment_plan(doc, method=None):
 
 def get_payplan_discount(doc, payment_plan):
     """
-    update time based discount and referal discount in the payment schedule
+    Calculates and returns the discount amount for a payment plan.
+
+    Parameters:
+    doc (object): The document.
+    payment_plan: The payment plan name.
+
+    Returns:
+    tuple: Discount amount and the discount configuration document, or None if no discount is applicable.
     """
+    if len(payment_plan.payment_schedule) > 1:
+        frappe.msgprint("Payment Plan Discount with 100% invoice portion can Only be applied!")
+        return
+    
     for ps in payment_plan.payment_schedule:
         if ps.due_date < datetime.today().date():
             frappe.msgprint("Cannot Apply new Payment Plan Discount As Due Date is Passed!")
