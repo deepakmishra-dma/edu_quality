@@ -741,6 +741,7 @@ def create_lead(kwargs):
             "class": class_name,
             "status": "Hot"
             if kwargs.get("source", "").lower() == "walkin"
+            or kwargs.get("lead_mode", "") == "school_walkin"
             else "Fresh",
             "class_from_lead_source": kwargs.get("class"),
             "custom_previous_school": kwargs.get("current_school", ""),
@@ -756,7 +757,10 @@ def create_lead(kwargs):
             "custom_preferred_communication_time": kwargs.get("communication_time"),
         }
     )
-    if kwargs.get("source", "").lower() == "walkin":
+    if (
+        kwargs.get("source", "").lower() == "walkin"
+        or kwargs.get("lead_mode", "") == "school_walkin"
+    ):
         insert_walk_in_date(lead_doc)
 
     lead_doc.append(
@@ -841,8 +845,7 @@ def process_lead(source, lead, page_location, detail="", kwargs={}):
             "note": f'<div class="ql-editor read-mode"><p>Lead Re-Registered from <b>{source.capitalize()}  {("at location " + page_location.lower()) if page_location else ""}</b> at <b>{datetime.datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%d-%m-%Y , %H:%M IST")}</b> </p>{ " "+detail if detail else ""}</div>'
         },
     )
-    frappe.logger("Handle_School_Visit_Existing_Leads").exception(lead.as_dict())
-    frappe.logger("Handle_School_Visit_Existing_Leads").exception(source)
+
     lead.flags.ignore_mandatory = True
     lead.save(ignore_permissions=True)
     frappe.db.commit()
@@ -903,7 +906,7 @@ def handle_school_visit(**kwargs):
         )
         # return len(existing_leads)
         # unoptimized to reduce from n+1 queries to 1
-        frappe.logger("Handle_School_Visit_Existing_Leads").exception(existing_leads)
+
         if len(existing_leads):
             for lead in existing_leads:
                 lead_doc = frappe.get_doc("Lead", lead.get("name"))
@@ -914,11 +917,10 @@ def handle_school_visit(**kwargs):
                 process_lead(
                     "school_walkin", lead_doc, f"whatsapp {kwargs.get('location')}"
                 )
-        frappe.logger("Handle_School_Visit_Existing_Leads").exception(kwargs)
+
     except Exception as e:
         frappe.errprint(e)
         frappe.logger("Handle_School_Visit").exception(e)
-        frappe.error_log("Error handling walkin/school visit").exception(e)
 
 
 @frappe.whitelist(allow_guest=True)

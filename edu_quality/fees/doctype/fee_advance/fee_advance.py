@@ -82,6 +82,8 @@ class FeeAdvance(AccountsController):
         if frappe.db.exists("Payment Request", {"reference_name": self.name, "docstatus": 1}):
             doc = frappe.get_doc("Payment Request", {"reference_name": self.name, "docstatus": 1})
             doc.cancel()
+        self.ignore_linked_doctypes = ("GL Entry", "Payment Ledger Entry")
+        make_reverse_gl_entries(voucher_type=self.doctype, voucher_no=self.name)
         
         
     def on_trash(self):
@@ -220,29 +222,29 @@ class FeeAdvance(AccountsController):
                         "party_type": "Student",
                         "party": self.student,
                         "against": liability_account,
-                        "debit": component.amount,
-                        "debit_in_account_currency": component.amount,
+                        "debit":  component.custom_amount_after_discount or component.amount,
+                        "debit_in_account_currency": component.custom_amount_after_discount or component.amount,
                         "against_voucher": self.name,
                         "against_voucher_type": self.doctype
                     }, item=self)
 
                 else:
-                    student_entries[receivable_account]['debit'] += component.amount
-                    student_entries[receivable_account]['debit_in_account_currency'] += component.amount
+                    student_entries[receivable_account]['debit'] += component.custom_amount_after_discount or component.amount
+                    student_entries[receivable_account]['debit_in_account_currency'] += component.custom_amount_after_discount or component.amount
 
                 if liability_account not in fee_entries:
                     fee_entries[liability_account] = self.get_gl_dict({
                         "company": component.custom_company,
                         "account": liability_account,
                         "against": self.student,
-                        "credit": component.amount,
-                        "credit_in_account_currency": component.amount,
+                        "credit": component.custom_amount_after_discount or component.amount,
+                        "credit_in_account_currency": component.custom_amount_after_discount or component.amount,
                         "cost_center": cost_center
                     }, item=self)
 
                 else:
-                    fee_entries[liability_account]['credit'] += component.amount
-                    fee_entries[liability_account]['credit_in_account_currency'] += component.amount
+                    fee_entries[liability_account]['credit'] += component.custom_amount_after_discount or component.amount
+                    fee_entries[liability_account]['credit_in_account_currency'] += component.custom_amount_after_discount or component.amount
 
             entries = list(student_entries.values()) + list(fee_entries.values())
             return entries
@@ -278,14 +280,14 @@ class FeeAdvance(AccountsController):
         
 
     def add_discount_entry(self, company, amount):
-        liability_account, discount_account, cost_center = frappe.db.get_value("Company", company,["default_liability_account","default_discount_account","cost_center"])
+        receivable_account, discount_account, cost_center = frappe.db.get_value("Company", company,["default_receivable_account","default_discount_account","cost_center"])
         debit_entry = (self.get_gl_dict(
                 {
                     "company": company,
                     "account":discount_account ,
                     "party_type": "Student",
                     "party": self.student,
-                    "against": liability_account,
+                    "against": receivable_account,
                     "debit": amount,
                     "debit_in_account_currency": amount,
                     "against_voucher": self.name,
@@ -296,7 +298,7 @@ class FeeAdvance(AccountsController):
         credit_entry = (self.get_gl_dict(
                         {
                             "company": company,
-                            "account": liability_account,
+                            "account": receivable_account,
                             "against": self.student,
                             "credit": amount,
                             "credit_in_account_currency":amount,
@@ -486,7 +488,7 @@ def referal_discount(doc, method=None):
 
             doc.amount = grand_total
             doc.outstanding_amount = grand_total
-            doc.add_discount_entry(component.custom_company, discount)
+            # doc.add_discount_entry(component.custom_company, discount)
             break  
 
 
@@ -524,14 +526,25 @@ def payment_plan(doc, method=None):
 
                 doc.amount = grand_total
                 doc.outstanding_amount = grand_total
-                doc.add_discount_entry(component.custom_company, discount_amount)
+                # doc.add_discount_entry(component.custom_company, discount_amount)
                 break
 
 
 def get_payplan_discount(doc, payment_plan):
     """
-    update time based discount and referal discount in the payment schedule
+    Calculates and returns the discount amount for a payment plan.
+
+    Parameters:
+    doc (object): The document.
+    payment_plan: The payment plan name.
+
+    Returns:
+    tuple: Discount amount and the discount configuration document, or None if no discount is applicable.
     """
+    if len(payment_plan.payment_schedule) > 1:
+        frappe.msgprint("Payment Plan Discount with 100% invoice portion can Only be applied!")
+        return
+    
     for ps in payment_plan.payment_schedule:
         if ps.due_date < datetime.today().date():
             frappe.msgprint("Cannot Apply new Payment Plan Discount As Due Date is Passed!")

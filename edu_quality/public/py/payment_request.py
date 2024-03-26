@@ -81,33 +81,23 @@ def is_discounted(fees, term):
 def create_pr_new_term(doc, fees):
     amount = 0
     discount = 0
+    payment_amount = 0
     for schedule in fees.payment_schedule:
-        if (
-            schedule.due_date < frappe.utils.getdate(frappe.utils.today())
-            and schedule.payment_term != doc.payment_term
-        ):
-            amount = amount + frappe.utils.flt(schedule.payment_amount)
-            frappe.db.set_value("Payment Schedule", schedule.name, "payment_amount", 0)
-            frappe.db.set_value("Payment Schedule", schedule.name, "outstanding", 0)
-        if schedule.payment_term == doc.payment_term:
-            amount = amount + frappe.utils.flt(schedule.payment_amount)
-            discount = get_discounted_amount(doc.payment_term, fees.outstanding_amount)
-            payment_amount = amount - discount
-            frappe.db.set_value(
-                "Payment Schedule",
-                schedule.name,
-                "payment_amount",
-                payment_amount,
-            )
-            frappe.db.set_value(
-                "Payment Schedule", schedule.name, "outstanding", payment_amount
-            )
-            frappe.db.set_value(
-                "Payment Schedule", schedule.name, "discounted_amount", discount
-            )
-    frappe.db.set_value(
-        "Fees", fees.name, "outstanding_amount", fees.outstanding_amount - discount
-    )
+        if schedule.outstanding > 0:
+            amount += frappe.utils.flt(schedule.payment_amount)
+            today_date = frappe.utils.getdate(frappe.utils.today())
+            if schedule.due_date < today_date and schedule.payment_term != doc.payment_term:
+                frappe.db.set_value("Payment Schedule", schedule.name, {"payment_amount": 0, "outstanding": 0})
+            elif schedule.payment_term == doc.payment_term:
+                discount = get_discounted_amount(doc.payment_term, fees.outstanding_amount)
+                payment_amount = amount - discount
+                to_update = {
+                    "payment_amount": payment_amount,
+                    "outstanding": payment_amount,
+                    "discounted_amount": discount
+                }
+                frappe.db.set_value("Payment Schedule", schedule.name, to_update)
+    frappe.db.set_value("Fees", fees.name, "outstanding_amount", fees.outstanding_amount - discount)
     doc.grand_total = payment_amount
 
 # if payment request is not paid
@@ -118,6 +108,8 @@ def payment_request_not_paid(doc, fees,not_paid_filter):
         pr.cancel()
 
         for schedule in fees.payment_schedule:
+            if schedule.outstanding == 0:
+                continue
             if schedule.payment_term == pr.payment_term:
                 frappe.db.set_value(
                     "Payment Schedule", schedule.name, "payment_amount", 0
@@ -158,6 +150,8 @@ def payment_request_paid(doc, fees, paid_filter, previous_payment_term):
     # if previous payment term is discounted
     if not is_discounted(fees, previous_payment_term):
         for schedule in fees.payment_schedule:
+            if schedule.outstanding == 0:
+                continue
             if schedule.payment_term == doc.payment_term:
                 amount = frappe.utils.flt(schedule.payment_amount)
                 discount = get_discounted_amount(
