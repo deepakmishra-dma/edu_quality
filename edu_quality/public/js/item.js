@@ -67,7 +67,13 @@ frappe.ui.form.on("Item", {
             `
                 }
             })
+        frm.get_field('custom_view_worksheet_header').onclick = function () {
+            if (!frm.doc.__islocal) {
 
+                window.open(`/api/method/edu_quality.overrides_hooks.item.get_worksheet_template?name=${frm.doc.name}`)
+
+            }
+        }
     },
     onload: function (frm) {
         if (frm.doc__islocal) {
