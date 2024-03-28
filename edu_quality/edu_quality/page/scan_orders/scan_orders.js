@@ -5,7 +5,6 @@ frappe.pages['scan-orders'].on_page_load = function (wrapper) {
 		single_column: true
 	});
 	const el = document.querySelector('.container.page-body')
-
 	const d = make_fieldgroup(el, [
 		{
 			label: 'Enter Purchase Order/ Challan No',
@@ -19,7 +18,18 @@ frappe.pages['scan-orders'].on_page_load = function (wrapper) {
 			click: async () => {
 				const images = await nativeInterface.execute('openWebViewScanner')
 				d.set_value('qr_code', images?.data)
-
+				if (images?.data)
+					frappe.call({
+						method: "edu_quality.api.scan_receipts.find_url_to_redirect_to",
+						args: {
+							key: images?.data,
+							type: "POST",
+						}, callback: (r) => {
+							if (r.message) {
+								frappe.set_route(`/app${r.message}`)
+							}
+						}
+					})
 			}
 		},
 		{

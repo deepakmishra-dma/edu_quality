@@ -1,24 +1,5 @@
 // Copyright (c) 2023, Hybrowlabs Technologies and contributors
 // For license information, please see license.txt
-function queryTextbook(frm) {
-    frm.set_query("texbook", function () {
-        return {
-            filters: {
-                "subject": frm.doc.subject,
-            }
-        }
-    })
-}
-function queryTopic(frm) {
-    frm.set_query("chapter", function () {
-        return {
-            filters: {
-                "custom_subject": frm.doc.subject,
-                "custom_textbook": frm.doc.texbook
-            }
-        }
-    })
-}
 function getNoteQuery(cur_frm, fieldName, fieldGroup) {
 
     cur_frm.fields_dict['products'].grid.get_field(fieldName).on_change = function () {
@@ -105,8 +86,6 @@ async function getNotes(frm) {
 frappe.ui.form.on("CMAP", {
     refresh(frm) {
         getNotes(frm)
-        queryTextbook(frm)
-        queryTopic(frm)
         cur_frm.fields_dict['products'].grid.get_field('item_group').get_query = function (doc, cdt, dn) {
             let d = locals[cdt][dn];
             return {

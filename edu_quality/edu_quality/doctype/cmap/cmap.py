@@ -9,13 +9,14 @@ import json
 
 class CMAP(Document):
     def autoname(self, method=None):
-        textbook_shortcode = frappe.db.get_value("Textbook", self.texbook, "short_code")
+        course_short_code = frappe.db.get_value(
+            "Course", self.subject, "custom_short_code"
+        )
         course_doc = frappe.get_doc("Course", self.subject)
         class_sortcode = frappe.db.get_value(
             "Class Type", self.get("class"), "short_code"
         )
-
-        self.name = f"{self.academic_year}-{course_doc.name}{textbook_shortcode}{class_sortcode}{self.unit}{self.period}"
+        self.name = f"{self.academic_year}-{course_doc.name}{course_short_code}{class_sortcode}{self.unit}{self.period}"
 
     def before_validate(self, method=None):
         frappe.errprint(self.products)
