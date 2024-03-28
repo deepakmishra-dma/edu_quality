@@ -3,9 +3,10 @@ from frappe.utils import strip
 import json
 from edu_quality.public.py.utils import im_2_b64, gen_qr_code_b64
 from weasyprint import CSS, HTML
-from pdf2image import convert_from_bytes
-import imgkit
-import base64
+
+# from pdf2image import convert_from_bytes
+# import imgkit
+# import base64
 
 
 @frappe.whitelist()
