@@ -227,10 +227,14 @@ def payment_entry(doc, ref_doc, party_amount, paid_from, paid_to, company, cost_
                         "amount": amount,
                     },
                 )
+
+                school = frappe.get_value("Fee Component", {"name":fee_name, "parent": ref_doc.name}, "school")
+                payment_entry.update({"school": school})
+
     payment_entry.update({
         'reference_doctype': ref_doc.doctype, # 'Fees' or 'Fee Advance'
         'reference_name': ref_doc.name,
-        'payment_request': doc.name
+        'payment_request': doc.name,
     })
 
     payment_entry.insert(ignore_permissions=True)
