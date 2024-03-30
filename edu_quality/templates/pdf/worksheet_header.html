@@ -10,11 +10,16 @@
     font-family: "Pachyderm";
     src: url("/assets/edu_quality/fonts/PACHYDER.TTF"); /* EOT file for IE */
   }
+  * {
+    box-sizing: border-box;
+  }
   .heading {
     font-size: 18pt;
     font-family: "Pachyderm";
   }
   .document {
+    /* width: 2480px;
+    height: 831px; */
     padding-left: 61px;
     padding-right: 57px;
   }
@@ -27,24 +32,40 @@
     padding: 0 12px;
   }
   .rotated {
-    writing-mode: vertical-rl;
-    transform: rotate(-1, -1);
+    position: absolute;
+    writing-mode: tb-rl;
+    transform: rotate(-90deg);
+    transform-origin: center;
+    translate: (-50%, -50%);
+    left: 20%;
     font-size: 9pt;
     font-family: "Asap";
-    padding-block-start: 47px;
   }
+  /* .rotated {
+    writing-mode: vertical-rl;
+    transform: rotate(-180deg);
+    font-size: 9pt;
+    font-family: "Asap";
+  } */
   .heading-space {
     display: flex;
     justify-content: space-between;
   }
+  .rotated-container {
+    position: relative;
+
+    width: 126px;
+  }
 </style>
 <div class="document">
   <div class="heading-space">
-    <h1 class="heading">6: Political Sciencezz</h1>
-    <h1 class="heading">01: Standing Standing S - 01</h1>
+    <h1 class="heading">{{subject_name}}</h1>
+    <h1 class="heading">{{chapter_name}}</h1>
   </div>
   <div class="qr-container">
-    <img src="https://imgur.com/0JaACFQ.png" class="qr-code-image" />
-    <div class="rotated">ASEC1ENG0101</div>
+    <img src="{{ qr_code }}" class="qr-code-image" />
+    <div class="rotated-container">
+      <div class="rotated">{{ worksheet_name }}</div>
+    </div>
   </div>
 </div>

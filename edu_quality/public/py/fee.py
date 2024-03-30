@@ -168,7 +168,8 @@ def create_fees(doc, method=None):
         fee_structure = frappe.get_value("Fee Structure", {"program": doc.program, "academic_year":doc.academic_year}, "name")
         fee_schedule = frappe.get_value("Fee Schedule", {"fee_structure": fee_structure}, "name")
         existing_pe = frappe.get_value("Program Enrollment", {"student": doc.student})
-        if existing_pe:
+        stude_appli_class = frappe.get_value("Student Applicant",{"student_email_id":student.student_email_id,"program":doc.program},'name')
+        if not stude_appli_class:
             fee_data = {
                 "doctype": "Fees",
                 "student": student.name,
@@ -202,17 +203,17 @@ def create_fees(doc, method=None):
             update_student_group(
                 doc.name, fee_structure=fee_structure.name
             )
-        elif student.student_applicant:
+        else:
             student_applicant = frappe.get_doc(
-                "Student Applicant", doc.student_applicant
+                "Student Applicant", {"student_email_id":student.student_email_id}
             )
             fees = frappe.get_doc(
                 {
                     "doctype": "Fees",
                     "student": student.name,
                     "posting_date": nowdate(),
-                    "program_enrollment": frappe.db.get_value(
-                        "Program Enrollment", {"student": doc.name}, "name"
+                    "program_enrollment": frappe.get_value(
+                        "Program Enrollment", {"student": doc.student,"program":doc.program}, "name"
                     ),
                     "fee_structure": student_applicant.fee_structure,
                     "fee_schedule": student_applicant.fee_schedule,
