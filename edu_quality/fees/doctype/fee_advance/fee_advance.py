@@ -338,6 +338,7 @@ def get_components(fee_structure, percent, is_rte):
                 "custom_company": company,
                 "label": label or default_account,
                 "fee_type": component.fee_type,
+                "school": component.school,
             }
         )
     return components, amount
