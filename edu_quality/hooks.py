@@ -12,7 +12,7 @@ app_license = "MIT"
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/edu_quality/css/edu_quality.css"
-# app_include_js = "/assets/edu_quality/js/edu_quality.js"
+app_include_js = ["/assets/edu_quality/js/carnivalEvent.js"]
 
 # include js, css files in header of web template
 # web_include_css = "/assets/edu_quality/css/edu_quality.css"

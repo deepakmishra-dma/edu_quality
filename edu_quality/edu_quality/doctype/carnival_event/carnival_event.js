@@ -25,7 +25,7 @@ async function folderExists(parent, newFolder) {
 
 }
 
-function uploadToGoogleDrive(file_url,folder_name){
+function uploadToGoogleDrive(file_url, folder_name) {
     return fetch("/api/method/edu_quality.edu_quality.doctype.google_drive_settings.google_drive_settings.upload_file", {
         method: 'POST',
         headers: (() => {
@@ -44,9 +44,9 @@ async function uploadImage(image, frm) {
         const file = new File([blob], "image.jpg");
 
         formData.append('file', file, "image.jpg")
-        formData.append('folder', "home/" + frm.doc.name)        
-        formData.append('file_name',`${frm.doc.name}-${Date.now()}`)
-        
+        formData.append('folder', "home/" + frm.doc.name)
+        formData.append('file_name', `${frm.doc.name}-${Date.now()}`)
+
         nativeInterface.logToNative(formData)
         return fetch("/api/method/upload_file", {
             method: 'POST',
@@ -68,42 +68,43 @@ async function uploadImage(image, frm) {
 }
 
 frappe.ui.form.on("Carnival Event", {
-    refresh: function(frm) {
+    refresh: function (frm) {
 
         setTimeout(() => {
 
-           var element= frm.add_custom_button(__("Upload Images"), async function() {
-                try{
-                const images = await nativeInterface.execute('openWebViewCamera', {
-                    multiple: true,
-                    preferredCameraType: 'rear',
-                    galleryTitle:frm.doc.name
-                })
-                await folderExists('Home', frm.doc.name)
-             
-                const imageUrls = await Promise.allSettled(images.map((img) => uploadImage('data:image/jpg;base64,' + img.base64, frm)))
-                imageUrls.map((img) => frappe.call({
-                    method: "edu_quality.edu_quality.api.google_drive_upload.upload_file",
-                    args: {
-                        file_url: img.value,
-                        folder_name: frm.doc.name,
-                        type: "POST",
-                    },callback:()=>{
+            var element = frm.add_custom_button(__("Upload Images"), async function () {
+                try {
+                    const images = await nativeInterface.execute('openWebViewCamera', {
+                        multiple: true,
+                        preferredCameraType: 'rear',
+                        galleryTitle: frm.doc.name,
+                        backgroundMode: true
+                    })
+                    await folderExists('Home', frm.doc.name)
 
-                    }
-                }))
+                    const imageUrls = await Promise.allSettled(images.map((img) => uploadImage('data:image/jpg;base64,' + img.base64, frm)))
+                    imageUrls.map((img) => frappe.call({
+                        method: "edu_quality.edu_quality.api.google_drive_upload.upload_file",
+                        args: {
+                            file_url: img.value,
+                            folder_name: frm.doc.name,
+                            type: "POST",
+                        }, callback: () => {
 
-       
+                        }
+                    }))
 
-                frappe.msgprint({
-                    title: __('Successful'),
-                    message: __('Upload Completed'),
 
-                })
-            }
-            catch(e){
-                nativeInterface.logToNative(e)
-            }
+
+                    frappe.msgprint({
+                        title: __('Successful'),
+                        message: __('Upload Completed'),
+
+                    })
+                }
+                catch (e) {
+                    nativeInterface.logToNative(e)
+                }
 
 
 
@@ -114,14 +115,14 @@ frappe.ui.form.on("Carnival Event", {
         })
     },
 
-    school: function(frm) {
+    school: function (frm) {
 
-        frm.set_query("class", function() {
+        frm.set_query("class", function () {
             return {
                 "filters": {
                     "school": frm.doc.school
-                    }
-                };
-            });
-        }
-    });
+                }
+            };
+        });
+    }
+});
