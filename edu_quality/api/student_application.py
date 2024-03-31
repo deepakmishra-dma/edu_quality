@@ -155,11 +155,15 @@ school_id_map = {
 
 @frappe.whitelist(allow_guest=True)
 def update_stud_data(**data):
+    ref_no = data.get("Student").get("refNo", "")
+    ref_no = None if ref_no == "<REF_NO>" else ref_no
+    school_id = data.get("Student").get("school_id", None)
     data = data.get("Student").get("StudentInfoChange")
-    ref_no = data.get("refNo", None) or data.get("Student", {}).get("refNo", None)
-    school_id = data.get("school_id", None) or data.get("Student", {}).get(
-        "school_id", None
-    )
+
+    # ref_no = data.get("refNo", None) or data.get("Student", {}).get("refNo", None)
+    # school_id = data.get("school_id", None) or data.get("Student", {}).get(
+    #     "school_id", None
+    # )
     # applicant
     existing_student_doc = None
     if not ref_no or not school_id:
@@ -433,7 +437,9 @@ def update_stud_data(**data):
     #     father.save(ignore_permissions=True)
     # if(other_in_doc):
     #     other.save(ignore_permissions=True)
-
+    frappe.logger("Student Debug").exception(data)
+    frappe.logger("Student Debug").exception(ref_no)
+    frappe.logger("Student Debug").exception(school_id)
     return existing_student_doc
 
 
