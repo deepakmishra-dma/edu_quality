@@ -84,7 +84,7 @@ def create_payment_request(fee,term=None):
     try:
         if not frappe.db.exists(
             "Payment Request",
-            {"reference_doctype": fee.doctype, "reference_docname": fee.name},
+            {"reference_doctype": fee.doctype, "reference_docname": fee.name,"docstatus":1},
         ):
             time.sleep(30)
             make_payment_request(

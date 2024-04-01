@@ -228,7 +228,7 @@ def payment_entry(doc, ref_doc, party_amount, paid_from, paid_to, company, cost_
                     },
                 )
 
-                school = frappe.get_value("Fee Component", {"name":fee_name, "parent": ref_doc.name}, "school")
+                school = frappe.get_value("Fee Component", {"fees_category":fee_name, "parent": ref_doc.name}, "school")
                 payment_entry.update({"school": school})
 
     payment_entry.update({
