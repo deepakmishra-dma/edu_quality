@@ -88,8 +88,9 @@ def payment_charge(**kwargs):
 @frappe.whitelist(allow_guest=True)
 def payment_receipt(payment_request, category):
     try:
-        company = frappe.db.get_value("Fee Category", category, "custom_company") or "Unique Educational and Sports Foundation"
-        payment_entry, school = frappe.db.get_value("Payment Entry", {'payment_request': payment_request, "company": company}, ['name', 'school'])
+        company = get_company(payment_request, category)
+
+        payment_entry, school = frappe.get_value("Payment Entry", {'payment_request': payment_request, "company": company}, ['name', 'school'])
 
         letter_head = frappe.get_value("School", school, 'letter_head') or frappe.get_value("Company", company, "default_letter_head")
 
@@ -105,3 +106,17 @@ def payment_receipt(payment_request, category):
     except Exception as e:
         frappe.logger("download").exception(e)
         return e
+
+
+def get_company(payment_request, category):
+    """
+    Returns the company associated with a Fee Category or Fees or Fee Advance.
+    it will return the company associated with the Fee Category if it exists.
+    If not, it will return the company associated with the Fees or Fee Advance.
+    If not, it will return the default company of the user.
+    """
+    default_company = frappe.defaults.get_user_default("Company")
+    doctype, fee_name = frappe.get_value("Payment Request", payment_request, ['reference_doctype', 'reference_name'])
+    fee = frappe.get_doc(doctype, fee_name)
+    company = next((component.custom_company for component in fee.components if component.fees_category == category), None)
+    return company or fee.company or default_company
