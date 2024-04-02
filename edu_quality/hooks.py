@@ -38,6 +38,8 @@ doctype_js = {
     "Student": "public/js/student.js",
     "Item": "public/js/item.js",
     "Purchase Order": "public/js/purchase_order.js",
+    "Purchase Receipt": "public/js/purchase_receipt.js",
+
     "Topic": "public/js/topic.js",
 }
 doctype_list_js = {

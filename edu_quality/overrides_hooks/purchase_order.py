@@ -37,6 +37,8 @@ def transform_data(items, selected_items, purchase_receipt_items=None):
         fields=[
             "name",
             "custom_chapter",
+            "name",
+            "custom_chapter",
             "custom_subject",
             "item_code",
             "custom_product_url",
@@ -156,10 +158,19 @@ def get_columns(school_fields):
         *school_array,
     ]
     return columns
-
+@frappe.whitelist()
+def get_linked_receipts(name,item_code):
+     purchase_receipt_items = frappe.db.get_list(
+        "Purchase Receipt Item",
+        filters={"purchase_order": name,'item_code':item_code},
+        fields=["name", "item_code"],
+        ignore_permissions=True
+    )
+     return purchase_receipt_items
 
 @frappe.whitelist()
 def generate_challan_list(self, selected_items=None):
+    
     self = json.loads(self) if isinstance(self, str) else self
     selected_items = (
         json.loads(selected_items)
@@ -172,6 +183,7 @@ def generate_challan_list(self, selected_items=None):
         "Purchase Receipt Item",
         filters={"purchase_order": self.get("name")},
         fields=["name", "item_code"],
+        ignore_permissions=True
     )
     frappe.errprint(purchase_receipt_items)
     if len(purchase_receipt_items):
@@ -193,7 +205,7 @@ def generate_challan_list(self, selected_items=None):
 @frappe.whitelist()
 def create_purchase_receipt(self, school, selected_items=[]):
     self = json.loads(self) if isinstance(self, str) else self
-
+    selected_items = json.loads(selected_items) if isinstance(selected_items, str) else selected_items
     # if not len(selected_items):
     #     frappe.throw("No items selected")
     school_prefix = frappe.db.get_value("School", school, "prefix")
@@ -201,11 +213,18 @@ def create_purchase_receipt(self, school, selected_items=[]):
         "Purchase Receipt Item",
         filters={"purchase_order": self.get("name")},
         fields=["name", "item_code", "warehouse"],
+        ignore_permissions=True
     )
+    frappe.errprint('hh')
+    frappe.errprint(selected_items)
     selected_item_map = get_selected_item_map(selected_items)
     warehouse_to_item_map = get_warehouse_to_item_map(purchase_receipt_items)
     warehouse_to_name_map = get_warehouse_to_school_map(self.get("items"))
     receipt = make_purchase_receipt(source_name=self.get("name"))
+    frappe.errprint(selected_item_map)
+    frappe.errprint(warehouse_to_item_map)
+    frappe.errprint(warehouse_to_name_map)
+    frappe.errprint(purchase_receipt_items)
     filtered_items = list(
         filter(
             lambda item: warehouse_to_name_map.get(item.get("warehouse")) == school
@@ -215,6 +234,7 @@ def create_purchase_receipt(self, school, selected_items=[]):
             receipt.get("items"),
         )
     )
+    frappe.errprint(filtered_items)
     if len(filtered_items) == 0:
         frappe.msgprint(
             f"Quantity is 0 or receipt already created for the selected {school} and selected items, Please create receipt for another one"
