@@ -215,6 +215,7 @@ class CustomFees(Fees):
 
 
 def before_save(doc,method=None):
+    update_fee_components(doc)
     is_rte = frappe.get_value("Student",doc.student,'is_rte')
     if not is_rte:
         return 
@@ -234,9 +235,14 @@ def before_save(doc,method=None):
                     "fee_type": component.fee_type,
                     "custom_company": component.custom_company,
                     "rte_excempt": 0,
+                    "school": component.school,
                     "doctype": "Fee Component"
                     })
 
+def update_fee_components(doc):
+    for component in doc.components:
+        school = frappe.get_value("Fee Component",{"fees_category":component.fees_category, "parent": doc.fee_structure},'school')
+        component.school = school
         
 
 @erpnext.allow_regional
