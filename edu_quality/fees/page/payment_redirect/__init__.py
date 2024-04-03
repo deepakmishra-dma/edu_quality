@@ -92,7 +92,7 @@ def payment_receipt(payment_request, category):
 
         payment_entry, school = frappe.get_value("Payment Entry", {'payment_request': payment_request, "company": company}, ['name', 'school'])
 
-        letter_head = frappe.get_value("School", school, 'letter_head') or frappe.get_value("Company", company, "default_letter_head")
+        letter_head = frappe.get_value("School", school, 'letter_head')
 
         print_format = frappe.get_value("Fees Settings", None, "print_format")
 
@@ -119,4 +119,4 @@ def get_company(payment_request, category):
     doctype, fee_name = frappe.get_value("Payment Request", payment_request, ['reference_doctype', 'reference_name'])
     fee = frappe.get_doc(doctype, fee_name)
     company = next((component.custom_company for component in fee.components if component.fees_category == category), None)
-    return company or fee.company or default_company
+    return company or default_company
