@@ -136,6 +136,9 @@ doc_events = {
         "after_insert": "edu_quality.public.py.fee.append_program_enrollment",
         "on_trash": "edu_quality.public.py.fee.remove_program_enrollment",
     },
+    "Contact":{
+        "before_validate":"edu_quality.overrides_hooks.contact.before_validate"
+    },
     "Fees": {
         "after_insert": "edu_quality.public.py.fee.after_insert",
         "on_submit": "edu_quality.public.py.fee.on_submit",
