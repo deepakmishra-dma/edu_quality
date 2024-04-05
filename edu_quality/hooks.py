@@ -161,7 +161,7 @@ doc_events = {
         "after_insert": "edu_quality.public.py.lead.after_insert",
         "before_insert": "edu_quality.public.py.lead.before_insert",
     },
-    "Payment Entry": {"autoname": "edu_quality.public.py.payment_entry.autoname"},
+    "Payment Entry": {"validate": "edu_quality.edu_quality.server_scripts.payment_entry.validate"},
     "Item": {
         "autoname": "edu_quality.overrides_hooks.item.autoname",
         "before_insert": "edu_quality.overrides_hooks.item.before_insert",
