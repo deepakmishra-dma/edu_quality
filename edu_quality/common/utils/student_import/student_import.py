@@ -231,6 +231,25 @@ def get_category(category):
     return category_id
     
     
+CLASS_NAME_TO_GROUP = {
+    "Senior KG": "Senior KG",
+    "Junior KG": "Junior KG",
+    "Nursery": "Nursery",
+    "1": "Primary",
+    "2": "Primary",
+    "3": "Primary",
+    "4": "Primary",
+    "5": "Primary",
+    "6": "Secondary",
+    "7": "Secondary",
+    "8": "Secondary",
+    "9": "Secondary",
+    "10": "Secondary"
+}
+
+def get_class_group(class_name):
+    return CLASS_NAME_TO_GROUP.get(class_name)
+
 def get_program(program_name, school):
     if not program_name:
         return None
@@ -242,6 +261,7 @@ def get_program(program_name, school):
         program.program_name = program_name
         program.school = school
         program.reference_series = "AC"
+        program.class_group = get_class_group(program_name)
         program.insert(ignore_permissions=True)
     
     return program
