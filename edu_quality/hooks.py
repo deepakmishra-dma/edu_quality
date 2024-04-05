@@ -188,6 +188,7 @@ scheduler_events = {
         "edu_quality.tasks.time_based",
         "edu_quality.tasks.create_payment_request_before_due_date",
         "edu_quality.tasks.create_payment_request_before_due_date_fee_advance",
+        "edu_quality.tasks.update_academic_year",
     ],
 }
 # scheduler_events = {
