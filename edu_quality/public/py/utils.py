@@ -7,11 +7,6 @@ from io import BytesIO
 import base64
 import qrcode
 
-try:
-    from nextai.funnel.custom_trigger import trigger_event
-except ImportError:
-    print("Chatnext is not installed")
-
 
 def set_property(doctype, fieldname, prop, property_type, value):
     filters = {
@@ -43,15 +38,6 @@ def migrate():
     set_property("Fee Schedule", "due_date", "hidden", "Check", 1)
     set_property("Program", "program_name", "unique", "Check", 0)
     set_property("Student Group", "student_group_name", "unique", "Check", 0)
-
-
-@frappe.whitelist()
-def trigger_funnel_event(doc, event_name):
-    try:
-        trigger_event(doc, event_name)
-        return True
-    except Exception as e:
-        return False
 
 
 def is_deposit(fees, term):
@@ -371,13 +357,6 @@ def handle_undertaking_submission(**kwargs):
         new_doc.ip_address = kwargs.get("ip_address")
         new_doc.user_info = kwargs.get("browser_info")
         new_doc.save(ignore_permissions=True)
-
-        try:
-            # trigger_event(new_doc, "rules_and_regulation_submission")
-            return True
-        except Exception as e:
-            frappe.logger("edu_quality").exception(e)
-            return False
 
 
 def get_undertaking_submission_pdf(student):
