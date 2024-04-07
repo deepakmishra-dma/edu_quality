@@ -362,4 +362,4 @@ fixtures = [
 ]
 
 
-after_migrate = "edu_quality.public.py.utils.migrate"
+after_migrate = ["edu_quality.public.py.utils.migrate","edu_quality.tasks.update_academic_year"]
