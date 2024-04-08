@@ -53,14 +53,14 @@ def change_payment_plan(payment_plan, doctype, fee_name):
         frappe.response["message"] = "Payment Plan Updated Successfully!"
         update_payment_request_after_discount(doc)
 
-def remove_payment_plan_discount(doc):
+def remove_payment_plan_discount(doc,custom_payment_plan=0):
     discount_configs = frappe.get_all("Discount Configuration",
         filters={"payment_plan": doc.payment_plan, "fee_structure": doc.fee_structure},
         fields=["name", "fee_category"])
     for component in doc.components:
         for discount_config in discount_configs:
             if discount_config.fee_category == component.fees_category:
-                remove_discount(doc.name, discount_config.name, update_payment_request=True)
+                remove_discount(doc.name, discount_config.name, update_payment_request=True, custom_payment_plan=custom_payment_plan)
                 frappe.response['message'] = f"{discount_config.name} Discount removed successfully"
                 return
 
