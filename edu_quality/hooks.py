@@ -136,6 +136,9 @@ doc_events = {
         "after_insert": "edu_quality.public.py.fee.append_program_enrollment",
         "on_trash": "edu_quality.public.py.fee.remove_program_enrollment",
     },
+    "Contact":{
+        "before_validate":"edu_quality.overrides_hooks.contact.before_validate"
+    },
     "Fees": {
         "after_insert": "edu_quality.public.py.fee.after_insert",
         "on_submit": "edu_quality.public.py.fee.on_submit",
@@ -158,7 +161,7 @@ doc_events = {
         "after_insert": "edu_quality.public.py.lead.after_insert",
         "before_insert": "edu_quality.public.py.lead.before_insert",
     },
-    "Payment Entry": {"autoname": "edu_quality.public.py.payment_entry.autoname"},
+    "Payment Entry": {"validate": "edu_quality.edu_quality.server_scripts.payment_entry.validate"},
     "Item": {
         "autoname": "edu_quality.overrides_hooks.item.autoname",
         "before_insert": "edu_quality.overrides_hooks.item.before_insert",
@@ -185,6 +188,7 @@ scheduler_events = {
         "edu_quality.tasks.time_based",
         "edu_quality.tasks.create_payment_request_before_due_date",
         "edu_quality.tasks.create_payment_request_before_due_date_fee_advance",
+        "edu_quality.tasks.update_academic_year",
     ],
 }
 # scheduler_events = {
@@ -358,4 +362,4 @@ fixtures = [
 ]
 
 
-after_migrate = "edu_quality.public.py.utils.migrate"
+after_migrate = ["edu_quality.public.py.utils.migrate","edu_quality.tasks.update_academic_year"]

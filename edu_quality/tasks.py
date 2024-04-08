@@ -69,3 +69,9 @@ def schedule_payment_request(doc, payment_term):
             queue="long",
             timeout=1800,
         )
+
+
+def update_academic_year():
+    frappe.enqueue(
+        "edu_quality.edu_quality.server_scripts.utils.update_academic_year",
+    )

@@ -87,9 +87,10 @@ def add_discount(fee_name, discount, fees=None, doctype="Fees"):
             update_total_discount_in_fees(fees.name)
             if dis.needs_admin_approval:
                 frappe.db.set_value("Fees",fee_name,"workflow_state","Pending")
-                update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=True,dis=dis)
+                # update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=True,dis=dis)
             else:
-                update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=True,dis=dis)
+                pass
+                # update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=True,dis=dis)
             fees.add_discount_entry(company, grand_discount_amount)
         elif doctype == "Fee Advance":
             fees.generate_split()
@@ -512,20 +513,36 @@ def update_breakups(dis, component, fees, term="All", update=0,remove=0):
                                                             discount,dis.discount_amount,dis.name,remove)
                     if not update:
                         schedule.discount_breakup = discount_breakup
+                        schedule.payment_amount = schedule.payment_amount - discount 
+                        schedule.outstanding = schedule.outstanding - discount
                     else:
-                        frappe.db.set_value("Payment Schedule",schedule.name,'discount_breakup',discount_breakup)
+                        frappe.db.set_value("Payment Schedule",schedule.name,
+                                            {   
+                                                'payment_amount': schedule.payment_amount - discount,
+                                                'outstanding': schedule.outstanding - discount,
+                                                'discount_breakup':discount_breakup
+                                                })
                         fees.reload()
                     return
         else:
+            frappe.logger("breakup1").exception('all')
             for schedule in fees.payment_schedule:
                 discount_amount = flt(dis.discount_amount * schedule.invoice_portion/100,2)
                 discount = flt(discount_amount/schedule.payment_amount*100,2)
                 discount_breakup = update_discount_breakup(schedule.payment_amount, schedule.discount_breakup,
                                                                 discount,discount_amount,dis.name,remove)
+                frappe.logger("breakup1").exception(discount_breakup)
                 if not update:
                     schedule.discount_breakup = discount_breakup
+                    schedule.payment_amount = schedule.payment_amount - discount 
+                    schedule.outstanding = schedule.outstanding - discount
                 else:
-                    frappe.db.set_value("Payment Schedule",schedule.name,'discount_breakup',discount_breakup)
+                    frappe.db.set_value("Payment Schedule",schedule.name,
+                                            {   
+                                                'payment_amount': schedule.payment_amount - discount,
+                                                'outstanding': schedule.outstanding - discount,
+                                                'discount_breakup':discount_breakup
+                                                })
                     fees.reload()
     except Exception as e:
         frappe.logger("breakup").exception(e)
@@ -555,7 +572,6 @@ def update_discount_breakup(component_amount,discount_breakup,discount,discount_
             breakup[discount_name]['discount_amount'] += discount_amount
             breakup[discount_name]['discount_percentage'] += discount 
         else:
-            frappe.logger('breakup').exception('remove discount')
             breakup[discount_name]['discount_amount'] -= discount_amount
             breakup[discount_name]['discount_percentage'] -= discount 
 

@@ -23,10 +23,6 @@ from erpnext.accounts.doctype.payment_entry.payment_entry import (
 from erpnext.accounts.party import get_party_bank_account
 from edu_quality.public.py.utils import send_receipt_over_email
 
-try:
-    from nextai.funnel.custom_trigger import trigger_event
-except ImportError:
-    print("Chatnext is not installed")
 
 class CustomPaymentRequest(PaymentRequest):
     def create_payment_entry(self,submit=False):
@@ -66,11 +62,6 @@ class CustomPaymentRequest(PaymentRequest):
         outstanding_amount = flt(fees.outstanding_amount) - paid_amount
         frappe.db.set_value(fees.doctype, fees.name, "outstanding_amount", outstanding_amount)
         self.db_set("status", "Paid")
-
-        try:
-            trigger_event(self, "deposit_paid_event")
-        except Exception as e:
-            frappe.logger('edu_quality').exception(e)
 
         send_receipt_over_email(self)
 

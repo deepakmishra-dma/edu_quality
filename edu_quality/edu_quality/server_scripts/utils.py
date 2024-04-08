@@ -108,3 +108,26 @@ def projected_strength(current_class):
         strength += frappe.db.count("Program Enrollment",{"program":next_class,'academic_year':next_academic_year()})
     return strength
 
+
+def update_academic_year():
+    """
+    Updates the current and next academic year in the database.
+    """
+    current_year = current_academic_year()
+    next_year = next_academic_year(current_year)
+    previous_year = previous_academic_year(current_year)
+
+    # Fetch all the academic years in a single call
+    academic_years = frappe.get_all("Academic Year", filters={"name": ["in", [previous_year, current_year, next_year]]})
+
+    for year in academic_years:
+        year_doc = frappe.get_doc("Academic Year", year.name)
+        if year.name == previous_year:
+            year_doc.custom_current_academic_year = None
+            year_doc.custom_next_academic_year = None
+        else:
+            year_doc.custom_current_academic_year = year.name == current_year
+            year_doc.custom_next_academic_year = year.name == next_year
+        year_doc.save()
+
+    frappe.db.commit()
