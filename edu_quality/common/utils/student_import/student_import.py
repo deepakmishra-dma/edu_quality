@@ -168,7 +168,8 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
     else:
         if not frappe.db.exists("Program Enrollment", {"student":docname,"program":program}) and map_student_status(get_data("status")) !="Cancelled":
             old_doc = frappe.get_doc(doctype, docname)
-            insert_program_enrollment(old_doc, frappe_data)
+            if map_student_status(get_data("status")) !="Cancelled":
+                insert_program_enrollment(old_doc, frappe_data)
     frappe.flags.in_import = False
 
 
@@ -208,7 +209,7 @@ def insert_program_enrollment(student, data=None):
         program_enrollment.save()
         program_enrollment.submit()
     except Exception as e:
-        frappe.logger("program_enrollment").exception(e)
+        frappe.logger("student_import").exception(e)
         cleaned_data = {key: value for key, value in data.items() if not isinstance(value, (datetime, timedelta))}
         error_obj={
                 "filename":"program_enrollment",
@@ -231,24 +232,24 @@ def get_category(category):
     return category_id
     
     
-CLASS_NAME_TO_GROUP = {
-    "Senior KG": "Senior KG",
-    "Junior KG": "Junior KG",
-    "Nursery": "Nursery",
-    "1": "Primary",
-    "2": "Primary",
-    "3": "Primary",
-    "4": "Primary",
-    "5": "Primary",
-    "6": "Secondary",
-    "7": "Secondary",
-    "8": "Secondary",
-    "9": "Secondary",
-    "10": "Secondary"
-}
+# CLASS_NAME_TO_GROUP = {
+#     "Senior KG": "Senior KG",
+#     "Junior KG": "Junior KG",
+#     "Nursery": "Nursery",
+#     "1": "Primary",
+#     "2": "Primary",
+#     "3": "Primary",
+#     "4": "Primary",
+#     "5": "Primary",
+#     "6": "Secondary",
+#     "7": "Secondary",
+#     "8": "Secondary",
+#     "9": "Secondary",
+#     "10": "Secondary"
+# }
 
-def get_class_group(class_name):
-    return CLASS_NAME_TO_GROUP.get(class_name)
+# def get_class_group(class_name):
+#     return CLASS_NAME_TO_GROUP.get(class_name)
 
 def get_program(program_name, school):
     if not program_name:
@@ -261,7 +262,7 @@ def get_program(program_name, school):
         program.program_name = program_name
         program.school = school
         program.reference_series = "AC"
-        program.class_group = get_class_group(program_name)
+        program.class_group = "Senior KG"
         program.insert(ignore_permissions=True)
     
     return program
@@ -284,7 +285,7 @@ def get_division(division, program, school, academic_year):
             "custom_school": school,
             "academic_year": academic_year,
             "student_group_name": div,
-            "batch": div,
+            "batch": get_batch(div),
             "group_based_on": "Batch",
             "start_time": "10:00:00",
             "end_time": "10:00:00",
@@ -295,6 +296,15 @@ def get_division(division, program, school, academic_year):
 
     return division
 
+def get_batch(batch):
+    batch_id = frappe.get_value("Student Batch Name",{'batch_name':batch})
+    if batch_id:
+        return batch_id
+    else:
+        batch_id = frappe.new_doc("Student Batch Name")
+        batch_id.batch_name = batch
+        batch_id.save()
+    return batch_id
 
 def get_academic_year(academic_year):
     if not academic_year:
