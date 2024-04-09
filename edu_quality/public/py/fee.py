@@ -11,6 +11,7 @@ from edu_quality.public.py.discount import (
 
 from edu_quality.edu_quality.server_scripts.student_applicant import referal_discount
 from erpnext.accounts.general_ledger import make_reverse_gl_entries
+from edu_quality.edu_quality.server_scripts.payment_plan import remove_payment_plan_discount
 
 
 import frappe
@@ -93,15 +94,25 @@ def validate_discounts(doc):
             frappe.throw("Remove Payment Plan Discount to customize payment plan!")
 
 
-def remove_pp_discount(doc):
-    pass
+def custom_payment_plan(doc):
+    try:
+        for i,term in enumerate(doc.payment_schedule):
+            if not term.description:
+                term.description = "Installment - " + str(i+1)
+            if term.invoice_portion and not term.payment_amount:
+                term.payment_amount = (term.invoice_portion * doc.grand_total) / 100
+            elif term.payment_amount and not term.invoice_portion:
+                term.invoice_portion = (term.payment_amount / doc.grand_total) * 100
+        remove_payment_plan_discount(doc,custom_payment_plan=1)
+    except Exception as e:
+        frappe.logger('custom').exception(e)
 
 def before_update(doc, method=None):
     old_doc = doc.get_doc_before_save()
     if doc.parent_otp == 0 and old_doc.payment_schedule != doc.payment_schedule:
         if old_doc.payment_plan == doc.payment_plan:
             doc.need_otp = 1
-            remove_pp_discount(doc)
+            custom_payment_plan(doc)
             # frappe.msgprint(
             #     title="Payment Schedule",
             #     msg="Please Verify parent OTP to Update Payment Schedule",
