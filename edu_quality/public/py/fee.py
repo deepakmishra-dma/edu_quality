@@ -96,6 +96,7 @@ def validate_discounts(doc):
 
 def custom_payment_plan(doc):
     try:
+        frappe.logger('custom').exception('called')
         for i,term in enumerate(doc.payment_schedule):
             if not term.description:
                 term.description = "Installment - " + str(i+1)
@@ -104,6 +105,7 @@ def custom_payment_plan(doc):
             elif term.payment_amount and not term.invoice_portion:
                 term.invoice_portion = (term.payment_amount / doc.grand_total) * 100
         remove_payment_plan_discount(doc,custom_payment_plan=1)
+        doc.reload()
     except Exception as e:
         frappe.logger('custom').exception(e)
 

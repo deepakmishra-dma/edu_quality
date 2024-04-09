@@ -113,8 +113,7 @@ def remove_discount(fee_name, discount, update_payment_request=True, doctype="Fe
                 company = component.custom_company
                 discount_list = get_discount_list(component.custom_discounts)
                 if component.fees_category == dis.fee_category and discount in discount_list:
-                    if not custom_payment_plan:
-                        update_breakups(dis,component,fees,term=get_discount_applicable_term(dis),update=1,remove=1)
+                    update_breakups(dis,component,fees,term=get_discount_applicable_term(dis),update=1,remove=1)
                     if dis.discount_amount:
                         grand_discount_amount = dis.discount_amount
                         amount = component.custom_amount_after_discount + grand_discount_amount
@@ -148,8 +147,9 @@ def remove_discount(fee_name, discount, update_payment_request=True, doctype="Fe
                 # update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=False,dis=dis)
                 fees.remove_discount_entry(company, grand_discount_amount)
             fees.update_split()
-            # fees.reload()
-            # fees.save(ignore_permissions=True)
+            fees.reload()
+            fees.save(ignore_permissions=True)
+            frappe.logger('remove_dis').exception("discount removed - saved")
             if update_payment_request:
                 update_payment_request_after_discount(fees)
     except Exception as e:
@@ -157,6 +157,11 @@ def remove_discount(fee_name, discount, update_payment_request=True, doctype="Fe
 
 
 def update_total_discount_in_fees(fees):
+    try:
+        fees.total_discount = get_all_discounts(fees)
+        # fees.save(ignore_permissions=True)
+    except Exception as e:
+        frappe.logger('custom').exception(e)
     frappe.db.set_value("Fees",fees.name,"total_discount",get_all_discounts(fees))
 
 
@@ -510,12 +515,12 @@ def update_breakups(dis, component, fees, term="All", update=0,remove=0):
         if term !="All":
             for schedule in fees.payment_schedule:
                 if term == schedule.payment_term:
+                    discount_amount = dis.discount_amount
                     discount = flt((dis.discount_amount/schedule.payment_amount)*100,2)
                     if remove:
                         discount = flt(discount_amount/(schedule.payment_amount+discount_amount)*100,2)
                     discount_breakup = update_discount_breakup(schedule.payment_amount, schedule.discount_breakup,
                                                             discount,dis.discount_amount,dis.name,remove)
-                    discount_amount = dis.discount_amount
                     if remove:
                         discount_amount = 0-discount_amount
                     if not update:
@@ -588,7 +593,8 @@ def update_discount_breakup(component_amount,discount_breakup,discount,discount_
         if not remove:
             breakup[discount_name] = {"discount_amount": discount_amount, "discount_percentage": discount}
         else:
-            breakup[discount_name] = {"discount_amount": -discount_amount, "discount_percentage": -discount}
+            pass
+            # breakup[discount_name] = {"discount_amount": -discount_amount, "discount_percentage": -discount}
 
 
     return json.dumps(breakup)

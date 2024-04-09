@@ -144,7 +144,7 @@ doc_events = {
         "on_submit": "edu_quality.public.py.fee.on_submit",
         "before_submit": "edu_quality.public.py.fee.before_submit",
         "before_save": "edu_quality.edu_quality.overrides.fees.before_save",
-        "before_update_after_submit": "edu_quality.public.py.fee.before_update",
+        "on_update_after_submit": "edu_quality.public.py.fee.before_update",
     },
     "Payment Request": {
         "before_save": "edu_quality.public.py.payment_request.before_save",
@@ -279,86 +279,87 @@ scheduler_events = {
 # ]
 
 fixtures = [
-    {"dt": "Server Script", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
-    {"dt": "Property Setter", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
-    {"dt": "Client Script", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
-    {"dt": "DocType Layout"},
-    {"dt": "Translation"},
-    {"dt": "Lead Source"},
-    {"dt": "Student Batch Name"},
-    {"dt": "Custom Field", "filters": [["module", "=", "Edu Quality"]]},
-    {"dt": "Web Page"},
-    {"dt": "Accounting Dimension"},
-    {
-        "dt": "Role",
-        "filters": [
-            [
-                "name",
-                "in",
-                ["Head Administration", "Councellor", "Teacher", "Printer", "Watchman"],
-            ]
-        ],
-    },
-    {
-        "dt": "Role",
-        "filters": [
-            [
-                "name",
-                "in",
-                [
-                    "Head Administration",
-                    "Councellor",
-                    "Teacher",
-                    "Content Creator",
-                    "Printer",
-                    "Watchman",
-                ],
-            ]
-        ],
-    },
-    {"dt": "Custom DocPerm", "filters": [["module", "=", "Edu Quality"]]},
-    {"dt": "Program"},
-    {"dt": "Lead Sub Status"},
-    {"dt": "School"},
-    {"dt": "Academic Year"},
-    # {"dt": "Funnel Node", "filters": [["class_name", "=", "edu_quality"]]},
-    # {"dt": "Funnel"},
-    {"dt": "Email Template"},
-    {"dt": "Letter Head"},
-    {"dt": "Class Type"},
-    {"dt": "Item Group"},
-    {"dt": "CRM Settings"},
-    {
-        "dt": "Workspace",
-        "filters": [
-            [
-                "name",
-                "in",
-                [
-                    "Home",
-                    "Walnut Accounts",
-                    "Student Management",
-                    "Fees Setup",
-                    "Walnut Analytics Dashboard",
-                ],
-            ]
-        ],
-    },
-    {
-        "dt": "Custom HTML Block",
-    },
-    {
-        "dt": "Module Profile",
-        "filters": [
-            ["name", "in", ["Councellor", "Content Creator", "Printer", "Watchman"]]
-        ],
-    },
-    {
-        "dt": "Role Profile",
-        "filters": [
-            ["name", "in", ["Councellor", "Content Creator", "Printer", "Watchman"]]
-        ],
-    },
+    {'dt': "Workflow"}
+    # {"dt": "Server Script", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
+    # {"dt": "Property Setter", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
+    # {"dt": "Client Script", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
+    # {"dt": "DocType Layout"},
+    # {"dt": "Translation"},
+    # {"dt": "Lead Source"},
+    # {"dt": "Student Batch Name"},
+    # {"dt": "Custom Field", "filters": [["module", "=", "Edu Quality"]]},
+    # {"dt": "Web Page"},
+    # {"dt": "Accounting Dimension"},
+    # {
+    #     "dt": "Role",
+    #     "filters": [
+    #         [
+    #             "name",
+    #             "in",
+    #             ["Head Administration", "Councellor", "Teacher", "Printer", "Watchman"],
+    #         ]
+    #     ],
+    # },
+    # {
+    #     "dt": "Role",
+    #     "filters": [
+    #         [
+    #             "name",
+    #             "in",
+    #             [
+    #                 "Head Administration",
+    #                 "Councellor",
+    #                 "Teacher",
+    #                 "Content Creator",
+    #                 "Printer",
+    #                 "Watchman",
+    #             ],
+    #         ]
+    #     ],
+    # },
+    # {"dt": "Custom DocPerm", "filters": [["module", "=", "Edu Quality"]]},
+    # {"dt": "Program"},
+    # {"dt": "Lead Sub Status"},
+    # {"dt": "School"},
+    # {"dt": "Academic Year"},
+    # # {"dt": "Funnel Node", "filters": [["class_name", "=", "edu_quality"]]},
+    # # {"dt": "Funnel"},
+    # {"dt": "Email Template"},
+    # {"dt": "Letter Head"},
+    # {"dt": "Class Type"},
+    # {"dt": "Item Group"},
+    # {"dt": "CRM Settings"},
+    # {
+    #     "dt": "Workspace",
+    #     "filters": [
+    #         [
+    #             "name",
+    #             "in",
+    #             [
+    #                 "Home",
+    #                 "Walnut Accounts",
+    #                 "Student Management",
+    #                 "Fees Setup",
+    #                 "Walnut Analytics Dashboard",
+    #             ],
+    #         ]
+    #     ],
+    # },
+    # {
+    #     "dt": "Custom HTML Block",
+    # },
+    # {
+    #     "dt": "Module Profile",
+    #     "filters": [
+    #         ["name", "in", ["Councellor", "Content Creator", "Printer", "Watchman"]]
+    #     ],
+    # },
+    # {
+    #     "dt": "Role Profile",
+    #     "filters": [
+    #         ["name", "in", ["Councellor", "Content Creator", "Printer", "Watchman"]]
+    #     ],
+    # },
 ]
 
 
