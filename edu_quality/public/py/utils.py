@@ -157,10 +157,9 @@ def generate_otp(fee):
     try:
         rs = frappe.cache()
         key = fee
-        digits = "0123456789"
         OTP = ""
         for i in range(4):
-            OTP += digits[math.floor(random.random() * 10)]
+            OTP += str(random.randint(1, 9))
         rs.set_value(key, OTP, expires_in_sec=300)
         return send_otp(fee, OTP)
     except Exception as e:
