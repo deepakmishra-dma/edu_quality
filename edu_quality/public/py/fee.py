@@ -96,20 +96,16 @@ def validate_discounts(doc):
 
 def custom_payment_plan(doc):
     try:
-        frappe.logger('custom').exception('called')
-        for i,term in enumerate(doc.payment_schedule):
-            if not term.description:
-                term.description = "Installment - " + str(i+1)
-            if term.invoice_portion and not term.payment_amount:
-                term.payment_amount = (term.invoice_portion * doc.grand_total) / 100
-            elif term.payment_amount and not term.invoice_portion:
-                term.invoice_portion = (term.payment_amount / doc.grand_total) * 100
         remove_payment_plan_discount(doc,custom_payment_plan=1)
-        doc.reload()
+        doc.save()
     except Exception as e:
         frappe.logger('custom').exception(e)
 
-def before_update(doc, method=None):
+def after_save(doc, method=None):
+    from edu_quality.public.py.discount import update_total_discount_in_fees
+    update_total_discount_in_fees(doc)
+
+def on_update(doc, method=None):
     old_doc = doc.get_doc_before_save()
     if doc.parent_otp == 0 and old_doc.payment_schedule != doc.payment_schedule:
         if old_doc.payment_plan == doc.payment_plan:
