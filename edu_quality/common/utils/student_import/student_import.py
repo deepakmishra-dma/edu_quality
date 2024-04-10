@@ -191,7 +191,8 @@ def insert_program_enrollment(student, data=None):
         academic_year = get_academic_year(academic_year)
         school = student.school
         division = data.get("division_name")
-        division_id = get_division(division, program, school, academic_year)
+        batch_name = data.get("pref_batch_time")
+        division_id = get_division(division, program, school, academic_year,batch_name)
         roll_no = data.get("roll_no")
 
         program_enrollment = frappe.new_doc("Program Enrollment")
@@ -268,13 +269,14 @@ def get_program(program_name, school):
     return program
 
 
-def get_division(division, program, school, academic_year):
+def get_division(division, program, school, academic_year,batch_name):
     div = division
     div_filter = {
         "program": program,
         "custom_school": school,
         "academic_year": academic_year,
-        "batch": div,
+        "batch": get_batch("Any"),
+        "student_group_name": div
     }
     division = frappe.get_value("Student Group", div_filter)
 
@@ -285,10 +287,8 @@ def get_division(division, program, school, academic_year):
             "custom_school": school,
             "academic_year": academic_year,
             "student_group_name": div,
-            "batch": get_batch(div),
-            "group_based_on": "Batch",
-            "start_time": "10:00:00",
-            "end_time": "10:00:00",
+            "batch": get_batch("Any"),
+            "group_based_on": "Batch"
         }
         doc = frappe.get_doc(doc_properties)
         doc.insert(ignore_permissions=True)
@@ -297,14 +297,21 @@ def get_division(division, program, school, academic_year):
     return division
 
 def get_batch(batch):
-    batch_id = frappe.get_value("Student Batch Name",{'batch_name':batch})
-    if batch_id:
-        return batch_id
-    else:
+    def create_batch(batch_name):
         batch_id = frappe.new_doc("Student Batch Name")
-        batch_id.batch_name = batch
+        batch_id.batch_name = batch_name
         batch_id.save()
+        return batch_id
+
+    batch_name = batch if batch else "Any"
+    batch_id = frappe.get_value("Student Batch Name", {'batch_name': batch_name})
+
+    if not batch_id:
+        batch_id = create_batch(batch_name)
+
     return batch_id
+
+
 
 def get_academic_year(academic_year):
     if not academic_year:
