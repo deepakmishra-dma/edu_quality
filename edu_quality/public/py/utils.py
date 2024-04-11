@@ -108,48 +108,55 @@ def send_payment_link_email(doc, url, deposit=False):
 
 
 def send_receipt_over_email(payment_request):
-    payment_entries = frappe.get_list(
-        "Payment Entry", {"reference_no": payment_request.name}
-    )
-    student = payment_request.party
-    email = frappe.db.get_value("Student", student, "student_email_id")
-    undertaking_submission_pdf = get_undertaking_submission_pdf(student)
-
-    print_format, letter_head = get_print_format(payment_request.name)
-
-    attachments = [
-        frappe.attach_print(
-            "Payment Entry",
-            pe.name,
-            file_name=pe.name,
-            print_format=print_format,
-            print_letterhead=True,
-            letterhead=letter_head,
+    try:
+        payment_entries = frappe.get_list(
+            "Payment Entry", {"payment_request": payment_request.name},['name','school','company']
         )
-        for pe in payment_entries
-    ]
+        student = payment_request.party
+        email = frappe.db.get_value("Student", student, "student_email_id")
+        undertaking_submission_pdf = get_undertaking_submission_pdf(student)
 
-    if undertaking_submission_pdf:
-        attachments.append(undertaking_submission_pdf)
+        print_format = get_print_format()
 
-    email_args = {
-        "recipients": email,
-        "subject": "Payment Receipt",
-        "message": "Please find the attached payment receipt",
-        "attachments": attachments,
-        "delayed": False,
-    }
+        attachments = [
+            frappe.attach_print(
+                "Payment Entry",
+                pe.name,
+                file_name=pe.name,
+                print_format=print_format,
+                print_letterhead=True,
+                letterhead=get_letter_head(pe),
+            )
+            for pe in payment_entries
+        ]
 
-    if attachments:
-        frappe.sendmail(**email_args)
+        if undertaking_submission_pdf:
+            attachments.append(undertaking_submission_pdf)
 
+        email_args = {
+            "recipients": email,
+            "subject": "Payment Receipt",
+            "message": "Please find the attached payment receipt",
+            "attachments": attachments,
+            "delayed": False,
+        }
 
-def get_print_format(payment_request):
-    fee_name = frappe.db.get_value("Payment Request", payment_request, "reference_name")
-    program_name = frappe.db.get_value("Fees", fee_name, "program")
-    print_format = frappe.db.get_value("Program", program_name, "print_format")
-    letter_head = frappe.db.get_value("Program", program_name, "letter_head")
-    return print_format, letter_head
+        if attachments:
+            frappe.sendmail(**email_args)
+    except Exception as e:
+        frappe.logger("email").exception(e)
+
+def get_letter_head(pe):
+    letter_head = None
+    if pe.school:
+        letter_head = frappe.get_value("School", pe.school, 'letter_head')
+    else:
+        letter_head = frappe.get_value("Company", pe.company, 'default_letter_head')
+    return letter_head
+
+def get_print_format():
+    print_format = frappe.get_value("Fees Settings", None, "print_format")
+    return print_format
 
 
 @frappe.whitelist()
