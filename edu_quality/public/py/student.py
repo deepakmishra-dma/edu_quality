@@ -32,6 +32,7 @@ def autoname(doc, method=None):
         else:
             prefix += "0" + str(count)
         doc.name = prefix
+        doc.reference_number = doc.name[2:]
 
 def before_insert(doc, method=None):
     frappe.flags.in_import = True
