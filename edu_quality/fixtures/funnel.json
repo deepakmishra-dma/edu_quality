@@ -554,5 +554,88 @@
   "status": "published",
   "variable_list": "[]",
   "viewport": "{\"x\":10,\"y\":200,\"zoom\":1}"
+ },
+ {
+  "archived": 0,
+  "docstatus": 0,
+  "doctype": "Funnel",
+  "funnel_definition": [
+   {
+    "data": "{\n    \"doctype\": \"Payment Request\",\n    \"submit\": true\n}",
+    "element_type": "Trigger",
+    "id": "Dee4oHV3XXZRXp0B5DqTG",
+    "parent": "Fee Receipt",
+    "parentfield": "funnel_definition",
+    "parenttype": "Funnel",
+    "position": "{\n    \"x\": 1050,\n    \"y\": -105\n}",
+    "source": null,
+    "sourcehandle": null,
+    "target": null,
+    "targethandle": null,
+    "type": "Fee Receipt"
+   },
+   {
+    "data": "{\n    \"node_label\": \"Get Arguments\",\n    \"python_code\": \"doc = variables.get(\\\"doc\\\")\\n\\nemail = frappe.db.get_value(\\\"Student\\\", doc.party, \\\"student_email_id\\\")\\n\\npayment_entries = frappe.get_all(\\n    \\\"Payment Entry\\\", {\\\"payment_request\\\": doc.name}\\n)\\n\\nprint_format = frappe.db.get_value(\\\"Fees Settings\\\", None, \\\"print_format\\\")\\n\\nletter_head = None\\nif doc.school:\\n    letter_head = frappe.db.get_value(\\\"School\\\", doc.school, 'letter_head')\\nelse:\\n    letter_head = frappe.db.get_value(\\\"Company\\\", doc.company, 'default_letter_head')\\n\\nattachments = [\\n    {\\n        \\\"doctype\\\": \\\"Payment Entry\\\",\\n        \\\"name\\\": pe.name,\\n        \\\"file_name\\\": pe.name,\\n        \\\"print_format\\\": print_format,\\n        \\\"print_letterhead\\\": True,\\n        \\\"letterhead\\\": letter_head,\\n    }\\n    for pe in payment_entries\\n]\\n\\nvariables[\\\"extra_email_args\\\"] = {}\\nvariables[\\\"extra_email_args\\\"][\\\"attachments\\\"] = attachments\\nvariables[\\\"recipient\\\"] = email\",\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
+    "element_type": "Action",
+    "id": "b0n3ZlAiRMoZvPIlb0uav",
+    "parent": "Fee Receipt",
+    "parentfield": "funnel_definition",
+    "parenttype": "Funnel",
+    "position": "{\n    \"x\": 1050,\n    \"y\": 30\n}",
+    "source": null,
+    "sourcehandle": null,
+    "target": null,
+    "targethandle": null,
+    "type": "exec_python"
+   },
+   {
+    "data": "{\n    \"email_account\": \"Notifications\",\n    \"email_content\": \"Please Find the attached fee receipt\",\n    \"email_subject\": \"Fee Receipt\",\n    \"recepients\": [\n        {\n            \"cc\": \"\",\n            \"recepientField\": \"\",\n            \"recipient\": \"{{recipient}}\"\n        }\n    ],\n    \"select_template\": false,\n    \"send_to_assigned_users\": false,\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
+    "element_type": "Action",
+    "id": "mydH6M9zb4TA05WGnb9Wb",
+    "parent": "Fee Receipt",
+    "parentfield": "funnel_definition",
+    "parenttype": "Funnel",
+    "position": "{\n    \"x\": 1050,\n    \"y\": 195\n}",
+    "source": null,
+    "sourcehandle": null,
+    "target": null,
+    "targethandle": null,
+    "type": "send_mail"
+   },
+   {
+    "data": null,
+    "element_type": "edge",
+    "id": "reactflow__edge-Dee4oHV3XXZRXp0B5DqTGoutput-b0n3ZlAiRMoZvPIlb0uavinput",
+    "parent": "Fee Receipt",
+    "parentfield": "funnel_definition",
+    "parenttype": "Funnel",
+    "position": null,
+    "source": "Dee4oHV3XXZRXp0B5DqTG",
+    "sourcehandle": "output",
+    "target": "b0n3ZlAiRMoZvPIlb0uav",
+    "targethandle": "input",
+    "type": "smoothstep"
+   },
+   {
+    "data": null,
+    "element_type": "edge",
+    "id": "reactflow__edge-b0n3ZlAiRMoZvPIlb0uavoutput-mydH6M9zb4TA05WGnb9Wbinput",
+    "parent": "Fee Receipt",
+    "parentfield": "funnel_definition",
+    "parenttype": "Funnel",
+    "position": null,
+    "source": "b0n3ZlAiRMoZvPIlb0uav",
+    "sourcehandle": "output",
+    "target": "mydH6M9zb4TA05WGnb9Wb",
+    "targethandle": "input",
+    "type": "smoothstep"
+   }
+  ],
+  "funnel_name": "Fee Receipt",
+  "modified": "2024-01-05 17:09:08.196342",
+  "name": "Fee Receipt",
+  "status": "published",
+  "variable_list": "[]",
+  "viewport": "{\"x\":10,\"y\":200,\"zoom\":1}"
  }
 ]

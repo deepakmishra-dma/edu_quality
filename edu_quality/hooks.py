@@ -321,7 +321,7 @@ fixtures = [
     {"dt": "Lead Sub Status"},
     {"dt": "School"},
     {"dt": "Academic Year"},
-    {"dt": "Funnel Node", "filters": [["name", "=", "Student Referral"]]},
+    {"dt": "Funnel Node", "filters": [["name", "in", ["Student Referral", "Fee Receipt"]]]},
     {"dt": "Funnel"},
     {"dt": "Email Template"},
     {"dt": "Letter Head"},
