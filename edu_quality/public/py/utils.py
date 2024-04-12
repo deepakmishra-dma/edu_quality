@@ -51,24 +51,14 @@ def is_deposit(fees, term):
                 deposit = True
     return deposit
 
-
-def get_print_format(payment_request):
-    fee_name = frappe.db.get_value("Payment Request", payment_request, "reference_name")
-    program_name = frappe.db.get_value("Fees", fee_name, "program")
-    print_format = frappe.db.get_value("Program", program_name, "print_format")
-    letter_head = frappe.db.get_value("Program", program_name, "letter_head")
-    return print_format, letter_head
-
-
 @frappe.whitelist()
 def generate_otp(fee):
     try:
         rs = frappe.cache()
         key = fee
-        digits = "0123456789"
         OTP = ""
         for i in range(4):
-            OTP += digits[math.floor(random.random() * 10)]
+            OTP += str(random.randint(1, 9))
         rs.set_value(key, OTP, expires_in_sec=300)
         return send_otp(fee, OTP)
     except Exception as e:
