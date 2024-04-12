@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from edu_quality.common.utils.progress import set_progress
 import frappe, random
 import mysql.connector
+import datetime
 
 @frappe.whitelist()
 def import_student(**kwargs):
@@ -51,7 +52,7 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
     def capitalize_name(name):
         return get_data(name).capitalize() if get_data(name) else None
 
-    first_name, middle_name, last_name = map(capitalize_name, ["first_name", "middle_name", "last_name"])
+    first_name, middle_name, last_name = map(capitalize_name, ["first_name", "father_f_name", "last_name"])
     student_name = f"{first_name} {middle_name or ''} {last_name}"
 
     school_prefixes = {"Walnut School at Fursungi": "FU", "Walnut School at Shivane": "SH", "Walnut School at Wakad": "WA"}
@@ -116,8 +117,8 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
         "catering": get_data("catering"),
         "caste": get_data("caste"),
         "other_caste": get_data("other_caste"),
-        "subcaste": get_data("subcaste"),
-        "other_subcaste": get_data("other_subcaste"),
+        "sub_caste": get_data("subcaste"),
+        "other_sub_caste": get_data("other_subcaste"),
         "minority": get_data("minority"),
         "mother_tongue": get_data("mother_tongue"),
         "student_referral_number": get_data("student_referral_refno"),
@@ -157,18 +158,20 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
         "drop_address": get_data("drop_address"),
         "source_name": get_data("ref_source_name"),
         "guardians": get_guardian(frappe_data),
+        "whatsapp_number":get_data("student_sms_no"),
+        "primary_contact":get_data("student_emergency_contact_no")
     }
     frappe.flags.in_import = True
     frappe.logger("dddd").exception(frappe_data)
     if not frappe.db.exists(doctype, docname):
         new_doc = frappe.get_doc(new_doc_data)
         new_doc.insert(ignore_permissions=True)
-        if map_student_status(get_data("status")) !="Cancelled":
+        if map_student_status(get_data("status")) not in ["Cancelled","New student"]:
             insert_program_enrollment(new_doc, frappe_data)
     else:
         if not frappe.db.exists("Program Enrollment", {"student":docname,"program":program}) and map_student_status(get_data("status")) !="Cancelled":
             old_doc = frappe.get_doc(doctype, docname)
-            if map_student_status(get_data("status")) !="Cancelled":
+            if map_student_status(get_data("status")) not in ["Cancelled","New student"]:
                 insert_program_enrollment(old_doc, frappe_data)
     frappe.flags.in_import = False
 
@@ -191,8 +194,9 @@ def insert_program_enrollment(student, data=None):
         academic_year = get_academic_year(academic_year)
         school = student.school
         division = data.get("division_name")
-        batch_name = data.get("pref_batch_time")
-        division_id = get_division(division, program, school, academic_year,batch_name)
+        begin_batch_time = data.get("begintime")
+        end_batch_time = data.get("endtime")
+        division_id = get_division(division, program, school, academic_year,begin_batch_time,end_batch_time)
         roll_no = data.get("roll_no")
 
         program_enrollment = frappe.new_doc("Program Enrollment")
@@ -269,13 +273,13 @@ def get_program(program_name, school):
     return program
 
 
-def get_division(division, program, school, academic_year,batch_name):
+def get_division(division, program, school, academic_year,begin_batch_time,end_batch_time):
     div = division
     div_filter = {
         "program": program,
         "custom_school": school,
         "academic_year": academic_year,
-        "batch": get_batch("Any"),
+        "batch": get_batch(begin_batch_time,end_batch_time),
         "student_group_name": div
     }
     division = frappe.get_value("Student Group", div_filter)
@@ -287,7 +291,7 @@ def get_division(division, program, school, academic_year,batch_name):
             "custom_school": school,
             "academic_year": academic_year,
             "student_group_name": div,
-            "batch": get_batch("Any"),
+            "batch": get_batch(begin_batch_time,end_batch_time),
             "group_based_on": "Batch"
         }
         doc = frappe.get_doc(doc_properties)
@@ -296,14 +300,14 @@ def get_division(division, program, school, academic_year,batch_name):
 
     return division
 
-def get_batch(batch):
+def get_batch(begin_batch_time,end_batch_time):
+    batch_name = get_formated_date(begin_batch_time,end_batch_time)
     def create_batch(batch_name):
         batch_id = frappe.new_doc("Student Batch Name")
         batch_id.batch_name = batch_name
         batch_id.save()
-        return batch_id
+        return batch_id.name
 
-    batch_name = batch if batch else "Any"
     batch_id = frappe.get_value("Student Batch Name", {'batch_name': batch_name})
 
     if not batch_id:
@@ -311,7 +315,22 @@ def get_batch(batch):
 
     return batch_id
 
+def get_formated_date(begin,end):
+    begin_time = get_begin(begin)
+    end_time = get_end(end)
+    return str(begin_time+"-"+end_time)
 
+def get_begin(delta):
+    base_date = datetime.datetime(1, 1, 1)  
+    result_time = (base_date + delta).time()
+    formatted_time = result_time.strftime("%I:%M%p")
+    return formatted_time
+
+def get_end(delta):
+    base_date = datetime.datetime(1, 1, 1)  
+    result_time = (base_date + delta).time()
+    formatted_time = result_time.strftime("%I:%M%p")
+    return formatted_time
 
 def get_academic_year(academic_year):
     if not academic_year:
@@ -545,7 +564,9 @@ def get_sql_query():
                     WSB.drop_bus,
                     WSB.pickup_address,
                     WSB.drop_address,
-                    WSB.spcl_instruction
+                    WSB.spcl_instruction,
+                    CDR.begintime,
+                    CDR.endtime
 
                 FROM
                     walnut_student_info wsi
@@ -556,5 +577,6 @@ def get_sql_query():
                 LEFT OUTER JOIN stud_admission_details WAD ON WAD.ref_no = wsi.refno
                 LEFT OUTER JOIN walnut_student_parent_details WSP ON WSP.student_id = wsi.form_id
                 LEFT OUTER JOIN walnut_student_bus WSB ON WSB.student_id = wsi.form_id
+                LEFT OUTER JOIN class_div_relation AS CDR ON CDR.class_id = wsi.admission_to AND CDR.division_id = wsi.division
                 """
     return query

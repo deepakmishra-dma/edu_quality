@@ -7,11 +7,6 @@ from io import BytesIO
 import base64
 import qrcode
 
-try:
-    from nextai.funnel.custom_trigger import trigger_event
-except ImportError:
-    print("Chatnext is not installed")
-
 
 def set_property(doctype, fieldname, prop, property_type, value):
     filters = {
@@ -45,15 +40,6 @@ def migrate():
     set_property("Student Group", "student_group_name", "unique", "Check", 0)
 
 
-@frappe.whitelist()
-def trigger_funnel_event(doc, event_name):
-    try:
-        trigger_event(doc, event_name)
-        return True
-    except Exception as e:
-        return False
-
-
 def is_deposit(fees, term):
     deposit = False
     if fees.payment_schedule:
@@ -64,93 +50,6 @@ def is_deposit(fees, term):
             ):
                 deposit = True
     return deposit
-
-
-@frappe.whitelist()
-def send_payment_link_email(doc, url, deposit=False):
-    if deposit:
-        template_name = frappe.get_single("Communications").deposit_email
-    else:
-        template_name = frappe.get_single("Communications").payment_link_email
-
-    # Fetch the email template content from the doctype
-    email_template = frappe.get_doc("Email Template", template_name)
-
-    # Extract the subject and content from the email template
-    subject = email_template.subject
-    content = email_template.response
-
-    academic_year = frappe.db.get_value("Fees", doc.reference_name, "academic_year")
-    first_name = frappe.db.get_value("Student", doc.party, "first_name")
-    email = frappe.db.get_value("Student", doc.party, "student_email_id")
-
-    # Define variables to be used in Jinja templating
-    context = {
-        "first_name": first_name.capitalize(),
-        "acad_year": academic_year,
-        "link": url,
-    }
-
-    # Render the Jinja template with the context
-    content = frappe.render_template(content, context)
-    pdf = [frappe.attach_print(doc.doctype, doc.name, file_name=doc.name)]
-    # Create a dictionary with email parameters
-    email_args = {
-        "recipients": email,
-        "subject": subject,
-        "message": content,
-        "attachments": pdf,
-        "delayed": False,
-    }
-
-    # Send the email
-    frappe.sendmail(**email_args)
-
-
-def send_receipt_over_email(payment_request):
-    payment_entries = frappe.get_list(
-        "Payment Entry", {"reference_no": payment_request.name}
-    )
-    student = payment_request.party
-    email = frappe.db.get_value("Student", student, "student_email_id")
-    undertaking_submission_pdf = get_undertaking_submission_pdf(student)
-
-    print_format, letter_head = get_print_format(payment_request.name)
-
-    attachments = [
-        frappe.attach_print(
-            "Payment Entry",
-            pe.name,
-            file_name=pe.name,
-            print_format=print_format,
-            print_letterhead=True,
-            letterhead=letter_head,
-        )
-        for pe in payment_entries
-    ]
-
-    if undertaking_submission_pdf:
-        attachments.append(undertaking_submission_pdf)
-
-    email_args = {
-        "recipients": email,
-        "subject": "Payment Receipt",
-        "message": "Please find the attached payment receipt",
-        "attachments": attachments,
-        "delayed": False,
-    }
-
-    if attachments:
-        frappe.sendmail(**email_args)
-
-
-def get_print_format(payment_request):
-    fee_name = frappe.db.get_value("Payment Request", payment_request, "reference_name")
-    program_name = frappe.db.get_value("Fees", fee_name, "program")
-    print_format = frappe.db.get_value("Program", program_name, "print_format")
-    letter_head = frappe.db.get_value("Program", program_name, "letter_head")
-    return print_format, letter_head
-
 
 @frappe.whitelist()
 def generate_otp(fee):
@@ -370,13 +269,6 @@ def handle_undertaking_submission(**kwargs):
         new_doc.ip_address = kwargs.get("ip_address")
         new_doc.user_info = kwargs.get("browser_info")
         new_doc.save(ignore_permissions=True)
-
-        try:
-            # trigger_event(new_doc, "rules_and_regulation_submission")
-            return True
-        except Exception as e:
-            frappe.logger("edu_quality").exception(e)
-            return False
 
 
 def get_undertaking_submission_pdf(student):
