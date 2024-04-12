@@ -33,7 +33,7 @@
     "type": "send_mail"
    },
    {
-    "data": "{\n    \"node_label\": \"Get Details of Student\",\n    \"python_code\": \"# do required updates\\n# update variable e.g.\\ndoc = variables.get(\\\"doc\\\")\\n\\nacad_year = frappe.db.get_value(doc.reference_doctype, doc.reference_name, \\\"academic_year\\\")\\n\\nfirst_name = frappe.db.get_value(\\\"Student\\\", doc.party, \\\"first_name\\\")\\nmiddle_name = frappe.db.get_value(\\\"Student\\\", doc.party, \\\"middle_name\\\")\\nlast_name = frappe.db.get_value(\\\"Student\\\", doc.party, \\\"last_name\\\")\\nreference_number = frappe.db.get_value(\\\"Student\\\", doc.party, \\\"reference_number\\\")\\n\\n\\nemail = frappe.db.get_value(\\\"Student\\\", doc.party, \\\"student_email_id\\\")\\n\\npayment_plan = frappe.db.get_value(doc.reference_doctype, doc.reference_name, \\\"payment_plan\\\")\\n\\npayplan_doc = frappe.get_doc(\\\"Payment Plan\\\", payment_plan)\\ninst_count = len(payplan_doc.payment_schedule)\\n\\nvariables[\\\"first_name\\\"] = first_name\\nvariables[\\\"middle_name\\\"] = middle_name\\nvariables[\\\"last_name\\\"] = last_name\\nvariables[\\\"acad_year\\\"] = acad_year\\nvariables[\\\"link\\\"] = doc.payment_url\\nvariables[\\\"refno\\\"] = reference_number\\nvariables[\\\"inst_count\\\"] = inst_count\\nvariables[\\\"recipient\\\"] = email\",\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
+    "data": "{\n    \"node_label\": \"Get Details of Student\",\n    \"python_code\": \"# do required updates\\n# update variable e.g.\\ndoc = variables.get(\\\"doc\\\")\\n\\nacad_year = frappe.db.get_value(doc.reference_doctype, doc.reference_name, \\\"academic_year\\\")\\n\\nfirst_name = frappe.db.get_value(\\\"Student\\\", doc.party, \\\"first_name\\\")\\nmiddle_name = frappe.db.get_value(\\\"Student\\\", doc.party, \\\"middle_name\\\")\\nlast_name = frappe.db.get_value(\\\"Student\\\", doc.party, \\\"last_name\\\")\\nreference_number = frappe.db.get_value(\\\"Student\\\", doc.party, \\\"reference_number\\\")\\n\\n\\nemail = frappe.db.get_value(\\\"Student\\\", doc.party, \\\"student_email_id\\\")\\n\\npayment_plan = frappe.db.get_value(doc.reference_doctype, doc.reference_name, \\\"payment_plan\\\")\\n\\npayplan_doc = frappe.get_doc(\\\"Payment Plan\\\", payment_plan)\\ninst_count = len(payplan_doc.payment_schedule)\\n\\npe = frappe.get_all(\\\"Program Enrollment\\\",{\\\"student\\\":doc.party, \\\"docstatus\\\":1})\\n\\nvariables[\\\"is_new\\\"] = len(pe) == 1\\n\\nvariables[\\\"first_name\\\"] = first_name\\nvariables[\\\"middle_name\\\"] = middle_name\\nvariables[\\\"last_name\\\"] = last_name\\nvariables[\\\"acad_year\\\"] = acad_year\\nvariables[\\\"link\\\"] = doc.payment_url\\nvariables[\\\"refno\\\"] = reference_number\\nvariables[\\\"inst_count\\\"] = inst_count\\nvariables[\\\"recipient\\\"] = email\",\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
     "element_type": "Action",
     "id": "60MS7MC_fA4ZM-B_oL48R",
     "parent": "Payment Link",
@@ -131,7 +131,7 @@
     "type": "smoothstep"
    },
    {
-    "data": "{\n    \"expression\": \"doc = variables.get('doc')\\n\\npe = frappe.get_all(\\\"Program Enrollment\\\",{\\\"student\\\":doc.party, \\\"docstatus\\\":1})\\n\\nis_new = len(pe) == 1\\nvariables[\\\"is_new\\\"] = is_new\\n\\nreturn is_new\",\n    \"filters\": [],\n    \"node_label\": \"Is New Student..??\",\n    \"submit\": true,\n    \"use_python_expression\": true,\n    \"variable_path_for_output\": \"\"\n}",
+    "data": "{\n    \"expression\": \"return variables.get(\\\"is_new\\\")\\n\",\n    \"filters\": [],\n    \"node_label\": \"Is New Student..??\",\n    \"submit\": true,\n    \"use_python_expression\": true,\n    \"variable_path_for_output\": \"\"\n}",
     "element_type": "Action",
     "id": "GxwJTzFEli1Wf-GjjyOcs",
     "parent": "Payment Link",
@@ -244,11 +244,11 @@
    }
   ],
   "funnel_name": "Payment Link",
-  "modified": "2024-01-04 22:27:08.813086",
+  "modified": "2024-01-05 17:48:49.909533",
   "name": "Payment Link",
   "status": "published",
   "variable_list": "[]",
-  "viewport": "{\"x\":-176.35848383602263,\"y\":98.03653712804157,\"zoom\":1.1403558880516806}"
+  "viewport": "{\"x\":-467.7198029238791,\"y\":-34.411949897794386,\"zoom\":1.1403558880516809}"
  },
  {
   "archived": 0,
@@ -270,7 +270,7 @@
     "type": "document_event_trigger"
    },
    {
-    "data": "{\n    \"node_label\": \"Get Details of Student\",\n    \"python_code\": \"doc = variables.get(\\\"doc\\\")\\n\\nvariables[\\\"recipient\\\"] = frappe.db.get_value(\\\"Student\\\", doc.student, \\\"student_email_id\\\")\\n\\nvariables[\\\"first_name\\\"] = doc.student_name\\n\",\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
+    "data": "{\n    \"node_label\": \"Get Details of Student\",\n    \"python_code\": \"doc = variables.get(\\\"doc\\\")\\n\\nvariables[\\\"recipient\\\"] = frappe.db.get_value(\\\"Student\\\", doc.student, \\\"student_email_id\\\")\\n\\nvariables[\\\"first_name\\\"] = doc.student_name\\npe = frappe.get_all(\\\"Program Enrollment\\\",{\\\"student\\\":doc.student, \\\"docstatus\\\":1})\\n\\nvariables[\\\"is_new\\\"] = len(pe) == 1\\n\",\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
     "element_type": "Action",
     "id": "584Vv8EY9zbmvQii7mUjm",
     "parent": "Welcome Email",
@@ -284,7 +284,7 @@
     "type": "exec_python"
    },
    {
-    "data": "{\n    \"expression\": \"return True\",\n    \"filters\": [],\n    \"node_label\": \"Filter New and Old Student\",\n    \"submit\": true,\n    \"use_python_expression\": true,\n    \"variable_path_for_output\": \"\"\n}",
+    "data": "{\n    \"expression\": \"return variables.get(\\\"is_new\\\")\",\n    \"filters\": [],\n    \"node_label\": \"Filter New and Old Student\",\n    \"submit\": true,\n    \"use_python_expression\": true,\n    \"variable_path_for_output\": \"\"\n}",
     "element_type": "Action",
     "id": "ljFLq-WhJKM1mY2EyIneq",
     "parent": "Welcome Email",
@@ -383,11 +383,11 @@
    }
   ],
   "funnel_name": "Welcome Email",
-  "modified": "2024-01-04 23:31:34.334241",
+  "modified": "2024-01-05 18:00:40.995589",
   "name": "Welcome Email",
   "status": "published",
   "variable_list": "[]",
-  "viewport": "{\"x\":-143,\"y\":185,\"zoom\":1}"
+  "viewport": "{\"x\":-278,\"y\":121,\"zoom\":1}"
  },
  {
   "archived": 0,
@@ -409,7 +409,7 @@
     "type": "document_event_trigger"
    },
    {
-    "data": "{\n    \"node_label\": \"Get Context\",\n    \"python_code\": \"doc = variables.get(\\\"doc\\\")\\n\\nemail = frappe.db.get_value(\\\"Student\\\", doc.student, \\\"student_email_id\\\")\\n\\nstudent_doc = frappe.get_doc(\\\"Student\\\", doc.student)\\npdf = frappe.db.get_value(\\n    \\\"Rules and Regulation Template\\\",\\n    doc.rules_and_regulation_template,\\n    \\\"pdf\\\",\\n)\\n\\nsite_url = frappe.utils.get_url()\\npdf_url = site_url + pdf\\n\\nfirst_name = student_doc.first_name\\nfather_name = frappe.db.get_value(\\n    \\\"Student Guardian\\\", {\\\"parent\\\": doc.student, \\\"relation\\\": \\\"Father\\\"}, \\\"guardian_name\\\"\\n)\\nmother_name = frappe.db.get_value(\\n    \\\"Student Guardian\\\", {\\\"parent\\\": doc.student, \\\"relation\\\": \\\"Mother\\\"}, \\\"guardian_name\\\"\\n)\\ncontext = {\\n    \\\"refno\\\": student_doc.reference_number,\\n    \\\"first_name\\\": first_name.capitalize() if first_name else \\\"\\\",\\n    \\\"mother_name\\\": mother_name.capitalize() if mother_name else \\\"\\\",\\n    \\\"father_name\\\": father_name.capitalize() if father_name else \\\"\\\",\\n    \\\"submitted_with_response\\\": doc.submitted_with_response,\\n    \\\"submitted_date\\\": doc.submitted_date,\\n    \\\"otp_entered\\\": doc.otp_entered,\\n    \\\"otp_sent_to_number\\\": doc.otp_sent_to_contact_no,\\n    \\\"otp_sent_to_email\\\": doc.otp_sent_to_email_id,\\n    \\\"ip_address\\\": doc.ip_address,\\n    \\\"user_info\\\": doc.user_info,\\n    \\\"link\\\": pdf_url,\\n}\\n\\nvariables[\\\"extra_email_args\\\"] = {}\\nvariables[\\\"extra_email_args\\\"][\\\"attachments\\\"] = [{\\\"doctype\\\": doc.doctype, \\\"name\\\":doc.name}]\\nvariables[\\\"recipient\\\"] = email\\nvariables[\\\"context\\\"] = context\",\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
+    "data": "{\n    \"node_label\": \"Get Context\",\n    \"python_code\": \"doc = variables.get(\\\"doc\\\")\\n\\nemail = frappe.db.get_value(\\\"Student\\\", doc.student, \\\"student_email_id\\\")\\n\\nstudent_doc = frappe.get_doc(\\\"Student\\\", doc.student)\\npdf = frappe.db.get_value(\\n    \\\"Rules and Regulation Template\\\",\\n    doc.rules_and_regulation_template,\\n    \\\"pdf\\\",\\n)\\n\\nsite_url = frappe.utils.get_url()\\npdf_url = site_url + pdf\\n\\nfirst_name = student_doc.first_name\\nfather_name = frappe.db.get_value(\\n    \\\"Student Guardian\\\", {\\\"parent\\\": doc.student, \\\"relation\\\": \\\"Father\\\"}, \\\"guardian_name\\\"\\n)\\nmother_name = frappe.db.get_value(\\n    \\\"Student Guardian\\\", {\\\"parent\\\": doc.student, \\\"relation\\\": \\\"Mother\\\"}, \\\"guardian_name\\\"\\n)\\ncontext = {\\n    \\\"refno\\\": student_doc.reference_number,\\n    \\\"first_name\\\": first_name.capitalize() if first_name else \\\"\\\",\\n    \\\"mother_name\\\": mother_name.capitalize() if mother_name else \\\"\\\",\\n    \\\"father_name\\\": father_name.capitalize() if father_name else \\\"\\\",\\n    \\\"submitted_with_response\\\": doc.submitted_with_response,\\n    \\\"submitted_date\\\": doc.submitted_date,\\n    \\\"otp_entered\\\": doc.otp_entered,\\n    \\\"otp_sent_to_number\\\": doc.otp_sent_to_contact_no,\\n    \\\"otp_sent_to_email\\\": doc.otp_sent_to_email_id,\\n    \\\"ip_address\\\": doc.ip_address,\\n    \\\"user_info\\\": doc.user_info,\\n    \\\"link\\\": pdf_url,\\n}\\n\\nvariables[\\\"extra_email_args\\\"] = {}\\nvariables[\\\"extra_email_args\\\"][\\\"attachments\\\"] = [{\\\"doctype\\\": doc.doctype, \\\"name\\\":doc.name}]\\nvariables[\\\"recipient\\\"] = email\\nvariables[\\\"context\\\"] = context\\n\",\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
     "element_type": "Action",
     "id": "8SaqHGoRi7Q0iWuaripLL",
     "parent": "Rules and Regulation Submission",
@@ -466,11 +466,11 @@
    }
   ],
   "funnel_name": "Rules and Regulation Submission",
-  "modified": "2024-01-04 23:10:36.491373",
+  "modified": "2024-01-05 18:06:13.607363",
   "name": "Rules and Regulation Submission",
   "status": "published",
   "variable_list": "[]",
-  "viewport": "{\"x\":10,\"y\":200,\"zoom\":1}"
+  "viewport": "{\"x\":-300,\"y\":216,\"zoom\":1}"
  },
  {
   "archived": 0,
