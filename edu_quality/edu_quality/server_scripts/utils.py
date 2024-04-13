@@ -131,3 +131,9 @@ def update_academic_year():
         year_doc.save()
 
     frappe.db.commit()
+
+@frappe.whitelist()
+def batch_filter(doctype, txt, searchfield, start, page_len, filters):
+    data = frappe.db.get_all("Student Group",filters,'batch')
+    data = [(i.batch,"") for i in data]
+    return data

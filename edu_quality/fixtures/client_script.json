@@ -235,10 +235,21 @@
   "doctype": "Client Script",
   "dt": "Fees",
   "enabled": 1,
-  "modified": "2024-01-05 10:02:49.655374",
+  "modified": "2024-01-05 13:38:29.435054",
   "module": "Edu Quality",
   "name": "Custom Payment Plan",
-  "script": "frappe.ui.form.on(\"Payment Schedule\", \"payment_term\", function(frm, cdt, cdn) {\t\r\n    let discount = 0;\r\n    for (var i = 0; i < cur_frm.doc.components.length; i++) {\r\n        let custom_discounts = cur_frm.doc.components[i].custom_discounts;\r\n        if(custom_discounts && custom_discounts.includes('Payment Plan')) {\r\n        \r\n            let breakup = JSON.parse(cur_frm.doc.components[i].discount_breakup);\r\n            for (const key in breakup){\r\n                if(key.includes('Payment Plan')){\r\n                    discount = breakup[key]['discount_amount'];\r\n                    break;\r\n                }\r\n                      \r\n            }\r\n            \r\n        }\r\n        if(discount>0){\r\n            break;\r\n        }\r\n        }\r\n    let to_be_paid = discount;\r\n    if(frm.doc.grand_total){\r\n    to_be_paid = to_be_paid + frm.doc.grand_total;\r\n    // frm.set_value('grand_total',frm.doc.grand_total + discount);\r\n    frm.set_value('total_discount',frm.doc.total_discount - discount);\r\n    }\r\n    let filled_amounts = 0;\r\n    for (i = 0; i < cur_frm.doc.payment_schedule.length; i++) {\r\n        if (cur_frm.doc.payment_schedule[i].payment_amount){\r\n            filled_amounts = filled_amounts + cur_frm.doc.payment_schedule[i].payment_amount;\r\n            \r\n            }\r\n        }\r\n    to_be_paid = to_be_paid - filled_amounts;\r\n    frappe.model.set_value(cdt,cdn,\"payment_amount\",to_be_paid);\r\n    frappe.model.set_value(cdt,cdn,\"outstanding\",to_be_paid);\r\n    cur_frm.refresh_field(\"payment_schedule\");\r\n});\r\n\r\n",
+  "script": "frappe.ui.form.on(\"Payment Schedule\", \"payment_term\", function(frm, cdt, cdn) {\t\r\n    let discount = 0;\r\n    for (var i = 0; i < cur_frm.doc.components.length; i++) {\r\n        let custom_discounts = cur_frm.doc.components[i].custom_discounts;\r\n        if(custom_discounts && custom_discounts.includes('Payment Plan')) {\r\n        \r\n            let breakup = JSON.parse(cur_frm.doc.components[i].discount_breakup);\r\n            for (const key in breakup){\r\n                if(key.includes('Payment Plan')){\r\n                    discount = breakup[key]['discount_amount'];\r\n                    break;\r\n                }\r\n                      \r\n            }\r\n            \r\n        }\r\n        if(discount>0){\r\n            break;\r\n        }\r\n        }\r\n    let to_be_paid = discount;\r\n    if(frm.doc.grand_total){\r\n    to_be_paid = to_be_paid + frm.doc.grand_total;\r\n    // frm.set_value('grand_total',frm.doc.grand_total + discount);\r\n    // frm.set_value('total_discount',frm.doc.total_discount - discount);\r\n    }\r\n    let filled_amounts = 0;\r\n    for (i = 0; i < cur_frm.doc.payment_schedule.length; i++) {\r\n        if (cur_frm.doc.payment_schedule[i].payment_amount){\r\n            filled_amounts = filled_amounts + cur_frm.doc.payment_schedule[i].payment_amount;\r\n            \r\n            }\r\n        }\r\n    to_be_paid = to_be_paid - filled_amounts;\r\n    frappe.model.set_value(cdt,cdn,\"payment_amount\",to_be_paid);\r\n    frappe.model.set_value(cdt,cdn,\"outstanding\",to_be_paid);\r\n    cur_frm.refresh_field(\"payment_schedule\");\r\n});\r\n\r\n",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Student Applicant",
+  "enabled": 1,
+  "modified": "2024-01-05 18:44:52.543611",
+  "module": "Edu Quality",
+  "name": "Batch Filter",
+  "script": "frappe.ui.form.on('Student Applicant', {\n\trefresh(frm) {\n\t\tfrm.set_query(\"batch\", function(){\n\t\t     return {\n        query: \"edu_quality.edu_quality.server_scripts.utils.batch_filter\",\n        filters:{'program': frm.doc.program, 'academic_year':frm.doc.academic_year}\n    };\n\t\t});\n\t}\n});",
   "view": "Form"
  }
 ]
