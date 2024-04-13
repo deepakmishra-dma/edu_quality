@@ -51,7 +51,7 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
     def capitalize_name(name):
         return get_data(name).capitalize() if get_data(name) else None
 
-    first_name, middle_name, last_name = map(capitalize_name, ["first_name", "middle_name", "last_name"])
+    first_name, middle_name, last_name = map(capitalize_name, ["first_name", "father_f_name", "last_name"])
     student_name = f"{first_name} {middle_name or ''} {last_name}"
 
     school_prefixes = {"Walnut School at Fursungi": "FU", "Walnut School at Shivane": "SH", "Walnut School at Wakad": "WA"}
@@ -116,8 +116,8 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
         "catering": get_data("catering"),
         "caste": get_data("caste"),
         "other_caste": get_data("other_caste"),
-        "subcaste": get_data("subcaste"),
-        "other_subcaste": get_data("other_subcaste"),
+        "sub_caste": get_data("subcaste"),
+        "other_sub_caste": get_data("other_subcaste"),
         "minority": get_data("minority"),
         "mother_tongue": get_data("mother_tongue"),
         "student_referral_number": get_data("student_referral_refno"),
@@ -157,6 +157,8 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
         "drop_address": get_data("drop_address"),
         "source_name": get_data("ref_source_name"),
         "guardians": get_guardian(frappe_data),
+        "whatsapp_number":get_data("student_sms_no"),
+        "primary_contact":get_data("student_emergency_contact_no")
     }
     frappe.flags.in_import = True
     frappe.logger("dddd").exception(frappe_data)
