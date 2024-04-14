@@ -158,7 +158,6 @@ def enroll_student(source_name):
 
 
 def get_student_group(doc):
-    return "A-1-Walnut School at Fursungi-2023-2024"
     query = """
             select sg.name,sg.student_group_name,sg.current_count,sg.max_strength from `tabStudent Group` as sg
             where sg.academic_year = %(academic_year)s
