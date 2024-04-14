@@ -135,7 +135,7 @@ def enroll_student(source_name):
     )
     student_applicant = frappe.get_doc("Student Applicant", source_name)
     if student_applicant.custom_referred_by:
-        add_referral_discount(student_applicant.custom_referred_by)
+        add_referral_discount(student_applicant.custom_referred_by, student_applicant)
 
     student_group = get_student_group(student_applicant)
     student.save()
