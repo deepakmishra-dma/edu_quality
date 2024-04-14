@@ -18,7 +18,7 @@ def after_insert(doc, method=None):
 
 
 
-def add_referral_discount(referred_by):
+def add_referral_discount(referred_by, student_applicant=None):
     """
     Add referral discount for a student based on the number of referrals.
 
@@ -32,12 +32,6 @@ def add_referral_discount(referred_by):
         increase_referral_count(student)
 
         discount_amount = get_referral_amount(student.number_of_referrals)
-
-        try:
-            from nextai.funnel.custom_trigger import trigger_event
-            trigger_event(doc=student, event_name="referral_created")
-        except ImportError:
-            print("Chatnext is not installed")
     
         outstanding_fees = get_outstanding_fees(student)
         if outstanding_fees:
@@ -45,6 +39,12 @@ def add_referral_discount(referred_by):
         else:
             student.referral_amount = student.referral_amount + discount_amount 
             student.save()
+        
+        try:
+            from nextai.funnel.custom_trigger import trigger_event
+            trigger_event(doc=student_applicant, event_name="referral_created")
+        except ImportError:
+            print("Chatnext is not installed")
 
     except Exception as e:
         frappe.logger('referral').exception(e)

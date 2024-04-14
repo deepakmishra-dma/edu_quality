@@ -135,7 +135,7 @@ def enroll_student(source_name):
     )
     student_applicant = frappe.get_doc("Student Applicant", source_name)
     if student_applicant.custom_referred_by:
-        add_referral_discount(student_applicant.custom_referred_by)
+        add_referral_discount(student_applicant.custom_referred_by, student_applicant)
 
     student_group = get_student_group(student_applicant)
     student.save()
@@ -158,6 +158,7 @@ def enroll_student(source_name):
 
 
 def get_student_group(doc):
+    return "A-1-Walnut School at Fursungi-2023-2024"
     query = """
             select sg.name,sg.student_group_name,sg.current_count,sg.max_strength from `tabStudent Group` as sg
             where sg.academic_year = %(academic_year)s

@@ -2,7 +2,7 @@
  {
   "category": "Triggers",
   "created_variables": null,
-  "default_doctype": "Student",
+  "default_doctype": "Student Applicant",
   "docstatus": 0,
   "doctype": "Funnel Node",
   "element_type": "Trigger",
@@ -13,7 +13,7 @@
   "is_custom": 1,
   "is_enabled": 1,
   "label": "Student Referral ",
-  "modified": "2024-01-04 23:35:47.740722",
+  "modified": "2024-01-05 22:18:46.112962",
   "name": "Student Referral",
   "node_name": "Student Referral",
   "python_function_dotted_path": null,
