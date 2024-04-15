@@ -93,9 +93,10 @@ def add_discount(fee_name, discount, fees=None, doctype="Fees"):
                 # update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=True,dis=dis)
             fees.add_discount_entry(company, grand_discount_amount)
         elif doctype == "Fee Advance":
-            fees.generate_split()
-            fees.reload()
-            fees.save(ignore_permissions=True)
+            pass
+        fees.update_split()
+        fees.reload()
+        fees.save(ignore_permissions=True)
         update_payment_request_after_discount(fees)
 
 
