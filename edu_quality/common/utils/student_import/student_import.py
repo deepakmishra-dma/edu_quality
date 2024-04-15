@@ -102,7 +102,7 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
         "landmark": get_data("landmark"),
         "student_email_id": student_email_id,
         "date_of_leaving": date_of_leaving,
-        "joining_date": joining_date,
+        "joining_date": joining_date.strftime("%Y-%m-%d") if joining_date else None,
         "student_name": student_name,
         "school": school,
         "aadhaar_card_number": get_data("adhar_card_no"),

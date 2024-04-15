@@ -180,7 +180,6 @@ def create_fees(doc, method=None):
                 return
         fee_structure = frappe.get_value("Fee Structure", {"program": doc.program, "academic_year":doc.academic_year}, "name")
         fee_schedule = frappe.get_value("Fee Schedule", {"fee_structure": fee_structure}, "name")
-        existing_pe = frappe.get_value("Program Enrollment", {"student": doc.student})
         stude_appli_class = frappe.get_value("Student Applicant",{"student_email_id":student.student_email_id,"program":doc.program},'name')
         if not stude_appli_class:
             fee_data = {
