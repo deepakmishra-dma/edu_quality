@@ -98,6 +98,7 @@ def custom_payment_plan(doc):
     try:
         remove_payment_plan_discount(doc,custom_payment_plan=1)
         doc.save()
+        update_payment_request_after_discount(doc)
     except Exception as e:
         frappe.logger('custom').exception(e)
 
@@ -175,7 +176,8 @@ def create_fees(doc, method=None):
     try:
         student = frappe.get_doc("Student", doc.student)
         if student.imported:
-            return
+            if not frappe.db.exists("Program Enrollment", [["student","=", doc.student],['name','!=',doc.name],['docstatus','=',1]]):
+                return
         fee_structure = frappe.get_value("Fee Structure", {"program": doc.program, "academic_year":doc.academic_year}, "name")
         fee_schedule = frappe.get_value("Fee Schedule", {"fee_structure": fee_structure}, "name")
         existing_pe = frappe.get_value("Program Enrollment", {"student": doc.student})
