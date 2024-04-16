@@ -198,7 +198,8 @@ def update_component(component_name, discount_name, final_discount, discounted_a
         fees_fields = {
             "grand_total": grand_total,
             "grand_total_in_words": str(frappe.utils.in_words(grand_total)).title(),
-            "outstanding_amount": fees.outstanding_amount - grand_discount_amount
+            "outstanding_amount": fees.outstanding_amount - grand_discount_amount,
+            "total_discount": fees.total_discount + grand_discount_amount
         }
         frappe.db.set_value("Fees", fees.name, fees_fields)
     elif fees.doctype == "Fee Advance":
@@ -504,7 +505,6 @@ def update_breakups(dis, component, fees, term="All", update=0,remove=0,custom=0
             component.discount_breakup = discount_breakup
         else:
             frappe.db.set_value("Fee Component",component.name,'discount_breakup',discount_breakup)
-            fees.reload()
 
         #update_schedule
         if term == 1:
@@ -536,16 +536,17 @@ def update_breakups(dis, component, fees, term="All", update=0,remove=0,custom=0
                                                 'outstanding': schedule.outstanding - discount_amount,
                                                 'discount_breakup':discount_breakup
                                                 })
-                        fees.reload()
                     return
         else:
             for schedule in fees.payment_schedule:
                 discount_amount = flt(dis.discount_amount * schedule.invoice_portion/100,2)
+                frappe.logger('breakup').exception(discount_amount)
                 discount = flt(discount_amount/schedule.payment_amount*100,2)
                 if remove:
                     discount = flt(discount_amount/(schedule.payment_amount+discount_amount)*100,2)
                 discount_breakup = update_discount_breakup(schedule.payment_amount, schedule.discount_breakup,
                                                                 discount,discount_amount,dis.name,remove)
+                frappe.logger('breakup').exception(discount_amount)
                 if remove:
                     discount_amount = 0-discount_amount
                 if not update:
@@ -559,7 +560,7 @@ def update_breakups(dis, component, fees, term="All", update=0,remove=0,custom=0
                                                 'outstanding': schedule.outstanding - discount_amount,
                                                 'discount_breakup':discount_breakup
                                                 })
-                    fees.reload()
+        fees.reload()
     except Exception as e:
         frappe.logger("breakup").exception(e)
         
@@ -618,7 +619,7 @@ def update_breakup_after_pp_change(fees):
                 if term == 'All':
                     discount_amount = flt(breakup[dis]['discount_amount'] * schedule.invoice_portion/100,2)
                     discount = flt(discount_amount/schedule.payment_amount*100,2)
-                elif schedule.payment_term == term and term!= "All":
+                elif schedule.payment_term == term:
                     discount_amount = breakup[dis]['discount_amount']
                     discount = flt((discount_amount/schedule.payment_amount)*100,2)
                 new_breakup = update_discount_breakup(schedule.payment_amount, schedule.discount_breakup,
