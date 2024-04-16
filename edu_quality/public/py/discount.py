@@ -600,3 +600,30 @@ def update_discount_breakup(component_amount,discount_breakup,discount,discount_
 
 
     return json.dumps(breakup)
+
+
+def update_breakup_after_pp_change(fees):
+    for component in fees.components:
+        breakup = json.loads(component.discount_breakup) if component.discount_breakup else None 
+        if not breakup:
+            continue
+        for dis in breakup:
+            if dis == 'Referral':
+                term = get_first_unpaid_term(fees)
+            elif "Payment Plan" in dis:
+                term = get_last_term(fees)
+            else:
+                term = "All"
+            for schedule in fees.payment_schedule:
+                if term == 'All':
+                    discount_amount = flt(breakup[dis]['discount_amount'] * schedule.invoice_portion/100,2)
+                    discount = flt(discount_amount/schedule.payment_amount*100,2)
+                elif schedule.payment_term == term and term!= "All":
+                    discount_amount = breakup[dis]['discount_amount']
+                    discount = flt((discount_amount/schedule.payment_amount)*100,2)
+                new_breakup = update_discount_breakup(schedule.payment_amount, schedule.discount_breakup,
+                                                                discount,discount_amount,dis,0)
+                frappe.db.set_value("Payment Schedule",schedule.name,{'discount_breakup':new_breakup})
+                fees.reload()
+    fees.update_split()
+

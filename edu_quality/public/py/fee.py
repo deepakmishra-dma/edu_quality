@@ -12,6 +12,7 @@ from edu_quality.public.py.discount import (
 from edu_quality.edu_quality.server_scripts.student_applicant import referal_discount
 from erpnext.accounts.general_ledger import make_reverse_gl_entries
 from edu_quality.edu_quality.server_scripts.payment_plan import remove_payment_plan_discount
+from edu_quality.public.py.discount import update_breakup_after_pp_change
 
 
 import frappe
@@ -98,6 +99,7 @@ def custom_payment_plan(doc):
     try:
         remove_payment_plan_discount(doc,custom_payment_plan=1)
         doc.save()
+        update_breakup_after_pp_change(doc)
         update_payment_request_after_discount(doc)
     except Exception as e:
         frappe.logger('custom').exception(e)
@@ -119,6 +121,7 @@ def on_update(doc, method=None):
             return
 
     if old_doc.payment_plan != doc.payment_plan:
+        update_breakup_after_pp_change(doc)
         update_payment_request_after_discount(doc)
         return
     verify_invoice_portion(doc.payment_schedule)
