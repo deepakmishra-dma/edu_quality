@@ -15,27 +15,60 @@ def get_discount_applicable_term(dis):
 
 @frappe.whitelist()
 def add_discount(fee_name, discount, fees=None, doctype="Fees"):
-    discount_applied = False
-    grand_discount_amount = 0
-    if not fees:
-        fees = frappe.get_doc(doctype, fee_name)
-    dis = frappe.get_doc("Discount Configuration", discount)
-    company = None
-    for component in fees.components:
-        if component.fees_category == dis.fee_category:
-            update_breakups(dis,component,fees,term=get_discount_applicable_term(dis),update=1)
-            fees.reload()
-            company = component.custom_company
-            discount_name = component.custom_discounts
-            if discount_name and dis.can_be_applied_with_other_discounts == 1:
-                discount_list = get_discount_list(discount_name)
-                # if the discount is already present and the new discount could be applied with other discounts
-                if dis.name not in discount_list:
-                    discount_list.append(dis.name)
-                    discount_name = ", ".join(discount_list)
+    try:
+        discount_applied = False
+        grand_discount_amount = 0
+        if not fees:
+            fees = frappe.get_doc(doctype, fee_name)
+        dis = frappe.get_doc("Discount Configuration", discount)
+        company = None
+        for component in fees.components:
+            if component.fees_category == dis.fee_category:
+                update_breakups(dis,component,fees,term=get_discount_applicable_term(dis),update=1)
+                fees.reload()
+                company = component.custom_company
+                discount_name = component.custom_discounts
+                if discount_name and dis.can_be_applied_with_other_discounts == 1:
+                    discount_list = get_discount_list(discount_name)
+                    # if the discount is already present and the new discount could be applied with other discounts
+                    if dis.name not in discount_list:
+                        discount_list.append(dis.name)
+                        discount_name = ", ".join(discount_list)
+                        if dis.discount_amount:
+                            grand_discount_amount = dis.discount_amount
+                            discounted_amount = grand_discount_amount + component.custom_discount_amount
+                            amount = component.amount - discounted_amount
+                            discount = calculate_discount(component.amount, discounted_amount)
+                            update_component(component.name, discount_name, discount, discounted_amount, grand_discount_amount, amount, fees)
+                            message = dis.name + " Discount applied successfully"
+                            discount_applied = True
+                            frappe.response['message'] = message
+                        else:
+                            amount = component.amount
+                            grand_discount_amount = (amount * float(dis.discount)) / 100
+                            discounted_amount = grand_discount_amount + component.custom_discount_amount
+                            discount = calculate_discount(component.amount, discounted_amount)
+                            amount = amount - discounted_amount
+                            update_component(component.name, discount_name, discount, discounted_amount, grand_discount_amount, amount, fees)
+                            message = dis.name + " Discount applied successfully"
+                            discount_applied = True
+                            frappe.response['message'] = message
+                    else:
+                        frappe.response['message'] = "Discount already applied"
+                elif discount_name and dis.can_be_applied_with_other_discounts == 0:
+                    discount_list = get_discount_list(discount_name)
+                    if dis.name in discount_list:
+                        message = dis.name + " Discount already present"
+                        frappe.response['message'] = message
+                    else:
+                        message = dis.name + " Discount can not be applied with other discounts"
+                        frappe.response['message'] = message
+                    # if the discount is already present and the new discount could not be applied with other discounts
+                else:
+                    # if the discount is not already present
+                    discount_name = dis.name
                     if dis.discount_amount:
-                        grand_discount_amount = dis.discount_amount
-                        discounted_amount = grand_discount_amount + component.custom_discount_amount
+                        discounted_amount = grand_discount_amount = dis.discount_amount
                         amount = component.amount - discounted_amount
                         discount = calculate_discount(component.amount, discounted_amount)
                         update_component(component.name, discount_name, discount, discounted_amount, grand_discount_amount, amount, fees)
@@ -43,61 +76,31 @@ def add_discount(fee_name, discount, fees=None, doctype="Fees"):
                         discount_applied = True
                         frappe.response['message'] = message
                     else:
-                        amount = component.amount
-                        grand_discount_amount = (amount * float(dis.discount)) / 100
-                        discounted_amount = grand_discount_amount + component.custom_discount_amount
-                        discount = calculate_discount(component.amount, discounted_amount)
-                        amount = amount - discounted_amount
-                        update_component(component.name, discount_name, discount, discounted_amount, grand_discount_amount, amount, fees)
+                        grand_discount_amount = (component.amount * float(dis.discount)) / 100
+                        discounted_amount = grand_discount_amount
+                        amount = component.amount - discounted_amount
+                        update_component(component.name, discount_name, dis.discount, discounted_amount, grand_discount_amount, amount, fees)
                         message = dis.name + " Discount applied successfully"
                         discount_applied = True
                         frappe.response['message'] = message
+        if discount_applied:
+            if doctype == "Fees":
+                update_total_discount_in_fees(fees)
+                if dis.needs_admin_approval:
+                    frappe.db.set_value("Fees",fee_name,"workflow_state","Pending")
+                    # update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=True,dis=dis)
                 else:
-                    frappe.response['message'] = "Discount already applied"
-            elif discount_name and dis.can_be_applied_with_other_discounts == 0:
-                discount_list = get_discount_list(discount_name)
-                if dis.name in discount_list:
-                    message = dis.name + " Discount already present"
-                    frappe.response['message'] = message
-                else:
-                    message = dis.name + " Discount can not be applied with other discounts"
-                    frappe.response['message'] = message
-                # if the discount is already present and the new discount could not be applied with other discounts
-            else:
-                # if the discount is not already present
-                discount_name = dis.name
-                if dis.discount_amount:
-                    discounted_amount = grand_discount_amount = dis.discount_amount
-                    amount = component.amount - discounted_amount
-                    discount = calculate_discount(component.amount, discounted_amount)
-                    update_component(component.name, discount_name, discount, discounted_amount, grand_discount_amount, amount, fees)
-                    message = dis.name + " Discount applied successfully"
-                    discount_applied = True
-                    frappe.response['message'] = message
-                else:
-                    grand_discount_amount = (component.amount * float(dis.discount)) / 100
-                    discounted_amount = grand_discount_amount
-                    amount = component.amount - discounted_amount
-                    update_component(component.name, discount_name, dis.discount, discounted_amount, grand_discount_amount, amount, fees)
-                    message = dis.name + " Discount applied successfully"
-                    discount_applied = True
-                    frappe.response['message'] = message
-    if discount_applied:
-        if doctype == "Fees":
-            update_total_discount_in_fees(fees)
-            if dis.needs_admin_approval:
-                frappe.db.set_value("Fees",fee_name,"workflow_state","Pending")
-                # update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=True,dis=dis)
-            else:
+                    pass
+                    # update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=True,dis=dis)
+                fees.add_discount_entry(company, grand_discount_amount)
+            elif doctype == "Fee Advance":
                 pass
-                # update_payment_plan_after_discount(fees, grand_discount_amount, apply_discount=True,dis=dis)
-            fees.add_discount_entry(company, grand_discount_amount)
-        elif doctype == "Fee Advance":
-            pass
-        fees.update_split()
-        fees.reload()
-        fees.save(ignore_permissions=True)
-        update_payment_request_after_discount(fees)
+            fees.update_split()
+            fees.reload()
+            fees.save(ignore_permissions=True)
+            update_payment_request_after_discount(fees)
+    except Exception as e:
+        frappe.logger('add_discount').exception(e)
 
 
 @frappe.whitelist()
@@ -157,6 +160,7 @@ def remove_discount(fee_name, discount, update_payment_request=True, doctype="Fe
 
 
 def update_total_discount_in_fees(fees):
+    return
     try:
         frappe.db.set_value("Fees",fees.name,'total_discount',get_all_discounts(fees))
     except Exception as e:
