@@ -41,16 +41,16 @@ def generate_split_payment(fees,update=0):
                 "breakup": cw,
                 "is_deposit": apply_deposit
                 }
-            total = 0
-            for i in split_payment[schedule.payment_term]:
-                total += split_payment[schedule.payment_term][i]
-            if schedule.payment_amount != total:
-                if update:
-                    frappe.db.set_value("Payment Schedule", schedule.name, 'payment_amount',total)
-                    frappe.db.set_value("Payment Schedule", schedule.name, 'outstanding',total)
-                else:
-                    schedule.payment_amount = total
-                    schedule.outstanding = total
+            # total = 0
+            # for i in split_payment[schedule.payment_term]:
+            #     total += split_payment[schedule.payment_term][i]
+            # if schedule.payment_amount != total:
+            #     if update:
+            #         frappe.db.set_value("Payment Schedule", schedule.name, 'payment_amount',total)
+            #         frappe.db.set_value("Payment Schedule", schedule.name, 'outstanding',total)
+            #     else:
+            #         schedule.payment_amount = total
+            #         schedule.outstanding = total
             
     elif fees.doctype == "Fee Advance":
         term = fees.payment_term

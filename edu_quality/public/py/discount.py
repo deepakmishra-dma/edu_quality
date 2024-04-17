@@ -272,8 +272,10 @@ def payment_plan(doc, method=None):
                 if difference.days > before_days:
                         only_deposit(doc)
                 else:
+                    frappe.logger('fees').exception("Initial payment not created")
                     payment_amount = payment_amount + initial_payment
-                    description = description + " and deposit/application fee"
+                    if initial_payment>0:
+                        description = description + " and deposit/application fee"
                     frappe.enqueue(
                             "edu_quality.public.py.student.create_payment_request",
                             fee=doc,
@@ -604,7 +606,6 @@ def update_discount_breakup(component_amount,discount_breakup,discount,discount_
 
 
 def update_breakup_after_pp_change(fees):
-    return 
     for component in fees.components:
         breakup = json.loads(component.discount_breakup) if component.discount_breakup else None 
         if not breakup:
