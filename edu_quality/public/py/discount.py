@@ -604,6 +604,7 @@ def update_discount_breakup(component_amount,discount_breakup,discount,discount_
 
 
 def update_breakup_after_pp_change(fees):
+    return 
     for component in fees.components:
         breakup = json.loads(component.discount_breakup) if component.discount_breakup else None 
         if not breakup:
