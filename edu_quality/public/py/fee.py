@@ -178,8 +178,9 @@ def get_deposit(doc_payment_plan, payment_plan):
 def create_fees(doc, method=None):
     try:
         student = frappe.get_doc("Student", doc.student)
-        if student.imported:
-            if not frappe.db.exists("Program Enrollment", [["student","=", doc.student],['name','!=',doc.name],['docstatus','=',1]]):
+        if student.imported and student.student_status not in ["New Student", "Cancelled"]:
+            existing_pe = frappe.get_all("Program Enrollment", {"student": doc.student,"program":doc.program, "docstatus": 1})
+            if len(existing_pe) <= 1:
                 return
         fee_structure = frappe.get_value("Fee Structure", {"program": doc.program, "academic_year":doc.academic_year}, "name")
         fee_schedule = frappe.get_value("Fee Schedule", {"fee_structure": fee_structure}, "name")
