@@ -105,6 +105,7 @@ def custom_payment_plan(doc):
         frappe.logger('custom').exception(e)
 
 def after_save(doc, method=None):
+    return
     from edu_quality.public.py.discount import update_total_discount_in_fees
     update_total_discount_in_fees(doc)
 

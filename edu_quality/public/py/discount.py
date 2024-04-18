@@ -444,44 +444,44 @@ def update_payment_schedule(doc, payment_plan=None):
         if not payment_plan:
             payment_plan = doc.payment_plan
         payment_plan_discount = get_payment_plan_discount(payment_plan, doc)
-        other_discount = 0
-        for component in doc.components:
-            if component.custom_discounts:
-                discount_name = component.custom_discounts.lower()
-                discount_amount = component.custom_discount_amount
-                if discount_amount and "payment plan" not in discount_name:
-                    other_discount += component.custom_discount_amount
+        # other_discount = 0
+        # for component in doc.components:
+        #     if component.custom_discounts:
+        #         discount_name = component.custom_discounts.lower()
+        #         discount_amount = component.custom_discount_amount
+        #         if discount_amount and "payment plan" not in discount_name:
+        #             other_discount += component.custom_discount_amount
         
-        discount_applied = False
-        discount_amount = 0
-        for i, schedule in enumerate(doc.payment_schedule):
-            if not discount_applied:
-                amount = schedule.outstanding - other_discount
-                schedule.payment_amount = amount
-                schedule.outstanding = amount
-                schedule.discount = other_discount
-                schedule.discount_type = "Amount"
-                schedule.discount_date = schedule.due_date
-                discount_applied = True
+        # discount_applied = False
+        # discount_amount = 0
+        # for i, schedule in enumerate(doc.payment_schedule):
+        #     if not discount_applied:
+        #         amount = schedule.outstanding - other_discount
+        #         schedule.payment_amount = amount
+        #         schedule.outstanding = amount
+        #         schedule.discount = other_discount
+        #         schedule.discount_type = "Amount"
+        #         schedule.discount_date = schedule.due_date
+        #         discount_applied = True
 
-            elif i == len(doc.payment_schedule) - 1:
-                if payment_plan_discount and payment_plan_discount[1] == "Amount":
-                    discount_amount = payment_plan_discount[0]
-                    amount = schedule.outstanding - payment_plan_discount[0]
-                    schedule.payment_amount = amount
-                    schedule.outstanding = amount
-                    schedule.discount = discount_amount
-                    schedule.discount_type = payment_plan_discount[1]
-                    schedule.discount_date = schedule.due_date
-                elif payment_plan_discount and payment_plan_discount[1] == "Percentage":
-                    discount_amount = payment_plan_discount[0]
-                    amount = schedule.outstanding - payment_plan_discount[0]
-                    schedule.payment_amount = amount
-                    schedule.outstanding = amount
-                    schedule.discount = discount_amount
-                    schedule.discount_type = payment_plan_discount[1]
-                    schedule.discount_date = schedule.due_date
-                return discount_amount
+        #     elif i == len(doc.payment_schedule) - 1:
+        #         if payment_plan_discount and payment_plan_discount[1] == "Amount":
+        #             discount_amount = payment_plan_discount[0]
+        #             amount = schedule.outstanding - payment_plan_discount[0]
+        #             schedule.payment_amount = amount
+        #             schedule.outstanding = amount
+        #             schedule.discount = discount_amount
+        #             schedule.discount_type = payment_plan_discount[1]
+        #             schedule.discount_date = schedule.due_date
+        #         elif payment_plan_discount and payment_plan_discount[1] == "Percentage":
+        #             discount_amount = payment_plan_discount[0]
+        #             amount = schedule.outstanding - payment_plan_discount[0]
+        #             schedule.payment_amount = amount
+        #             schedule.outstanding = amount
+        #             schedule.discount = discount_amount
+        #             schedule.discount_type = payment_plan_discount[1]
+        #             schedule.discount_date = schedule.due_date
+        #         return discount_amount
         return 0
     except Exception as e:
         frappe.logger('pp_discount').exception(e)
