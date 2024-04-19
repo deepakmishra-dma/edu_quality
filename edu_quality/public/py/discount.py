@@ -628,12 +628,14 @@ def update_breakup_after_pp_change(fees):
                     discount = flt((discount_amount/schedule.payment_amount)*100,2)
                     new_breakup = update_discount_breakup(schedule.payment_amount, schedule.discount_breakup,
                                                                 discount,discount_amount,dis,0)
+                    frappe.db.set_value("Payment Schedule",schedule.name,{'discount_breakup':new_breakup})
+                    fees.reload()
                 elif term == 'All':
                     discount_amount = flt(breakup[dis]['discount_amount'] * schedule.invoice_portion/100,2)
                     discount = flt(discount_amount/schedule.payment_amount*100,2)
                     new_breakup = update_discount_breakup(schedule.payment_amount, schedule.discount_breakup,
                                                                 discount,discount_amount,dis,0)
-                frappe.db.set_value("Payment Schedule",schedule.name,{'discount_breakup':new_breakup})
-                fees.reload()
+                    frappe.db.set_value("Payment Schedule",schedule.name,{'discount_breakup':new_breakup})
+                    fees.reload()
     fees.update_split()
 
