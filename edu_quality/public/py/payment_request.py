@@ -190,6 +190,7 @@ def payment_request_paid(doc, fees, paid_filter, previous_payment_term):
 
 # update payment request after applying or removing discount
 def update_payment_request_after_discount(doc):
+    frappe.logger('pay_req').exception('update_pr')
     # filter for not paid payment request
     not_paid_filter = {
         "reference_name": doc.name,
