@@ -106,6 +106,7 @@ def add_discount(fee_name, discount, fees=None, doctype="Fees"):
 @frappe.whitelist()
 def remove_discount(fee_name, discount, update_payment_request=True, doctype="Fees",custom_payment_plan=0):
     try:
+        frappe.logger('remove').exception('removed')
         discount_removed = False
         grand_discount_amount = 0
         fees = frappe.get_doc(doctype, fee_name)
@@ -622,13 +623,15 @@ def update_breakup_after_pp_change(fees):
             else:
                 term = "All"
             for schedule in fees.payment_schedule:
-                if term == 'All':
-                    discount_amount = flt(breakup[dis]['discount_amount'] * schedule.invoice_portion/100,2)
-                    discount = flt(discount_amount/schedule.payment_amount*100,2)
-                elif schedule.payment_term == term:
+                if term == schedule.payment_term:
                     discount_amount = breakup[dis]['discount_amount']
                     discount = flt((discount_amount/schedule.payment_amount)*100,2)
-                new_breakup = update_discount_breakup(schedule.payment_amount, schedule.discount_breakup,
+                    new_breakup = update_discount_breakup(schedule.payment_amount, schedule.discount_breakup,
+                                                                discount,discount_amount,dis,0)
+                elif term == 'All':
+                    discount_amount = flt(breakup[dis]['discount_amount'] * schedule.invoice_portion/100,2)
+                    discount = flt(discount_amount/schedule.payment_amount*100,2)
+                    new_breakup = update_discount_breakup(schedule.payment_amount, schedule.discount_breakup,
                                                                 discount,discount_amount,dis,0)
                 frappe.db.set_value("Payment Schedule",schedule.name,{'discount_breakup':new_breakup})
                 fees.reload()
