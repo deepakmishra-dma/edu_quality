@@ -31,6 +31,9 @@ class FeeAdvance(AccountsController):
     def generate_split(self):
         generate_split_payment(self)
 
+    def update_split(self):
+        generate_split_payment(self, update=True)
+
 
     def before_save(self):
         percent = get_percent(self.payment_term, self.payment_plan)
