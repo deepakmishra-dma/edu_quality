@@ -1,6 +1,6 @@
 import frappe 
 from frappe.utils import today
-
+import json
 
 
 
@@ -137,3 +137,13 @@ def batch_filter(doctype, txt, searchfield, start, page_len, filters):
     data = frappe.db.get_all("Student Group",filters,'batch')
     data = [(i.batch,"") for i in data]
     return data
+
+
+@frappe.whitelist(allow_guest=True)
+def settlement_hook(data):
+    try:
+        data = json.loads(data)
+        frappe.logger('settlement').exception(data)
+        return 1
+    except Exception as e:
+        frappe.logger('settlement').exception(e)
