@@ -36,6 +36,7 @@ from edu_quality.public.py.discount import remove_discount
 
 def after_insert(doc, method=None):
     payment_plan(doc)
+    doc.save()
 
 
 def before_submit(doc, method=None):
