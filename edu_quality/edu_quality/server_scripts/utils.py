@@ -140,10 +140,10 @@ def batch_filter(doctype, txt, searchfield, start, page_len, filters):
 
 
 @frappe.whitelist(allow_guest=True)
-def settlement_hook(data):
+def settlement_hook(**kwargs):
     try:
-        data = json.loads(data)
-        frappe.logger('settlement').exception(data)
+        # data = json.loads(data)
+        frappe.logger('settlement').exception(kwargs)
         return 1
     except Exception as e:
         frappe.logger('settlement').exception(e)
