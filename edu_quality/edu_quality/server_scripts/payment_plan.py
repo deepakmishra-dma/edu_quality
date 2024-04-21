@@ -19,6 +19,8 @@ def get_deposit_amount(fees):
             deposits += component.amount 
     return deposits,apply_deposit
 
+def process_pp_modification(payment_plan, doctype, fee_name):
+    pass
 
 @frappe.whitelist()
 def change_payment_plan(payment_plan, doctype, fee_name):
@@ -108,6 +110,7 @@ def update_payment_plan(payment_plan, doc):
         # if i == len(payment_plan.payment_schedule)-1 and discount:
         #     amount -= discount_amount
         breakup = term_discounts.get(ps.payment_term,{})
+        frappe.logger('modify').exception(breakup)
         doc.append("payment_schedule",{
             'payment_term':ps.payment_term,
             'description': description,
