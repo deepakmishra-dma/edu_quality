@@ -6,33 +6,26 @@ try:
     from nextai.whatsapp_business_api_integration.doctype.whatsapp_message.whatsapp_message import (
         send_templated_message,
     )
+    from nextai.funnel.custom_trigger import trigger_event
 except ImportError:
     print("Chatnext is not installed")
+    trigger_event = None
 
 
 @frappe.whitelist(allow_guest=True)
-def generate_undertaking_otp(payment_hash=None,fee=None,fee_advance=None):
-    if fee:
-        doctype = "Fees"
-        docname = fee
-    elif fee_advance:
-        doctype = "Fee Advance"
-        docname = fee_advance
-    else:
-        doctype, docname = get_fee(payment_hash)
-    return generate_otp(doctype, docname)
+def generate_undertaking_otp(payment_hash=None, fee=None, fee_advance=None):
+    if not trigger_event:
+        return False
+    doctype, docname = ("Fees", fee) if fee else ("Fee Advance", fee_advance) if fee_advance else get_fee(payment_hash)
+    fee_doc = frappe.get_doc(doctype, docname)
+    trigger_event(doc=fee_doc, event_name="undertaking_otp")
+    generate_otp({"doc": fee_doc})
+    return True
 
 
 @frappe.whitelist(allow_guest=True)
-def verify_undertaking_otp(otp,payment_hash=None,fee=None,fee_advance=None):
-    if fee:
-        doctype = "Fees"
-        docname = fee
-    elif fee_advance:
-        doctype = "Fee Advance"
-        docname = fee_advance
-    else:
-        doctype, docname = get_fee(payment_hash)
+def verify_undertaking_otp(otp, payment_hash=None, fee=None, fee_advance=None):
+    doctype, docname = (fee and ("Fees", fee)) or (fee_advance and ("Fee Advance", fee_advance)) or get_fee(payment_hash)
     return verify_otp(docname, otp)
 
 
@@ -44,19 +37,18 @@ def get_fee(payment_hash):
     return doctype, docname
 
 
-def generate_otp(doctype, docname):
-    try:
-        rs = frappe.cache()
-        key = docname
-        digits = "0123456789"
-        OTP = ""
-        for i in range(6):
-            OTP += digits[math.floor(random.random() * 10)]
-        rs.set_value(key, OTP, expires_in_sec=300)
-        return send_otp(doctype, docname, OTP)
-    except Exception as e:
-        return False
+def generate_otp(variables=None):
+    doc = variables.get("doc")
+    rs = frappe.cache()
+    key = doc.name
+    OTP = ""
+    for i in range(4):
+        OTP += str(random.randint(1, 9))
+    rs.set_value(key, OTP, expires_in_sec=300)
 
+    if variables:
+        variables["otp"] = OTP
+    return send_otp(doc.name, OTP)
 
 def send_otp(doctype, docname, otp):
     try:
@@ -67,15 +59,15 @@ def send_otp(doctype, docname, otp):
 
         student = frappe.get_doc("Student", student)
         mobile = get_mobile_number(student)
-        email = get_email_id(student)
+        # email = get_email_id(student)
         if mobile:
             sms_otp(mobile, otp)
             if frappe.db.exists("Contact", {"whatsapp_id": mobile}):
                 contact = frappe.get_doc("Contact", {"whatsapp_id": mobile})
                 whatsapp_otp(contact, otp)
 
-        if email:
-            email_otp(email, otp)
+        # if email:
+        #     email_otp(email, otp)
 
         return True
     except Exception as e:
