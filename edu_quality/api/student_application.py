@@ -136,7 +136,7 @@ school_id_map = {
 @frappe.whitelist(allow_guest=True)
 def update_stud_data(**data):
     ref_no = data.get("Student").get("refNo", "")
-    ref_no = None if ref_no == "<REF_NO>" else ref_no
+    ref_no = None if ref_no == "<REF-NO>" else ref_no
     school_id = data.get("Student").get("school_id", None)
     data = data.get("Student").get("StudentInfoChange")
 
@@ -146,6 +146,7 @@ def update_stud_data(**data):
     # )
     # applicant
     existing_student_doc = None
+
     if not ref_no or not school_id:
         existing_student_doc = frappe.get_list(
             "Student Applicant",
@@ -159,6 +160,7 @@ def update_stud_data(**data):
                 "reference_number": ref_no,
                 "school": school_id_map.get(str(school_id), ""),
             },
+            ignore_permissions=True,
         )
 
     if not existing_student_doc or len(existing_student_doc) == 0:
@@ -168,7 +170,7 @@ def update_stud_data(**data):
     current_user = frappe.session.user
 
     frappe.set_user("Administrator")
-
+   
     adhar_card_cert = save_file(
         str(uuid.uuid4()),
         data.get("adhar_card_cert"),
