@@ -37,7 +37,7 @@ def get_fee(payment_hash):
     return doctype, docname
 
 
-def generate_otp(variables=None):
+def generate_otp(variables):
     doc = variables.get("doc")
     rs = frappe.cache()
     key = doc.name
@@ -46,8 +46,7 @@ def generate_otp(variables=None):
         OTP += str(random.randint(1, 9))
     rs.set_value(key, OTP, expires_in_sec=300)
 
-    if variables:
-        variables["otp"] = OTP
+    variables["otp"] = OTP
     return send_otp(doc.name, OTP)
 
 def send_otp(doctype, docname, otp):

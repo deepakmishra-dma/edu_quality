@@ -323,7 +323,7 @@ fixtures = [
     {"dt": "School"},
     {"dt": "Academic Year"},
     {"dt": "Funnel Node", "filters": [["name", "in", ["Student Referral", "Fee Receipt", "Undertaking OTP"]]]},
-    {"dt": "Funnel"},
+    # {"dt": "Funnel"},
     {"dt": "Email Template"},
     {"dt": "Letter Head"},
     {"dt": "Class Type"},
