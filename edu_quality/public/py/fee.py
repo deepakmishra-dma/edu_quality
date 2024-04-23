@@ -123,7 +123,7 @@ def on_update(doc, method=None):
             return
 
     if old_doc.payment_plan != doc.payment_plan:
-        update_breakup_after_pp_change(doc)
+        # update_breakup_after_pp_change(doc)
         update_payment_request_after_discount(doc)
         return
     verify_invoice_portion(doc.payment_schedule)
