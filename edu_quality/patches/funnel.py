@@ -843,8 +843,4 @@ def execute():
         if not frappe.db.exists("Funnel", {"name": d.get("name")}):
             doc = frappe.get_doc(d)
             doc.insert()
-        else:
-            doc = frappe.get_doc("Funnel", d.get("name"))
-            doc.update(d)
-            doc.save()
 
