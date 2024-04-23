@@ -837,7 +837,7 @@
    "name": "Program-class_group",
    "no_copy": 0,
    "non_negative": 0,
-   "options": "KG\nSenior KG\nPrimary \nSecondary",
+   "options": "KG\nSenior KG\nPrimary\nSecondary",
    "owner": "Administrator",
    "permlevel": 0,
    "precision": "",
