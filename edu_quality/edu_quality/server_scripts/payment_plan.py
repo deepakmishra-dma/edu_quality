@@ -19,8 +19,7 @@ def get_deposit_amount(fees):
             deposits += component.amount 
     return deposits,apply_deposit
 
-def process_pp_modification(payment_plan, doctype, fee_name):
-    pass
+
 
 @frappe.whitelist()
 def change_payment_plan(payment_plan, doctype, fee_name):
@@ -30,6 +29,12 @@ def change_payment_plan(payment_plan, doctype, fee_name):
         for ps in doc.payment_schedule:
             if ps.outstanding == 0:
                 frappe.throw(f"Cannot Change Payment Plan As {ps.payment_term} is already Paid!")
+
+        for component in doc.components:
+            discounts = component.custom_discounts.split(',')
+            for dis in discounts:
+                if "Referral" not in dis or "Payment Plan" not in dis:
+                    frappe.throw(f"Cannot Change Payment Plan! remove {dis} to modify payment plan!")
         
         remove_payment_plan_discount(doc)
         doc.reload()
