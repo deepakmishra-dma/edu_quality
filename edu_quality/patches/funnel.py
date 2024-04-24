@@ -537,7 +537,7 @@ data = [
   "doctype": "Funnel",
   "funnel_definition": [
    {
-    "data": "{\n    \"action\": \"after_insert\",\n    \"doctype\": \"Program Enrollment\",\n    \"submit\": true\n}",
+    "data": "{\n    \"action\": \"on_submit\",\n    \"doctype\": \"Program Enrollment\",\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
     "element_type": "Trigger",
     "id": "sWcnlymJyz9zfFwR6Wh5S",
     "parent": "Welcome Email",
@@ -551,7 +551,7 @@ data = [
     "type": "document_event_trigger"
    },
    {
-    "data": "{\n    \"node_label\": \"Get Details of Student\",\n    \"python_code\": \"doc = variables.get(\\\"doc\\\")\\n\\nvariables[\\\"recipient\\\"] = frappe.db.get_value(\\\"Student\\\", doc.student, \\\"student_email_id\\\")\\n\\nvariables[\\\"first_name\\\"] = doc.student_name\\npe = frappe.get_all(\\\"Program Enrollment\\\",{\\\"student\\\":doc.student, \\\"docstatus\\\":1})\\n\\nvariables[\\\"is_new\\\"] = len(pe) == 1\\n\",\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
+    "data": "{\n    \"node_label\": \"Get Details of Student\",\n    \"python_code\": \"doc = variables.get(\\\"doc\\\")\\n\\nvariables[\\\"recipient\\\"] = frappe.db.get_value(\\\"Student\\\", doc.student, \\\"student_email_id\\\")\\nvariables[\\\"status\\\"] = frappe.db.get_value(\\\"Student\\\", doc.student, \\\"student_status\\\")\\nvariables[\\\"first_name\\\"] = doc.student_name\\n\",\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
     "element_type": "Action",
     "id": "584Vv8EY9zbmvQii7mUjm",
     "parent": "Welcome Email",
@@ -565,7 +565,7 @@ data = [
     "type": "exec_python"
    },
    {
-    "data": "{\n    \"expression\": \"return variables.get(\\\"is_new\\\")\",\n    \"filters\": [],\n    \"node_label\": \"Filter New and Old Student\",\n    \"submit\": true,\n    \"use_python_expression\": true,\n    \"variable_path_for_output\": \"\"\n}",
+    "data": "{\n    \"expression\": \"status = variables.get(\\\"status\\\")\\nif status == \\\"New Student\\\":\\n    return True\",\n    \"filters\": [],\n    \"node_label\": \"Filter New Students\",\n    \"submit\": true,\n    \"use_python_expression\": true,\n    \"variable_path_for_output\": \"\"\n}",
     "element_type": "Action",
     "id": "ljFLq-WhJKM1mY2EyIneq",
     "parent": "Welcome Email",
@@ -607,20 +607,6 @@ data = [
     "type": "smoothstep"
    },
    {
-    "data": "{\n    \"email_account\": \"Notifications\",\n    \"email_content\": \"\",\n    \"email_template\": \"Welcome Email\",\n    \"recepients\": [\n        {\n            \"cc\": \"\",\n            \"recepientField\": \"\",\n            \"recipient\": \"{{recipient}}\"\n        }\n    ],\n    \"select_template\": true,\n    \"send_to_assigned_users\": false,\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
-    "element_type": "Action",
-    "id": "b1PGxqRKsrmlF-u0qC3Aq",
-    "parent": "Welcome Email",
-    "parentfield": "funnel_definition",
-    "parenttype": "Funnel",
-    "position": "{\n    \"x\": 1170,\n    \"y\": 270\n}",
-    "source": None,
-    "sourcehandle": None,
-    "target": None,
-    "targethandle": None,
-    "type": "send_mail"
-   },
-   {
     "data": None,
     "element_type": "edge",
     "id": "reactflow__edge-584Vv8EY9zbmvQii7mUjmoutput-ljFLq-WhJKM1mY2EyIneqinput",
@@ -647,25 +633,11 @@ data = [
     "target": "ibJjFd348XmCAyrP7pqx-",
     "targethandle": "input",
     "type": "smoothstep"
-   },
-   {
-    "data": None,
-    "element_type": "edge",
-    "id": "reactflow__edge-ljFLq-WhJKM1mY2EyIneqno-b1PGxqRKsrmlF-u0qC3Aqinput",
-    "parent": "Welcome Email",
-    "parentfield": "funnel_definition",
-    "parenttype": "Funnel",
-    "position": None,
-    "source": "ljFLq-WhJKM1mY2EyIneq",
-    "sourcehandle": "no",
-    "target": "b1PGxqRKsrmlF-u0qC3Aq",
-    "targethandle": "input",
-    "type": "smoothstep"
    }
   ],
   "funnel_name": "Welcome Email",
   "name": "Welcome Email",
-  "status": "updated",
+  "status": "published",
   "variable_list": "[]",
   "viewport": "{\"x\":-278,\"y\":121,\"zoom\":1}"
  },
@@ -949,7 +921,7 @@ data = [
     "type": "Undertaking OTP"
    },
    {
-    "data": "{\n    \"node_label\": \"Generate OTP\",\n    \"python_code\": \"doc = variables.get(\\\"doc\\\")\\n\\nemail = frappe.db.get_value(\\\"Student\\\", doc.student, \\\"student_email_id\\\")\\n\\nvariables[\\\"recipient\\\"] = email\",\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
+    "data": "{\n    \"node_label\": \"Get Student Details\",\n    \"python_code\": \"doc = variables.get(\\\"doc\\\")\\n\\nemail = frappe.db.get_value(\\\"Student\\\", doc.student, \\\"student_email_id\\\")\\n\\nvariables[\\\"recipient\\\"] = email\",\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
     "element_type": "Action",
     "id": "Qian3GkT4K0XlcvgZnLwN",
     "parent": "Undertaking OTP",
@@ -1049,7 +1021,7 @@ data = [
   ],
   "funnel_name": "Undertaking OTP",
   "name": "Undertaking OTP",
-  "status": "updated",
+  "status": "published",
   "variable_list": "[]",
   "viewport": "{\"x\":-89,\"y\":290,\"zoom\":1}"
  }
