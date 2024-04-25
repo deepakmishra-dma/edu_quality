@@ -47,7 +47,7 @@ def generate_otp(variables):
     rs.set_value(key, OTP, expires_in_sec=300)
 
     variables["otp"] = OTP
-    return send_otp(doc.name, OTP)
+    return send_otp(doc.doctype,doc.name, OTP)
 
 def send_otp(doctype, docname, otp):
     try:
