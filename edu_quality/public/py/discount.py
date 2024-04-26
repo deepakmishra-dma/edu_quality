@@ -44,7 +44,10 @@ def add_discount(fee_name, discount, fees=None, doctype="Fees"):
                             discount_applied = True
                             frappe.response['message'] = message
                         else:
-                            amount = component.amount
+                            if doctype == "Fee Advance":
+                                amount = frappe.db.get_value("Fee Component",{"fees_category":component.fees_category, "parent":fees.fee_structure},'amount')
+                            else:
+                                amount = component.amount
                             grand_discount_amount = (amount * float(dis.discount)) / 100
                             discounted_amount = grand_discount_amount + component.custom_discount_amount
                             discount = calculate_discount(component.amount, discounted_amount)
@@ -76,9 +79,13 @@ def add_discount(fee_name, discount, fees=None, doctype="Fees"):
                         discount_applied = True
                         frappe.response['message'] = message
                     else:
-                        grand_discount_amount = (component.amount * float(dis.discount)) / 100
+                        if doctype == "Fee Advance":
+                            amount = frappe.db.get_value("Fee Component",{"fees_category":component.fees_category, "parent":fees.fee_structure},'amount')
+                        else:
+                            amount = component.amount
+                        grand_discount_amount = (amount * float(dis.discount)) / 100
                         discounted_amount = grand_discount_amount
-                        amount = component.amount - discounted_amount
+                        amount = amount - discounted_amount
                         update_component(component.name, discount_name, dis.discount, discounted_amount, grand_discount_amount, amount, fees)
                         message = dis.name + " Discount applied successfully"
                         discount_applied = True
