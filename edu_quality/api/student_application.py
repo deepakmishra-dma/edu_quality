@@ -12,7 +12,7 @@ from frappe.query_builder import Criterion, functions
 from edu_quality.public.py.utils import (
     convert_time_string_to_hours,
     add_indian_country_code,
-    remove_indian_country_code
+    remove_indian_country_code,
 )
 from itertools import chain
 
@@ -28,8 +28,6 @@ def get_class_without_std(txt):
     if "Std. " in txt:
         return txt.split("Std. ")[1]
     return txt
-
-
 
 
 def separate_name(full_name):
@@ -139,7 +137,7 @@ def update_stud_data(**data):
     ref_no = None if ref_no == "<REF-NO>" else ref_no
     school_id = data.get("Student").get("school_id", None)
     data = data.get("Student").get("StudentInfoChange")
-
+    isStudent = False if not ref_no or not school_id else True
     # ref_no = data.get("refNo", None) or data.get("Student", {}).get("refNo", None)
     # school_id = data.get("school_id", None) or data.get("Student", {}).get(
     #     "school_id", None
@@ -147,7 +145,7 @@ def update_stud_data(**data):
     # applicant
     existing_student_doc = None
 
-    if not ref_no or not school_id:
+    if not isStudent:
         existing_student_doc = frappe.get_list(
             "Student Applicant",
             {"lms_id": data.get("lms_id"), "school": data.get("school_name")},
@@ -170,19 +168,19 @@ def update_stud_data(**data):
     current_user = frappe.session.user
 
     frappe.set_user("Administrator")
-   
-    adhar_card_cert = save_file(
-        str(uuid.uuid4()),
-        data.get("adhar_card_cert"),
-        "Student Applicant",
-        name,
-        decode=True,
-    )
+
+    # adhar_card_cert = save_file(
+    #     str(uuid.uuid4()),
+    #     data.get("adhar_card_cert"),
+    #     "Student Applicant",
+    #     name,
+    #     decode=True,
+    # )
     court_order = (
         save_file(
             str(uuid.uuid4()),
             data.get("court_order_doc"),
-            "Student Applicant",
+            "Student" if isStudent else "Student Applicant",
             name,
             decode=True,
         )
@@ -194,7 +192,7 @@ def update_stud_data(**data):
         save_file(
             str(uuid.uuid4()),
             data.get("student_photo"),
-            "Student Applicant",
+            "Student" if isStudent else "Student Applicant",
             name,
             decode=True,
         )
@@ -206,7 +204,7 @@ def update_stud_data(**data):
         save_file(
             str(uuid.uuid4()),
             data.get("birth_cert"),
-            "Student Applicant",
+            "Student" if isStudent else "Student Applicant",
             name,
             decode=True,
         )
@@ -218,7 +216,7 @@ def update_stud_data(**data):
         save_file(
             str(uuid.uuid4()),
             data.get("adhar_card_cert"),
-            "Student Applicant",
+            "Student" if isStudent else "Student Applicant",
             name,
             decode=True,
         )
@@ -227,9 +225,10 @@ def update_stud_data(**data):
     )
 
     frappe.set_user(current_user)
-
-    existing_student_doc = frappe.get_doc("Student Applicant", {"name": name})
-
+    if not isStudent:
+        existing_student_doc = frappe.get_doc("Student Applicant", {"name": name})
+    else:
+        existing_student_doc = frappe.get_doc("Student", {"name": name})
     father_in_doc = next(
         (
             item
@@ -383,6 +382,8 @@ def update_stud_data(**data):
     existing_student_doc.caste = data.get("other_caste") or data.get("caste")
     existing_student_doc.religion = data.get("other_religion") or data.get("religion")
     existing_student_doc.subcaste = data.get("other_subcaste") or data.get("subcaste")
+    existing_student_doc.sub_caste = data.get("other_subcaste") or data.get("subcaste")
+    existing_student_doc.birth_place = data.get("b_city") or data.get("b_city")
     existing_student_doc.student_mobile_number = data.get("student_sms_no")
     existing_student_doc.student_is_existingstudent = int(
         data.get("student_isexistingstudent") or 0
@@ -408,6 +409,13 @@ def update_stud_data(**data):
     existing_student_doc.custom_mother_tongue = data.get("mother_tongue") or data.get(
         "other_mother_tongue"
     )
+    existing_student_doc.mother_tongue = data.get("mother_tongue") or data.get(
+        "other_mother_tongue"
+    )
+    existing_student_doc.custom_mother_tongue = data.get("mother_tongue") or data.get(
+        "other_mother_tongue"
+    )
+    existing_student_doc.aadhaar_card_certificate = adhar_card_cert.get("file_url", "")
     existing_student_doc.aadhar_card_cert = adhar_card_cert.get("file_url", "")
     existing_student_doc.birth_cert = birth_cert.get("file_url", "")
     existing_student_doc.image = image.get("file_url", "")
