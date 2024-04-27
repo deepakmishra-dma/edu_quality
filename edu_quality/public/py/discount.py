@@ -39,7 +39,7 @@ def add_discount(fee_name, discount, fees=None, doctype="Fees"):
                             discounted_amount = grand_discount_amount + component.custom_discount_amount
                             amount = component.amount - discounted_amount
                             discount = calculate_discount(component.amount, discounted_amount)
-                            update_component(component.name, discount_name, discount, discounted_amount, grand_discount_amount, amount, fees)
+                            update_component(component.name, discount_name, discount, discounted_amount, grand_discount_amount, amount, fees, component_amount=component.amount)
                             message = dis.name + " Discount applied successfully"
                             discount_applied = True
                             frappe.response['message'] = message
@@ -74,7 +74,7 @@ def add_discount(fee_name, discount, fees=None, doctype="Fees"):
                         discounted_amount = grand_discount_amount = dis.discount_amount
                         amount = component.amount - discounted_amount
                         discount = calculate_discount(component.amount, discounted_amount)
-                        update_component(component.name, discount_name, discount, discounted_amount, grand_discount_amount, amount, fees)
+                        update_component(component.name, discount_name, discount, discounted_amount, grand_discount_amount, amount, fees, component_amount=component.amount)
                         message = dis.name + " Discount applied successfully"
                         discount_applied = True
                         frappe.response['message'] = message
@@ -134,7 +134,7 @@ def remove_discount(fee_name, discount, update_payment_request=True, doctype="Fe
                         discount_list.remove(dis.name)
                         discount_name = ", ".join(discount_list)
                         # updating the data in the database
-                        remove_and_update_component(component.name, discount_name, discount, discount_amount, grand_discount_amount, amount, fees)
+                        remove_and_update_component(component.name, discount_name, discount, discount_amount, grand_discount_amount, amount, fees, component_amount=component.amount)
                         message = dis.name + " Discount removed successfully"
                         discount_removed = True
                         frappe.response['message'] = message
