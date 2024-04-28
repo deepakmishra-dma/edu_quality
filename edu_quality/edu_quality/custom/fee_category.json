@@ -322,7 +322,7 @@
    "description": null,
    "docstatus": 0,
    "dt": "Fee Category",
-   "fetch_from": null,
+   "fetch_from": "custom_company.default_payment_label",
    "fetch_if_empty": 0,
    "fieldname": "custom_label",
    "fieldtype": "Link",

@@ -566,7 +566,7 @@
    "description": null,
    "docstatus": 0,
    "dt": "Fee Component",
-   "fetch_from": "fees_category.custom_label",
+   "fetch_from": "custom_company.default_payment_label",
    "fetch_if_empty": 1,
    "fieldname": "label",
    "fieldtype": "Data",
