@@ -527,7 +527,7 @@ data = [
   ],
   "funnel_name": "Payment Link",
   "name": "Payment Link",
-  "status": "published",
+  "status": "updated",
   "variable_list": "[]",
   "viewport": "{\"x\":-249.1763458960039,\"y\":210.87608403093827,\"zoom\":0.8705772002909622}"
  },
@@ -551,7 +551,7 @@ data = [
     "type": "document_event_trigger"
    },
    {
-    "data": "{\n    \"node_label\": \"Get Details of Student\",\n    \"python_code\": \"doc = variables.get(\\\"doc\\\")\\n\\nvariables[\\\"recipient\\\"] = frappe.db.get_value(\\\"Student\\\", doc.student, \\\"student_email_id\\\")\\nvariables[\\\"status\\\"] = frappe.db.get_value(\\\"Student\\\", doc.student, \\\"student_status\\\")\\nvariables[\\\"first_name\\\"] = doc.student_name\\nvariables[\\\"imported\\\"] = frappe.db.get_value(\\\"Student\\\", doc.student, \\\"imported\\\")\\n\",\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
+    "data": "{\n    \"node_label\": \"Get Details of Student\",\n    \"python_code\": \"doc = variables.get(\\\"doc\\\")\\n\\nexisting_pe = frappe.get_all(\\\"Program Enrollment\\\", {\\\"student\\\": doc.student, \\\"docstatus\\\": 1})\\n\\nvariables[\\\"recipient\\\"] = frappe.db.get_value(\\\"Student\\\", doc.student, \\\"student_email_id\\\")\\nvariables[\\\"status\\\"] = len(existing_pe) <= 1\\nvariables[\\\"first_name\\\"] = doc.student_name\\nvariables[\\\"imported\\\"] = frappe.db.get_value(\\\"Student\\\", doc.student, \\\"imported\\\")\\n\",\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
     "element_type": "Action",
     "id": "584Vv8EY9zbmvQii7mUjm",
     "parent": "Welcome Email",
@@ -565,7 +565,7 @@ data = [
     "type": "exec_python"
    },
    {
-    "data": "{\n    \"expression\": \"status = variables.get(\\\"status\\\")\\nimported = variables.get(\\\"imported\\\")\\nif status == \\\"New Student\\\" and not imported:\\n    return True\",\n    \"filters\": [],\n    \"node_label\": \"Filter New Students\",\n    \"submit\": true,\n    \"use_python_expression\": true,\n    \"variable_path_for_output\": \"\"\n}",
+    "data": "{\n    \"expression\": \"status = variables.get(\\\"status\\\")\\nimported = variables.get(\\\"imported\\\")\\nif status and not imported:\\n    return True\",\n    \"filters\": [],\n    \"node_label\": \"Filter New Students\",\n    \"submit\": true,\n    \"use_python_expression\": true,\n    \"variable_path_for_output\": \"\"\n}",
     "element_type": "Action",
     "id": "ljFLq-WhJKM1mY2EyIneq",
     "parent": "Welcome Email",
@@ -719,7 +719,7 @@ data = [
   ],
   "funnel_name": "Rules and Regulation Submission",
   "name": "Rules and Regulation Submission",
-  "status": "published",
+  "status": "updated",
   "variable_list": "[]",
   "viewport": "{\"x\":-300,\"y\":216,\"zoom\":1}"
  },
@@ -801,7 +801,7 @@ data = [
   ],
   "funnel_name": "Fee Receipt",
   "name": "Fee Receipt",
-  "status": "published",
+  "status": "updated",
   "variable_list": "[]",
   "viewport": "{\"x\":10,\"y\":200,\"zoom\":1}"
  },
@@ -883,7 +883,7 @@ data = [
   ],
   "funnel_name": "Student Referral",
   "name": "Student Referral",
-  "status": "published",
+  "status": "updated",
   "variable_list": "[]",
   "viewport": "{\"x\":10,\"y\":200,\"zoom\":1}"
  },
@@ -1021,7 +1021,7 @@ data = [
   ],
   "funnel_name": "Undertaking OTP",
   "name": "Undertaking OTP",
-  "status": "published",
+  "status": "updated",
   "variable_list": "[]",
   "viewport": "{\"x\":-89,\"y\":290,\"zoom\":1}"
  }
