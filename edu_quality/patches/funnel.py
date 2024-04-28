@@ -27,7 +27,7 @@ data = [
     "parent": "Payment Link",
     "parentfield": "funnel_definition",
     "parenttype": "Funnel",
-    "position": "{\n    \"x\": 1215,\n    \"y\": 135\n}",
+    "position": "{\n    \"x\": 1125,\n    \"y\": 135\n}",
     "source": None,
     "sourcehandle": None,
     "target": None,
@@ -203,7 +203,7 @@ data = [
     "type": "var_filter"
    },
    {
-    "data": "{\n    \"expression\": \"doc = variables.get(\\\"doc\\\")\\nif doc.payment_term == \\\"Term 1\\\":\\n    return False\\nelse:\\n    return True\",\n    \"filters\": [],\n    \"node_label\": \"Filter Installment\",\n    \"submit\": true,\n    \"use_python_expression\": true,\n    \"variable_path_for_output\": \"\"\n}",
+    "data": "{\n    \"expression\": \"doc = variables.get(\\\"doc\\\")\\nif doc.payment_term == \\\"Term 1\\\":\\n    return True\\nelse:\\n    return False\",\n    \"filters\": [],\n    \"node_label\": \"Filter Installment\",\n    \"submit\": true,\n    \"use_python_expression\": true,\n    \"variable_path_for_output\": \"\"\n}",
     "element_type": "Action",
     "id": "eBl97XtjA8KwduM0J8zo6",
     "parent": "Payment Link",
@@ -443,34 +443,6 @@ data = [
    {
     "data": None,
     "element_type": "edge",
-    "id": "reactflow__edge-eBl97XtjA8KwduM0J8zo6yes-ktDwwAvcV2qqSoA6H49urinput",
-    "parent": "Payment Link",
-    "parentfield": "funnel_definition",
-    "parenttype": "Funnel",
-    "position": None,
-    "source": "eBl97XtjA8KwduM0J8zo6",
-    "sourcehandle": "yes",
-    "target": "ktDwwAvcV2qqSoA6H49ur",
-    "targethandle": "input",
-    "type": "smoothstep"
-   },
-   {
-    "data": None,
-    "element_type": "edge",
-    "id": "reactflow__edge-eBl97XtjA8KwduM0J8zo6no-3sScfFhiE-qfOMbSpZgR0input",
-    "parent": "Payment Link",
-    "parentfield": "funnel_definition",
-    "parenttype": "Funnel",
-    "position": None,
-    "source": "eBl97XtjA8KwduM0J8zo6",
-    "sourcehandle": "no",
-    "target": "3sScfFhiE-qfOMbSpZgR0",
-    "targethandle": "input",
-    "type": "smoothstep"
-   },
-   {
-    "data": None,
-    "element_type": "edge",
     "id": "reactflow__edge-jm_Rhj2CVI_Yv4OZslAUWyes-OFAAVVDKwYSCUTQQhs_Xjinput",
     "parent": "Payment Link",
     "parentfield": "funnel_definition",
@@ -493,6 +465,20 @@ data = [
     "source": "S2WR9WbUO2lKaGshG8_Pp",
     "sourcehandle": "yes",
     "target": "aVYGk4nvN42GHJkSCWTKC",
+    "targethandle": "input",
+    "type": "smoothstep"
+   },
+   {
+    "data": None,
+    "element_type": "edge",
+    "id": "reactflow__edge-eBl97XtjA8KwduM0J8zo6no-3sScfFhiE-qfOMbSpZgR0input",
+    "parent": "Payment Link",
+    "parentfield": "funnel_definition",
+    "parenttype": "Funnel",
+    "position": None,
+    "source": "eBl97XtjA8KwduM0J8zo6",
+    "sourcehandle": "no",
+    "target": "3sScfFhiE-qfOMbSpZgR0",
     "targethandle": "input",
     "type": "smoothstep"
    },
@@ -523,13 +509,27 @@ data = [
     "target": "nN6Btz--ZAOQR4mwDRyAH",
     "targethandle": "input",
     "type": "smoothstep"
+   },
+   {
+    "data": None,
+    "element_type": "edge",
+    "id": "reactflow__edge-eBl97XtjA8KwduM0J8zo6yes-ktDwwAvcV2qqSoA6H49urinput",
+    "parent": "Payment Link",
+    "parentfield": "funnel_definition",
+    "parenttype": "Funnel",
+    "position": None,
+    "source": "eBl97XtjA8KwduM0J8zo6",
+    "sourcehandle": "yes",
+    "target": "ktDwwAvcV2qqSoA6H49ur",
+    "targethandle": "input",
+    "type": "smoothstep"
    }
   ],
   "funnel_name": "Payment Link",
   "name": "Payment Link",
   "status": "published",
   "variable_list": "[]",
-  "viewport": "{\"x\":-334.1763458960038,\"y\":191.87608403093827,\"zoom\":0.8705772002909622}"
+  "viewport": "{\"x\":-249.1763458960039,\"y\":210.87608403093827,\"zoom\":0.8705772002909622}"
  },
  {
   "archived": 0,
@@ -551,7 +551,7 @@ data = [
     "type": "document_event_trigger"
    },
    {
-    "data": "{\n    \"node_label\": \"Get Details of Student\",\n    \"python_code\": \"doc = variables.get(\\\"doc\\\")\\n\\nvariables[\\\"recipient\\\"] = frappe.db.get_value(\\\"Student\\\", doc.student, \\\"student_email_id\\\")\\nvariables[\\\"status\\\"] = frappe.db.get_value(\\\"Student\\\", doc.student, \\\"student_status\\\")\\nvariables[\\\"first_name\\\"] = doc.student_name\\n\",\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
+    "data": "{\n    \"node_label\": \"Get Details of Student\",\n    \"python_code\": \"doc = variables.get(\\\"doc\\\")\\n\\nvariables[\\\"recipient\\\"] = frappe.db.get_value(\\\"Student\\\", doc.student, \\\"student_email_id\\\")\\nvariables[\\\"status\\\"] = frappe.db.get_value(\\\"Student\\\", doc.student, \\\"student_status\\\")\\nvariables[\\\"first_name\\\"] = doc.student_name\\nvariables[\\\"imported\\\"] = frappe.db.get_value(\\\"Student\\\", doc.student, \\\"imported\\\")\\n\",\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
     "element_type": "Action",
     "id": "584Vv8EY9zbmvQii7mUjm",
     "parent": "Welcome Email",
@@ -565,7 +565,7 @@ data = [
     "type": "exec_python"
    },
    {
-    "data": "{\n    \"expression\": \"status = variables.get(\\\"status\\\")\\nif status == \\\"New Student\\\":\\n    return True\",\n    \"filters\": [],\n    \"node_label\": \"Filter New Students\",\n    \"submit\": true,\n    \"use_python_expression\": true,\n    \"variable_path_for_output\": \"\"\n}",
+    "data": "{\n    \"expression\": \"status = variables.get(\\\"status\\\")\\nimported = variables.get(\\\"imported\\\")\\nif status == \\\"New Student\\\" and not imported:\\n    return True\",\n    \"filters\": [],\n    \"node_label\": \"Filter New Students\",\n    \"submit\": true,\n    \"use_python_expression\": true,\n    \"variable_path_for_output\": \"\"\n}",
     "element_type": "Action",
     "id": "ljFLq-WhJKM1mY2EyIneq",
     "parent": "Welcome Email",
@@ -719,7 +719,7 @@ data = [
   ],
   "funnel_name": "Rules and Regulation Submission",
   "name": "Rules and Regulation Submission",
-  "status": "updated",
+  "status": "published",
   "variable_list": "[]",
   "viewport": "{\"x\":-300,\"y\":216,\"zoom\":1}"
  },
@@ -801,7 +801,7 @@ data = [
   ],
   "funnel_name": "Fee Receipt",
   "name": "Fee Receipt",
-  "status": "updated",
+  "status": "published",
   "variable_list": "[]",
   "viewport": "{\"x\":10,\"y\":200,\"zoom\":1}"
  },
@@ -883,7 +883,7 @@ data = [
   ],
   "funnel_name": "Student Referral",
   "name": "Student Referral",
-  "status": "updated",
+  "status": "published",
   "variable_list": "[]",
   "viewport": "{\"x\":10,\"y\":200,\"zoom\":1}"
  },
