@@ -181,7 +181,7 @@ def create_fees(doc, method=None):
     try:
         student = frappe.get_doc("Student", doc.student)
         if student.imported and student.student_status not in ["New Student", "Cancelled"]:
-            existing_pe = frappe.get_all("Program Enrollment", {"student": doc.student,"program":doc.program, "docstatus": 1})
+            existing_pe = frappe.get_all("Program Enrollment", {"student": doc.student, "docstatus": 1})
             if len(existing_pe) <= 1:
                 return
         fee_structure = frappe.get_value("Fee Structure", {"program": doc.program, "academic_year":doc.academic_year}, "name")
