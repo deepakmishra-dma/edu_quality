@@ -31,7 +31,7 @@ def change_payment_plan(payment_plan, doctype, fee_name):
                 frappe.throw(f"Cannot Change Payment Plan As {ps.payment_term} is already Paid!")
 
         for component in doc.components:
-            discounts = component.custom_discounts.split(',')
+            discounts = component.custom_discounts.split(',') if component.custom_discounts else []
             for dis in discounts:
                 if not dis or dis == '' or dis == ' ':
                     continue

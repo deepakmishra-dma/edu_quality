@@ -78,7 +78,8 @@ frappe.ui.form.on("Carnival Event", {
                         multiple: true,
                         preferredCameraType: 'rear',
                         galleryTitle: frm.doc.name,
-                        backgroundMode: true
+                        // backgroundMode: true,
+                        // backgroundStorageKey: "Carnival Events"
                     })
                     await folderExists('Home', frm.doc.name)
 
