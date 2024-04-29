@@ -33,6 +33,8 @@ def change_payment_plan(payment_plan, doctype, fee_name):
         for component in doc.components:
             discounts = component.custom_discounts.split(',')
             for dis in discounts:
+                if not dis or dis == '' or dis == ' ':
+                    continue
                 if "Referral" not in dis or "Payment Plan" not in dis:
                     frappe.throw(f"Cannot Change Payment Plan! remove {dis} to modify payment plan!")
         
