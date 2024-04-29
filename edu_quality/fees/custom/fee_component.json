@@ -384,7 +384,7 @@
    "docstatus": 0,
    "dt": "Fee Component",
    "fetch_from": "fees_category.custom_company",
-   "fetch_if_empty": 0,
+   "fetch_if_empty": 1,
    "fieldname": "custom_company",
    "fieldtype": "Link",
    "hidden": 0,

@@ -9,7 +9,7 @@
  "doctype": "Custom Field",
  "dt": "Fee Category",
  "fetch_from": "custom_company.default_payment_label",
- "fetch_if_empty": 0,
+ "fetch_if_empty": 1,
  "fieldname": "custom_label",
  "fieldtype": "Link",
  "hidden": 0,
