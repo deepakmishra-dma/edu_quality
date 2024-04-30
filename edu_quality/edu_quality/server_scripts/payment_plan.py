@@ -35,7 +35,9 @@ def change_payment_plan(payment_plan, doctype, fee_name):
             for dis in discounts:
                 if not dis or dis == '' or dis == ' ':
                     continue
-                if "Referral" not in dis or "Payment Plan" not in dis:
+                elif ("Referral" in dis) or ("Payment Plan" in dis):
+                    continue
+                else:
                     frappe.throw(f"Cannot Change Payment Plan! remove {dis} to modify payment plan!")
         
         remove_payment_plan_discount(doc)
