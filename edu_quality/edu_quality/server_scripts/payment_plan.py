@@ -98,6 +98,18 @@ def get_term_wise_discounts(fees,payment_plan):
                                 }
     return discounts
                     
+
+def get_referral_discount(fees,ps):
+    for component in fees.components:
+        if component.discount_breakup:
+            discount = json.loads(component.discount_breakup)
+            for dis in discount:
+                if dis == 'Referral':
+                    dis_amount = discount[dis]['discount_amount']
+                    dis_per = flt(dis_amount/ps.payment_amount*100,2)
+                    return {
+                        "Referral": {'discount_amount': dis_amount, 'discount_percentage': dis_per}
+                    }
     
 
 
@@ -105,7 +117,6 @@ def get_term_wise_discounts(fees,payment_plan):
 def update_payment_plan(payment_plan, doc):
     deposit,apply_deposit = get_deposit_amount(doc)
     payment_plan = frappe.get_doc("Payment Plan", payment_plan)
-    term_discounts = get_term_wise_discounts(doc,payment_plan)
     doc.payment_plan = payment_plan.name
     doc.payment_schedule = []
    
@@ -116,9 +127,9 @@ def update_payment_plan(payment_plan, doc):
         if i == 0 and apply_deposit:
             description += " and Deposit/Registration"
             amount += deposit
-        # if i == len(payment_plan.payment_schedule)-1 and discount:
-        #     amount -= discount_amount
-        breakup = term_discounts.get(ps.payment_term,{})
+        breakup = {}
+        if i==0:
+            breakup = get_referral_discount(doc,ps)
         frappe.logger('modify').exception(breakup)
         doc.append("payment_schedule",{
             'payment_term':ps.payment_term,
