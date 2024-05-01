@@ -112,10 +112,11 @@ def after_save(doc, method=None):
     update_total_discount_in_fees(doc)
 
 def on_update(doc, method=None):
+    old_doc = doc.get_doc_before_save()
     if old_doc.payment_plan != doc.payment_plan:
         frappe.logger('PP').exception('pp modify')
         return
-    old_doc = doc.get_doc_before_save()
+    
     if doc.parent_otp == 0 and old_doc.payment_schedule != doc.payment_schedule:
         if old_doc.payment_plan == doc.payment_plan:
             doc.need_otp = 1

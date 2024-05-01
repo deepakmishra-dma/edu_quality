@@ -13,8 +13,8 @@ def generate_split_payment(fees,update=0):
                     "Deposit": {"RegistrationFeesFursungiPrimary": 69500.0}
                 }
     """
-    if update:
-        fees.reload()
+    # if update:
+    #     # fees.reload()
     split_payment = {}
     company_wise = {}
     component_wise = {}
