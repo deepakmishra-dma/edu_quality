@@ -98,7 +98,6 @@ def validate_discounts(doc):
 
 def custom_payment_plan(doc):
     try:
-        frappe.logger('PP').exception('pp modify - custom')
         remove_payment_plan_discount(doc,custom_payment_plan=1)
         doc.save()
         update_breakup_after_pp_change(doc)
@@ -121,10 +120,6 @@ def on_update(doc, method=None):
         if old_doc.payment_plan == doc.payment_plan:
             doc.need_otp = 1
             custom_payment_plan(doc)
-            # frappe.msgprint(
-            #     title="Payment Schedule",
-            #     msg="Please Verify parent OTP to Update Payment Schedule",
-            # )
             return
 
     if old_doc.payment_plan != doc.payment_plan:
