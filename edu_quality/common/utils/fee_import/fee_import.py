@@ -2,11 +2,12 @@ import json
 import frappe
 import requests
 from edu_quality.fees.doctype.fee_advance.fee_advance import create_fee_advance
+from edu_quality.common.utils.progress import set_progress
 
 @frappe.whitelist(allow_guest=True)
 def import_fees(**kwargs):
     purl = "https://test.walnutedu.in/indexCI.php/fee_due_report/fetch_student_fee_due"
-
+    frappe.logger("fesss").exception(kwargs)
     payload = json.dumps(
         {
             "sch_ins": kwargs.get("institution"),
@@ -19,29 +20,34 @@ def import_fees(**kwargs):
         }
     )
     response = requests.post(purl, data=payload)
-    if response.status_code==200:
-        data = response.json()
-        if data.get("data",[]):
-            return data
-        else:
-            return None
+    data = response.json()
+    frappe.logger("fesss").exception(data)
+    if data['message'] =="Student Not Found!":
+        return None
+    else:
+        return data
 
 @frappe.whitelist()
 def fee_advance():
     try:
-        students = frappe.get_all("Student",{"student_status":"Current student"})
+        students = frappe.get_all("Student",filters=[["student_status","in",["Current student","Defaulter"]]])
         all_len = len(students)
         for index, student in enumerate(students):
+            set_progress(index + 1, all_len,1, "Student Details")
             student_doc = frappe.get_doc("Student",student.name)
             p_e_doc = frappe.get_doc("Program Enrollment",{"student": student.name})
             class_name = frappe.get_value("Program",p_e_doc.program,"program_name")
             if not frappe.get_value("Fee Advance",{"student":student.name,"program":class_name}):
-                fees = import_fees(institution=student_doc.school,program=class_name,status=student_doc.student_status,financial_year=p_e_doc.academic_year,fee_or_dep="fee")
+                ins_id = get_institution(student_doc.school)
+                fees = import_fees(institution=ins_id,program=class_name,status=student_doc.student_status,financial_year=p_e_doc.academic_year,fee_or_dep="fee")
+                frappe.logger("fesss").exception(fees)
                 if fees:
                     if not check_deu_date_fee(fees,student_doc):
-                        frappe.enqueue(create_fee_advance, student=student_doc, program_enrollment=p_e_doc,all_len=all_len,index=index)
+                        frappe.enqueue(create_log,student=student_doc.name,class_name=class_name,school=student_doc.school)
+                        # frappe.enqueue(create_fee_advance, student=student_doc, program_enrollment=p_e_doc,all_len=all_len,index=index)
                 else:
-                    frappe.enqueue(create_fee_advance, student=student_doc, program_enrollment=p_e_doc,all_len=all_len,index=index)
+                    frappe.enqueue(create_log,student=student_doc.name,class_name=class_name,school=student_doc.school)
+                    # frappe.enqueue(create_fee_advance, student=student_doc, program_enrollment=p_e_doc,all_len=all_len,index=index)
     except Exception as e:
         frappe.logger("fee_advance").exception(e)
         cleaned_data = student
@@ -63,3 +69,19 @@ def check_deu_date_fee(fees,student_doc):
         return True
     else:
         return False
+
+def get_institution(ins_id):
+    data = {"Walnut School at Shivane":"Rethink Educational Systems Pvt Ltd Shivane",
+            "Walnut School at Wakad":"Rethink Educational Systems Pvt Ltd Wakad",
+            "Walnut School at Fursungi":"Rethink Educational Systems Pvt Ltd Fursungi"}
+    return data.get(ins_id)
+
+def create_log(student,class_name,school):
+    # if not frappe.db.exists("Fee Deu Report",{"student":student, "class_name":class_name,"school":school}):
+    doc = frappe.new_doc("Fee Deu Report")
+    doc.student = student
+    doc.class_name = class_name
+    doc.school = school
+    doc.save(ignore_permissions=True)
+    frappe.db.commit()
+    return
