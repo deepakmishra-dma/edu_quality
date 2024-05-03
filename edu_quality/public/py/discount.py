@@ -39,20 +39,16 @@ def add_discount(fee_name, discount, fees=None, doctype="Fees"):
                             discounted_amount = grand_discount_amount + component.custom_discount_amount
                             amount = component.amount - discounted_amount
                             discount = calculate_discount(component.amount, discounted_amount)
-                            update_component(component.name, discount_name, discount, discounted_amount, grand_discount_amount, amount, fees, component_amount=component.amount)
+                            update_component(component.name, discount_name, discount, discounted_amount, grand_discount_amount, amount, fees, is_amount=True)
                             message = dis.name + " Discount applied successfully"
                             discount_applied = True
                             frappe.response['message'] = message
                         else:
-                            if doctype == "Fee Advance":
-                                amount = frappe.db.get_value("Fee Component",{"fees_category":component.fees_category, "parent":fees.fee_structure},'amount')
-                            else:
-                                amount = component.amount
-                            grand_discount_amount = (amount * float(dis.discount)) / 100
+                            grand_discount_amount = (component.amount * float(dis.discount)) / 100
                             discounted_amount = grand_discount_amount + component.custom_discount_amount
                             discount = calculate_discount(component.amount, discounted_amount)
-                            amount = amount - discounted_amount
-                            update_component(component.name, discount_name, discount, discounted_amount, grand_discount_amount, amount, fees, component_amount=component.amount)
+                            amount = component.amount - discounted_amount
+                            update_component(component.name, discount_name, discount, discounted_amount, grand_discount_amount, amount, fees)
                             message = dis.name + " Discount applied successfully"
                             discount_applied = True
                             frappe.response['message'] = message
@@ -74,19 +70,15 @@ def add_discount(fee_name, discount, fees=None, doctype="Fees"):
                         discounted_amount = grand_discount_amount = dis.discount_amount
                         amount = component.amount - discounted_amount
                         discount = calculate_discount(component.amount, discounted_amount)
-                        update_component(component.name, discount_name, discount, discounted_amount, grand_discount_amount, amount, fees, component_amount=component.amount)
+                        update_component(component.name, discount_name, discount, discounted_amount, grand_discount_amount, amount, fees, is_amount=True)
                         message = dis.name + " Discount applied successfully"
                         discount_applied = True
                         frappe.response['message'] = message
                     else:
-                        if doctype == "Fee Advance":
-                            amount = frappe.db.get_value("Fee Component",{"fees_category":component.fees_category, "parent":fees.fee_structure},'amount')
-                        else:
-                            amount = component.amount
-                        grand_discount_amount = (amount * float(dis.discount)) / 100
+                        grand_discount_amount = (component.amount * float(dis.discount)) / 100
                         discounted_amount = grand_discount_amount
-                        amount = amount - discounted_amount
-                        update_component(component.name, discount_name, dis.discount, discounted_amount, grand_discount_amount, amount, fees, component_amount=component.amount)
+                        amount = component.amount - discounted_amount
+                        update_component(component.name, discount_name, dis.discount, discounted_amount, grand_discount_amount, amount, fees)
                         message = dis.name + " Discount applied successfully"
                         discount_applied = True
                         frappe.response['message'] = message
@@ -134,23 +126,19 @@ def remove_discount(fee_name, discount, update_payment_request=True, doctype="Fe
                         discount_list.remove(dis.name)
                         discount_name = ", ".join(discount_list)
                         # updating the data in the database
-                        remove_and_update_component(component.name, discount_name, discount, discount_amount, grand_discount_amount, amount, fees, component_amount=component.amount)
+                        remove_and_update_component(component.name, discount_name, discount, discount_amount, grand_discount_amount, amount, fees, is_amount=True)
                         message = dis.name + " Discount removed successfully"
                         discount_removed = True
                         frappe.response['message'] = message
                     else:
-                        if doctype == "Fee Advance":
-                            amount = frappe.db.get_value("Fee Component",{"fees_category":component.fees_category, "parent":fees.fee_structure},'amount')
-                        else:
-                            amount = component.amount
-                        grand_discount_amount = (amount * float(dis.discount)) / 100
+                        grand_discount_amount = (component.amount * float(dis.discount)) / 100
                         amount = component.custom_amount_after_discount + grand_discount_amount
                         discount_amount = component.custom_discount_amount - grand_discount_amount
                         discount = calculate_discount(amount, discount_amount)
                         discount_list.remove(dis.name)
                         discount_name = ", ".join(discount_list)
                         # updating the data in the database
-                        remove_and_update_component(component.name, discount_name, discount, discount_amount, grand_discount_amount, amount, fees, component_amount=component.amount)
+                        remove_and_update_component(component.name, discount_name, discount, discount_amount, grand_discount_amount, amount, fees)
                         message = dis.name + " Discount removed successfully"
                         discount_removed = True
                         frappe.response['message'] = message
@@ -200,12 +188,19 @@ def calculate_discount(amount, discounted_amount):
     return discount
 
 # updating the data in the database
-def update_component(component_name, discount_name, final_discount, discounted_amount, grand_discount_amount, amount, fees, component_amount=None):
+def update_component(component_name, discount_name, final_discount, discounted_amount, grand_discount_amount, amount, fees, is_amount=False):
+    if is_amount and fees.doctype == "Fee Advance":
+        discounted_amount -= grand_discount_amount
+        invoice_portion = frappe.get_value("Payment Schedule", {"payment_term":fees.payment_term, "parent": fees.payment_plan}, "invoice_portion")
+        grand_discount_amount = grand_discount_amount * invoice_portion / 100
+        discounted_amount += grand_discount_amount
+        amount += grand_discount_amount
+
     fee_component_fields = {
         "custom_discounts": discount_name,
         "custom_discount_percentage": final_discount,
         "custom_discount_amount": discounted_amount,
-        "custom_amount_after_discount": amount if fees.doctype == "Fees" else component_amount - grand_discount_amount
+        "custom_amount_after_discount": amount
     }
     frappe.db.set_value("Fee Component", component_name, fee_component_fields)
 
@@ -226,11 +221,18 @@ def update_component(component_name, discount_name, final_discount, discounted_a
         frappe.db.set_value("Fee Advance", fees.name, fee_advance_fields)
 
 
-def remove_and_update_component(component_name, discount_name, discount, discounted_amount, grand_discount_amount, amount, fees, component_amount=None):
+def remove_and_update_component(component_name, discount_name, discount, discounted_amount, grand_discount_amount, amount, fees, is_amount=False):
+    if is_amount and fees.doctype == "Fee Advance":
+        discounted_amount += grand_discount_amount
+        invoice_portion = frappe.get_value("Payment Schedule", {"payment_term":fees.payment_term, "parent": fees.payment_plan}, "invoice_portion")
+        grand_discount_amount = grand_discount_amount * invoice_portion / 100
+        discounted_amount -= grand_discount_amount
+        amount -= grand_discount_amount
+
     fee_component_update = {
         "custom_discounts": discount_name,
         "custom_discount_percentage": discount,
-        "custom_amount_after_discount": amount if fees.doctype == "Fees" else component_amount,
+        "custom_amount_after_discount": amount,
         "custom_discount_amount": discounted_amount if discounted_amount else 0
     }
     frappe.db.set_value("Fee Component", component_name, fee_component_update)
