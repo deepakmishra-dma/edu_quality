@@ -7,7 +7,6 @@ from edu_quality.common.utils.progress import set_progress
 @frappe.whitelist(allow_guest=True)
 def import_fees(**kwargs):
     purl = "https://test.walnutedu.in/indexCI.php/fee_due_report/fetch_student_fee_due"
-    frappe.logger("fesss").exception(kwargs)
     payload = json.dumps(
         {
             "sch_ins": kwargs.get("institution"),
@@ -22,10 +21,10 @@ def import_fees(**kwargs):
     response = requests.post(purl, data=payload)
     data = response.json()
     frappe.logger("fesss").exception(data)
-    if data['message'] =="Student Not Found!":
+    if data.get("data"):
+        return  data
+    elif data.get('message',None) =="Student Not Found!" or data.get('message',None) == None:
         return None
-    else:
-        return data
 
 @frappe.whitelist()
 def fee_advance():
@@ -40,7 +39,6 @@ def fee_advance():
             if not frappe.get_value("Fee Advance",{"student":student.name,"program":class_name}):
                 ins_id = get_institution(student_doc.school)
                 fees = import_fees(institution=ins_id,program=class_name,status=student_doc.student_status,financial_year=p_e_doc.academic_year,fee_or_dep="fee")
-                frappe.logger("fesss").exception(fees)
                 if fees:
                     if not check_deu_date_fee(fees,student_doc):
                         frappe.enqueue(create_log,student=student_doc.name,class_name=class_name,school=student_doc.school)
@@ -62,11 +60,13 @@ def fee_advance():
         )
 
 def check_deu_date_fee(fees,student_doc):
-    frappe.logger("fesss").exception(fees)
     records = fees.get("data",[])
     if records:
-        records.get(student_doc.reference_number,[])
-        return True
+        check = records.get(student_doc.reference_number,[])
+        if check:
+            return True
+        else:
+            return False
     else:
         return False
 
@@ -77,11 +77,11 @@ def get_institution(ins_id):
     return data.get(ins_id)
 
 def create_log(student,class_name,school):
-    # if not frappe.db.exists("Fee Deu Report",{"student":student, "class_name":class_name,"school":school}):
-    doc = frappe.new_doc("Fee Deu Report")
-    doc.student = student
-    doc.class_name = class_name
-    doc.school = school
-    doc.save(ignore_permissions=True)
-    frappe.db.commit()
-    return
+    if not frappe.db.exists("Fee Deu Report",{"student":student, "class_name":class_name,"school":school}):
+        doc = frappe.new_doc("Fee Deu Report")
+        doc.student = student
+        doc.class_name = class_name
+        doc.school = school
+        doc.save(ignore_permissions=True)
+        frappe.db.commit()
+        return
