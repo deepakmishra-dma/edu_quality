@@ -78,22 +78,28 @@ frappe.ui.form.on("Carnival Event", {
                         multiple: true,
                         preferredCameraType: 'rear',
                         galleryTitle: frm.doc.name,
-                        // backgroundMode: true,
+                        backgroundMode: true,
+                        endpoint: "edu_quality.edu_quality.doctype.carnival_event.carnival_event.move_existing_and_upload_to_drive",
+                        parameters: {
+                            "method": "POST",
+                            "folder_name": `${frm.doc.name}`,
+                        },
+
                         // backgroundStorageKey: "Carnival Events"
                     })
                     await folderExists('Home', frm.doc.name)
 
-                    const imageUrls = await Promise.allSettled(images.map((img) => uploadImage('data:image/jpg;base64,' + img.base64, frm)))
-                    imageUrls.map((img) => frappe.call({
-                        method: "edu_quality.api.google_drive_upload.upload_file",
-                        args: {
-                            file_url: img.value,
-                            folder_name: frm.doc.name,
-                            type: "POST",
-                        }, callback: () => {
+                    // const imageUrls = await Promise.allSettled(images.map((img) => uploadImage('data:image/jpg;base64,' + img.base64, frm)))
+                    // imageUrls.map((img) => frappe.call({
+                    //     method: "edu_quality.api.google_drive_upload.upload_file",
+                    //     args: {
+                    //         file_url: img.value,
+                    //         folder_name: frm.doc.name,
+                    //         type: "POST",
+                    //     }, callback: () => {
 
-                        }
-                    }))
+                    //     }
+                    // }))
 
 
 

@@ -39,7 +39,6 @@ doctype_js = {
     "Item": "public/js/item.js",
     "Purchase Order": "public/js/purchase_order.js",
     "Purchase Receipt": "public/js/purchase_receipt.js",
-
     "Topic": "public/js/topic.js",
 }
 doctype_list_js = {
@@ -49,6 +48,10 @@ doctype_list_js = {
     "Student": "public/js/list/student_list.js",
     "Student ID Card": "public/js/list/student_id_card.js",
     "Fees": "public/js/list/fees_list.js",
+    "Carnival Event": [
+        # "public/js/list/list_view.js",
+        "public/js/list/carnival_event_list.js",
+    ],
 }
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -137,8 +140,8 @@ doc_events = {
         "after_insert": "edu_quality.public.py.fee.append_program_enrollment",
         "on_trash": "edu_quality.public.py.fee.remove_program_enrollment",
     },
-    "Contact":{
-        "before_validate":"edu_quality.overrides_hooks.contact.before_validate"
+    "Contact": {
+        "before_validate": "edu_quality.overrides_hooks.contact.before_validate"
     },
     "Fees": {
         "after_insert": "edu_quality.public.py.fee.after_insert",
@@ -162,7 +165,9 @@ doc_events = {
         "after_insert": "edu_quality.public.py.lead.after_insert",
         "before_insert": "edu_quality.public.py.lead.before_insert",
     },
-    "Payment Entry": {"validate": "edu_quality.edu_quality.server_scripts.payment_entry.validate"},
+    "Payment Entry": {
+        "validate": "edu_quality.edu_quality.server_scripts.payment_entry.validate"
+    },
     "Item": {
         "autoname": "edu_quality.overrides_hooks.item.autoname",
         "before_insert": "edu_quality.overrides_hooks.item.before_insert",
@@ -280,7 +285,7 @@ scheduler_events = {
 # ]
 
 fixtures = [
-    {'dt': "Workflow"},
+    {"dt": "Workflow"},
     {"dt": "Server Script", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
     {"dt": "Property Setter", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
     {"dt": "Client Script", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
@@ -323,7 +328,12 @@ fixtures = [
     {"dt": "Lead Sub Status"},
     {"dt": "School"},
     {"dt": "Academic Year"},
-    {"dt": "Funnel Node", "filters": [["name", "in", ["Student Referral", "Fee Receipt", "Undertaking OTP"]]]},
+    {
+        "dt": "Funnel Node",
+        "filters": [
+            ["name", "in", ["Student Referral", "Fee Receipt", "Undertaking OTP"]]
+        ],
+    },
     # {"dt": "Funnel"},
     {"dt": "Email Template"},
     {"dt": "Letter Head"},
@@ -364,4 +374,7 @@ fixtures = [
 ]
 
 
-after_migrate = ["edu_quality.public.py.utils.migrate","edu_quality.tasks.update_academic_year"]
+after_migrate = [
+    "edu_quality.public.py.utils.migrate",
+    "edu_quality.tasks.update_academic_year",
+]
