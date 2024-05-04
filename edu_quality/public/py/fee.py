@@ -61,8 +61,9 @@ def on_submit(doc, method=None):
             add_discount(doc.name, discount)
             total_discount += discount_applied.get(discount)
 
-        frappe.db.set_value("Payment Schedule", doc.payment_schedule[0].name, "outstanding", 0)
-        frappe.db.set_value("Payment Schedule", doc.payment_schedule[0].name, "payment_amount", payment_amount - total_discount)
+        if doc.payment_schedule:
+            frappe.db.set_value("Payment Schedule", doc.payment_schedule[0].name, "outstanding", 0)
+            frappe.db.set_value("Payment Schedule", doc.payment_schedule[0].name, "payment_amount", payment_amount - total_discount)
         fee_outstanding_amount = doc.outstanding_amount - (fee_advance.amount + total_discount)
         frappe.db.set_value("Fees", doc.name, "outstanding_amount", fee_outstanding_amount)
         doc.reload()

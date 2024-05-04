@@ -100,7 +100,7 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
         "state": get_data("state"),
         "country": country,
         "landmark": get_data("landmark"),
-        "student_email_id": student_email_id,
+        "student_email_id": get_data("user_email"),
         "date_of_leaving": date_of_leaving,
         "joining_date": joining_date.strftime("%Y-%m-%d") if joining_date else None,
         "student_name": student_name,
@@ -177,7 +177,7 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
 
 
 def map_student_status(id):
-    data = {1:"New student",2:"Current student",3:"Cancelled",4:"Not attending",5:"Defaulter"}
+    data = {1:"New student",2:"Current student",3:"Cancelled",4:"Not attending",6:"Defaulter",7:"Defaulter",8:"Alumni"}
     return data.get(id)
 
 def insert_program_enrollment(student, data=None):
@@ -566,7 +566,8 @@ def get_sql_query():
                     WSB.drop_address,
                     WSB.spcl_instruction,
                     CDR.begintime,
-                    CDR.endtime
+                    CDR.endtime,
+                    WULD.user_email
 
                 FROM
                     walnut_student_info wsi
@@ -578,5 +579,6 @@ def get_sql_query():
                 LEFT OUTER JOIN walnut_student_parent_details WSP ON WSP.student_id = wsi.form_id
                 LEFT OUTER JOIN walnut_student_bus WSB ON WSB.student_id = wsi.form_id
                 LEFT OUTER JOIN class_div_relation AS CDR ON CDR.class_id = wsi.admission_to AND CDR.division_id = wsi.division
+                LEFT OUTER JOIN walnut_user_login_details as WULD ON WULD.user_name = wsi.refno AND WULD.school_id = wsi.school_id
                 """
     return query

@@ -4192,7 +4192,7 @@
    "name": "Student-student_status",
    "no_copy": 0,
    "non_negative": 0,
-   "options": "New student\nCurrent student\nCancelled\nNot attending\nDefaulter",
+   "options": "New student\nCurrent student\nCancelled\nNot attending\nDefaulter\nAlumni",
    "owner": "Administrator",
    "permlevel": 0,
    "precision": "",
