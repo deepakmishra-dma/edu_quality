@@ -98,6 +98,7 @@ def validate_discounts(doc):
 
 def custom_payment_plan(doc):
     try:
+        return
         remove_payment_plan_discount(doc,custom_payment_plan=1)
         doc.save()
         update_breakup_after_pp_change(doc)
