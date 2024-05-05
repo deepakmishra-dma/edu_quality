@@ -93,10 +93,11 @@ def get_split(fees, schedule, case=0,apply_deposit=0):
                 if schedule.discount_breakup:
                     schedule_breakup = json.loads(schedule.discount_breakup)
                     component_breakup = json.loads(component.discount_breakup) if component.discount_breakup else {}
-                    for discount in schedule_breakup:
-                        if discount in component_breakup:
-                            amount -= schedule_breakup[discount]['discount_amount']
-                            discount_amount += schedule_breakup[discount]['discount_amount']
+                    if schedule_breakup:
+                        for discount in schedule_breakup:
+                            if discount in component_breakup:
+                                amount -= schedule_breakup[discount]['discount_amount']
+                                discount_amount += schedule_breakup[discount]['discount_amount']
 
             if case == 2 and component.fee_type !='Regular' and apply_deposit==0:
                 continue          
