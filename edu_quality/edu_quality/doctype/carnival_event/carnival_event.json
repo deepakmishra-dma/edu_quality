@@ -1,7 +1,6 @@
 {
  "actions": [],
- "allow_rename": 1,
- "autoname": "format:{name1}-{class}-{school}-{academic_year}-{item_code}",
+ "autoname": "format:{school_prefix}-{class}-{item_code}",
  "creation": "2023-08-31 23:15:32.936038",
  "default_view": "List",
  "doctype": "DocType",
@@ -11,6 +10,7 @@
   "name1",
   "academic_year",
   "school",
+  "school_prefix",
   "column_break_1d3lr",
   "class",
   "item_code",
@@ -38,7 +38,7 @@
    "fieldname": "class",
    "fieldtype": "Link",
    "label": "Class",
-   "options": "Program"
+   "options": "Class Type"
   },
   {
    "fieldname": "item_code",
@@ -54,11 +54,18 @@
    "fieldtype": "Data",
    "hidden": 1,
    "label": "google_drive_folder_id"
+  },
+  {
+   "fetch_from": "school.prefix",
+   "fetch_if_empty": 1,
+   "fieldname": "school_prefix",
+   "fieldtype": "Data",
+   "label": "School Prefix"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-09-11 15:34:52.025793",
+ "modified": "2024-01-12 10:34:50.121973",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Carnival Event",
