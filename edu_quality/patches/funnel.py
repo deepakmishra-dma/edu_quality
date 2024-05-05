@@ -7,7 +7,7 @@ data = [
   "doctype": "Funnel",
   "funnel_definition": [
    {
-    "data": "{\n    \"action\": \"after_insert\",\n    \"doctype\": \"Payment Request\",\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
+    "data": "{\n    \"action\": \"on_submit\",\n    \"doctype\": \"Payment Request\",\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
     "element_type": "Trigger",
     "id": "V7lvg8fLqqnTjtnqkrP2F",
     "parent": "Payment Link",
@@ -21,7 +21,7 @@ data = [
     "type": "document_event_trigger"
    },
    {
-    "data": "{\n    \"email_account\": \"Notifications\",\n    \"email_content\": \"\",\n    \"email_subject\": \"\",\n    \"email_template\": \"Payment links For 1st Installment For All Students\",\n    \"recepients\": [\n        {\n            \"cc\": \"\",\n            \"recepientField\": \"\",\n            \"recipient\": \"{{recipient}}\"\n        }\n    ],\n    \"select_template\": true,\n    \"send_to_assigned_users\": false,\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
+    "data": "{\n    \"email_account\": \"Arpita Karkarey's Walnut School\",\n    \"email_content\": \"\",\n    \"email_subject\": \"\",\n    \"email_template\": \"Payment links For 1st Installment For All Students\",\n    \"recepients\": [\n        {\n            \"cc\": \"\",\n            \"recepientField\": \"\",\n            \"recipient\": \"{{recipient}}\"\n        }\n    ],\n    \"select_template\": true,\n    \"send_to_assigned_users\": false,\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
     "element_type": "Action",
     "id": "3sScfFhiE-qfOMbSpZgR0",
     "parent": "Payment Link",
@@ -77,7 +77,7 @@ data = [
     "type": "var_filter"
    },
    {
-    "data": "{\n    \"email_account\": \"Notifications\",\n    \"email_content\": \"\",\n    \"email_subject\": \"\",\n    \"email_template\": \"Deposit Link (Original Content)\",\n    \"recepients\": [\n        {\n            \"cc\": \"\",\n            \"recepientField\": \"\",\n            \"recipient\": \"{{recipient}}\"\n        }\n    ],\n    \"select_template\": true,\n    \"send_to_assigned_users\": false,\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
+    "data": "{\n    \"email_account\": \"Arpita Karkarey's Walnut School\",\n    \"email_content\": \"\",\n    \"email_subject\": \"\",\n    \"email_template\": \"Deposit Link (Original Content)\",\n    \"recepients\": [\n        {\n            \"cc\": \"\",\n            \"recepientField\": \"\",\n            \"recipient\": \"{{recipient}}\"\n        }\n    ],\n    \"select_template\": true,\n    \"send_to_assigned_users\": false,\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
     "element_type": "Action",
     "id": "V1FggHybsRoyMO2N4PJ0C",
     "parent": "Payment Link",
@@ -91,7 +91,7 @@ data = [
     "type": "send_mail"
    },
    {
-    "data": "{\n    \"email_account\": \"Notifications\",\n    \"email_content\": \"\",\n    \"email_subject\": \"\",\n    \"email_template\": \"Payment link for New Students Std. 1 to 10\",\n    \"recepients\": [\n        {\n            \"cc\": \"\",\n            \"recepientField\": \"\",\n            \"recipient\": \"{{recipient}}\"\n        }\n    ],\n    \"select_template\": true,\n    \"send_to_assigned_users\": false,\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
+    "data": "{\n    \"email_account\": \"Arpita Karkarey's Walnut School\",\n    \"email_content\": \"\",\n    \"email_subject\": \"\",\n    \"email_template\": \"Payment link for New Students Std. 1 to 10\",\n    \"recepients\": [\n        {\n            \"cc\": \"\",\n            \"recepientField\": \"\",\n            \"recipient\": \"{{recipient}}\"\n        }\n    ],\n    \"select_template\": true,\n    \"send_to_assigned_users\": false,\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
     "element_type": "Action",
     "id": "nN6Btz--ZAOQR4mwDRyAH",
     "parent": "Payment Link",
@@ -105,7 +105,7 @@ data = [
     "type": "send_mail"
    },
    {
-    "data": "{\n    \"email_account\": \"Notifications\",\n    \"email_content\": \"\",\n    \"email_subject\": \"\",\n    \"email_template\": \"Payment link for New Students Std. 1 to 10\",\n    \"recepients\": [\n        {\n            \"cc\": \"\",\n            \"recepientField\": \"\",\n            \"recipient\": \"{{recipient}}\"\n        }\n    ],\n    \"select_template\": true,\n    \"send_to_assigned_users\": false,\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
+    "data": "{\n    \"email_account\": \"Arpita Karkarey's Walnut School\",\n    \"email_content\": \"\",\n    \"email_subject\": \"\",\n    \"email_template\": \"Payment link for New Students Std. 1 to 10\",\n    \"recepients\": [\n        {\n            \"cc\": \"\",\n            \"recepientField\": \"\",\n            \"recipient\": \"{{recipient}}\"\n        }\n    ],\n    \"select_template\": true,\n    \"send_to_assigned_users\": false,\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
     "element_type": "Action",
     "id": "aVYGk4nvN42GHJkSCWTKC",
     "parent": "Payment Link",
@@ -119,7 +119,7 @@ data = [
     "type": "send_mail"
    },
    {
-    "data": "{\n    \"email_account\": \"Notifications\",\n    \"email_content\": \"\",\n    \"email_subject\": \"\",\n    \"email_template\": \"Payment link for New Students Std. 1 to 10\",\n    \"recepients\": [\n        {\n            \"cc\": \"\",\n            \"recepientField\": \"\",\n            \"recipient\": \"{{recipient}}\"\n        }\n    ],\n    \"select_template\": true,\n    \"send_to_assigned_users\": false,\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
+    "data": "{\n    \"email_account\": \"Arpita Karkarey's Walnut School\",\n    \"email_content\": \"\",\n    \"email_subject\": \"\",\n    \"email_template\": \"Payment link for New Students Std. 1 to 10\",\n    \"recepients\": [\n        {\n            \"cc\": \"\",\n            \"recepientField\": \"\",\n            \"recipient\": \"{{recipient}}\"\n        }\n    ],\n    \"select_template\": true,\n    \"send_to_assigned_users\": false,\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
     "element_type": "Action",
     "id": "bx8ahgUuB7rOcLze37LbJ",
     "parent": "Payment Link",
@@ -133,7 +133,7 @@ data = [
     "type": "send_mail"
    },
    {
-    "data": "{\n    \"email_account\": \"Notifications\",\n    \"email_content\": \"\",\n    \"email_subject\": \"\",\n    \"email_template\": \"Payment link for New Students Std. 1 to 10\",\n    \"recepients\": [\n        {\n            \"cc\": \"\",\n            \"recepientField\": \"\",\n            \"recipient\": \"{{recipient}}\"\n        }\n    ],\n    \"select_template\": true,\n    \"send_to_assigned_users\": false,\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
+    "data": "{\n    \"email_account\": \"Arpita Karkarey's Walnut School\",\n    \"email_content\": \"\",\n    \"email_subject\": \"\",\n    \"email_template\": \"Payment link for New Students Std. 1 to 10\",\n    \"recepients\": [\n        {\n            \"cc\": \"\",\n            \"recepientField\": \"\",\n            \"recipient\": \"{{recipient}}\"\n        }\n    ],\n    \"select_template\": true,\n    \"send_to_assigned_users\": false,\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
     "element_type": "Action",
     "id": "UNGeLpOF9CSt7pCaTo6uQ",
     "parent": "Payment Link",
@@ -245,7 +245,7 @@ data = [
     "type": "var_filter"
    },
    {
-    "data": "{\n    \"email_account\": \"Notifications\",\n    \"email_content\": \"\",\n    \"email_subject\": \"\",\n    \"email_template\": \"Payment link for Senior KG current students\",\n    \"recepients\": [\n        {\n            \"cc\": \"\",\n            \"recepientField\": \"\",\n            \"recipient\": \"{{recipient}}\"\n        }\n    ],\n    \"select_template\": true,\n    \"send_to_assigned_users\": false,\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
+    "data": "{\n    \"email_account\": \"Arpita Karkarey's Walnut School\",\n    \"email_content\": \"\",\n    \"email_subject\": \"\",\n    \"email_template\": \"Payment link for Senior KG current students\",\n    \"recepients\": [\n        {\n            \"cc\": \"\",\n            \"recepientField\": \"\",\n            \"recipient\": \"{{recipient}}\"\n        }\n    ],\n    \"select_template\": true,\n    \"send_to_assigned_users\": false,\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
     "element_type": "Action",
     "id": "g7y_U3muCH_YWRTjPIl_S",
     "parent": "Payment Link",
@@ -259,7 +259,7 @@ data = [
     "type": "send_mail"
    },
    {
-    "data": "{\n    \"email_account\": \"Notifications\",\n    \"email_content\": \"\",\n    \"email_subject\": \"\",\n    \"email_template\": \"Payment link for Senior KG current students\",\n    \"recepients\": [\n        {\n            \"cc\": \"\",\n            \"recepientField\": \"\",\n            \"recipient\": \"{{recipient}}\"\n        }\n    ],\n    \"select_template\": true,\n    \"send_to_assigned_users\": false,\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
+    "data": "{\n    \"email_account\": \"Arpita Karkarey's Walnut School\",\n    \"email_content\": \"\",\n    \"email_subject\": \"\",\n    \"email_template\": \"Payment link for Senior KG current students\",\n    \"recepients\": [\n        {\n            \"cc\": \"\",\n            \"recepientField\": \"\",\n            \"recipient\": \"{{recipient}}\"\n        }\n    ],\n    \"select_template\": true,\n    \"send_to_assigned_users\": false,\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
     "element_type": "Action",
     "id": "DMCso1OEIqjB1lPLKUzHS",
     "parent": "Payment Link",
@@ -273,7 +273,7 @@ data = [
     "type": "send_mail"
    },
    {
-    "data": "{\n    \"email_account\": \"Notifications\",\n    \"email_content\": \"\",\n    \"email_subject\": \"\",\n    \"email_template\": \"Payment Link NR & JR KG\",\n    \"recepients\": [\n        {\n            \"cc\": \"\",\n            \"recepientField\": \"\",\n            \"recipient\": \"{{recipient}}\"\n        }\n    ],\n    \"select_template\": true,\n    \"send_to_assigned_users\": false,\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
+    "data": "{\n    \"email_account\": \"Arpita Karkarey's Walnut School\",\n    \"email_content\": \"\",\n    \"email_subject\": \"\",\n    \"email_template\": \"Payment Link NR & JR KG\",\n    \"recepients\": [\n        {\n            \"cc\": \"\",\n            \"recepientField\": \"\",\n            \"recipient\": \"{{recipient}}\"\n        }\n    ],\n    \"select_template\": true,\n    \"send_to_assigned_users\": false,\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
     "element_type": "Action",
     "id": "BTdeYK_AhNBR5DV8W0XPP",
     "parent": "Payment Link",
@@ -287,7 +287,7 @@ data = [
     "type": "send_mail"
    },
    {
-    "data": "{\n    \"email_account\": \"Notifications\",\n    \"email_content\": \"\",\n    \"email_subject\": \"\",\n    \"email_template\": \"Payment Link NR & JR KG\",\n    \"recepients\": [\n        {\n            \"cc\": \"\",\n            \"recepientField\": \"\",\n            \"recipient\": \"{{recipient}}\"\n        }\n    ],\n    \"select_template\": true,\n    \"send_to_assigned_users\": false,\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
+    "data": "{\n    \"email_account\": \"Arpita Karkarey's Walnut School\",\n    \"email_content\": \"\",\n    \"email_subject\": \"\",\n    \"email_template\": \"Payment Link NR & JR KG\",\n    \"recepients\": [\n        {\n            \"cc\": \"\",\n            \"recepientField\": \"\",\n            \"recipient\": \"{{recipient}}\"\n        }\n    ],\n    \"select_template\": true,\n    \"send_to_assigned_users\": false,\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
     "element_type": "Action",
     "id": "OFAAVVDKwYSCUTQQhs_Xj",
     "parent": "Payment Link",
@@ -527,7 +527,7 @@ data = [
   ],
   "funnel_name": "Payment Link",
   "name": "Payment Link",
-  "status": "updated",
+  "status": "published",
   "variable_list": "[]",
   "viewport": "{\"x\":-249.1763458960039,\"y\":210.87608403093827,\"zoom\":0.8705772002909622}"
  },
@@ -551,7 +551,7 @@ data = [
     "type": "document_event_trigger"
    },
    {
-    "data": "{\n    \"node_label\": \"Get Details of Student\",\n    \"python_code\": \"doc = variables.get(\\\"doc\\\")\\n\\nexisting_pe = frappe.get_all(\\\"Program Enrollment\\\", {\\\"student\\\": doc.student, \\\"docstatus\\\": 1})\\n\\nvariables[\\\"recipient\\\"] = frappe.db.get_value(\\\"Student\\\", doc.student, \\\"student_email_id\\\")\\nvariables[\\\"status\\\"] = len(existing_pe) <= 1\\nvariables[\\\"first_name\\\"] = doc.student_name\\nvariables[\\\"imported\\\"] = frappe.db.get_value(\\\"Student\\\", doc.student, \\\"imported\\\")\\n\",\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
+    "data": "{\n    \"node_label\": \"Get Details of Student\",\n    \"python_code\": \"doc = variables.get(\\\"doc\\\")\\n\\nexisting_pe = frappe.db.count(\\\"Program Enrollment\\\", {\\\"student\\\": doc.student, \\\"docstatus\\\": 1})\\n\\nvariables[\\\"recipient\\\"] = frappe.db.get_value(\\\"Student\\\", doc.student, \\\"student_email_id\\\")\\nif existing_pe==1:\\n    variables[\\\"status\\\"] =True\\nelse:\\n    variables[\\\"status\\\"] = False\\nvariables[\\\"first_name\\\"] = doc.student_name\\nvariables[\\\"imported\\\"] = frappe.db.get_value(\\\"Student\\\", doc.student, \\\"imported\\\")\",\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
     "element_type": "Action",
     "id": "584Vv8EY9zbmvQii7mUjm",
     "parent": "Welcome Email",
@@ -579,7 +579,7 @@ data = [
     "type": "var_filter"
    },
    {
-    "data": "{\n    \"email_account\": \"Notifications\",\n    \"email_content\": \"\",\n    \"email_subject\": \"\",\n    \"email_template\": \"Welcome email (original content)\",\n    \"recepients\": [\n        {\n            \"cc\": \"\",\n            \"recepientField\": \"\",\n            \"recipient\": \"{{recipient}}\"\n        }\n    ],\n    \"select_template\": true,\n    \"send_to_assigned_users\": false,\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
+    "data": "{\n    \"email_account\": \"Arpita Karkarey's Walnut School\",\n    \"email_content\": \"\",\n    \"email_subject\": \"\",\n    \"email_template\": \"Welcome email (original content)\",\n    \"recepients\": [\n        {\n            \"cc\": \"\",\n            \"recepientField\": \"\",\n            \"recipient\": \"{{recipient}}\"\n        }\n    ],\n    \"select_template\": true,\n    \"send_to_assigned_users\": false,\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
     "element_type": "Action",
     "id": "ibJjFd348XmCAyrP7pqx-",
     "parent": "Welcome Email",
@@ -639,7 +639,7 @@ data = [
   "name": "Welcome Email",
   "status": "published",
   "variable_list": "[]",
-  "viewport": "{\"x\":-278,\"y\":121,\"zoom\":1}"
+  "viewport": "{\"x\":-227.49999999999977,\"y\":116.5,\"zoom\":0.9999999999999999}"
  },
  {
   "archived": 0,
@@ -675,7 +675,7 @@ data = [
     "type": "exec_python"
    },
    {
-    "data": "{\n    \"email_account\": \"Notifications\",\n    \"email_content\": \"\",\n    \"email_template\": \"Rules and Regulations\",\n    \"recepients\": [\n        {\n            \"cc\": \"\",\n            \"recepientField\": \"\",\n            \"recipient\": \"{{recipient}}\"\n        }\n    ],\n    \"select_template\": true,\n    \"send_to_assigned_users\": false,\n    \"submit\": true\n}",
+    "data": "{\n    \"email_account\": \"Arpita Karkarey's Walnut School\",\n    \"email_content\": \"\",\n    \"email_template\": \"Rules and Regulations\",\n    \"recepients\": [\n        {\n            \"cc\": \"\",\n            \"recepientField\": \"\",\n            \"recipient\": \"{{recipient}}\"\n        }\n    ],\n    \"select_template\": true,\n    \"send_to_assigned_users\": false,\n    \"submit\": true\n}",
     "element_type": "Action",
     "id": "Ih4wfjdvfw85nRjlhpvia",
     "parent": "Rules and Regulation Submission",
@@ -757,7 +757,7 @@ data = [
     "type": "exec_python"
    },
    {
-    "data": "{\n    \"email_account\": \"Notifications\",\n    \"email_content\": \"Please Find the attached fee receipt\",\n    \"email_subject\": \"Fee Receipt\",\n    \"recepients\": [\n        {\n            \"cc\": \"\",\n            \"recepientField\": \"\",\n            \"recipient\": \"{{recipient}}\"\n        }\n    ],\n    \"select_template\": false,\n    \"send_to_assigned_users\": false,\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
+    "data": "{\n    \"email_account\": \"Arpita Karkarey's Walnut School\",\n    \"email_content\": \"Please Find the attached fee receipt\",\n    \"email_subject\": \"Fee Receipt\",\n    \"recepients\": [\n        {\n            \"cc\": \"\",\n            \"recepientField\": \"\",\n            \"recipient\": \"{{recipient}}\"\n        }\n    ],\n    \"select_template\": false,\n    \"send_to_assigned_users\": false,\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
     "element_type": "Action",
     "id": "mydH6M9zb4TA05WGnb9Wb",
     "parent": "Fee Receipt",
@@ -839,7 +839,7 @@ data = [
     "type": "exec_python"
    },
    {
-    "data": "{\n    \"email_account\": \"Notifications\",\n    \"email_content\": \"Dear {{first_name}},\\n      You have successfully referred {{referred_name}}. The referred discount will be applied to your fees soon.\\n\",\n    \"email_subject\": \"Dear {{first_name}},  You have successfully referred {{referred_name}}. \",\n    \"recepients\": [\n        {\n            \"cc\": \"\",\n            \"recepientField\": \"\",\n            \"recipient\": \"{{recipient}}\"\n        }\n    ],\n    \"select_template\": false,\n    \"send_to_assigned_users\": false,\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
+    "data": "{\n    \"email_account\": \"Arpita Karkarey's Walnut School\",\n    \"email_content\": \"Dear {{first_name}},\\n      You have successfully referred {{referred_name}}. The referred discount will be applied to your fees soon.\\n\",\n    \"email_subject\": \"Dear {{first_name}},  You have successfully referred {{referred_name}}. \",\n    \"recepients\": [\n        {\n            \"cc\": \"\",\n            \"recepientField\": \"\",\n            \"recipient\": \"{{recipient}}\"\n        }\n    ],\n    \"select_template\": false,\n    \"send_to_assigned_users\": false,\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
     "element_type": "Action",
     "id": "2wFgz91PLkA7SPCQP40iL",
     "parent": "Student Referral",
@@ -935,7 +935,7 @@ data = [
     "type": "exec_python"
    },
    {
-    "data": "{\n    \"email_account\": \"Notifications\",\n    \"email_content\": \"Here is the OTP For Undertaking Submission: {{otp}}\",\n    \"email_subject\": \"OTP For Undertaking Submission\",\n    \"recepients\": [\n        {\n            \"cc\": \"\",\n            \"recepientField\": \"\",\n            \"recipient\": \"{{recipient}}\"\n        }\n    ],\n    \"select_template\": false,\n    \"send_to_assigned_users\": false,\n    \"submit\": true\n}",
+    "data": "{\n    \"email_account\": \"Arpita Karkarey's Walnut School\",\n    \"email_content\": \"Here is the OTP For Undertaking Submission: {{otp}}\",\n    \"email_subject\": \"OTP For Undertaking Submission\",\n    \"recepients\": [\n        {\n            \"cc\": \"\",\n            \"recepientField\": \"\",\n            \"recipient\": \"{{recipient}}\"\n        }\n    ],\n    \"select_template\": false,\n    \"send_to_assigned_users\": false,\n    \"submit\": true\n}",
     "element_type": "Action",
     "id": "XgffkO_8YcUyxi-DP8Yu7",
     "parent": "Undertaking OTP",
