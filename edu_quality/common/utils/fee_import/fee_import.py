@@ -29,7 +29,7 @@ def import_fees(**kwargs):
 @frappe.whitelist()
 def fee_advance():
     try:
-        students = frappe.get_all("Student",filters=[["student_status","in",["Current student","Defaulter"]]])
+        students = frappe.get_all("Student",filters=[["student_status","in",["Current student"]]])
         all_len = len(students)
         for index, student in enumerate(students):
             set_progress(index + 1, all_len,1, "Student Details")
@@ -77,8 +77,8 @@ def get_institution(ins_id):
     return data.get(ins_id)
 
 def create_log(student,class_name,school):
-    if not frappe.db.exists("Fee Deu Report",{"student":student, "class_name":class_name,"school":school}):
-        doc = frappe.new_doc("Fee Deu Report")
+    if not frappe.db.exists("Fee Advance Current Student",{"student":student, "class_name":class_name,"school":school}):
+        doc = frappe.new_doc("Fee Advance Current Student")
         doc.student = student
         doc.class_name = class_name
         doc.school = school

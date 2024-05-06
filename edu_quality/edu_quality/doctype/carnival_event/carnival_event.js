@@ -70,49 +70,56 @@ async function uploadImage(image, frm) {
 frappe.ui.form.on("Carnival Event", {
     refresh: function (frm) {
 
+        console.log(frm)
         setTimeout(() => {
+            if (!frm.doc.__islocal) {
+                var element = frm.add_custom_button(__("Upload Images"), async function () {
+                    try {
+                        const images = await nativeInterface.execute('openWebViewCamera', {
+                            multiple: true,
+                            preferredCameraType: 'rear',
+                            galleryTitle: frm.doc.name,
+                            backgroundMode: true,
+                            endpoint: "edu_quality.edu_quality.doctype.carnival_event.carnival_event.move_existing_and_upload_to_drive",
+                            parameters: {
+                                "method": "POST",
+                                "folder_name": `${frm.doc.name}`,
+                            },
 
-            var element = frm.add_custom_button(__("Upload Images"), async function () {
-                try {
-                    const images = await nativeInterface.execute('openWebViewCamera', {
-                        multiple: true,
-                        preferredCameraType: 'rear',
-                        galleryTitle: frm.doc.name,
-                        // backgroundMode: true,
-                        // backgroundStorageKey: "Carnival Events"
-                    })
-                    await folderExists('Home', frm.doc.name)
+                            // backgroundStorageKey: "Carnival Events"
+                        })
+                        await folderExists('Home', frm.doc.name)
 
-                    const imageUrls = await Promise.allSettled(images.map((img) => uploadImage('data:image/jpg;base64,' + img.base64, frm)))
-                    imageUrls.map((img) => frappe.call({
-                        method: "edu_quality.api.google_drive_upload.upload_file",
-                        args: {
-                            file_url: img.value,
-                            folder_name: frm.doc.name,
-                            type: "POST",
-                        }, callback: () => {
+                        // const imageUrls = await Promise.allSettled(images.map((img) => uploadImage('data:image/jpg;base64,' + img.base64, frm)))
+                        // imageUrls.map((img) => frappe.call({
+                        //     method: "edu_quality.api.google_drive_upload.upload_file",
+                        //     args: {
+                        //         file_url: img.value,
+                        //         folder_name: frm.doc.name,
+                        //         type: "POST",
+                        //     }, callback: () => {
 
-                        }
-                    }))
-
-
-
-                    frappe.msgprint({
-                        title: __('Successful'),
-                        message: __('Upload Completed'),
-
-                    })
-                }
-                catch (e) {
-                    nativeInterface.logToNative(e)
-                }
+                        //     }
+                        // }))
 
 
 
-            }).addClass('btn-primary')
-            element.addClass('btn-primary')
-            element.parent().removeClass('hidden-xs hidden-md')
+                        frappe.msgprint({
+                            title: __('Successful'),
+                            message: __('Upload Completed'),
 
+                        })
+                    }
+                    catch (e) {
+                        nativeInterface.logToNative(e)
+                    }
+
+
+
+                }).addClass('btn-primary')
+                element.addClass('btn-primary')
+                element.parent().removeClass('hidden-xs hidden-md')
+            }
         })
     },
 

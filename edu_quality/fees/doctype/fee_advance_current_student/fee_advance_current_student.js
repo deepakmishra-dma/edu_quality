@@ -1,7 +1,7 @@
 // Copyright (c) 2024, Hybrowlabs Technologies and contributors
 // For license information, please see license.txt
 
-frappe.ui.form.on('Fee Deu Report', {
+frappe.ui.form.on('Fee Advance Current Student', {
 	// refresh: function(frm) {
 
 	// }

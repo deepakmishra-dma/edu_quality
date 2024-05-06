@@ -409,7 +409,7 @@ def create_fee_advance(student, program_enrollment,all_len=None,index=None):
         fee_advance.income_account = frappe.get_value("Company", institution, "default_liability_account")
         fee_advance.cost_center = frappe.get_value("Company", institution, "cost_center")
         fee_advance.save()
-        fee_advance.submit()
+        # fee_advance.submit()
     except Exception:
         frappe.log_error(
             title="Fee Advance",
