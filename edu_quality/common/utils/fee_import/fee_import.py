@@ -28,24 +28,28 @@ def import_fees(**kwargs):
 
 @frappe.whitelist()
 def fee_advance():
+    students = frappe.get_all("Student",filters=[["student_status","in",["Current student"]]])
+    all_len = len(students)
+    for index, student in enumerate(students):
+        frappe.enqueue(import_fee,student=student,index=index,all_len=all_len)
+
+def import_fee(student,index,all_len):
     try:
-        students = frappe.get_all("Student",filters=[["student_status","in",["Current student"]]])
-        all_len = len(students)
-        for index, student in enumerate(students):
-            set_progress(index + 1, all_len,1, "Student Details")
-            student_doc = frappe.get_doc("Student",student.name)
-            p_e_doc = frappe.get_doc("Program Enrollment",{"student": student.name})
-            class_name = frappe.get_value("Program",p_e_doc.program,"program_name")
-            if not frappe.get_value("Fee Advance",{"student":student.name,"program":class_name}):
-                ins_id = get_institution(student_doc.school)
-                fees = import_fees(institution=ins_id,program=class_name,status=student_doc.student_status,financial_year=p_e_doc.academic_year,fee_or_dep="fee")
-                if fees:
-                    if not check_deu_date_fee(fees,student_doc):
-                        frappe.enqueue(create_log,student=student_doc.name,class_name=class_name,school=student_doc.school)
-                        # frappe.enqueue(create_fee_advance, student=student_doc, program_enrollment=p_e_doc,all_len=all_len,index=index)
-                else:
-                    frappe.enqueue(create_log,student=student_doc.name,class_name=class_name,school=student_doc.school)
+        set_progress(index + 1, all_len,1, "Student Details")
+        student_doc = frappe.get_doc("Student",student.name)
+        p_e_doc = frappe.get_doc("Program Enrollment",{"student": student.name})
+        class_name = frappe.get_value("Program",p_e_doc.program,"program_name")
+        if not frappe.get_value("Fee Advance",{"student":student.name,"program":class_name}):
+            ins_id = get_institution(student_doc.school)
+            fees = import_fees(institution=ins_id,program=class_name,status=student_doc.student_status,financial_year=p_e_doc.academic_year,fee_or_dep="fee")
+            if fees:
+                if not check_deu_date_fee(fees,student_doc):
+                    create_log(student_doc.name,class_name,student_doc.school)
+                    # frappe.enqueue(create_log,student=student_doc.name,class_name=class_name,school=student_doc.school)
                     # frappe.enqueue(create_fee_advance, student=student_doc, program_enrollment=p_e_doc,all_len=all_len,index=index)
+            else:
+                create_log(student_doc.name,class_name,student_doc.school)
+                # frappe.enqueue(create_fee_advance, student=student_doc, program_enrollment=p_e_doc,all_len=all_len,index=index)
     except Exception as e:
         frappe.logger("fee_advance").exception(e)
         cleaned_data = student
@@ -58,7 +62,7 @@ def fee_advance():
         title="Fee Advance with import",
         message=json.dumps(error_obj),
         )
-
+    
 def check_deu_date_fee(fees,student_doc):
     records = fees.get("data",[])
     if records:
