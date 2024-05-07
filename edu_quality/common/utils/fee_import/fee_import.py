@@ -1,31 +1,50 @@
 import json
 import frappe
 import requests
+import pickle
 from edu_quality.fees.doctype.fee_advance.fee_advance import create_fee_advance
 from edu_quality.common.utils.progress import set_progress
 
 @frappe.whitelist(allow_guest=True)
 def import_fees(**kwargs):
-    purl = "https://test.walnutedu.in/indexCI.php/fee_due_report/fetch_student_fee_due"
-    payload = json.dumps(
-        {
-            "sch_ins": kwargs.get("institution"),
-            "class": kwargs.get("program"),
-            "status": kwargs.get("status"),
-            "financial_year": kwargs.get("financial_year"),
-            "fee_or_dep": kwargs.get("fee_or_dep"),
-            "user": "walnutfeecollect",
-            "password": "***REMOVED-PASSWORD***",
-        }
-    )
-    response = requests.post(purl, data=payload)
-    data = response.json()
-    frappe.logger("fesss").exception(data)
-    if data.get("data"):
-        return  data
-    elif data.get('message',None) =="Student Not Found!" or data.get('message',None) == None:
-        return None
-
+    try:
+        rs = frappe.cache()
+        key = "{0}:{1}:{2}:{3}:{4}".format(kwargs.get("institution"),
+                                        kwargs.get("program"),
+                                        kwargs.get("status"),
+                                        kwargs.get("financial_year"),
+                                            kwargs.get("fee_or_dep"))
+        data = rs.get(key)
+        if data:
+            data = pickle.loads(data)
+            if data.get("data"):
+                return  data
+            elif data.get('message',None) =="Student Not Found!" or data.get('message',None) == None:
+                return None
+        purl = "https://test.walnutedu.in/indexCI.php/fee_due_report/fetch_student_fee_due"
+        payload = json.dumps(
+            {
+                "sch_ins": kwargs.get("institution"),
+                "class": kwargs.get("program"),
+                "status": kwargs.get("status"),
+                "financial_year": kwargs.get("financial_year"),
+                "fee_or_dep": kwargs.get("fee_or_dep"),
+                "user": "walnutfeecollect",
+                "password": "***REMOVED-PASSWORD***",
+            }
+        )
+        response = requests.post(purl, data=payload)
+        data = response.json()
+        rs.setex(name=key, time=10800, value=pickle.dumps(data))
+        # rs.set_value(key, pickle.dumps(data), expires_in_sec=10800)
+        if data.get("data"):
+            return  data
+        elif data.get('message',None) =="Student Not Found!" or data.get('message',None) == None:
+            return None
+    except Exception as e:
+        frappe.logger("fee_advance").exception(e)
+    
+    
 @frappe.whitelist()
 def fee_advance():
     students = frappe.get_all("Student",filters=[["student_status","in",["Current student"]]])
