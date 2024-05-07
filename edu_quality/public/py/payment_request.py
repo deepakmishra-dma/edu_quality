@@ -190,20 +190,24 @@ def payment_request_paid(doc, fees, paid_filter, previous_payment_term):
 
 # update payment request after applying or removing discount
 def update_payment_request_after_discount(doc):
-    frappe.logger('pay_req').exception('update_pr')
-    # filter for not paid payment request
-    not_paid_filter = {
-        "reference_name": doc.name,
-        "status": ["!=", "Paid"],
-        "payment_term": ["is","set"]
-    }
-    # if payment request is not paid
-    if frappe.db.exists("Payment Request", not_paid_filter):
-        update_not_paid_payment_request(doc, not_paid_filter)
+    try:
+        frappe.logger('p_req').exception('update_pr' + str(doc.name))
+        # filter for not paid payment request
+        not_paid_filter = {
+            "reference_name": doc.name,
+            "status": ["!=", "Paid"],
+            "payment_term": ["is","set"]
+        }
+        # if payment request is not paid
+        if frappe.db.exists("Payment Request", not_paid_filter):
+            update_not_paid_payment_request(doc, not_paid_filter)
+    except Exception as e:
+        frappe.logger('p_req').exception(e)
 
 
 # create new payment request if previous payment request is not paid
 def update_not_paid_payment_request(doc, not_paid_filter):
+    frappe.logger('p_req').exception('unpaid' + str(doc.name))
     pr = frappe.get_doc("Payment Request", not_paid_filter)
     if not pr.docstatus.is_cancelled() and not pr.docstatus.is_draft():
         pr.cancel()
