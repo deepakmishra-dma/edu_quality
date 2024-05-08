@@ -201,6 +201,25 @@ def update_payment_request_after_discount(doc):
         # if payment request is not paid
         if frappe.db.exists("Payment Request", not_paid_filter):
             update_not_paid_payment_request(doc, not_paid_filter)
+        for schedule in doc.payment_schedule:
+            before_days = frappe.db.get_value("Fee Schedule",doc.fee_schedule,"create_payment_request_before")
+            today = datetime.today().date()
+            difference = schedule.due_date - today
+            if difference.days <= before_days:
+                student_email = frappe.get_value("Student", doc.student, "student_email_id")
+                if not frappe.db.exists("Payment Request", {"reference_name": doc.name, "payment_term": schedule.payment_term}):
+                    make_payment_request(
+                        party_type="Student",
+                        party=doc.student,
+                        dt=doc.doctype,
+                        dn=doc.name,
+                        payment_term=schedule.payment_term,
+                        recipient_id=student_email,
+                        submit_doc=True
+                    )
+            return
+
+                    
     except Exception as e:
         frappe.logger('p_req').exception(e)
 
