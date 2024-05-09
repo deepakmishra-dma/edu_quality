@@ -12,8 +12,10 @@ class CarnivalEvent(Document):
 
 @frappe.whitelist()
 def move_existing_and_upload_to_drive(**data):
+    folder_name = data.get("storedParams").get("folder_name")
+    # existing_folder = frappe.db.exists("File", {"name": f"Home/{folder_name}"})
     file_doc = frappe.get_doc("File", data.get("name"))
-    upload_file(file_doc.file_url, data.get("name"))
-    file_doc.folder = f"Home/{data.get('storedParams').get('folder_name')}"
+    upload_file(file_doc.file_url, folder_name)
+    file_doc.folder = f"Home/{folder_name}"
     file_doc.save()
     return "SUCCESS"
