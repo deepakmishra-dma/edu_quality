@@ -153,7 +153,7 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
         "bus_service_required": get_data("bus_service_required"),
         "pickup_bus": get_data("pickup_bus"),
         "pickup_address": get_data("pickup_address"),
-        "special_instruction": get_data("spcl_instruction"),
+        # "special_instruction": get_data("spcl_instruction"),
         "drop_bus": get_data("drop_bus"),
         "drop_address": get_data("drop_address"),
         "source_name": get_data("ref_source_name"),
@@ -356,6 +356,8 @@ def create_guardian(relation, **kwargs):
     mobile_no = kwargs.get("mobile_no")
     email_id = kwargs.get("email_id").lower() if kwargs.get("email_id") else None
     guardian = frappe.get_value("Guardian", {"guardian_name": guardian_name, "mobile_number": mobile_no})
+    if not first_name:
+        return None
     if not guardian:
         doc = {
             "doctype": "Guardian",
@@ -374,12 +376,11 @@ def create_guardian(relation, **kwargs):
         }
         guardian = frappe.get_doc(doc)
         guardian.insert(ignore_permissions=True)
-        guardian_id = guardian.name
     else:
-        guardian_id = guardian
+        guardian = frappe.get_doc("Guardian", guardian)
     return {
-        "guardian": guardian_id,
-        "guardian_name": first_name,
+        "guardian": guardian.name,
+        "guardian_name": guardian.guardian_name,
         "relation": relation,
     }
 
@@ -392,7 +393,8 @@ def get_guardian(data):
     for relation in relations:
         kwargs = {attr: data.get(f"{relation.lower()}_{attr}") for attr in attributes}
         guardian = create_guardian(relation, **kwargs)
-        guardians.append(guardian)
+        if guardian:
+            guardians.append(guardian)
     return guardians
     
 
