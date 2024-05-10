@@ -99,17 +99,15 @@ def get_term_wise_discounts(fees,payment_plan):
     return discounts
                     
 
-def get_referral_discount(fees,ps):
+def get_referral_discount(fees):
     for component in fees.components:
         if component.discount_breakup:
             discount = json.loads(component.discount_breakup)
             for dis in discount:
                 if dis == 'Referral':
                     dis_amount = discount[dis]['discount_amount']
-                    dis_per = flt(dis_amount/ps.payment_amount*100,2)
-                    return {
-                        "Referral": {'discount_amount': dis_amount, 'discount_percentage': dis_per}
-                    }
+                    dis_amount
+    return 0
     
 
 
@@ -119,18 +117,24 @@ def update_payment_plan(payment_plan, doc):
     payment_plan = frappe.get_doc("Payment Plan", payment_plan)
     doc.payment_plan = payment_plan.name
     doc.payment_schedule = []
+    referral_amount = get_referral_discount(doc)
    
-    other_amounts = doc.grand_total - deposit
+    other_amounts = doc.grand_total - deposit + referral_amount
     for i, ps in enumerate(payment_plan.payment_schedule):
         description = f"Installment {i+1}"
         amount = (ps.invoice_portion * other_amounts) / 100
         if i == 0 and apply_deposit:
             description += " and Deposit/Registration"
             amount += deposit
-        breakup = {}
+        breakup={}
         if i==0:
-            breakup = get_referral_discount(doc,ps)
-        frappe.logger('modify').exception(breakup)
+            if referral_amount>0:
+                amount = amount - referral_amount
+                breakup = {
+                            "Referral": {
+                                "discount_amount": flt(referral_amount * ps.invoice_portion/100,2)
+                            }
+                        }
         doc.append("payment_schedule",{
             'payment_term':ps.payment_term,
             'description': description,
@@ -142,12 +146,12 @@ def update_payment_plan(payment_plan, doc):
         })
     doc.total_discount = get_all_discounts(doc)
     doc.save(ignore_permissions=True)
+    doc.reload()
     discount = update_payplan_discount(doc, payment_plan)
     if discount:
         add_discount(doc.name, discount[1].name,fees=doc)
         doc.reload()
         discount_amount = discount[0]
-    doc.reload()
     doc.total_discount = get_all_discounts(doc)
     doc.save(ignore_permissions=True)
     doc.update_split()
