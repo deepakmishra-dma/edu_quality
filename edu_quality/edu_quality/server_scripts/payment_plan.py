@@ -132,7 +132,7 @@ def update_payment_plan(payment_plan, doc):
                 amount = amount - referral_amount
                 breakup = {
                             "Referral": {
-                                "discount_amount": flt(referral_amount * ps.invoice_portion/100,2)
+                                "discount_amount": flt(referral_amount,2)
                             }
                         }
         doc.append("payment_schedule",{
