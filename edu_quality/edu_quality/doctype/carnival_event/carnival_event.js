@@ -73,7 +73,9 @@ frappe.ui.form.on("Carnival Event", {
         console.log(frm)
         setTimeout(() => {
             if (!frm.doc.__islocal) {
+
                 var element = frm.add_custom_button(__("Upload Images"), async function () {
+                    await folderExists('Home', frm.doc.name)
                     try {
                         const images = await nativeInterface.execute('openWebViewCamera', {
                             multiple: true,
@@ -88,7 +90,7 @@ frappe.ui.form.on("Carnival Event", {
 
                             // backgroundStorageKey: "Carnival Events"
                         })
-                        await folderExists('Home', frm.doc.name)
+
 
                         // const imageUrls = await Promise.allSettled(images.map((img) => uploadImage('data:image/jpg;base64,' + img.base64, frm)))
                         // imageUrls.map((img) => frappe.call({
@@ -123,5 +125,5 @@ frappe.ui.form.on("Carnival Event", {
         })
     },
 
-   
+
 });
