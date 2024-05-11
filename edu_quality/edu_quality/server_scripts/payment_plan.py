@@ -106,7 +106,7 @@ def get_referral_discount(fees):
             for dis in discount:
                 if dis == 'Referral':
                     dis_amount = discount[dis]['discount_amount']
-                    dis_amount
+                    return dis_amount
     return 0
     
 
