@@ -108,7 +108,7 @@ frappe.ui.form.on("Carnival Event", {
 
                         frappe.msgprint({
                             title: __('Successful'),
-                            message: __('Upload Completed'),
+                            message: __('Upload Started, restarting app will restart unfinished uploads'),
 
                         })
                     }
