@@ -64,7 +64,7 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
     refno = get_data("refno")
     docname = school_prefixes.get(school, "") + refno
 
-    student_email_id = f"{docname.lower()}@walnutedu.in"
+    student_email_id = f"{docname.lower()}@yopmail.com"
 
     countries = [d["name"] for d in frappe.get_all("Country")]
     country = "India" if get_data("country") not in countries else get_data("country")
@@ -90,7 +90,8 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
         "last_name_marathi": get_data("lname_marathi"),
         "date_of_birth": get_data("b_date"),
         "blood_group": get_data("blood_group", ""),
-        "student_mobile_number": get_data("student_primary_contact_number"),
+        # "student_mobile_number": get_data("student_primary_contact_number"),
+        "student_mobile_number": "8770521949",
         "gender": get_data("gender"),
         "nationality": get_data("nationality"),
         "address_line_1": get_data("bld_house"),
@@ -100,7 +101,8 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
         "state": get_data("state"),
         "country": country,
         "landmark": get_data("landmark"),
-        "student_email_id": get_data("user_email"),
+        # "student_email_id": get_data("user_email"),
+        "student_email_id": student_email_id,
         "date_of_leaving": date_of_leaving,
         "joining_date": joining_date.strftime("%Y-%m-%d") if joining_date else None,
         "student_name": student_name,
@@ -158,8 +160,10 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
         "drop_address": get_data("drop_address"),
         "source_name": get_data("ref_source_name"),
         "guardians": get_guardian(frappe_data),
-        "whatsapp_number":get_data("student_sms_no"),
-        "primary_contact":get_data("student_emergency_contact_no")
+        # "whatsapp_number":get_data("student_sms_no"),
+        "whatsapp_number":"8770521949",
+        # "primary_contact":get_data("student_emergency_contact_no")
+        "primary_contact":"8770521949"
     }
     frappe.flags.in_import = True
     frappe.logger("dddd").exception(frappe_data)
@@ -354,7 +358,7 @@ def create_guardian(relation, **kwargs):
     last_name = kwargs.get("s_name", "").capitalize() if kwargs.get("s_name") else None
     guardian_name = f"{first_name} {last_name or ''}"
     mobile_no = kwargs.get("mobile_no")
-    email_id = kwargs.get("email_id").lower() if kwargs.get("email_id") else None
+    # email_id = kwargs.get("email_id").lower() if kwargs.get("email_id") else None
     guardian = frappe.get_value("Guardian", {"guardian_name": guardian_name, "mobile_number": mobile_no})
     if not first_name:
         return None
@@ -366,7 +370,7 @@ def create_guardian(relation, **kwargs):
             "middle_name": middle_name,
             "last_name": last_name,
             "mobile_number": kwargs.get("mobile_no"),
-            "email_address": email_id,
+            # "email_address": email_id,
             "education": kwargs.get("education"),
             "occupation": kwargs.get("profession"),
             "annual_income": kwargs.get("annual_income"),

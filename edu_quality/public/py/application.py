@@ -195,7 +195,6 @@ def get_max_strength(student_group):
 
 
 def get_phone_no_from_guardians(guardians):
-    frappe.errprint(guardians)
     guardians_names = [guardian.get("guardian") for guardian in guardians]
     guardian_data = frappe.db.get_list(
         "Guardian",
