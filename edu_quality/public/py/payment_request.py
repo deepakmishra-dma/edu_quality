@@ -27,11 +27,11 @@ def before_save(doc, method=None):
                 "payment_term": previous_payment_term,
             }
             # if payment request is not paid
-            if frappe.db.exists("Payment Request", not_paid_filter):
-                payment_request_not_paid(doc, fees, not_paid_filter)
+            # if frappe.db.exists("Payment Request", not_paid_filter):
+            #     payment_request_not_paid(doc, fees, not_paid_filter)
 
             # if payment request is paid
-            elif frappe.db.exists("Payment Request", paid_filter):
+            if frappe.db.exists("Payment Request", paid_filter):
                 payment_request_paid(doc, fees, paid_filter, previous_payment_term)
 
             # if payment request does not exists
