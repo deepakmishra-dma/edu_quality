@@ -14,8 +14,11 @@ def autoname(doc, method=None):
         prefix = school_prefixes.get(doc.school, '')
         doc_name = prefix + doc.reference_number
         doc.name = doc_name
-
-    if doc.student_applicant:
+    elif doc.reference_number:
+        prefix = school_prefixes.get(doc.school, '')
+        doc_name = prefix + doc.reference_number
+        doc.name = doc_name
+    elif doc.student_applicant:
         applicant = frappe.get_doc("Student Applicant",doc.student_applicant)
         prefix = frappe.get_value("School",applicant.school,'prefix')
         series = get_reference(doc.program)

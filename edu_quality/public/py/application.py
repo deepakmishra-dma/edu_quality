@@ -113,7 +113,7 @@ def get_deposits(doc):
 
 
 @frappe.whitelist()
-def enroll_student(source_name):
+def enroll_student(source_name, refno=None):
     """Creates a Student Record and returns a Program Enrollment.
 
     :param source_name: Student Applicant.
@@ -138,6 +138,7 @@ def enroll_student(source_name):
         add_referral_discount(student_applicant.custom_referred_by, student_applicant)
 
     student_group = get_student_group(student_applicant)
+    student.reference_number = refno
     student.save()
     create_student_account(student, student_applicant)
     program_enrollment = frappe.new_doc("Program Enrollment")
@@ -194,7 +195,6 @@ def get_max_strength(student_group):
 
 
 def get_phone_no_from_guardians(guardians):
-    frappe.errprint(guardians)
     guardians_names = [guardian.get("guardian") for guardian in guardians]
     guardian_data = frappe.db.get_list(
         "Guardian",

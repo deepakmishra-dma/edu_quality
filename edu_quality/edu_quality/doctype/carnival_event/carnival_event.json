@@ -1,6 +1,6 @@
 {
  "actions": [],
- "autoname": "format:{school_prefix}-{class}-{item_code}",
+ "autoname": "format:{school_prefix}-{item_code}",
  "creation": "2023-08-31 23:15:32.936038",
  "default_view": "List",
  "doctype": "DocType",
@@ -65,7 +65,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-12 10:34:50.121973",
+ "modified": "2024-01-13 02:21:49.535534",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Carnival Event",

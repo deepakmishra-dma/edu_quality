@@ -17,11 +17,15 @@
   {
    "fieldname": "ref_no",
    "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Ref No"
   },
   {
    "fieldname": "lms_id",
    "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "LMS ID"
   },
   {
@@ -31,8 +35,10 @@
   {
    "fieldname": "enrollment__status",
    "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Enrollment  Status",
-   "options": "\nSuccess\nFailed"
+   "options": "\nPending\nSuccess\nFailed"
   },
   {
    "fieldname": "responce",
@@ -42,7 +48,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-12 12:08:49.294282",
+ "modified": "2024-01-12 20:10:38.096892",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "MGR Enrollment Log",
