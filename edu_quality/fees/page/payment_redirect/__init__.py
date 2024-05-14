@@ -3,6 +3,9 @@ import frappe
 import pickle
 from frappe.utils.print_format import download_pdf
 from edu_quality.public.py.utils import get_submitted_undertaking, get_undertaking_template
+from frappe.utils.data import flt 
+import json 
+
 
 def cache_data(ttl):
     def cache_processor(func):
@@ -19,6 +22,42 @@ def cache_data(ttl):
         return check_cache_exists
     return cache_processor
 
+
+def get_breakup(fees,term):
+    breakups = []
+
+    for schedule in fees.payment_schedule:
+        if schedule.payment_term == term:
+            portion = schedule.invoice_portion 
+            if 'deposit' in schedule.description:
+                deposit = 1 
+            schecule_breakup = json.loads(schedule.discount_breakup) if schedule.discount_breakup else {}
+
+    for component in fees.fee_components:
+        breakup = []
+        if not deposit and component.fee_type != 'Regular':
+            continue
+        amount = flt(component.amount*portion/100,2) 
+        company = component.company
+        if component.discount_breakup:
+            component_breakup = json.loads(component.discount_breakup) if component.discount_breakup else {}
+        for dis in component_breakup:
+            if dis in schecule_breakup:
+                dis_amount = flt(schecule_breakup[dis]['discount_amount'],2)
+                amount = amount - dis_amount
+                breakup.append({
+                'fees_category': dis,
+                'amount':  frappe.utils.fmt_money(dis_amount, currency="INR"),
+                'company': company
+            })
+        breakup = [{
+                'fees_category': component.pay,
+                'amount':  frappe.utils.fmt_money(amount, currency="INR"),
+                'company': company
+            }] + breakup
+        breakups = breakups + breakup
+    return breakups
+
 @frappe.whitelist(allow_guest=True)
 def get_payment_details(**kwargs):
     payment_request = frappe.get_value("Payment Request",{'payment_hash': kwargs.get('doc')})
@@ -29,7 +68,7 @@ def get_payment_details(**kwargs):
     breakup = []
     if payment_request.payment_term:
         component = json.loads(fees.component_split)[payment_request.payment_term]
-        breakup = component['breakup']
+        breakup = get_breakup(fees,payment_request.payment_term)
         due_date = component['due_date']
         is_deposit = component['is_deposit']
         if fees.doctype == "Fees":
