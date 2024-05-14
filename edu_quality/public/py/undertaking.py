@@ -44,7 +44,7 @@ def generate_otp(variables):
     OTP = ""
     for i in range(4):
         OTP += str(random.randint(1, 9))
-    rs.set_value(key, OTP, expires_in_sec=300)
+    rs.set_value(key, OTP, expires_in_sec=600)
 
     variables["otp"] = OTP
     return send_otp(doc.doctype,doc.name, OTP)

@@ -59,7 +59,7 @@ def generate_otp(fee):
         OTP = ""
         for i in range(4):
             OTP += str(random.randint(1, 9))
-        rs.set_value(key, OTP, expires_in_sec=300)
+        rs.set_value(key, OTP, expires_in_sec=600)
         return send_otp(fee, OTP)
     except Exception as e:
         return False
@@ -129,6 +129,7 @@ def verify_otp(fee, otp):
             return True
         return False
     except Exception as e:
+        frappe.logger("OTP").exception(e)
         return False
 
 
