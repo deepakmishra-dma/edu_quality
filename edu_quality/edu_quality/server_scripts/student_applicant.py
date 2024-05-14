@@ -133,7 +133,8 @@ def update_referral_discount(doc, discount_amount):
                 doc_updates = {
                     "grand_total": grand_total,
                     "grand_total_in_words": grand_total_in_words,
-                    "outstanding_amount": doc.outstanding_amount - discount_amount
+                    "outstanding_amount": doc.outstanding_amount - discount_amount,
+                    "total_discount": doc.total_discount + discount_amount
                 }
 
                 frappe.db.set_value("Fees", doc.name, doc_updates)
@@ -272,7 +273,8 @@ def referal_discount(doc, method=None):
             doc_updates = {
                 "grand_total": grand_total,
                 "grand_total_in_words": grand_total_in_words,
-                "outstanding_amount": doc.outstanding_amount - discount
+                "outstanding_amount": doc.outstanding_amount - discount,
+                "total_discount": doc.total_discount + discount
             }
 
             frappe.db.set_value("Fees", doc.name, doc_updates)
