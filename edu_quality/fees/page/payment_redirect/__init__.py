@@ -44,10 +44,9 @@ def get_breakup(fees,term):
             for dis in component_breakup:
                 if dis in schecule_breakup:
                     dis_amount = flt(schecule_breakup[dis]['discount_amount'],2)
-                    amount = amount - dis_amount
                     breakup.append({
-                    'fees_category': dis,
-                    'amount':  frappe.utils.fmt_money(dis_amount, currency="INR"),
+                    'fees_category': "Discount- " + dis,
+                    'amount':  frappe.utils.fmt_money(0-dis_amount, currency="INR"),
                     'company': company
                 })
         breakup = [{
