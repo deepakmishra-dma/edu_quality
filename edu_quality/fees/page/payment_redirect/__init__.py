@@ -33,7 +33,7 @@ def get_breakup(fees,term):
                 deposit = 1 
             schecule_breakup = json.loads(schedule.discount_breakup) if schedule.discount_breakup else {}
 
-    for component in fees.fee_components:
+    for component in fees.components:
         breakup = []
         if not deposit and component.fee_type != 'Regular':
             continue
