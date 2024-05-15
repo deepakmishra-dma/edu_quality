@@ -41,17 +41,17 @@ def get_breakup(fees,term):
         company = component.custom_company
         if component.discount_breakup:
             component_breakup = json.loads(component.discount_breakup) if component.discount_breakup else {}
-        for dis in component_breakup:
-            if dis in schecule_breakup:
-                dis_amount = flt(schecule_breakup[dis]['discount_amount'],2)
-                amount = amount - dis_amount
-                breakup.append({
-                'fees_category': dis,
-                'amount':  frappe.utils.fmt_money(dis_amount, currency="INR"),
-                'company': company
-            })
+            for dis in component_breakup:
+                if dis in schecule_breakup:
+                    dis_amount = flt(schecule_breakup[dis]['discount_amount'],2)
+                    amount = amount - dis_amount
+                    breakup.append({
+                    'fees_category': dis,
+                    'amount':  frappe.utils.fmt_money(dis_amount, currency="INR"),
+                    'company': company
+                })
         breakup = [{
-                'fees_category': component.pay,
+                'fees_category': component.fees_category,
                 'amount':  frappe.utils.fmt_money(amount, currency="INR"),
                 'company': company
             }] + breakup
