@@ -45,6 +45,8 @@ class FeeAdvance(AccountsController):
             self.append('components', component)
 
     def before_submit(self):
+        if frappe.get_doc("Fees",{"student":self.student,"program":self.next_program,"docstatus":1}):
+            frappe.throw("Fees are already present for this class, so you cannot submit it.")
         referal_discount(self)
         payment_plan(self)
         self.generate_split()
@@ -367,7 +369,10 @@ def fee_advance(**kwargs):
         pe_filter = {"student": student.name, "academic_year": current_academic_year}
         if frappe.db.exists("Program Enrollment", pe_filter):
             program_enrollment = frappe.get_doc("Program Enrollment", pe_filter)
-            frappe.enqueue(create_fee_advance, student=student, program_enrollment=program_enrollment)
+            school = frappe.get_value("Program", program_enrollment.program,"school")
+            next_program = get_next_program(program_enrollment.program, school)
+            if not frappe.get_doc("Fees",{"student":student.name,"program":next_program,"docstatus":1}):
+                frappe.enqueue(create_fee_advance, student=student, program_enrollment=program_enrollment)
         else:
             frappe.msgprint(
                 f"Program Enrollment does not exists for student <b>{student.first_name}</b>. Fee Advance can only be created for old students."
