@@ -4,4 +4,4 @@ edu_quality.patches.class #07-11-2023
 edu_quality.patches.school #07-11-2023
 edu_quality.patches.payment_term #08-11-2023
 edu_quality.patches.academic_year #28-11-2023
-edu_quality.patches.funnel #12-01-2024 dev 3
+edu_quality.patches.funnel #15-01-2024
