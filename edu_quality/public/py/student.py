@@ -103,3 +103,11 @@ def create_payment_request(fee,term=None):
             )
     except Exception as e:
         frappe.logger("edu_quality").exception(e)
+
+@frappe.whitelist()
+def get_fees_details(student):
+    class_id = frappe.get_value("Program Enrollment",{"student":student,"docstatus":1},"program",order_by = "creation desc")
+    if class_id and frappe.get_value("Fees",{"student":student,"program":class_id}):
+        return frappe.get_doc("Fees",{"student":student,"program":class_id}).payment_schedule
+    else:
+        return False
