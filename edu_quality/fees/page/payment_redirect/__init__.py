@@ -35,9 +35,11 @@ def get_breakup(fees,term):
 
     for component in fees.components:
         breakup = []
+        amount = flt(component.amount*portion/100,2) 
         if not deposit and component.fee_type != 'Regular':
             continue
-        amount = flt(component.amount*portion/100,2) 
+        elif deposit and component.fee_type != 'Regular':
+            amount = flt(component.amount,2)
         company = component.custom_company
         if component.discount_breakup:
             component_breakup = json.loads(component.discount_breakup) if component.discount_breakup else {}
