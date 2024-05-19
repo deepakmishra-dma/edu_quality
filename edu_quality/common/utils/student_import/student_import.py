@@ -170,12 +170,12 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
     if not frappe.db.exists(doctype, docname):
         new_doc = frappe.get_doc(new_doc_data)
         new_doc.insert(ignore_permissions=True)
-        if map_student_status(get_data("status")) not in ["Cancelled","New student"]:
+        if map_student_status(get_data("status")) not in ["Cancelled"]:
             insert_program_enrollment(new_doc, frappe_data)
     else:
         if not frappe.db.exists("Program Enrollment", {"student":docname,"program":program}) and map_student_status(get_data("status")) !="Cancelled":
             old_doc = frappe.get_doc(doctype, docname)
-            if map_student_status(get_data("status")) not in ["Cancelled","New student"]:
+            if map_student_status(get_data("status")) not in ["Cancelled"]:
                 insert_program_enrollment(old_doc, frappe_data)
     frappe.flags.in_import = False
 
@@ -216,7 +216,8 @@ def insert_program_enrollment(student, data=None):
         program_enrollment.tiffin_rack_no = data.get("tiffin_rack_no")
         program_enrollment.roll_no = roll_no
         program_enrollment.save()
-        program_enrollment.submit()
+        if student.student_status !="New student":
+            program_enrollment.submit()
     except Exception as e:
         frappe.logger("student_import").exception(e)
         cleaned_data = {key: value for key, value in data.items() if not isinstance(value, (datetime, timedelta))}
