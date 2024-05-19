@@ -109,7 +109,7 @@ def get_split(fees, schedule, case=0,apply_deposit=0):
                 label = label.split("-")[0].strip()
 
             split[label] = split.get(label, 0) + amount
-            paid_to = frappe.db.get_value("Fee Category",component.fees_category,'custom_account') 
+            paid_to = paid_to = frappe.get_value("Company", component.custom_company, "default_easebuzz_account") 
             paid_from = frappe.db.get_value("Company",component.custom_company,"default_receivable_account")
             cost_center = frappe.get_value(
                 "Cost Center", {"company": component.custom_company}, ["name"]
@@ -167,7 +167,7 @@ def get_split_fee_advance(fees):
                 label = label.split("-")[0].strip()
 
             split[label] = split.get(label, 0) + amount
-            paid_to = frappe.db.get_value("Fee Category",component.fees_category,'custom_account') 
+            paid_to = paid_to = frappe.get_value("Company", component.custom_company, "default_easebuzz_account")
             paid_from = frappe.db.get_value("Company",component.custom_company,"default_receivable_account")
             cost_center = frappe.get_value(
                 "Cost Center", {"company": component.custom_company}, ["name"]
