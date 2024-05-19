@@ -745,7 +745,7 @@ data = [
     "type": "document_event_trigger"
    },
    {
-    "data": "{\n    \"node_label\": \"Get Details of Student\",\n    \"python_code\": \"doc = variables.get(\\\"doc\\\")\\n\\nexisting_pe = frappe.db.count(\\\"Program Enrollment\\\", {\\\"student\\\": doc.student, \\\"docstatus\\\": 1})\\n\\nvariables[\\\"recipient\\\"] = frappe.db.get_value(\\\"Student\\\", doc.student, \\\"student_email_id\\\")\\nif existing_pe==1:\\n    variables[\\\"status\\\"] =True\\nelse:\\n    variables[\\\"status\\\"] = False\\nvariables[\\\"first_name\\\"] = doc.student_name\\nvariables[\\\"imported\\\"] = frappe.db.get_value(\\\"Student\\\", doc.student, \\\"imported\\\")\",\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
+    "data": "{\n    \"node_label\": \"Get Details of Student\",\n    \"python_code\": \"doc = variables.get(\\\"doc\\\")\\n\\nexisting_pe = frappe.db.count(\\\"Program Enrollment\\\", {\\\"student\\\": doc.student, \\\"docstatus\\\": 1})\\n\\nvariables[\\\"recipient\\\"] = frappe.db.get_value(\\\"Student\\\", doc.student, \\\"student_email_id\\\")\\nif existing_pe==1:\\n    variables[\\\"status\\\"] =True\\nelse:\\n    variables[\\\"status\\\"] = False\\n\\nschool = frappe.get_doc(\\\"School\\\", doc.custom_school)\\nvariables[\\\"morning_principal\\\"] = school.morning_principal\\nvariables[\\\"morning_vice_principal\\\"] = school.morning_vice_principal\\nvariables[\\\"morning_admin_in_charge\\\"] = school.morning_admin_in_charge\\n\\nvariables[\\\"afternoon_principal\\\"] = school.afternoon_principal\\nvariables[\\\"afternoon_vice_principal\\\"] = school.afternoon_vice_principal\\nvariables[\\\"afternoon_admin_in_charge\\\"] = school.afternoon_admin_in_charge\\n\\nvariables[\\\"school_phone\\\"] = school.phone_number\\nvariables[\\\"school_email\\\"] = school.email_address\\n\\nvariables[\\\"transport_provider_name\\\"] = school.transport_provider_name\\nvariables[\\\"transport_provider_contact\\\"] = school.transport_provider_contact\\n\\nvariables[\\\"meal_provider_name\\\"] = school.meal_provider_name\\nvariables[\\\"meal_provider_contact\\\"] = school.meal_provider_contact\\n\\n\\nvariables[\\\"first_name\\\"] = doc.student_name\\nvariables[\\\"imported\\\"] = frappe.db.get_value(\\\"Student\\\", doc.student, \\\"imported\\\")\",\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
     "element_type": "Action",
     "id": "584Vv8EY9zbmvQii7mUjm",
     "parent": "Welcome Email",
@@ -831,7 +831,7 @@ data = [
   ],
   "funnel_name": "Welcome Email",
   "name": "Welcome Email",
-  "status": "updated",
+  "status": "published",
   "variable_list": "[]",
   "viewport": "{\"x\":-227.49999999999977,\"y\":116.5,\"zoom\":0.9999999999999999}"
  },
