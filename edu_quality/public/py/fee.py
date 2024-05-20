@@ -685,9 +685,7 @@ def company_wise_deposit(fees):
         doc = frappe.get_doc("Fee Category", component.fees_category)
         company = doc.custom_company
         paid_to = frappe.get_value("Company", company, "default_easebuzz_account")
-        paid_from = frappe.get_value(
-            "Account", {"company": company, "account_type": "Payable"}, ["name"]
-        )
+        paid_from = frappe.get_value("Company", company, "default_receivable_account")
         fee_type = frappe.db.get_value("Fee Category", component.fees_category, "type")
         amount = component.amount
 
