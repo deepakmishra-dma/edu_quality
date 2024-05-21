@@ -39,9 +39,11 @@ def before_save(doc, method=None):
         )
         if not fee_name:
             fee_name = "Application fee"
+        label = frappe.db.get_value("Fee Category",fee_name,"custom_label")
+        component = {"fees_category": fee_name, "amount": doc.application_fees,"label":label}
+
         doc.append(
-            "fee_components",
-            {"fees_category": fee_name, "amount": doc.application_fees},
+            "fee_components", component
         )
 
     if frappe.db.get_single_value("Fees Settings", "apply_deposits"):
@@ -108,8 +110,9 @@ def get_deposits(doc):
         ["name", "amount"],
     )
     for deposit in deposits:
+        label = frappe.get_value("Fee Category", deposit.name, "custom_label")
         doc.append(
-            "fee_components", {"fees_category": deposit.name, "amount": deposit.amount}
+            "fee_components", {"fees_category": deposit.name, "amount": deposit.amount,'label': label}
         )
 
 
