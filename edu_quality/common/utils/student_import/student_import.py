@@ -177,7 +177,6 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
             old_doc = frappe.get_doc(doctype, docname)
             if map_student_status(get_data("status")) not in ["Cancelled"]:
                 insert_program_enrollment(old_doc, frappe_data)
-    frappe.flags.in_import = False
 
 
 def map_student_status(id):
