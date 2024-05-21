@@ -213,7 +213,8 @@ def create_fees(doc, method=None):
                         "amount": component.amount,
                         "description": component.description,
                         "custom_company": component.custom_company,
-                        "school": component.school
+                        "school": component.school,
+                        "label": component.custom_label
                     },
                 )
             fee.insert()
@@ -251,7 +252,8 @@ def create_fees(doc, method=None):
                             "amount": component.amount,
                             "description": component.description,
                             "custom_company": component.custom_company,
-                            "school": component.school
+                            "school": component.school,
+                            "label": component.label
                         },
                     )
             else:
