@@ -25,7 +25,7 @@ def cache_data(ttl):
 
 def get_breakup(fees,term):
     breakups = []
-
+    deposit=0
     for schedule in fees.payment_schedule:
         if schedule.payment_term == term:
             portion = schedule.invoice_portion 
