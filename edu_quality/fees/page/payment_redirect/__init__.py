@@ -29,7 +29,7 @@ def get_breakup(fees,term):
     for schedule in fees.payment_schedule:
         if schedule.payment_term == term:
             portion = schedule.invoice_portion 
-            if 'deposit' in schedule.description:
+            if 'deposit' in schedule.description.lower():
                 deposit = 1 
             schecule_breakup = json.loads(schedule.discount_breakup) if schedule.discount_breakup else {}
 
