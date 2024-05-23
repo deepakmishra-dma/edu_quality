@@ -45,7 +45,7 @@ class FeeAdvance(AccountsController):
             self.append('components', component)
 
     def before_submit(self):
-        if frappe.get_doc("Fees",{"student":self.student,"program":self.next_program,"docstatus":1}):
+        if frappe.get_value("Fees",{"student":self.student,"program":self.next_program,"docstatus":1}):
             frappe.throw("Fees are already present for this class, so you cannot submit it.")
         referal_discount(self)
         payment_plan(self)
