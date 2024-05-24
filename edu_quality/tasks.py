@@ -60,6 +60,8 @@ def schedule_payment_request(doc, payment_term):
         "reference_name": doc.name,
         "docstatus": 1,
     }
+    if doc.docstatus != 1:
+        return
     if not frappe.db.exists("Payment Request", filters):
         frappe.enqueue(
             "edu_quality.public.py.student.create_payment_request",
