@@ -553,7 +553,6 @@ def get_payplan_discount(doc, payment_plan):
     tuple: Discount amount and the discount configuration document, or None if no discount is applicable.
     """
     if len(payment_plan.payment_schedule) > 1:
-        frappe.msgprint("Payment Plan Discount with 100% invoice portion can Only be applied!")
         return
     
     for ps in payment_plan.payment_schedule:

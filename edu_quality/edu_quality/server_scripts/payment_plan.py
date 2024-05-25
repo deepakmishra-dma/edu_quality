@@ -53,6 +53,7 @@ def change_payment_plan(payment_plan, doctype, fee_name):
 
         components, amount = get_components(doc.fee_structure, percent, doc.is_rte)
         doc.payment_plan = payment_plan
+        doc.due_date = frappe.get_value("Payment Schedule",{"payment_term":doc.payment_term, "parent":payment_plan}, "due_date")
         doc.amount = amount
         doc.outstanding_amount = amount
         doc.components = []
