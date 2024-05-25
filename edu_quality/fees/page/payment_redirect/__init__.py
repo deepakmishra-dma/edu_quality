@@ -26,20 +26,24 @@ def cache_data(ttl):
 def get_breakup(fees,term):
     breakups = []
     deposit=0
-    for schedule in fees.payment_schedule:
-        if schedule.payment_term == term:
-            portion = schedule.invoice_portion 
-            if 'deposit' in schedule.description.lower():
-                deposit = 1 
-            schecule_breakup = json.loads(schedule.discount_breakup) if schedule.discount_breakup else {}
+    schecule_breakup = {} 
+    portion = 100
+    if fees.doctype == 'Fees':
+        for schedule in fees.payment_schedule:
+            if schedule.payment_term == term:
+                portion = schedule.invoice_portion 
+                if 'deposit' in schedule.description.lower():
+                    deposit = 1 
+                schecule_breakup = json.loads(schedule.discount_breakup) if schedule.discount_breakup else {}
 
     for component in fees.components:
         breakup = []
         amount = flt(component.amount*portion/100,2) 
-        if not deposit and component.fee_type != 'Regular':
-            continue
-        elif deposit and component.fee_type != 'Regular':
-            amount = flt(component.amount,2)
+        if fees.doctype == 'Fees':
+            if not deposit and component.fee_type != 'Regular':
+                continue
+            elif deposit and component.fee_type != 'Regular':
+                amount = flt(component.amount,2)
         company = component.custom_company
         if component.discount_breakup:
             component_breakup = json.loads(component.discount_breakup) if component.discount_breakup else {}
