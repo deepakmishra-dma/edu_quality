@@ -64,25 +64,7 @@ class FeeAdvance(AccountsController):
     
     def on_submit(self):
         self.make_gl_entries()
-
-        student_email = frappe.db.get_value("Student", self.student, "student_email_id")
-        today_date = frappe.utils.getdate(today())
-
-        if isinstance(self.due_date, str):
-            due_date = frappe.utils.getdate(self.due_date)
-        else:
-            due_date = self.due_date
-
-        if (due_date - today_date).days < 30:
-            make_payment_request(
-                    party_type="Student",
-                    party=self.student,
-                    dt=self.doctype,
-                    dn=self.name,
-                    recipient_id=student_email,
-                    payment_term=self.payment_term,
-                    submit_doc=True,
-                )
+        create_payment_request(self)
     
 
     def on_cancel(self):
@@ -320,6 +302,38 @@ class FeeAdvance(AccountsController):
         merge_entries=False,
     )
     
+
+def create_payment_request(doc, method=None):
+    not_paid_filter = {
+        "reference_name": doc.name,
+        "status": ["!=", "Paid"],
+        "payment_term": ["is","set"]
+    }
+
+    if frappe.db.exists("Payment Request",not_paid_filter):
+        pr = frappe.get_doc("Payment Request",not_paid_filter)
+        if not pr.docstatus.is_cancelled() and not pr.docstatus.is_draft():
+            pr.cancel()
+            frappe.delete_doc("Payment Request",pr.name)
+
+    student_email = frappe.db.get_value("Student", doc.student, "student_email_id")
+    today_date = frappe.utils.getdate(today())
+
+    if isinstance(doc.due_date, str):
+        due_date = frappe.utils.getdate(doc.due_date)
+    else:
+        due_date = doc.due_date
+
+    if (due_date - today_date).days < 30:
+        make_payment_request(
+                party_type="Student",
+                party=doc.student,
+                dt=doc.doctype,
+                dn=doc.name,
+                recipient_id=student_email,
+                payment_term=doc.payment_term,
+                submit_doc=True,
+            )
 
 
 def get_components(fee_structure, percent, is_rte):
