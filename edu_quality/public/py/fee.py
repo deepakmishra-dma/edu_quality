@@ -179,8 +179,7 @@ def get_deposit(doc_payment_plan, payment_plan):
     return 0
 
 
-def submit_fee(fee):
-    fee.submit()
+
 
 
 def create_fees(doc, method=None):
@@ -222,7 +221,6 @@ def create_fees(doc, method=None):
                     },
                 )
             fee.insert()
-            frappe.enqueue(submit_fee,queue='long',fee=fee)
             fee.submit()
             from edu_quality.public.py.student import update_student_group
 
@@ -277,7 +275,7 @@ def create_fees(doc, method=None):
                         },
                     )
             fees.insert()
-            frappe.enqueue(submit_fee,queue='long',fee=fees)
+            fees.submit()
             from edu_quality.public.py.student import update_student_group
 
             update_student_group(
