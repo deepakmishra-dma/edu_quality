@@ -5,7 +5,7 @@ from edu_quality.public.py.discount import add_discount, get_all_discounts
 import json
 from frappe.utils import flt
 from edu_quality.public.py.payment_request import update_payment_request_after_discount
-from edu_quality.fees.doctype.fee_advance.fee_advance import get_percent, get_components
+from edu_quality.fees.doctype.fee_advance.fee_advance import get_percent, get_components, create_payment_request
 
 def get_deposit_amount(fees):
     apply_deposit = 0
@@ -50,6 +50,7 @@ def change_payment_plan(payment_plan, doctype, fee_name):
         percent = get_percent(doc.payment_term, payment_plan)
         if doc.outstanding_amount == 0:
             frappe.throw(f"Cannot Change Payment Plan As the Fee Advance is already Paid!")
+            return
 
         components, amount = get_components(doc.fee_structure, percent, doc.is_rte)
         doc.payment_plan = payment_plan
@@ -57,13 +58,13 @@ def change_payment_plan(payment_plan, doctype, fee_name):
         doc.amount = amount
         doc.outstanding_amount = amount
         doc.components = []
-        doc.remove_all_discount_entries()
+        frappe.enqueue(doc.remove_all_discount_entries)
         for component in components:
             doc.append('components', component)
-        doc.make_gl_entries()  
+        frappe.enqueue(doc.make_gl_entries)
         doc.save(ignore_permissions=True)
         frappe.response["message"] = "Payment Plan Updated Successfully!"
-        update_payment_request_after_discount(doc)
+        create_payment_request(doc)
 
 def remove_payment_plan_discount(doc,custom_payment_plan=0):
     discount_configs = frappe.get_all("Discount Configuration",
