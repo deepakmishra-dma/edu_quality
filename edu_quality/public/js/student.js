@@ -23,7 +23,7 @@ frappe.ui.form.on("Student", {
                             <td>` + result[i]['due_date'] + `</td>
                             <td>` + result[i]['invoice_portion'] + `</td>
                             <td>` + result[i]['payment_amount'] + `</td>
-                            <td>` + result[i]['payment_amount'] + `</td>
+                            <td></td>
                             <td><a href="/app/fees/${temp}">Open</a></td>
                         </tr>`
                     }
