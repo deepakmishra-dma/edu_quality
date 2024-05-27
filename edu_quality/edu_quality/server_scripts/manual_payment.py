@@ -87,8 +87,8 @@ def get_unpaid_terms(fee, doctype):
     fee_doc = frappe.get_doc(doctype,fee)
     is_deposit = False
     if fee_doc.component_split:
-        component = json.loads(fee_doc.component_split)["Term 1"]
-        is_deposit = component['is_deposit']
+        component = json.loads(fee_doc.component_split).get("Term 1")
+        is_deposit = component.get('is_deposit') if component else False
     if doctype =="Fees":
         filters = {"student": fee_doc.student,"program":fee_doc.program}
     else:
