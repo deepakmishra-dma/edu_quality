@@ -15,17 +15,17 @@ frappe.ui.form.on("Student", {
                     let result = r.message
                     for (var i = 0; i <= result.length - 1; i++) {
                         let temp = result[i]['parent']
-                        data +=
-                            `<tr>
-                            <td>`+ (i + 1) + `</td>
-                            <td>` + result[i]['payment_term'] + `</td>
-                            <td>` + result[i]['description'] + `</td>
-                            <td>` + result[i]['due_date'] + `</td>
-                            <td>` + result[i]['invoice_portion'] + `</td>
-                            <td>` + result[i]['payment_amount'] + `</td>
-                            <td></td>
-                            <td><a href="/app/fees/${temp}">Open</a></td>
-                        </tr>`
+                        data += `
+                            <tr>
+                                <td>${i + 1}</td>
+                                <td>${result[i]['payment_term']}</td>
+                                <td>${result[i]['description']}</td>
+                                <td>${result[i]['due_date']}</td>
+                                <td>${result[i]['invoice_portion']}</td>
+                                <td>${result[i]['payment_amount']}</td>
+                                <td>${result[i]['paid_date'] ? result[i]['paid_date'] : 'Not Paid'}</td>
+                                <td><a href="/app/fees/${temp}">Open</a></td>
+                            </tr>`;
                     }
                 }
                 if (data) {
@@ -50,11 +50,7 @@ frappe.ui.form.on("Student", {
                 else {
                     frm.$wrapper[0].querySelector("#fees").innerHTML = `<center><p> There is no current record</p></ceneter>`
                 }
-            }})
-
-
-
-
+            }});
 
     }
 });
