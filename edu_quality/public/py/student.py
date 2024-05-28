@@ -111,3 +111,13 @@ def get_fees_details(student):
         return frappe.get_doc("Fees",{"student":student,"program":class_id}).payment_schedule
     else:
         return False
+    
+@frappe.whitelist()
+def get_parents_details(student):
+    student = frappe.get_doc("Student",student)
+    parents = []
+    for guardian in student.guardians:
+        parent = frappe.get_doc("Guardian",guardian.guardian).as_dict()
+        parent.update({"relation":guardian.relation})
+        parents.append(parent)
+    return parents
