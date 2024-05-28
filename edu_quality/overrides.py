@@ -353,6 +353,7 @@ def mark_payment_term_paid(fees, term, paid_amount):
         if schedule.payment_term == term:
             if schedule.outstanding == paid_amount:
                 frappe.db.set_value("Payment Schedule", schedule.name, "outstanding", 0)
+                frappe.db.set_value("Payment Schedule", schedule.name, "paid_date", nowdate())
 
 @frappe.whitelist(allow_guest=True)
 def make_payment_request(**args):
