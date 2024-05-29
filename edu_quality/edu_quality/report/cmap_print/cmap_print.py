@@ -198,12 +198,12 @@ def get_data_from_queries(filters=None):
     current_academic_year = frappe.get_value(
         "Academic Year", {"custom_current_academic_year": 1}, "name"
     )
-
+    qty_needed_for_schools_query = ""
     if academic_year_doc.custom_next_academic_year:
         qty_needed_for_schools = []
         schools = frappe.db.get_list("School")
         schools = [school.get("name") for school in schools]
-
+        
         for school in schools:
             qty_needed_for_schools.append(
                 {
@@ -226,7 +226,6 @@ def get_data_from_queries(filters=None):
             .select(count_all, program_enrollment.program)
         )
         qty_needed_for_schools = qty_needed_for_schools_query.run(as_dict=True)
-    frappe.errprint(str(qty_needed_for_schools_query))
 
     frappe.errprint(qty_needed_for_schools)
     return transform_data(qty_needed_for_schools, cmap_data)
