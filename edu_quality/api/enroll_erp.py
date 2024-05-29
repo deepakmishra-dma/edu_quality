@@ -2,7 +2,7 @@ import frappe
 
 
 @frappe.whitelist(allow_guest=True)
-def make_enrollment_erp(token=None, lms_id=None, refno=None):
+def make_enrollment_erp(token=None, lms_id=None, refno=None,email=None):
     try:
         if token != "***REMOVED-TOKEN***":
             return {"status": "Error", "msg": "Please provide the correct token."}
