@@ -405,6 +405,27 @@
     "parenttype": "DocType Layout"
    },
    {
+    "fieldname": "custom_walk_in_1_attended_by",
+    "label": "Walk In 1 Attended By",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "custom_walk_in_2_attended_by",
+    "label": "Walk In 2 Attended By",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "custom_walk_in_3_attended_by",
+    "label": "Walk In 3 Attended By",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
     "fieldname": "custom_column_break_e2tcp",
     "label": "",
     "parent": "Lead",
@@ -1042,14 +1063,28 @@
     "parenttype": "DocType Layout"
    },
    {
-    "fieldname": "custom_adress",
-    "label": "Address",
+    "fieldname": "workflow_state",
+    "label": "Workflow State",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "action_time",
+    "label": "action time",
+    "parent": "Lead",
+    "parentfield": "fields",
+    "parenttype": "DocType Layout"
+   },
+   {
+    "fieldname": "custom_d",
+    "label": "d",
     "parent": "Lead",
     "parentfield": "fields",
     "parenttype": "DocType Layout"
    }
   ],
-  "modified": "2023-12-06 02:19:21.830988",
+  "modified": "2024-01-17 09:44:35.343696",
   "name": "Lead",
   "route": "/app/lead"
  }

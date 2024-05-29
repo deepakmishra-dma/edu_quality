@@ -58,10 +58,10 @@ def change_payment_plan(payment_plan, doctype, fee_name):
         doc.amount = amount
         doc.outstanding_amount = amount
         doc.components = []
-        frappe.enqueue(doc.remove_all_discount_entries)
+        doc.remove_all_discount_entries()
         for component in components:
             doc.append('components', component)
-        frappe.enqueue(doc.make_gl_entries)
+        doc.make_gl_entries()
         doc.save(ignore_permissions=True)
         frappe.response["message"] = "Payment Plan Updated Successfully!"
         create_payment_request(doc)

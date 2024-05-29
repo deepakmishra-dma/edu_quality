@@ -98,3 +98,31 @@ def add_email_activity(doc, content):
             "reference_name": doc.get("name"),
         }
     ).insert(ignore_permissions=True)
+
+
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def walk_in_attended_by_query(doctype, txt, searchfield, start, page_len, filters):
+    user_table = frappe.qb.DocType("User")
+    user_perm_table = frappe.qb.DocType("User Permission")
+    query = (
+        frappe.qb.from_(user_table)
+        .left_join(user_perm_table)
+        .on(user_table.name == user_perm_table.user)
+        .where(
+            (user_table.role_profile_name == "Councellor")
+            & (
+                (
+                    (user_perm_table.allow.isnull())
+                    & (user_perm_table.for_value.isnull())
+                )
+                | (
+                    (user_perm_table.allow == "School")
+                    & (user_perm_table.for_value == filters.get("school", None))
+                )
+            )
+        )
+        .select(user_table.email)
+    )
+    data = query.run()
+    return data

@@ -28,6 +28,19 @@ var subStatuses = {
     "closed": ['zxc']
 }
 
+function queryWalkInAttendedBy(frm) {
+    [1, 2, 3].forEach((el) => {
+        frm.set_query(`custom_walk_in_${el}_attended_by`, function () {
+            return {
+                "query": "edu_quality.public.py.lead.walk_in_attended_by_query",
+                filters: {
+                    school: frm.doc.center
+                }
+            };
+        });
+    })
+
+}
 frappe.ui.form.on("Lead", {
     refresh: function (frm) {
         if (frm.doc.status === "Hot" && frm.doc.custom_re_enquired_count) {
@@ -99,7 +112,7 @@ frappe.ui.form.on("Lead", {
         }, 10)
 
         $("textarea[data-fieldname='custom_cold_comment'],textarea[data-fieldname='overall_remarks'],textarea[data-fieldname='follow_up_comment'],textarea[data-fieldname='walk_in_1'],textarea[data-fieldname='walk_in_2'],textarea[data-fieldname='walk_in_3']").css({ 'height': '70' });
-
+        queryWalkInAttendedBy(frm)
     },
 
     validate: function (frm) {
@@ -138,6 +151,7 @@ frappe.ui.form.on("Lead", {
             };
         });
     },
+
 
     status: function (frm) {
 
