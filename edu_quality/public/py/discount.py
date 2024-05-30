@@ -4,7 +4,6 @@ from edu_quality.public.py.payment_request import update_payment_request_after_d
 import frappe
 from frappe.utils import today, getdate, flt
 import json
-
 from edu_quality.public.py.term import get_first_unpaid_term,get_last_term
 
 
@@ -268,11 +267,26 @@ def check_paid_advance(doc):
     if frappe.db.exists("Fee Advance", filters):
         fee_advance = frappe.get_doc("Fee Advance", filters)
         if fee_advance.outstanding_amount>0:
+            set_discount_to_fee(doc,fee_advance)
             fee_advance.cancel()
-            return False 
+            return False
         return True
     return False
     
+def set_discount_to_fee(doc,fee_advance):
+    discount_applied = get_one_time_discounts(fee_advance)
+    for discount in discount_applied.keys():
+        add_discount(doc.name, discount)
+        total_discount += discount_applied.get(discount)
+    return
+
+def get_one_time_discounts(doc):
+    return {
+        discount: component.custom_discount_amount
+        for component in doc.components if component.custom_discounts
+        for discount in map(str.lower, component.custom_discounts.split(", "))
+        if "one time" in discount
+    }
 
 def payment_plan(doc, method=None):
     pe = frappe.get_doc("Program Enrollment", doc.program_enrollment)
