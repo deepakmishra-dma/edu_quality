@@ -302,7 +302,7 @@ def payment_plan(doc, method=None):
                     difference = schedule.due_date - today
                     if difference.days > before_days and initial_payment>0:
                             only_deposit(doc)
-                    else:
+                    elif difference.days <= before_days:
                         payment_amount = payment_amount + initial_payment
                         if initial_payment>0:
                             description = description + " and deposit/application fee"
