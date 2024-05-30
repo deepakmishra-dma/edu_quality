@@ -347,7 +347,8 @@ def company_wise_split(fees, categories, due_date, payment_term=None, transactio
 
 
 def mark_payment_term_paid(fees, term, paid_amount):
-    if fees.doctype != "Fees":
+    if fees.doctype == "Fee Advance":
+        frappe.db.set_value("Fee Advance", fees.name, "paid_date", nowdate())
         return
     for schedule in fees.payment_schedule:
         if schedule.payment_term == term:
