@@ -133,8 +133,6 @@ class RolloverTool(Document):
 					next_yr =  next_academic_year(self.academic_year)
 					students = self.get_students(program.name)
 					for j,student in enumerate(students):
-						if student.student == "WAAB56":
-							continue
 						division = self.get_division(student,next_program.name)
 						if not division:
 							error_data.append({
@@ -155,6 +153,7 @@ class RolloverTool(Document):
 								prog_enrollment.save()
 								if not student.possible_dropout:
 									prog_enrollment.submit()
+									frappe.db.set_value("Student",student.student,"student_status","Current student")
 				i+=1
 				if error_data:
 					self.add_to_table(error_data)
