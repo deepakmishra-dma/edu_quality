@@ -65,7 +65,7 @@ class CustomPaymentRequest(PaymentRequest):
         try:
             from nextai.funnel.custom_trigger import trigger_event
             trigger_event(doc=self, event_name="fee_receipt")
-        except ImportError:
+        except Exception as e:
             print("Chatnext is not installed")
 
 
