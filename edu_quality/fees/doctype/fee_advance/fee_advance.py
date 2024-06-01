@@ -378,19 +378,20 @@ def fee_advance(**kwargs):
     students = kwargs.get("students")
     students = frappe.parse_json(students)
     for s in students:
-        student = frappe.get_doc("Student", s.get("name"))
-        current_academic_year = frappe.get_value("Academic Year",{"custom_current_academic_year":1})
-        pe_filter = {"student": student.name, "academic_year": current_academic_year}
-        if frappe.db.exists("Program Enrollment", pe_filter):
-            program_enrollment = frappe.get_doc("Program Enrollment", pe_filter)
-            school = frappe.get_value("Program", program_enrollment.program,"school")
-            next_program = get_next_program(program_enrollment.program, school)
-            if not frappe.get_value("Fees",{"student":student.name,"program":next_program,"docstatus":1}):
-                frappe.enqueue(create_fee_advance, student=student, program_enrollment=program_enrollment)
-        else:
-            frappe.msgprint(
-                f"Program Enrollment does not exists for student <b>{student.first_name}</b>. Fee Advance can only be created for old students."
-            )
+        if frappe.get_value("Student",{"name":s.get("name"),"student_status":"Current student"}):
+            student = frappe.get_doc("Student", s.get("name"))
+            current_academic_year = frappe.get_value("Academic Year",{"custom_current_academic_year":1})
+            pe_filter = {"student": student.name, "academic_year": current_academic_year}
+            if frappe.db.exists("Program Enrollment", pe_filter):
+                program_enrollment = frappe.get_doc("Program Enrollment", pe_filter)
+                school = frappe.get_value("Program", program_enrollment.program,"school")
+                next_program = get_next_program(program_enrollment.program, school)
+                if not frappe.get_value("Fees",{"student":student.name,"program":next_program,"docstatus":1}):
+                    frappe.enqueue(create_fee_advance, student=student, program_enrollment=program_enrollment)
+            else:
+                frappe.msgprint(
+                    f"Program Enrollment does not exists for student <b>{student.first_name}</b>. Fee Advance can only be created for old students."
+                )
 
 
 def create_fee_advance(student, program_enrollment,all_len=None,index=None):
