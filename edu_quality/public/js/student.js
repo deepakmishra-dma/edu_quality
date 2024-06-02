@@ -18,7 +18,8 @@ function addFeeDetails(frm) {
         callback: function (r) {
             if (r.message) {
                 const data = r.message.map((item, index) => {
-                    const { payment_term, description, due_date, invoice_portion, payment_amount, paid_date, parent } = item;
+                    const { payment_term, description, due_date, invoice_portion, payment_amount, paid_date, parent, doctype } = item;
+                    let link = doctype == 'Fee Advance' ? `/app/fee-advance/${parent}` : `/app/fees/${parent}`;
                     return `
                         <tr>
                             <td>${index + 1}</td>
@@ -28,7 +29,7 @@ function addFeeDetails(frm) {
                             <td>${invoice_portion}</td>
                             <td>${payment_amount}</td>
                             <td>${paid_date ? paid_date : 'Not Paid'}</td>
-                            <td><a href="/app/fees/${parent}">Open</a></td>
+                            <td><a href="${link}">Open</a></td>
                         </tr>`;
                 }).join('');
 
