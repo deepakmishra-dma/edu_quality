@@ -35,7 +35,7 @@ class FeeAdvance(AccountsController):
         generate_split_payment(self, update=True)
 
 
-    def before_save(self):
+    def after_insert(self):
         percent = get_percent(self.payment_term, self.payment_plan)
         components, amount = get_components(self.fee_structure, percent, self.is_rte)
         self.amount = amount
@@ -43,6 +43,20 @@ class FeeAdvance(AccountsController):
         self.components = []
         for component in components:
             self.append('components', component)
+
+
+    def before_save(self):
+        grand_total = 0
+        for component in self.components:
+            if component.custom_discount_amount:
+                component.custom_amount_after_discount = component.amount - component.custom_discount_amount
+                component.custom_discount_percentage = calculate_discount(component.amount, component.custom_discount_amount)
+            elif component.custom_discount_percentage:
+                component.custom_discount_amount = (component.amount * component.custom_discount_percentage) / 100
+                component.custom_amount_after_discount = component.amount - component.custom_discount_amount
+            grand_total += component.custom_amount_after_discount or component.amount
+        self.amount = self.outstanding_amount = grand_total
+
 
     def before_submit(self):
         if frappe.get_value("Fees",{"student":self.student,"program":self.next_program,"docstatus":1}):
