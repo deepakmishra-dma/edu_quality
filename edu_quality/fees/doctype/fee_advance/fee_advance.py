@@ -484,6 +484,8 @@ def referal_discount(doc, method=None):
         return
     
     discount = float(student.referral_amount)
+    if doc.referral_amount:
+        discount = discount + float(doc.referral_amount)
 
     for component in doc.components:
         if not component.fees_category != "Tuition Fee":

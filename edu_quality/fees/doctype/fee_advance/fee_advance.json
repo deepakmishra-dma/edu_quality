@@ -21,6 +21,7 @@
   "next_program",
   "payment_plan",
   "payment_term",
+  "referral_amount",
   "section_break_hmik",
   "column_break_ydcb",
   "components",
@@ -120,11 +121,9 @@
    "label": "Posting Date"
   },
   {
-   "allow_on_submit": 1,
    "fieldname": "due_date",
    "fieldtype": "Date",
-   "label": "Due Date",
-   "read_only": 1
+   "label": "Due Date"
   },
   {
    "allow_on_submit": 1,
@@ -258,6 +257,12 @@
   {
    "fieldname": "column_break_ydcb",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "referral_amount",
+   "fieldtype": "Currency",
+   "label": "Referral Amount",
+   "non_negative": 1
   }
  ],
  "index_web_pages_for_search": 1,
@@ -272,7 +277,7 @@
    "link_fieldname": "reference_name"
   }
  ],
- "modified": "2024-01-16 16:21:52.917001",
+ "modified": "2024-01-19 11:16:25.164209",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Fee Advance",
@@ -280,8 +285,6 @@
  "owner": "Administrator",
  "permissions": [
   {
-   "amend": 1,
-   "cancel": 1,
    "create": 1,
    "delete": 1,
    "email": 1,
@@ -290,9 +293,7 @@
    "read": 1,
    "report": 1,
    "role": "System Manager",
-   "select": 1,
    "share": 1,
-   "submit": 1,
    "write": 1
   }
  ],
