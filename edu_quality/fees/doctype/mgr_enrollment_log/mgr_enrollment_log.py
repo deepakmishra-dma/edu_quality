@@ -16,7 +16,7 @@ class MGREnrollmentLog(Document):
                     self.enrollment__status = "Failed"
                     self.responce = "Student already enrolled"
                 frappe.set_user("Administrator")
-                enroll_student(student_applicant, self.ref_no)
+                enroll_student(student_applicant, self.email, self.ref_no)
                 self.enrollment__status = "Success"
                 self.responce = "Success"
             else:

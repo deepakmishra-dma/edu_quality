@@ -119,7 +119,7 @@ def get_deposits(doc):
 
 
 @frappe.whitelist()
-def enroll_student(source_name, refno=None):
+def enroll_student(source_name, email=None, refno=None):
     """Creates a Student Record and returns a Program Enrollment.
 
     :param source_name: Student Applicant.
@@ -145,6 +145,7 @@ def enroll_student(source_name, refno=None):
 
     student_group = get_student_group(student_applicant)
     student.reference_number = refno
+    student.student_email_id = email
     student.save()
     create_student_account(student, student_applicant)
     program_enrollment = frappe.new_doc("Program Enrollment")
