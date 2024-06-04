@@ -13,6 +13,7 @@
   "fee_structure",
   "posting_date",
   "due_date",
+  "paid_date",
   "is_rte",
   "column_break_lnjyf",
   "company",
@@ -131,7 +132,7 @@
    "fieldtype": "Table",
    "label": "Components",
    "options": "Fee Component",
-   "read_only": 1
+   "read_only_depends_on": "eval:doc.docstatus==1"
   },
   {
    "fieldname": "student",
@@ -263,6 +264,13 @@
    "fieldtype": "Currency",
    "label": "Referral Amount",
    "non_negative": 1
+  },
+  {
+   "depends_on": "eval:doc.outstanding_amount==0",
+   "fieldname": "paid_date",
+   "fieldtype": "Date",
+   "label": "Paid Date",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
