@@ -144,7 +144,8 @@ def enroll_student(source_name, email=None, refno=None):
         add_referral_discount(student_applicant.custom_referred_by, student_applicant)
 
     student_group = get_student_group(student_applicant)
-    student.reference_number = refno
+    if refno:
+        student.reference_number = refno
     if email:
         student.student_email_id = email
     student.save()
