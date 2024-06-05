@@ -145,7 +145,8 @@ def enroll_student(source_name, email=None, refno=None):
 
     student_group = get_student_group(student_applicant)
     student.reference_number = refno
-    student.student_email_id = email
+    if email:
+        student.student_email_id = email
     student.save()
     create_student_account(student, student_applicant)
     program_enrollment = frappe.new_doc("Program Enrollment")
