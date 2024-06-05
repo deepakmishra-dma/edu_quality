@@ -35,14 +35,17 @@ class FeeAdvance(AccountsController):
         generate_split_payment(self, update=True)
 
 
-    def after_insert(self):
-        percent = get_percent(self.payment_term, self.payment_plan)
-        components, amount = get_components(self.fee_structure, percent, self.is_rte)
-        self.amount = amount
-        self.outstanding_amount = amount
-        self.components = []
-        for component in components:
-            self.append('components', component)
+    def before_insert(self):
+        try:
+            percent = get_percent(self.payment_term, self.payment_plan)
+            components, amount = get_components(self.fee_structure, percent, self.is_rte)
+            self.amount = amount
+            self.outstanding_amount = amount
+            self.components = []
+            for component in components:
+                self.append('components', component)
+        except Exception as e:
+            frappe.logger("fee_advance").exception(e)
 
 
     def before_save(self):
