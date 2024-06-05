@@ -122,6 +122,7 @@
    "label": "Posting Date"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "due_date",
    "fieldtype": "Date",
    "label": "Due Date"
@@ -285,7 +286,7 @@
    "link_fieldname": "reference_name"
   }
  ],
- "modified": "2024-01-19 11:16:25.164209",
+ "modified": "2024-01-19 13:02:15.042164",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Fee Advance",
@@ -293,6 +294,8 @@
  "owner": "Administrator",
  "permissions": [
   {
+   "amend": 1,
+   "cancel": 1,
    "create": 1,
    "delete": 1,
    "email": 1,
@@ -301,7 +304,9 @@
    "read": 1,
    "report": 1,
    "role": "System Manager",
+   "select": 1,
    "share": 1,
+   "submit": 1,
    "write": 1
   }
  ],
