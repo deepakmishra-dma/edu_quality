@@ -46,7 +46,7 @@ def get_reference(program):
         series = frappe.db.get_value("Program",{'school':current_program.school,"sequence":current_program.sequence-1},'reference_series')
         if not series:
             series = current_program.reference_series
-            series = series[0] + chr(ord(series[1])+1) 
+            series = chr(ord(series[0])+1) +series[1] 
     else: 
         series = frappe.db.get_value("Program",program,'reference_series')
     return series
