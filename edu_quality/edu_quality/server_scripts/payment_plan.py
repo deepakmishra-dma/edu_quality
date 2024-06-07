@@ -23,48 +23,51 @@ def get_deposit_amount(fees):
 
 @frappe.whitelist()
 def change_payment_plan(payment_plan, doctype, fee_name):
-    if doctype == "Fees":
-        doc = frappe.get_doc("Fees", fee_name)
+    try:
+        if doctype == "Fees":
+            doc = frappe.get_doc("Fees", fee_name)
 
-        for ps in doc.payment_schedule:
-            if ps.outstanding == 0:
-                frappe.throw(f"Cannot Change Payment Plan As {ps.payment_term} is already Paid!")
+            for ps in doc.payment_schedule:
+                if ps.outstanding == 0:
+                    frappe.throw(f"Cannot Change Payment Plan As {ps.payment_term} is already Paid!")
 
-        for component in doc.components:
-            discounts = component.custom_discounts.split(',') if component.custom_discounts else []
-            for dis in discounts:
-                if not dis or dis == '' or dis == ' ':
-                    continue
-                elif ("Referral" in dis) or ("Payment Plan" in dis):
-                    continue
-                else:
-                    frappe.throw(f"Cannot Change Payment Plan! remove {dis} to modify payment plan!")
+            for component in doc.components:
+                discounts = component.custom_discounts.split(',') if component.custom_discounts else []
+                for dis in discounts:
+                    if not dis or dis == '' or dis == ' ':
+                        continue
+                    elif ("Referral" in dis) or ("Payment Plan" in dis):
+                        continue
+                    else:
+                        frappe.throw(f"Cannot Change Payment Plan! remove {dis} to modify payment plan!")
+            
+            remove_payment_plan_discount(doc)
+            doc.reload()
+            update_payment_plan(payment_plan,doc)
+            update_payment_request_after_discount(doc)
         
-        remove_payment_plan_discount(doc)
-        doc.reload()
-        update_payment_plan(payment_plan,doc)
-        update_payment_request_after_discount(doc)
-    
-    elif doctype == "Fee Advance":
-        doc = frappe.get_doc("Fee Advance", fee_name)
-        percent = get_percent(doc.payment_term, payment_plan)
-        if doc.outstanding_amount == 0:
-            frappe.throw(f"Cannot Change Payment Plan As the Fee Advance is already Paid!")
-            return
+        elif doctype == "Fee Advance":
+            doc = frappe.get_doc("Fee Advance", fee_name)
+            percent = get_percent(doc.payment_term, payment_plan)
+            if doc.outstanding_amount == 0:
+                frappe.throw(f"Cannot Change Payment Plan As the Fee Advance is already Paid!")
+                return
 
-        components, amount = get_components(doc.fee_structure, percent, doc.is_rte)
-        doc.payment_plan = payment_plan
-        doc.due_date = frappe.get_value("Payment Schedule",{"payment_term":doc.payment_term, "parent":payment_plan}, "due_date")
-        doc.amount = amount
-        doc.outstanding_amount = amount
-        doc.components = []
-        doc.remove_all_discount_entries()
-        for component in components:
-            doc.append('components', component)
-        doc.make_gl_entries()
-        doc.save(ignore_permissions=True)
-        frappe.response["message"] = "Payment Plan Updated Successfully!"
-        create_payment_request(doc)
+            components, amount = get_components(doc.fee_structure, percent, doc.is_rte)
+            doc.payment_plan = payment_plan
+            doc.due_date = frappe.get_value("Payment Schedule",{"payment_term":doc.payment_term, "parent":payment_plan}, "due_date")
+            doc.amount = amount
+            doc.outstanding_amount = amount
+            doc.components = []
+            doc.remove_all_discount_entries()
+            for component in components:
+                doc.append('components', component)
+            doc.make_gl_entries()
+            doc.save(ignore_permissions=True)
+            frappe.response["message"] = "Payment Plan Updated Successfully!"
+            create_payment_request(doc)
+    except Exception as e:
+            frappe.logger("pay_change").exception(e)
 
 def remove_payment_plan_discount(doc,custom_payment_plan=0):
     discount_configs = frappe.get_all("Discount Configuration",
