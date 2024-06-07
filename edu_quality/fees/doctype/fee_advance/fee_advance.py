@@ -69,11 +69,14 @@ class FeeAdvance(AccountsController):
         self.generate_split()
 
     def before_update_after_submit(self):
-        referal_discount(self)
-        pre_doc = self.get_doc_before_save()
-        if pre_doc.payment_plan != self.payment_plan:
-            payment_plan(self)
-        self.generate_split()
+        try:
+            referal_discount(self)
+            pre_doc = self.get_doc_before_save()
+            if pre_doc.payment_plan != self.payment_plan:
+                payment_plan(self)
+            self.generate_split()
+        except Exception as e:
+            frappe.logger("pay_change").exception(e)
 
     def validate(self):
         self.set_missing_accounts_and_fields()
