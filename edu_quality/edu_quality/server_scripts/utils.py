@@ -83,7 +83,6 @@ def shift_reference_series(school):
     programs = frappe.get_all("Program",filters={"school":school},fields=["name","reference_series"],order_by="sequence")
     previous_series = ""
     for i in programs:
-        frappe.logger('roll').exception(i.name+"-"+previous_series)
         if previous_series:
             frappe.db.set_value("Program",i.name,"reference_series",previous_series)
         previous_series = i.reference_series

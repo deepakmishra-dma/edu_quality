@@ -112,6 +112,7 @@ def get_payment_details(**kwargs):
         'status': payment_request.status,
         'receipt_url': frappe.utils.get_url() + "/api/method/edu_quality.fees.page.payment_redirect.payment_receipt?payment_request="+payment_request.name,
         "breakup": breakup,
+        "term": payment_request.payment_term or "Deposit",
         "undertaking_url": get_undertaking_template(payment_request, is_deposit=is_deposit),
         "undertaking_accepted": get_submitted_undertaking(payment_request)
     }
