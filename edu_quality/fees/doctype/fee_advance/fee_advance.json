@@ -125,8 +125,7 @@
    "allow_on_submit": 1,
    "fieldname": "due_date",
    "fieldtype": "Date",
-   "label": "Due Date",
-   "read_only": 1
+   "label": "Due Date"
   },
   {
    "allow_on_submit": 1,
@@ -287,7 +286,7 @@
    "link_fieldname": "reference_name"
   }
  ],
- "modified": "2024-01-19 13:47:16.635384",
+ "modified": "2024-01-19 19:01:21.520039",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Fee Advance",
