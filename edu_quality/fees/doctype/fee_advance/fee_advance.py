@@ -275,7 +275,7 @@ class FeeAdvance(AccountsController):
 
     def remove_all_discount_entries(self):
         entries = []
-        debit_filter = {'voucher_type':self.doctype,'voucher_no':self.name}
+        debit_filter = {'voucher_type':self.doctype,'voucher_no':self.name,"is_cancelled":0}
         if frappe.db.exists("GL Entry",debit_filter):
             gl_list = frappe.get_all("GL Entry",debit_filter)
             for gl in gl_list:
