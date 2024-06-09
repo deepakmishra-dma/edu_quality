@@ -51,6 +51,9 @@ class FeeAdvance(AccountsController):
     def before_save(self):
         grand_total = 0
         for component in self.components:
+            if component.fees_category == 'Tuition Fee':
+                if self.referral_amount:
+                    component.custom_discount_amount = self.referral_amount
             if component.custom_discount_amount:
                 component.custom_amount_after_discount = component.amount - component.custom_discount_amount
                 component.custom_discount_percentage = calculate_discount(component.amount, component.custom_discount_amount)
@@ -58,8 +61,6 @@ class FeeAdvance(AccountsController):
                 component.custom_discount_amount = (component.amount * component.custom_discount_percentage) / 100
                 component.custom_amount_after_discount = component.amount - component.custom_discount_amount
             grand_total += component.custom_amount_after_discount or component.amount
-        if self.referral_amount:
-            grand_total -= self.referral_amount
         self.amount = self.outstanding_amount = grand_total
 
 
