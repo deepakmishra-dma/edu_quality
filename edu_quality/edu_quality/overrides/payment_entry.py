@@ -5,7 +5,7 @@ from frappe.utils.data import flt
 import json
 
 
-def CustomPaymentEntry(PaymentEntry):
+class CustomPaymentEntry(PaymentEntry):
     def get_breakup(self):
         if self.reference_doctype == 'Fees':
             if self.payment_request:
