@@ -49,19 +49,7 @@ class FeeAdvance(AccountsController):
 
 
     def before_save(self):
-        grand_total = 0
-        for component in self.components:
-            if component.fees_category == 'Tuition Fee':
-                if self.referral_amount:
-                    component.custom_discount_amount = self.referral_amount
-            if component.custom_discount_amount:
-                component.custom_amount_after_discount = component.amount - component.custom_discount_amount
-                component.custom_discount_percentage = calculate_discount(component.amount, component.custom_discount_amount)
-            elif component.custom_discount_percentage:
-                component.custom_discount_amount = (component.amount * component.custom_discount_percentage) / 100
-                component.custom_amount_after_discount = component.amount - component.custom_discount_amount
-            grand_total += component.custom_amount_after_discount or component.amount
-        self.amount = self.outstanding_amount = grand_total
+        add_referral_discount(self)
 
 
     def before_submit(self):
@@ -73,7 +61,7 @@ class FeeAdvance(AccountsController):
 
     def before_update_after_submit(self):
         try:
-            referal_discount(self)
+            add_referral_discount(self)
             pre_doc = self.get_doc_before_save()
             if pre_doc.payment_plan != self.payment_plan:
                 payment_plan(self)
@@ -320,6 +308,22 @@ class FeeAdvance(AccountsController):
         merge_entries=False,
     )
     
+
+def add_referral_discount(doc, method=None):
+    grand_total = 0
+    for component in doc.components:
+        if component.fees_category == 'Tuition Fee':
+            if doc.referral_amount:
+                component.custom_discount_amount = doc.referral_amount
+        if component.custom_discount_amount:
+            component.custom_amount_after_discount = component.amount - component.custom_discount_amount
+            component.custom_discount_percentage = calculate_discount(component.amount, component.custom_discount_amount)
+        elif component.custom_discount_percentage:
+            component.custom_discount_amount = (component.amount * component.custom_discount_percentage) / 100
+            component.custom_amount_after_discount = component.amount - component.custom_discount_amount
+        grand_total += component.custom_amount_after_discount or component.amount
+    doc.amount = doc.outstanding_amount = grand_total
+
 
 def create_payment_request(doc, method=None):
     not_paid_filter = {
