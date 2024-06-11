@@ -5,14 +5,7 @@ from frappe.utils.data import flt
 import json
 
 
-class CustomPaymentEntry(PaymentEntry):
-    def get_breakup(self):
-        if self.reference_doctype == 'Fees':
-            if self.payment_request:
-                term = frappe.db.get_value('Payment Request',self.payment_request,'payment_term')
-                if term:
-                    return self.breakup(term)
-                
+class CustomPaymentEntry(PaymentEntry):                
     def breakup(self,term):
         listed_components = [i.fee_category for i in self.fee_category]
         fees = frappe.get_doc('Fees',self.reference_name)
@@ -29,7 +22,7 @@ class CustomPaymentEntry(PaymentEntry):
                     schecule_breakup = json.loads(schedule.discount_breakup) if schedule.discount_breakup else {}
 
         for component in fees.components:
-            if not component in listed_components:
+            if not component.fees_category in listed_components:
                 continue
             breakup = []
             amount = flt(component.amount*portion/100,2) 
