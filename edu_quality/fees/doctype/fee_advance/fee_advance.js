@@ -318,7 +318,7 @@ frappe.ui.form.on('Fee Advance', {
 												});
 											});
 									}</script><div class="form-inline m-1" id="otp-area">
-                                        <input type="text" class="form-control p-1" id="otp" placeholder="Enter OTP">
+                                        <input type="number" class="form-control p-1" id="otp" placeholder="Enter OTP">
                                         <textarea id="doc_value" rows="15" class="hidden">${frm.doc.name}</textarea>
                                         <button id="btn_value" class="form-control btn-dark m-3 p-1" onclick="verifyOtp()">Submit OTP</button>
                                     </div>`
