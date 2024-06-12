@@ -285,6 +285,11 @@ scheduler_events = {
 # 	"edu_quality.auth.validate"
 # ]
 
+# fixtures = [
+#     {"dt": "Web Page"}
+
+# ]
+
 fixtures = [
     {"dt": "Workflow"},
     {"dt": "Server Script", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},

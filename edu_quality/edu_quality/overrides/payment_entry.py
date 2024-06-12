@@ -1,8 +1,62 @@
-import frappe
+import frappe 
+
 from erpnext.accounts.doctype.payment_entry.payment_entry import PaymentEntry
+from frappe.utils.data import flt 
+import json
 
-class CustomPaymentEntry(PaymentEntry):
 
+def CustomPaymentEntry(PaymentEntry):
+    def get_breakup(self):
+        if self.reference_doctype == 'Fees':
+            if self.payment_request:
+                term = frappe.db.get_value('Payment Request',self.payment_request,'payment_term')
+                if term:
+                    return self.breakup(term)
+                
+    def breakup(self,term):
+        listed_components = [i.fee_category for i in self.fee_category]
+        fees = frappe.get_doc('Fees',self.reference_name)
+        breakups = []
+        deposit=0
+        schecule_breakup = {} 
+        portion = 100
+        if fees.doctype == 'Fees':
+            for schedule in fees.payment_schedule:
+                if schedule.payment_term == term:
+                    portion = schedule.invoice_portion 
+                    if 'deposit' in schedule.description.lower():
+                        deposit = 1 
+                    schecule_breakup = json.loads(schedule.discount_breakup) if schedule.discount_breakup else {}
+
+        for component in fees.components:
+            if not component in listed_components:
+                continue
+            breakup = []
+            amount = flt(component.amount*portion/100,2) 
+            if fees.doctype == 'Fees':
+                if not deposit and component.fee_type != 'Regular':
+                    continue
+                elif deposit and component.fee_type != 'Regular':
+                    amount = flt(component.amount,2)
+            company = component.custom_company
+            if component.discount_breakup:
+                component_breakup = json.loads(component.discount_breakup) if component.discount_breakup else {}
+                for dis in component_breakup:
+                    if dis in schecule_breakup:
+                        dis_amount = flt(schecule_breakup[dis]['discount_amount'],2)
+                        breakup.append({
+                        'fees_category': "Discount- " + dis,
+                        'amount':  frappe.utils.fmt_money(0-dis_amount, currency="INR"),
+                        'company': company
+                    })
+            breakup = [{
+                    'fees_category': component.fees_category,
+                    'amount':  frappe.utils.fmt_money(amount, currency="INR"),
+                    'company': company
+                }] + breakup
+            breakups = breakups + breakup
+        return breakups
+      
     def get_discounts(self):
         referral_discount = 0
         other_discount = 0
