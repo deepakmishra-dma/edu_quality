@@ -70,7 +70,7 @@ class CustomPaymentEntry(PaymentEntry):
                         other_discount += component.custom_discount_amount
             if fee.referral_amount:
                 referral_discount += fee.referral_amount
-        return {"Referral Discount": referral_discount, "Other Discount": other_discount}
+        return {"Referral Discount": referral_discount, "Other Discount": (other_discount-referral_discount)}
     
     
     def get_components(self):
