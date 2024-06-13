@@ -123,11 +123,7 @@ def get_discounts(fees):
     referral_discount = 0
     other_discount = 0
     if fees.doctype == "Fees":
-        for component in fees.components:
-            if component.custom_discounts:
-                if component.custom_company == fees.company:
-                    other_discount += component.custom_discount_amount
-
+        pass
     if fees.doctype == "Fee Advance":
         for component in fees.components:
             if component.custom_discounts:
