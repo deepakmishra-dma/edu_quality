@@ -60,15 +60,18 @@ class CustomPaymentEntry(PaymentEntry):
     def get_discounts(self):
         referral_discount = 0
         other_discount = 0
+        ref_fee_head_check = False
         if self.reference_doctype == "Fees":
             pass
         if self.reference_doctype == "Fee Advance":
             fee = frappe.get_doc("Fee Advance", self.reference_name)
             for component in fee.components:
-                if component.custom_discounts:
-                    if component.custom_company == self.company:
+                if component.custom_company == self.company:
+                    if component.fees_category=="Tuition Fee":
+                        ref_fee_head_check = True
+                    if component.custom_discounts:
                         other_discount += component.custom_discount_amount
-            if fee.referral_amount:
+            if fee.referral_amount and ref_fee_head_check:
                 referral_discount += fee.referral_amount
         return {"Referral Discount": referral_discount, "Other Discount": other_discount}
     
