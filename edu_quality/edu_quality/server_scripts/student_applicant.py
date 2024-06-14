@@ -138,6 +138,7 @@ def update_referral_discount(doc, discount_amount):
                 }
 
                 frappe.db.set_value("Fees", doc.name, doc_updates)
+                doc.reload()
                 doc.add_discount_entry(component.custom_company, discount_amount)
                 update_total_discount_in_fees(doc.name)
                 update_payment_plan_after_discount(doc, discount_amount, apply_discount=True,dis={"type":"Referral"})
@@ -200,6 +201,7 @@ def apply_referral_discount(doc, referral_amount):
                     discounted_amount,
                     doc,
                 )
+                doc.reload()
                 doc.add_discount_entry(component.custom_company, referral_amount)
                 update_total_discount_in_fees(doc.name)
                 update_payment_plan_after_discount(doc, referral_amount, apply_discount=True,dis={"type":"Referral"})
