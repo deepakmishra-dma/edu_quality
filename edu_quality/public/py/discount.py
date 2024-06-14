@@ -418,10 +418,11 @@ def update_payment_plan_after_discount(doc, total_discount=0, apply_discount=Fal
                 continue
             if apply_discount:
                 if dis.get('type') == 'Referral':
-                    if i == 0:
-                        amount = schedule.outstanding - total_discount
-                        frappe.db.set_value("Payment Schedule",schedule.name,"payment_amount",amount)
-                        frappe.db.set_value("Payment Schedule",schedule.name,"outstanding",amount)
+                        pass
+                    # if i == 0:
+                    #     amount = schedule.outstanding - total_discount
+                    #     frappe.db.set_value("Payment Schedule",schedule.name,"payment_amount",amount)
+                    #     frappe.db.set_value("Payment Schedule",schedule.name,"outstanding",amount)
                         # dis_breakup = frappe.db.get_value("Payment Schedule",schedule.name,"discount_breakup")
                         # dis_breakup = json.loads(dis_breakup) if dis_breakup else None 
                         # if dis_breakup:
