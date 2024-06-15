@@ -122,16 +122,21 @@ def get_payment_details(**kwargs):
 def get_discounts(fees):
     referral_discount = 0
     other_discount = 0
+    referral_discount_company = None
+    other_discount_company = None
     if fees.doctype == "Fees":
         pass
     if fees.doctype == "Fee Advance":
         for component in fees.components:
+            if component.fees_category=="Tuition Fee":
+                referral_discount_company = component.custom_company
             if component.custom_discounts:
                 if component.custom_company == fees.company:
                     other_discount += component.custom_discount_amount
+                    other_discount_company = component.custom_company
         if fees.referral_amount:
             referral_discount += fees.referral_amount
-    return {"referral_discount": referral_discount, "other_discount": other_discount, "company": fees.company}
+    return {"referral_discount": referral_discount, "other_discount": other_discount, "referral_discount_company": referral_discount_company, "other_discount_company": other_discount_company}
 
 
 @cache_data(ttl=900)
