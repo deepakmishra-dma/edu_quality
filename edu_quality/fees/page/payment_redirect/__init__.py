@@ -136,9 +136,9 @@ def get_discounts(fees):
                     other_discount_company = component.custom_company
         if fees.referral_amount:
             referral_discount += fees.referral_amount
-        if component.custom_discounts:
+        if other_discount> referral_discount:
             referral_discount = (other_discount-referral_discount)
-    return {"referral_discount": referral_discount, "other_discount":referral_discount, "referral_discount_company": referral_discount_company, "other_discount_company": other_discount_company}
+    return {"referral_discount": referral_discount, "other_discount":other_discount, "referral_discount_company": referral_discount_company, "other_discount_company": other_discount_company}
 
 
 @cache_data(ttl=900)
