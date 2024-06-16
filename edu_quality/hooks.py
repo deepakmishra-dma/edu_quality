@@ -341,7 +341,7 @@ fixtures = [
         ],
     },
     # {"dt": "Funnel"},
-    {"dt": "Email Template"},
+    # {"dt": "Email Template"},
     # {"dt": "Letter Head"},
     {"dt": "Class Type"},
     {"dt": "Item Group"},
