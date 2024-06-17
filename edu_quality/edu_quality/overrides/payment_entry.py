@@ -64,10 +64,10 @@ class CustomPaymentEntry(PaymentEntry):
                         ref_fee_head_check = True
                     if component.custom_discounts:
                         other_discount += component.custom_discount_amount
+                        if "Referral" in component.custom_discounts:
+                            other_discount -= fee.referral_amount
             if fee.referral_amount and ref_fee_head_check:
                 referral_discount += fee.referral_amount
-            if other_discount> referral_discount:
-                referral_discount = (other_discount-referral_discount)
         return {"Referral Discount": referral_discount, "Other Discount": other_discount}
     
     

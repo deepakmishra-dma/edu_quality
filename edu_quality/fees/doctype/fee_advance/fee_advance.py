@@ -314,6 +314,7 @@ def add_referral_discount(doc, method=None):
     for component in doc.components:
         if component.fees_category == 'Tuition Fee':
             if doc.referral_amount:
+                component.custom_discounts = "Referral"
                 component.custom_discount_amount = doc.referral_amount
         if component.custom_discount_amount:
             component.custom_amount_after_discount = component.amount - component.custom_discount_amount
