@@ -1,5 +1,6 @@
 {
  "actions": [],
+ "allow_import": 1,
  "allow_rename": 1,
  "autoname": "format:{student}-{fee_structure}-{####}",
  "creation": "2023-08-08 21:46:49.686542",
@@ -286,7 +287,7 @@
    "link_fieldname": "reference_name"
   }
  ],
- "modified": "2024-01-19 19:01:21.520039",
+ "modified": "2024-01-22 15:49:09.913402",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Fee Advance",
