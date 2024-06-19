@@ -40,6 +40,7 @@ doctype_js = {
     "Purchase Order": "public/js/purchase_order.js",
     "Purchase Receipt": "public/js/purchase_receipt.js",
     "Topic": "public/js/topic.js",
+    "Instructor": "public/js/instructor.js",
 }
 doctype_list_js = {
     "Student Applicant": "public/js/list/student_applicant_list.js",
@@ -122,7 +123,7 @@ override_doctype_class = {
     "Fee Schedule": "edu_quality.public.py.fee_schedule.CustomFeeSchedule",
     "Program Enrollment": "edu_quality.public.py.enrollment_override.CustomProgramEnrollment",
     "Fees": "edu_quality.edu_quality.overrides.fees.CustomFees",
-    "Student": "edu_quality.edu_quality.overrides.student.CustomStudent"
+    "Student": "edu_quality.edu_quality.overrides.student.CustomStudent",
 }
 
 # Document Events
@@ -179,6 +180,10 @@ doc_events = {
     },
     "Purchase Order": {
         "before_validate": "edu_quality.overrides_hooks.purchase_order.before_validate"
+    },
+    "Instructor": {
+        "after_insert": "edu_quality.overrides_hooks.instructor.after_insert",
+        "after_delete": "edu_quality.overrides_hooks.instructor.after_delete",
     },
     "Purchase Receipt": {
         "before_validate": "edu_quality.overrides_hooks.purchase_order.before_validate"

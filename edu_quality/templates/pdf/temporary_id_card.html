@@ -2,8 +2,9 @@
 student_data = frappe.get_doc("Student",doc.student) %} {% set id_card_data =
 frappe.get_doc("Student ID Card",doc.custom_id_card) %} {% set guardians = [] %}
 {% for guardian in student_data.guardians %} {% set temp_guard =
-frappe.get_doc("Guardian",guardian.guardian,fields=["mobile_number"]).mobile_number
-%} {% if guardians.append(temp_guard) %} {% endif %} {% endfor %}
+frappe.get_doc("Guardian",guardian.guardian,fields=["mobile_number,mobile_number"]).mobile_number
+%} {% if guardians.append(temp_guard) %} {% endif %} {% endfor %} {% set
+division_data = frappe.get_doc("Student Group",doc.student_group) %}
 <style>
   * {
     margin: 0;
@@ -80,19 +81,22 @@ frappe.get_doc("Guardian",guardian.guardian,fields=["mobile_number"]).mobile_num
         {{student_data.custom_reference_number or
         student_data.reference_number}}
       </h2>
-      <h1>{{doc.student_group}}</h1>
+      <h1>
+        {{doc.program.split("-")[0]|join("")
+        }}-{{division_data.get("student_group_name")}}
+      </h1>
     </div>
     <div>
       <img src="{{id_card_data.qr_code}}" class="image-size" />
     </div>
-    <div><h1 class="bus-no">M2</h1></div>
+    <div><h1 class="bus-no">{{student_data.pickup_bus}}</h1></div>
   </div>
-  <h2 class="doc-name">{{doc.name}}</h2>
+  <h2 class="doc-name">{{student_data.tiffin_rack_no or ""}}</h2>
   <h3 style="text-align: center">
     {{student_data.first_name}} {{student_data.last_name}}
   </h3>
-  <p style="text-align: center">{{doc.enrollment_date}}</p>
-  <p style="text-align: right">Roll No: 7</p>
+  <p style="text-align: center">{{student_data.date_of_birth}}</p>
+  <!-- <p style="text-align: right">Roll No: 7</p> -->
   <h6 class="address">
     {{student_data.address_line_1 or ''}} {{student_data.address_line_2 or ''}}
   </h6>

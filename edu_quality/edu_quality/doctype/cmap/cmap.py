@@ -34,6 +34,44 @@ class CMAP(Document):
         generate_text_from_unique_notes(
             self, "Material Required", added_material_required
         )
+        frappe.errprint("h")
+        frappe.errprint(self.as_dict())
+        if self.workflow_state == "Submitted":
+            insert_cmap_assignees(self)
+
+
+def insert_cmap_assignees(self):
+    instructors = frappe.db.get_list(
+        "Instructor Log",
+        filters=[
+            ["academic_year", "=", self.academic_year],
+            ["program", "LIKE", f"{self.get('class')}-%"],
+            ["course", "=", self.subject],
+        ],
+        fields=[
+            "parent",
+            "parent",
+            "program",
+            "student_group",
+            "program",
+            "program",
+        ],
+        ignore_permissions=True,
+    )
+    frappe.errprint(instructors)
+    temp = []
+    for i in instructors:
+        self.append(
+            "table_vwbr",
+            {
+                "school": "".join(i.get("program").split("-")[1::]),
+                "teacher": i.get("parent"),
+                "division": i.get("student_group"),
+            },
+        )
+  
+    self.table_vwbr = get_unique_cmap_assignees(self.table_vwbr)
+   
 
 
 def generate_text_from_unique_notes(self, type, added_broadcasts):
@@ -93,3 +131,18 @@ def check_if_note_added_unique(material_type, added_items):
                 )
 
     return flag
+
+
+def get_unique_cmap_assignees(data_list):
+    unique_combinations = set()
+
+    unique_items = []
+
+    for item in data_list:
+        combination = (item.get("school"), item.get("division"), item.get("teacher"))
+
+        if combination not in unique_combinations:
+            unique_combinations.add(combination)
+            unique_items.append(item)
+
+    return unique_items

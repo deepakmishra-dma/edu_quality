@@ -3,7 +3,7 @@
 function getNoteQuery(cur_frm, fieldName, fieldGroup) {
 
     cur_frm.fields_dict['products'].grid.get_field(fieldName).on_change = function () {
-        console.log('hiya')
+  
     }
     cur_frm.fields_dict['products'].grid.get_field(fieldName).get_query = function (doc, cdt, dn) {
         let d = locals[cdt][dn];
