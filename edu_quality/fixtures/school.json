@@ -1,0 +1,29 @@
+[
+ {
+  "afternoon_admin_in_charge": null,
+  "afternoon_principal": null,
+  "afternoon_vice_principal": null,
+  "custom_mgr_id": null,
+  "custom_sccode": null,
+  "description": null,
+  "docstatus": 0,
+  "doctype": "School",
+  "email_address": null,
+  "institution": "Unique Educational and Sports Foundation",
+  "letter_head": null,
+  "location": null,
+  "meal_provider_contact": null,
+  "meal_provider_name": null,
+  "modified": "2023-12-26 09:47:59.668176",
+  "morning_admin_in_charge": null,
+  "morning_principal": null,
+  "morning_vice_principal": null,
+  "name": "Walnut School at Wakad",
+  "phone_number": null,
+  "prefix": "WA",
+  "school": "Walnut School at Wakad",
+  "transport_provider_contact": null,
+  "transport_provider_name": null,
+  "warehouse": null
+ }
+]

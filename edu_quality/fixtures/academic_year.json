@@ -1,9 +1,11 @@
 [
  {
   "academic_year_name": "2016-2017",
+  "custom_current_academic_year": 0,
+  "custom_next_academic_year": 0,
   "docstatus": 0,
   "doctype": "Academic Year",
-  "modified": "2023-11-29 12:02:26.117061",
+  "modified": "2024-01-23 10:24:26.746063",
   "name": "2016-2017",
   "rolled_over": 0,
   "year_end_date": "2017-03-31",
@@ -11,6 +13,8 @@
  },
  {
   "academic_year_name": "2017-2018",
+  "custom_current_academic_year": 0,
+  "custom_next_academic_year": 0,
   "docstatus": 0,
   "doctype": "Academic Year",
   "modified": "2023-11-29 12:02:26.149496",
@@ -21,6 +25,8 @@
  },
  {
   "academic_year_name": "2020-2021",
+  "custom_current_academic_year": 0,
+  "custom_next_academic_year": 0,
   "docstatus": 0,
   "doctype": "Academic Year",
   "modified": "2023-11-29 12:02:26.166858",
@@ -31,6 +37,8 @@
  },
  {
   "academic_year_name": "2021-2022",
+  "custom_current_academic_year": 0,
+  "custom_next_academic_year": 0,
   "docstatus": 0,
   "doctype": "Academic Year",
   "modified": "2023-09-05 10:27:46.645528",
@@ -41,6 +49,8 @@
  },
  {
   "academic_year_name": "2022-2023",
+  "custom_current_academic_year": 0,
+  "custom_next_academic_year": 0,
   "docstatus": 0,
   "doctype": "Academic Year",
   "modified": "2023-09-05 10:27:46.645528",
@@ -51,9 +61,11 @@
  },
  {
   "academic_year_name": "2023-2024",
+  "custom_current_academic_year": 1,
+  "custom_next_academic_year": 0,
   "docstatus": 0,
   "doctype": "Academic Year",
-  "modified": "2023-09-05 10:27:46.645528",
+  "modified": "2024-01-23 10:24:26.859073",
   "name": "2023-2024",
   "rolled_over": 0,
   "year_end_date": "2024-03-31",
@@ -61,9 +73,11 @@
  },
  {
   "academic_year_name": "2024-2025",
+  "custom_current_academic_year": 0,
+  "custom_next_academic_year": 1,
   "docstatus": 0,
   "doctype": "Academic Year",
-  "modified": "2023-09-05 10:27:46.645528",
+  "modified": "2024-01-23 10:24:26.863333",
   "name": "2024-2025",
   "rolled_over": 0,
   "year_end_date": "2025-03-31",
@@ -71,6 +85,8 @@
  },
  {
   "academic_year_name": "2025-2026",
+  "custom_current_academic_year": 0,
+  "custom_next_academic_year": 0,
   "docstatus": 0,
   "doctype": "Academic Year",
   "modified": "2023-09-05 10:27:46.645528",
@@ -81,6 +97,8 @@
  },
  {
   "academic_year_name": "2019-2020",
+  "custom_current_academic_year": 0,
+  "custom_next_academic_year": 0,
   "docstatus": 0,
   "doctype": "Academic Year",
   "modified": "2023-10-13 12:39:39.038665",
@@ -91,6 +109,8 @@
  },
  {
   "academic_year_name": "2026-2027",
+  "custom_current_academic_year": 0,
+  "custom_next_academic_year": 0,
   "docstatus": 0,
   "doctype": "Academic Year",
   "modified": "2023-12-21 08:50:44.840701",
@@ -101,6 +121,8 @@
  },
  {
   "academic_year_name": "2027-2028",
+  "custom_current_academic_year": 0,
+  "custom_next_academic_year": 0,
   "docstatus": 0,
   "doctype": "Academic Year",
   "modified": "2023-12-21 09:05:31.011469",
@@ -111,6 +133,8 @@
  },
  {
   "academic_year_name": "2028-2029",
+  "custom_current_academic_year": 0,
+  "custom_next_academic_year": 0,
   "docstatus": 0,
   "doctype": "Academic Year",
   "modified": "2023-12-21 09:12:12.494256",
@@ -121,6 +145,8 @@
  },
  {
   "academic_year_name": "2029-2030",
+  "custom_current_academic_year": 0,
+  "custom_next_academic_year": 0,
   "docstatus": 0,
   "doctype": "Academic Year",
   "modified": "2023-12-21 09:16:53.501830",
@@ -131,6 +157,8 @@
  },
  {
   "academic_year_name": "2030-2031",
+  "custom_current_academic_year": 0,
+  "custom_next_academic_year": 0,
   "docstatus": 0,
   "doctype": "Academic Year",
   "modified": "2023-12-21 09:29:45.622209",
@@ -141,6 +169,8 @@
  },
  {
   "academic_year_name": "2031-2032",
+  "custom_current_academic_year": 0,
+  "custom_next_academic_year": 0,
   "docstatus": 0,
   "doctype": "Academic Year",
   "modified": "2023-12-21 09:39:55.551255",

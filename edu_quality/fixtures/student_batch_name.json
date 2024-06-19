@@ -3,98 +3,126 @@
   "batch_name": "s",
   "docstatus": 0,
   "doctype": "Student Batch Name",
+  "end_time": null,
   "modified": "2023-10-26 09:46:23.770903",
-  "name": "s"
+  "name": "s",
+  "start_time": null
  },
  {
   "batch_name": "10:00AM-12:30PM",
   "docstatus": 0,
   "doctype": "Student Batch Name",
+  "end_time": null,
   "modified": "2023-10-26 09:58:26.595135",
-  "name": "10:00AM-12:30PM"
+  "name": "10:00AM-12:30PM",
+  "start_time": null
  },
  {
   "batch_name": "10:35am to 3:50 pm",
   "docstatus": 0,
   "doctype": "Student Batch Name",
+  "end_time": null,
   "modified": "2023-10-26 09:58:26.595135",
-  "name": "10:35am to 3:50 pm"
+  "name": "10:35am to 3:50 pm",
+  "start_time": null
  },
  {
   "batch_name": "11:00AM-1:30PM",
   "docstatus": 0,
   "doctype": "Student Batch Name",
+  "end_time": null,
   "modified": "2023-10-26 09:58:26.595135",
-  "name": "11:00AM-1:30PM"
+  "name": "11:00AM-1:30PM",
+  "start_time": null
  },
  {
   "batch_name": "12.20 pm to 5:35 pm",
   "docstatus": 0,
   "doctype": "Student Batch Name",
+  "end_time": null,
   "modified": "2023-10-26 09:58:26.595135",
-  "name": "12.20 pm to 5:35 pm"
+  "name": "12.20 pm to 5:35 pm",
+  "start_time": null
  },
  {
   "batch_name": "1:30PM-4:00PM",
   "docstatus": 0,
   "doctype": "Student Batch Name",
+  "end_time": null,
   "modified": "2023-10-26 09:58:26.595135",
-  "name": "1:30PM-4:00PM"
+  "name": "1:30PM-4:00PM",
+  "start_time": null
  },
  {
   "batch_name": "2:30PM-5:00PM",
   "docstatus": 0,
   "doctype": "Student Batch Name",
+  "end_time": null,
   "modified": "2023-10-26 09:58:26.595135",
-  "name": "2:30PM-5:00PM"
+  "name": "2:30PM-5:00PM",
+  "start_time": null
  },
  {
   "batch_name": "3:00PM-5:30PM",
   "docstatus": 0,
   "doctype": "Student Batch Name",
+  "end_time": null,
   "modified": "2023-10-26 09:58:26.595135",
-  "name": "3:00PM-5:30PM"
+  "name": "3:00PM-5:30PM",
+  "start_time": null
  },
  {
   "batch_name": "7:05AM-12:20PM",
   "docstatus": 0,
   "doctype": "Student Batch Name",
+  "end_time": null,
   "modified": "2023-10-26 09:58:26.595135",
-  "name": "7:05AM-12:20PM"
+  "name": "7:05AM-12:20PM",
+  "start_time": null
  },
  {
   "batch_name": "8:00AM-10:30AM",
   "docstatus": 0,
   "doctype": "Student Batch Name",
+  "end_time": null,
   "modified": "2023-10-26 09:58:26.595135",
-  "name": "8:00AM-10:30AM"
+  "name": "8:00AM-10:30AM",
+  "start_time": null
  },
  {
   "batch_name": "8:50 am to 2:05 pm",
   "docstatus": 0,
   "doctype": "Student Batch Name",
+  "end_time": null,
   "modified": "2023-10-26 09:58:26.595135",
-  "name": "8:50 am to 2:05 pm"
+  "name": "8:50 am to 2:05 pm",
+  "start_time": null
  },
  {
   "batch_name": "9:00AM-11:30AM",
   "docstatus": 0,
   "doctype": "Student Batch Name",
+  "end_time": null,
   "modified": "2023-10-26 09:58:26.595135",
-  "name": "9:00AM-11:30AM"
+  "name": "9:00AM-11:30AM",
+  "start_time": null
  },
  {
   "batch_name": "9:00AM-12:00PM",
   "docstatus": 0,
   "doctype": "Student Batch Name",
+  "end_time": null,
   "modified": "2023-10-26 09:58:26.595135",
-  "name": "9:00AM-12:00PM"
+  "name": "9:00AM-12:00PM",
+  "start_time": null
  },
  {
   "batch_name": "12:00PM-2:30PM",
   "docstatus": 0,
   "doctype": "Student Batch Name",
+  "end_time": null,
   "modified": "2023-10-26 09:58:26.595135",
-  "name": "12:00PM-2:30PM"
+  "name": "12:00PM-2:30PM",
+  "start_time": null
  }
 ]
