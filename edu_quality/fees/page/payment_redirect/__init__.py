@@ -55,8 +55,11 @@ def get_breakup(fees,term):
                     'amount':  frappe.utils.fmt_money(0-dis_amount, currency="INR"),
                     'company': company
                 })
+        display_name = component.fees_category
+        if frappe.db.exists("Fee Head",component.fees_category):
+            display_name = frappe.db.get_value("Fee Head",component.fees_category,'display_name') or component.fees_category
         breakup = [{
-                'fees_category': component.fees_category,
+                'fees_category': display_name,
                 'amount':  frappe.utils.fmt_money(amount, currency="INR"),
                 'company': company
             }] + breakup
@@ -94,8 +97,11 @@ def get_payment_details(**kwargs):
                 company = fees.company
                 
             if fee_type != "Regular":
+                display_name = fee.fees_category
+                if frappe.db.exists("Fee Head",fee.fees_category):
+                    display_name = frappe.db.get_value("Fee Head",fee.fees_category,'display_name') or fee.fees_category
                 breakup.append({
-                    'fees_category': fee.fees_category,
+                    'fees_category': display_name,
                     'amount':  frappe.utils.fmt_money(amount, currency="INR"),
                     'company': company
                 })
@@ -112,9 +118,33 @@ def get_payment_details(**kwargs):
         'status': payment_request.status,
         'receipt_url': frappe.utils.get_url() + "/api/method/edu_quality.fees.page.payment_redirect.payment_receipt?payment_request="+payment_request.name,
         "breakup": breakup,
+        "discounts": get_discounts(fees),
+        "term": payment_request.payment_term or "Deposit",
         "undertaking_url": get_undertaking_template(payment_request, is_deposit=is_deposit),
         "undertaking_accepted": get_submitted_undertaking(payment_request)
     }
+
+
+def get_discounts(fees):
+    referral_discount = 0
+    other_discount = 0
+    referral_discount_company = None
+    other_discount_company = None
+    if fees.doctype == "Fees":
+        pass
+    if fees.doctype == "Fee Advance":
+        for component in fees.components:
+            if component.fees_category=="Tuition Fee":
+                referral_discount_company = component.custom_company
+            if component.custom_discounts:
+                if component.custom_company == fees.company:
+                    other_discount += component.custom_discount_amount
+                    other_discount_company = component.custom_company
+                    if "Referral" in component.custom_discounts:
+                        other_discount -= fees.referral_amount
+        if fees.referral_amount:
+            referral_discount += fees.referral_amount
+    return {"referral_discount": referral_discount, "other_discount":other_discount, "referral_discount_company": referral_discount_company, "other_discount_company": other_discount_company}
 
 
 @cache_data(ttl=900)

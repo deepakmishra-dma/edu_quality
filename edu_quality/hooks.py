@@ -124,6 +124,7 @@ override_doctype_class = {
     "Program Enrollment": "edu_quality.public.py.enrollment_override.CustomProgramEnrollment",
     "Fees": "edu_quality.edu_quality.overrides.fees.CustomFees",
     "Student": "edu_quality.edu_quality.overrides.student.CustomStudent",
+    "Payment Entry": "edu_quality.edu_quality.overrides.payment_entry.CustomPaymentEntry",
 }
 
 # Document Events
@@ -289,6 +290,11 @@ scheduler_events = {
 # 	"edu_quality.auth.validate"
 # ]
 
+# fixtures = [
+#     {"dt": "Web Page"}
+
+# ]
+
 fixtures = [
     {"dt": "Workflow"},
     {"dt": "Server Script", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
@@ -340,8 +346,8 @@ fixtures = [
         ],
     },
     # {"dt": "Funnel"},
-    {"dt": "Email Template"},
-    {"dt": "Letter Head"},
+    # {"dt": "Email Template"},
+    # {"dt": "Letter Head"},
     {"dt": "Class Type"},
     {"dt": "Item Group"},
     {"dt": "CRM Settings"},

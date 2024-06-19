@@ -67,14 +67,6 @@ def on_submit(doc, method=None):
         fee_outstanding_amount = doc.outstanding_amount - (fee_advance.amount + total_discount)
         frappe.db.set_value("Fees", doc.name, "outstanding_amount", fee_outstanding_amount)
         doc.reload()
-
-    elif frappe.db.exists("Fee Advance", {"student": doc.student, "next_program":doc.program, "academic_year": doc.academic_year, "docstatus": 1}):
-        fee_advance = frappe.get_doc("Fee Advance", {"student": doc.student, "next_program":doc.program, "academic_year": doc.academic_year, "docstatus": 1})
-        fee_advance.cancel()
-        discount_applied = get_one_time_discounts(fee_advance)
-        for discount in discount_applied.keys():
-            add_discount(doc.name, discount)
-            total_discount += discount_applied.get(discount)
         
 
 def verify_invoice_portion(payment_schedule):
@@ -185,7 +177,7 @@ def get_deposit(doc_payment_plan, payment_plan):
 def create_fees(doc, method=None):
     try:
         student = frappe.get_doc("Student", doc.student)
-        if student.imported and student.student_status not in ["Cancelled"]:
+        if student.imported and student.student_status not in ["Cancelled","New student"]:
             existing_pe = frappe.get_all("Program Enrollment", {"student": doc.student, "docstatus": 1})
             if len(existing_pe) <= 1:
                 return
@@ -271,7 +263,8 @@ def create_fees(doc, method=None):
                             "amount": component.amount,
                             "description": component.description,
                             "custom_company": component.custom_company,
-                            "school": component.school
+                            "school": component.school,
+                            "label": component.label
                         },
                     )
             fees.insert()

@@ -41,7 +41,8 @@ def before_save(doc, method=None):
             fee_name = "Application fee"
         label = frappe.db.get_value("Fee Category",fee_name,"custom_label")
         school = frappe.db.get_value("Fee Category",fee_name,"school")
-        component = {"fees_category": fee_name, "amount": doc.application_fees,"label":label,'school':school}
+        company = frappe.db.get_value("Fee Category",fee_name,"custom_company")
+        component = {"fees_category": fee_name, "amount": doc.application_fees,"label":label,'school':school,'custom_company':company}
 
         doc.append(
             "fee_components", component
@@ -113,13 +114,14 @@ def get_deposits(doc):
     for deposit in deposits:
         label = frappe.get_value("Fee Category", deposit.name, "custom_label")
         school = frappe.db.get_value("Fee Category",deposit.name,"school")
+        company = frappe.db.get_value("Fee Category",deposit.name,"custom_company")
         doc.append(
-            "fee_components", {"fees_category": deposit.name, "amount": deposit.amount,'label': label,'school':school}
+            "fee_components", {"fees_category": deposit.name, "amount": deposit.amount,'label': label,'school':school,'custom_company':company}
         )
 
 
 @frappe.whitelist()
-def enroll_student(source_name, refno=None):
+def enroll_student(source_name, email=None, refno=None):
     """Creates a Student Record and returns a Program Enrollment.
 
     :param source_name: Student Applicant.
@@ -144,7 +146,10 @@ def enroll_student(source_name, refno=None):
         add_referral_discount(student_applicant.custom_referred_by, student_applicant)
 
     student_group = get_student_group(student_applicant)
-    student.reference_number = refno
+    if refno:
+        student.reference_number = refno
+    if email:
+        student.student_email_id = email
     student.save()
     create_student_account(student, student_applicant)
     program_enrollment = frappe.new_doc("Program Enrollment")

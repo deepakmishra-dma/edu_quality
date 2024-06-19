@@ -4,7 +4,6 @@ from edu_quality.public.py.payment_request import update_payment_request_after_d
 import frappe
 from frappe.utils import today, getdate, flt
 import json
-
 from edu_quality.public.py.term import get_first_unpaid_term,get_last_term
 
 
@@ -263,6 +262,32 @@ def get_label(fee_category):
     return label
 
 
+def check_paid_advance(doc):
+    filters = {"student": doc.student, "next_program":doc.program, "academic_year": doc.academic_year, "docstatus": 1}
+    if frappe.db.exists("Fee Advance", filters):
+        fee_advance = frappe.get_doc("Fee Advance", filters)
+        if fee_advance.outstanding_amount>0:
+            set_discount_to_fee(doc,fee_advance)
+            fee_advance.cancel()
+            return False
+        return True
+    return False
+    
+def set_discount_to_fee(doc,fee_advance):
+    discount_applied = get_one_time_discounts(fee_advance)
+    for discount in discount_applied.keys():
+        add_discount(doc.name, discount)
+        total_discount += discount_applied.get(discount)
+    return
+
+def get_one_time_discounts(doc):
+    return {
+        discount: component.custom_discount_amount
+        for component in doc.components if component.custom_discounts
+        for discount in map(str.lower, component.custom_discounts.split(", "))
+        if "one time" in discount
+    }
+
 def payment_plan(doc, method=None):
     pe = frappe.get_doc("Program Enrollment", doc.program_enrollment)
     if pe.payment_plan is not None:
@@ -274,6 +299,7 @@ def payment_plan(doc, method=None):
         doc.payment_schedule = []
         initial_payment = 0
         regular_amount = 0
+        advance = check_paid_advance(doc)
         for component in doc.components:
             if component.fee_type and component.fee_type!= "Regular":
                 initial_payment = initial_payment +  component.amount
@@ -283,25 +309,25 @@ def payment_plan(doc, method=None):
         for schedule in pp.payment_schedule:
             payment_amount = flt(regular_amount * schedule.invoice_portion/100,2)
             description = "Installment - " + str(i+1)
-            if i==0 and initial_payment>0:
-                before_days = frappe.db.get_value("Fee Schedule",doc.fee_schedule,"create_payment_request_before")
-                today = datetime.today().date()
-                difference = schedule.due_date - today
-                if difference.days > before_days:
-                        only_deposit(doc)
-                else:
-                    frappe.logger('fees').exception("Initial payment not created")
-                    payment_amount = payment_amount + initial_payment
-                    if initial_payment>0:
-                        description = description + " and deposit/application fee"
-                    frappe.enqueue(
-                            "edu_quality.public.py.student.create_payment_request",
-                            fee=doc,
-                            term = schedule.payment_term,
-                            is_async=True,
-                            queue="long",
-                            timeout=1800,
-                        )
+            if not advance:
+                if i==0:
+                    before_days = frappe.db.get_value("Fee Schedule",doc.fee_schedule,"create_payment_request_before")
+                    today = datetime.today().date()
+                    difference = schedule.due_date - today
+                    if difference.days > before_days and initial_payment>0:
+                            only_deposit(doc)
+                    elif difference.days <= before_days:
+                        payment_amount = payment_amount + initial_payment
+                        if initial_payment>0:
+                            description = description + " and deposit/application fee"
+                        frappe.enqueue(
+                                "edu_quality.public.py.student.create_payment_request",
+                                fee=doc,
+                                term = schedule.payment_term,
+                                is_async=True,
+                                queue="long",
+                                timeout=1800,
+                            )
             i = i+1
             doc.append("payment_schedule",{
                 'payment_term': schedule.payment_term,
@@ -392,10 +418,11 @@ def update_payment_plan_after_discount(doc, total_discount=0, apply_discount=Fal
                 continue
             if apply_discount:
                 if dis.get('type') == 'Referral':
-                    if i == 0:
-                        amount = schedule.outstanding - total_discount
-                        frappe.db.set_value("Payment Schedule",schedule.name,"payment_amount",amount)
-                        frappe.db.set_value("Payment Schedule",schedule.name,"outstanding",amount)
+                        pass
+                    # if i == 0:
+                    #     amount = schedule.outstanding - total_discount
+                    #     frappe.db.set_value("Payment Schedule",schedule.name,"payment_amount",amount)
+                    #     frappe.db.set_value("Payment Schedule",schedule.name,"outstanding",amount)
                         # dis_breakup = frappe.db.get_value("Payment Schedule",schedule.name,"discount_breakup")
                         # dis_breakup = json.loads(dis_breakup) if dis_breakup else None 
                         # if dis_breakup:

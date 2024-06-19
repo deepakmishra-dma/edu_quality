@@ -19,7 +19,7 @@ def generate_undertaking_otp(payment_hash=None, fee=None, fee_advance=None):
     doctype, docname = ("Fees", fee) if fee else ("Fee Advance", fee_advance) if fee_advance else get_fee(payment_hash)
     fee_doc = frappe.get_doc(doctype, docname)
     trigger_event(doc=fee_doc, event_name="undertaking_otp")
-    generate_otp({"doc": fee_doc})
+    # generate_otp({"doc": fee_doc})
     return True
 
 

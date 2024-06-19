@@ -35,14 +35,22 @@ class FeeAdvance(AccountsController):
         generate_split_payment(self, update=True)
 
 
+    def before_insert(self):
+        try:
+            percent = get_percent(self.payment_term, self.payment_plan)
+            components, amount = get_components(self.fee_structure, percent, self.is_rte)
+            self.amount = amount
+            self.outstanding_amount = amount
+            self.components = []
+            for component in components:
+                self.append('components', component)
+        except Exception as e:
+            frappe.logger("fee_advance").exception(e)
+
+
     def before_save(self):
-        percent = get_percent(self.payment_term, self.payment_plan)
-        components, amount = get_components(self.fee_structure, percent, self.is_rte)
-        self.amount = amount
-        self.outstanding_amount = amount
-        self.components = []
-        for component in components:
-            self.append('components', component)
+        add_referral_discount(self)
+
 
     def before_submit(self):
         if frappe.get_value("Fees",{"student":self.student,"program":self.next_program,"docstatus":1}):
@@ -52,11 +60,14 @@ class FeeAdvance(AccountsController):
         self.generate_split()
 
     def before_update_after_submit(self):
-        referal_discount(self)
-        pre_doc = self.get_doc_before_save()
-        if pre_doc.payment_plan != self.payment_plan:
-            payment_plan(self)
-        self.generate_split()
+        try:
+            add_referral_discount(self)
+            pre_doc = self.get_doc_before_save()
+            if pre_doc.payment_plan != self.payment_plan:
+                payment_plan(self)
+            self.generate_split()
+        except Exception as e:
+            frappe.logger("pay_change").exception(e)
 
     def validate(self):
         self.set_missing_accounts_and_fields()
@@ -255,14 +266,9 @@ class FeeAdvance(AccountsController):
 
     def remove_all_discount_entries(self):
         entries = []
-        debit_filter = {'voucher_type':self.doctype,'voucher_no':self.name}
-        credit_filter = {'voucher_type':self.doctype,'voucher_no':self.name}
+        debit_filter = {'voucher_type':self.doctype,'voucher_no':self.name,"is_cancelled":0}
         if frappe.db.exists("GL Entry",debit_filter):
             gl_list = frappe.get_all("GL Entry",debit_filter)
-            for gl in gl_list:
-                entries.append(frappe.get_doc("GL Entry",gl).as_dict())
-        if frappe.db.exists("GL Entry",credit_filter):
-            gl_list = frappe.get_all("GL Entry",credit_filter)
             for gl in gl_list:
                 entries.append(frappe.get_doc("GL Entry",gl).as_dict())
         make_reverse_gl_entries(entries)
@@ -302,6 +308,23 @@ class FeeAdvance(AccountsController):
         merge_entries=False,
     )
     
+
+def add_referral_discount(doc, method=None):
+    grand_total = 0
+    for component in doc.components:
+        if component.fees_category == 'Tuition Fee':
+            if doc.referral_amount:
+                component.custom_discounts = "Referral"
+                component.custom_discount_amount = doc.referral_amount
+        if component.custom_discount_amount:
+            component.custom_amount_after_discount = component.amount - component.custom_discount_amount
+            component.custom_discount_percentage = calculate_discount(component.amount, component.custom_discount_amount)
+        elif component.custom_discount_percentage:
+            component.custom_discount_amount = (component.amount * component.custom_discount_percentage) / 100
+            component.custom_amount_after_discount = component.amount - component.custom_discount_amount
+        grand_total += component.custom_amount_after_discount or component.amount
+    doc.amount = doc.outstanding_amount = grand_total
+
 
 def create_payment_request(doc, method=None):
     not_paid_filter = {
@@ -378,19 +401,20 @@ def fee_advance(**kwargs):
     students = kwargs.get("students")
     students = frappe.parse_json(students)
     for s in students:
-        student = frappe.get_doc("Student", s.get("name"))
-        current_academic_year = frappe.get_value("Academic Year",{"custom_current_academic_year":1})
-        pe_filter = {"student": student.name, "academic_year": current_academic_year}
-        if frappe.db.exists("Program Enrollment", pe_filter):
-            program_enrollment = frappe.get_doc("Program Enrollment", pe_filter)
-            school = frappe.get_value("Program", program_enrollment.program,"school")
-            next_program = get_next_program(program_enrollment.program, school)
-            if not frappe.get_value("Fees",{"student":student.name,"program":next_program,"docstatus":1}):
-                frappe.enqueue(create_fee_advance, student=student, program_enrollment=program_enrollment)
-        else:
-            frappe.msgprint(
-                f"Program Enrollment does not exists for student <b>{student.first_name}</b>. Fee Advance can only be created for old students."
-            )
+        if frappe.get_value("Student",{"name":s.get("name"),"student_status":"Current student"}):
+            student = frappe.get_doc("Student", s.get("name"))
+            current_academic_year = frappe.get_value("Academic Year",{"custom_current_academic_year":1})
+            pe_filter = {"student": student.name, "academic_year": current_academic_year}
+            if frappe.db.exists("Program Enrollment", pe_filter):
+                program_enrollment = frappe.get_doc("Program Enrollment", pe_filter)
+                school = frappe.get_value("Program", program_enrollment.program,"school")
+                next_program = get_next_program(program_enrollment.program, school)
+                if not frappe.get_value("Fees",{"student":student.name,"program":next_program,"docstatus":1}):
+                    frappe.enqueue(create_fee_advance, student=student, program_enrollment=program_enrollment)
+            else:
+                frappe.msgprint(
+                    f"Program Enrollment does not exists for student <b>{student.first_name}</b>. Fee Advance can only be created for old students."
+                )
 
 
 def create_fee_advance(student, program_enrollment,all_len=None,index=None):

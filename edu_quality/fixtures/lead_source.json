@@ -1,189 +1,186 @@
 [
-  {
-    "details": null,
-    "docstatus": 0,
-    "doctype": "Lead Source",
-    "modified": "2023-09-04 13:13:02.013391",
-    "name": "Existing Customer",
-    "source_name": "Existing Customer"
-  },
-  {
-    "details": null,
-    "docstatus": 0,
-    "doctype": "Lead Source",
-    "modified": "2023-09-04 13:13:02.027681",
-    "name": "Reference",
-    "source_name": "Reference"
-  },
-  {
-    "details": null,
-    "docstatus": 0,
-    "doctype": "Lead Source",
-    "modified": "2023-09-04 13:13:02.033725",
-    "name": "Advertisement",
-    "source_name": "Advertisement"
-  },
-  {
-    "details": null,
-    "docstatus": 0,
-    "doctype": "Lead Source",
-    "modified": "2023-09-04 13:13:02.039240",
-    "name": "Cold Calling",
-    "source_name": "Cold Calling"
-  },
-  {
-    "details": null,
-    "docstatus": 0,
-    "doctype": "Lead Source",
-    "modified": "2023-09-04 13:13:02.044285",
-    "name": "Exhibition",
-    "source_name": "Exhibition"
-  },
-  {
-    "details": null,
-    "docstatus": 0,
-    "doctype": "Lead Source",
-    "modified": "2023-09-04 13:13:02.048795",
-    "name": "Supplier Reference",
-    "source_name": "Supplier Reference"
-  },
-  {
-    "details": null,
-    "docstatus": 0,
-    "doctype": "Lead Source",
-    "modified": "2023-09-04 13:13:02.054794",
-    "name": "Mass Mailing",
-    "source_name": "Mass Mailing"
-  },
-  {
-    "details": null,
-    "docstatus": 0,
-    "doctype": "Lead Source",
-    "modified": "2023-09-04 13:13:02.060597",
-    "name": "Customer's Vendor",
-    "source_name": "Customer's Vendor"
-  },
-  {
-    "details": null,
-    "docstatus": 0,
-    "doctype": "Lead Source",
-    "modified": "2023-09-04 13:13:02.065752",
-    "name": "Campaign",
-    "source_name": "Campaign"
-  },
-  {
-    "details": null,
-    "docstatus": 0,
-    "doctype": "Lead Source",
-    "modified": "2023-09-04 13:13:02.071394",
-    "name": "Walk In",
-    "source_name": "Walk In"
-  },
-  {
-    "details": null,
-    "docstatus": 0,
-    "doctype": "Lead Source",
-    "modified": "2023-09-29 16:43:33.375466",
-    "name": "Facebook",
-    "source_name": "Facebook"
-  },
-  {
-    "details": null,
-    "docstatus": 0,
-    "doctype": "Lead Source",
-    "modified": "2023-09-29 16:43:44.438760",
-    "name": "Whatsapp",
-    "source_name": "Whatsapp"
-  },
-
-  {
-    "details": null,
-    "docstatus": 0,
-    "doctype": "Lead Source",
-    "modified": "2023-09-29 16:43:44.438760",
-    "name": "Website",
-    "source_name": "Website"
-  },
-
-  {
-    "details": null,
-    "docstatus": 0,
-    "doctype": "Lead Source",
-    "modified": "2023-09-29 16:43:44.438760",
-    "name": "ChatBot",
-    "source_name": "ChatBot"
-  },
-  {
-    "details": null,
-    "docstatus": 0,
-    "doctype": "Lead Source",
-    "modified": "2023-09-29 16:43:44.438760",
-    "name": "Existing Parents",
-    "source_name": "Existing Parents"
-  },
-  {
-    "details": null,
-    "docstatus": 0,
-    "doctype": "Lead Source",
-    "modified": "2023-09-29 16:43:44.438760",
-    "name": "Others",
-    "source_name": "Others"
-  },
-  {
-    "details": null,
-    "docstatus": 0,
-    "doctype": "Lead Source",
-    "modified": "2023-09-29 16:43:44.438760",
-    "name": "School",
-    "source_name": "School"
-  },
-  {
-    "details": null,
-    "docstatus": 0,
-    "doctype": "Lead Source",
-    "modified": "2023-09-29 16:43:44.438760",
-    "name": "wakad",
-    "source_name": "wakad"
-  },
-  {
-    "details": null,
-    "docstatus": 0,
-    "doctype": "Lead Source",
-    "modified": "2023-09-29 16:43:44.438760",
-    "name": "fursungi",
-    "source_name": "fursungi"
-  },
-  {
-    "details": null,
-    "docstatus": 0,
-    "doctype": "Lead Source",
-    "modified": "2023-09-29 16:43:44.438760",
-    "name": "shivane",
-    "source_name": "shivane"
-  },
-  {
-    "details": null,
-    "docstatus": 0,
-    "doctype": "Lead Source",
-    "modified": "2023-09-29 16:43:44.438760",
-    "name": "email_on_lead_gen",
-    "source_name": "email_on_lead_gen"
-  },
-
-  {
-    "details": null,
-    "docstatus": 0,
-    "doctype": "Lead Source",
-    "modified": "2023-09-29 16:43:44.438760",
-    "name": "email",
-    "source_name": "email"
-  },
-  {
-    "details": null,
-    "docstatus": 0,
-    "doctype": "Lead Source",
-    "modified": "2023-09-29 16:43:44.438760",
-    "name": "walkin",
-    "source_name": "walkin"
-  }
+ {
+  "details": null,
+  "docstatus": 0,
+  "doctype": "Lead Source",
+  "modified": "2023-09-04 13:13:02.013391",
+  "name": "Existing Customer",
+  "source_name": "Existing Customer"
+ },
+ {
+  "details": null,
+  "docstatus": 0,
+  "doctype": "Lead Source",
+  "modified": "2023-09-04 13:13:02.027681",
+  "name": "Reference",
+  "source_name": "Reference"
+ },
+ {
+  "details": null,
+  "docstatus": 0,
+  "doctype": "Lead Source",
+  "modified": "2023-09-04 13:13:02.033725",
+  "name": "Advertisement",
+  "source_name": "Advertisement"
+ },
+ {
+  "details": null,
+  "docstatus": 0,
+  "doctype": "Lead Source",
+  "modified": "2023-09-04 13:13:02.039240",
+  "name": "Cold Calling",
+  "source_name": "Cold Calling"
+ },
+ {
+  "details": null,
+  "docstatus": 0,
+  "doctype": "Lead Source",
+  "modified": "2023-09-04 13:13:02.044285",
+  "name": "Exhibition",
+  "source_name": "Exhibition"
+ },
+ {
+  "details": null,
+  "docstatus": 0,
+  "doctype": "Lead Source",
+  "modified": "2023-09-04 13:13:02.048795",
+  "name": "Supplier Reference",
+  "source_name": "Supplier Reference"
+ },
+ {
+  "details": null,
+  "docstatus": 0,
+  "doctype": "Lead Source",
+  "modified": "2023-09-04 13:13:02.054794",
+  "name": "Mass Mailing",
+  "source_name": "Mass Mailing"
+ },
+ {
+  "details": null,
+  "docstatus": 0,
+  "doctype": "Lead Source",
+  "modified": "2023-09-04 13:13:02.060597",
+  "name": "Customer's Vendor",
+  "source_name": "Customer's Vendor"
+ },
+ {
+  "details": null,
+  "docstatus": 0,
+  "doctype": "Lead Source",
+  "modified": "2023-09-04 13:13:02.065752",
+  "name": "Campaign",
+  "source_name": "Campaign"
+ },
+ {
+  "details": null,
+  "docstatus": 0,
+  "doctype": "Lead Source",
+  "modified": "2023-09-04 13:13:02.071394",
+  "name": "Walk In",
+  "source_name": "Walk In"
+ },
+ {
+  "details": null,
+  "docstatus": 0,
+  "doctype": "Lead Source",
+  "modified": "2023-09-29 16:43:33.375466",
+  "name": "Facebook",
+  "source_name": "Facebook"
+ },
+ {
+  "details": null,
+  "docstatus": 0,
+  "doctype": "Lead Source",
+  "modified": "2023-09-29 16:43:44.438760",
+  "name": "Whatsapp",
+  "source_name": "Whatsapp"
+ },
+ {
+  "details": null,
+  "docstatus": 0,
+  "doctype": "Lead Source",
+  "modified": "2023-09-29 16:43:44.438760",
+  "name": "Website",
+  "source_name": "Website"
+ },
+ {
+  "details": null,
+  "docstatus": 0,
+  "doctype": "Lead Source",
+  "modified": "2023-09-29 16:43:44.438760",
+  "name": "ChatBot",
+  "source_name": "ChatBot"
+ },
+ {
+  "details": null,
+  "docstatus": 0,
+  "doctype": "Lead Source",
+  "modified": "2023-09-29 16:43:44.438760",
+  "name": "Existing Parents",
+  "source_name": "Existing Parents"
+ },
+ {
+  "details": null,
+  "docstatus": 0,
+  "doctype": "Lead Source",
+  "modified": "2023-09-29 16:43:44.438760",
+  "name": "Others",
+  "source_name": "Others"
+ },
+ {
+  "details": null,
+  "docstatus": 0,
+  "doctype": "Lead Source",
+  "modified": "2023-09-29 16:43:44.438760",
+  "name": "School",
+  "source_name": "School"
+ },
+ {
+  "details": null,
+  "docstatus": 0,
+  "doctype": "Lead Source",
+  "modified": "2023-09-29 16:43:44.438760",
+  "name": "wakad",
+  "source_name": "wakad"
+ },
+ {
+  "details": null,
+  "docstatus": 0,
+  "doctype": "Lead Source",
+  "modified": "2023-09-29 16:43:44.438760",
+  "name": "fursungi",
+  "source_name": "fursungi"
+ },
+ {
+  "details": null,
+  "docstatus": 0,
+  "doctype": "Lead Source",
+  "modified": "2023-09-29 16:43:44.438760",
+  "name": "shivane",
+  "source_name": "shivane"
+ },
+ {
+  "details": null,
+  "docstatus": 0,
+  "doctype": "Lead Source",
+  "modified": "2023-09-29 16:43:44.438760",
+  "name": "email_on_lead_gen",
+  "source_name": "email_on_lead_gen"
+ },
+ {
+  "details": null,
+  "docstatus": 0,
+  "doctype": "Lead Source",
+  "modified": "2023-09-29 16:43:44.438760",
+  "name": "email",
+  "source_name": "email"
+ },
+ {
+  "details": null,
+  "docstatus": 0,
+  "doctype": "Lead Source",
+  "modified": "2023-09-29 16:43:44.438760",
+  "name": "walkin",
+  "source_name": "walkin"
+ }
 ]

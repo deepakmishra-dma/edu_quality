@@ -171,19 +171,19 @@ def insert_student(row, column_names, doctype,total_len,index,db,database):
         new_doc = frappe.get_doc(new_doc_data)
         new_doc.insert(ignore_permissions=True)
         if map_student_status(get_data("status")) not in ["Cancelled"]:
-            insert_program_enrollment(new_doc, frappe_data)
+            insert_program_enrollment(new_doc, frappe_data,joining_date)
     else:
         if not frappe.db.exists("Program Enrollment", {"student":docname,"program":program}) and map_student_status(get_data("status")) !="Cancelled":
             old_doc = frappe.get_doc(doctype, docname)
             if map_student_status(get_data("status")) not in ["Cancelled"]:
-                insert_program_enrollment(old_doc, frappe_data)
+                insert_program_enrollment(old_doc, frappe_data,joining_date)
 
 
 def map_student_status(id):
     data = {1:"New student",2:"Current student",3:"Cancelled",4:"Not attending",6:"Defaulter",7:"Defaulter",8:"Alumni"}
     return data.get(id)
 
-def insert_program_enrollment(student, data=None):
+def insert_program_enrollment(student, data=None,joining_date=None):
     try:
         program = student.seeking_admission_in_class
         if data.get("status")==1:
@@ -211,7 +211,7 @@ def insert_program_enrollment(student, data=None):
         program_enrollment.academic_year = academic_year
         program_enrollment.academic_term = academic_term
         program_enrollment.student_group = division_id
-        program_enrollment.enrollment_date = year_start_date
+        program_enrollment.enrollment_date = joining_date.strftime("%Y-%m-%d") if joining_date else frappe.utils.nowdate()
         program_enrollment.tiffin_rack_no = data.get("tiffin_rack_no")
         program_enrollment.roll_no = roll_no
         program_enrollment.save()

@@ -83,7 +83,6 @@ def shift_reference_series(school):
     programs = frappe.get_all("Program",filters={"school":school},fields=["name","reference_series"],order_by="sequence")
     previous_series = ""
     for i in programs:
-        frappe.logger('roll').exception(i.name+"-"+previous_series)
         if previous_series:
             frappe.db.set_value("Program",i.name,"reference_series",previous_series)
         previous_series = i.reference_series
@@ -142,8 +141,17 @@ def batch_filter(doctype, txt, searchfield, start, page_len, filters):
 @frappe.whitelist(allow_guest=True)
 def settlement_hook(**kwargs):
     try:
-        # data = json.loads(data)
-        frappe.logger('settlement').exception(kwargs)
+        data = frappe.parse_json(kwargs)
+        doc = frappe.new_doc("Easebuzz Settlement Log")
+        doc.data = data
+        doc.save()
         return 1
     except Exception as e:
         frappe.logger('settlement').exception(e)
+
+
+
+
+
+
+
