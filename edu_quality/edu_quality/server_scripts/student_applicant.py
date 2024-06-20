@@ -104,6 +104,7 @@ def update_referral_discount(doc, discount_amount):
     - discount_amount (float): The amount of referral discount to apply.
     """
     try:
+        doc.reload()
         for component in doc.components:
             discount_name = component.custom_discounts
             if discount_name and "referral" in discount_name.lower():
