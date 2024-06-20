@@ -40,6 +40,7 @@ doctype_js = {
     "Purchase Order": "public/js/purchase_order.js",
     "Purchase Receipt": "public/js/purchase_receipt.js",
     "Topic": "public/js/topic.js",
+    "Instructor": "public/js/instructor.js",
 }
 doctype_list_js = {
     "Student Applicant": "public/js/list/student_applicant_list.js",
@@ -181,6 +182,10 @@ doc_events = {
     "Purchase Order": {
         "before_validate": "edu_quality.overrides_hooks.purchase_order.before_validate"
     },
+    # "Instructor": {
+    #     "after_insert": "edu_quality.overrides_hooks.instructor.after_insert",
+    #     "after_delete": "edu_quality.overrides_hooks.instructor.after_delete",
+    # },
     "Purchase Receipt": {
         "before_validate": "edu_quality.overrides_hooks.purchase_order.before_validate"
     },
