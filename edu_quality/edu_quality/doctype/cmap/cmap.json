@@ -29,7 +29,8 @@
   "assignment_instructions_footer",
   "comment",
   "assignment",
-  "grading"
+  "grading",
+  "amended_from"
  ],
  "fields": [
   {
@@ -47,17 +48,20 @@
    "reqd": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "assignment",
    "fieldtype": "Small Text",
    "label": "Assignment Instructions Header",
    "options": "Item Detail"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "grading",
    "fieldtype": "Data",
    "label": "Grading"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "table_vwbr",
    "fieldtype": "Table",
    "label": "CMAP Assignees",
@@ -104,16 +108,19 @@
    "fieldtype": "Column Break"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "solve_assignment_instructions",
    "fieldtype": "Small Text",
    "label": "Solve Assignment Instructions"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "assignment_instructions_footer",
    "fieldtype": "Small Text",
    "label": "Assignment Instructions Footer"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "products",
    "fieldtype": "Table",
    "label": "Products",
@@ -162,6 +169,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "comment",
    "fieldtype": "Small Text",
    "label": "Comment"
@@ -181,11 +189,21 @@
    "fieldtype": "Long Text",
    "label": "Broadcast Text",
    "read_only": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "CMAP",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-12-28 09:22:16.369395",
+ "modified": "2024-01-18 17:38:19.721161",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "CMAP",
@@ -206,5 +224,14 @@
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": []
+ "states": [
+  {
+   "color": "Gray",
+   "title": "Pending"
+  },
+  {
+   "color": "Blue",
+   "title": "Submitted"
+  }
+ ]
 }
