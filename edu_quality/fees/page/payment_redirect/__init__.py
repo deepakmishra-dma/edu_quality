@@ -56,8 +56,8 @@ def get_breakup(fees,term):
                     'company': company
                 })
         display_name = component.fees_category
-        if frappe.db.exists("Fee Head",component.fees_category):
-            display_name = frappe.db.get_value("Fee Head",component.fees_category,'display_name') or component.fees_category
+        if frappe.db.exists("Fee Category",component.fees_category):
+            display_name = frappe.db.get_value("Fee Category",component.fees_category,'display_name') or component.fees_category
         breakup = [{
                 'fees_category': display_name,
                 'amount':  frappe.utils.fmt_money(amount, currency="INR"),
@@ -98,8 +98,8 @@ def get_payment_details(**kwargs):
                 
             if fee_type != "Regular":
                 display_name = fee.fees_category
-                if frappe.db.exists("Fee Head",fee.fees_category):
-                    display_name = frappe.db.get_value("Fee Head",fee.fees_category,'display_name') or fee.fees_category
+                if frappe.db.exists("Fee Category",fee.fees_category):
+                    display_name = frappe.db.get_value("Fee Category",fee.fees_category,'display_name') or fee.fees_category
                 breakup.append({
                     'fees_category': display_name,
                     'amount':  frappe.utils.fmt_money(amount, currency="INR"),
