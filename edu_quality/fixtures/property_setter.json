@@ -142,21 +142,5 @@
   "property_type": null,
   "row_name": null,
   "value": ""
- },
- {
-  "default_value": null,
-  "doc_type": null,
-  "docstatus": 0,
-  "doctype": "Property Setter",
-  "doctype_or_field": null,
-  "field_name": null,
-  "is_system_generated": 0,
-  "modified": "2024-01-08 18:16:04.106610",
-  "module": "Edu Quality",
-  "name": "Student-custom_division",
-  "property": null,
-  "property_type": null,
-  "row_name": null,
-  "value": null
  }
 ]
