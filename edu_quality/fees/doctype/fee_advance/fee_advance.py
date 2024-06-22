@@ -53,8 +53,8 @@ class FeeAdvance(AccountsController):
 
 
     def before_submit(self):
-        if frappe.get_value("Fees",{"student":self.student,"program":self.next_program,"docstatus":1}):
-            frappe.throw("Fees are already present for this class, so you cannot submit it.")
+        if frappe.get_value("Fees",{"student":self.student,"program":self.next_program,"docstatus":1}) or frappe.get_value("Fee Advance",{"student":self.student,"next_program":self.next_program,"docstatus":1}):
+            frappe.throw("Fees or Fee Advance are already present for this class, so you cannot submit it.")
         referal_discount(self)
         payment_plan(self)
         self.generate_split()
@@ -409,7 +409,7 @@ def fee_advance(**kwargs):
                 program_enrollment = frappe.get_doc("Program Enrollment", pe_filter)
                 school = frappe.get_value("Program", program_enrollment.program,"school")
                 next_program = get_next_program(program_enrollment.program, school)
-                if not frappe.get_value("Fees",{"student":student.name,"program":next_program,"docstatus":1}):
+                if not frappe.get_value("Fees",{"student":student.name,"program":next_program,"docstatus":1}) and  not frappe.get_value("Fee Advance",{"student":student.name,"next_program":next_program,"docstatus":1}):
                     frappe.enqueue(create_fee_advance, student=student, program_enrollment=program_enrollment)
             else:
                 frappe.msgprint(
