@@ -43,8 +43,8 @@ class CustomPaymentEntry(PaymentEntry):
                         'company': company
                     })
             display_name = component.fees_category
-            if frappe.db.exists("Fee Head",component.fees_category):
-                display_name = frappe.db.get_value("Fee Head",component.fees_category,'display_name') or component.fees_category
+            if frappe.db.exists("Fee Category",component.fees_category):
+                display_name = frappe.db.get_value("Fee Category",component.fees_category,'display_name') or component.fees_category
             breakup = [{
                     'fees_category': display_name,
                     'amount':  frappe.utils.fmt_money(amount, currency="INR"),
