@@ -154,6 +154,7 @@ doc_events = {
     },
     "Payment Request": {
         "before_save": "edu_quality.public.py.payment_request.before_save",
+        "after_submit": "edu_quality.public.py.payment_request.after_submit",
     },
     "Student": {
         "autoname": "edu_quality.public.py.student.autoname",

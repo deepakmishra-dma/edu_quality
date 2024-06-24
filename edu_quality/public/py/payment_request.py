@@ -243,3 +243,15 @@ def update_not_paid_payment_request(doc, not_paid_filter):
             recipient_id=student_email,
             submit_doc=True
         )
+
+
+def after_submit(doc, method):
+    frappe.enqueue(email_trigger, pr=doc.name,queue='long')
+
+def email_trigger(pr):
+    import time
+    from nextai.funnel.custom_trigger import trigger_event
+    time.sleep(60)
+    if frappe.db.get_value("Payment Request", pr, "docstatus") == "1":
+        doc = frappe.get_doc("Payment Request", pr)
+        trigger_event(doc=doc, event_name="payment_link")
