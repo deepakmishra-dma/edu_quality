@@ -52,7 +52,7 @@ def is_deposit(fees, term):
     return deposit
 
 @frappe.whitelist()
-def generate_otp(fee):
+def generate_otp(fee,undertaking=0):
     try:
         rs = frappe.cache()
         key = fee
@@ -60,7 +60,7 @@ def generate_otp(fee):
         for i in range(4):
             OTP += str(random.randint(1, 9))
         rs.set_value(key, OTP, expires_in_sec=600)
-        return send_otp(fee, OTP)
+        return send_otp(fee, OTP,undertaking)
     except Exception as e:
         return False
 
@@ -85,7 +85,7 @@ def get_email_id(student):
         return False
     
 
-def send_otp(fee, otp):
+def send_otp(fee, otp,undertaking):
     try:
         student = frappe.get_value("Fees", fee, "student")
         student = frappe.get_doc("Student", student)
@@ -94,16 +94,22 @@ def send_otp(fee, otp):
         if mobile:
             sms_otp(mobile, otp)
         if email:
-            email_otp(email, otp)
+            email_otp(email, otp,undertaking)
         return True
     except Exception as e:
         return False
 
 
-def email_otp(email, otp):
-    subject = "OTP for Changing Payment Plan"
-    message = f"OTP for Changing Payment Plan is {otp}"
-    frappe.sendmail(recipients=email, subject=subject, message=message, delayed=False)
+def email_otp(email, otp,undertaking):
+    if not undertaking:
+        subject = "OTP for Changing Payment Plan"
+        message = f"OTP for Changing Payment Plan is {otp}"
+        frappe.sendmail(recipients=email, subject=subject, message=message, delayed=False,now=True)
+        return  
+    frappe.sendmail(recipients=email, template="Walnut - Undertaking OTP",args=dict(
+        otp=otp,
+    ), delayed=False,now=True)
+
 
 
 @frappe.whitelist(allow_guest=True)
