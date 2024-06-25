@@ -62,7 +62,7 @@ def generate_otp(fee,undertaking=0):
         rs.set_value(key, OTP, expires_in_sec=600)
         return send_otp(fee, OTP,undertaking)
     except Exception as e:
-        return False
+        frappe.logger('otp').exception(e)
 
 
 def get_mobile_number(student):
@@ -101,15 +101,16 @@ def send_otp(fee, otp,undertaking):
 
 
 def email_otp(email, otp,undertaking):
-    if not undertaking:
-        subject = "OTP for Changing Payment Plan"
-        message = f"OTP for Changing Payment Plan is {otp}"
-        frappe.sendmail(recipients=email, subject=subject, message=message, delayed=False,now=True)
-        return  
-    frappe.sendmail(recipients=email, template="Walnut - Undertaking OTP",args=dict(
-        otp=otp,
-    ), delayed=False,now=True)
-
+    try:
+        if not undertaking:
+            subject = "OTP for Changing Payment Plan"
+            message = f"OTP for Changing Payment Plan is {otp}"
+            frappe.sendmail(recipients=email, subject=subject, message=message, delayed=False,now=True)
+            return  
+        frappe.logger('otp').exception('immediate')
+        frappe.sendmail(recipients=email, template="Walnut - Undertaking OTP",args=dict(otp=otp), delayed=False,now=True)
+    except Exception as e:
+        frappe.logger('email_otp').exception(e)
 
 
 @frappe.whitelist(allow_guest=True)
