@@ -106,10 +106,10 @@ def email_otp(email, otp,undertaking):
             subject = "OTP for Changing Payment Plan"
             message = f"OTP for Changing Payment Plan is {otp}"
             frappe.sendmail(recipients=email, subject=subject, message=message, delayed=False,now=True)
-            return  
-        frappe.logger('otp').exception('immediate')
+            return
         template = frappe.get_doc("Email Template", "Walnut - Undertaking OTP")
-        frappe.sendmail(recipients=email, subject=template.subject,message=template.response,args=dict(otp=otp), delayed=False,now=True)
+        context = dict(otp=otp)
+        frappe.sendmail(recipients=email, subject=frappe.render_template(subject, context=context),message=frappe.render_template(message, context=context), delayed=False,now=True)
     except Exception as e:
         frappe.logger('email_otp').exception(e)
 
