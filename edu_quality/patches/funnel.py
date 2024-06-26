@@ -145,20 +145,6 @@ data = [
   "doctype": "Funnel",
   "funnel_definition": [
    {
-    "data": "{\n    \"action\": \"on_submit\",\n    \"doctype\": \"Payment Request\",\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
-    "element_type": "Trigger",
-    "id": "V7lvg8fLqqnTjtnqkrP2F",
-    "parent": "Payment Link",
-    "parentfield": "funnel_definition",
-    "parenttype": "Funnel",
-    "position": "{\n    \"x\": 810,\n    \"y\": -150\n}",
-    "source": None,
-    "sourcehandle": None,
-    "target": None,
-    "targethandle": None,
-    "type": "document_event_trigger"
-   },
-   {
     "data": "{\n    \"email_account\": \"Arpita Karkarey's Walnut School\",\n    \"email_content\": \"\",\n    \"email_subject\": \"\",\n    \"email_template\": \"Payment links For 1st Installment For All Students\",\n    \"recepients\": [\n        {\n            \"cc\": \"\",\n            \"recepientField\": \"\",\n            \"recipient\": \"{{recipient}}\"\n        }\n    ],\n    \"select_template\": true,\n    \"send_to_assigned_users\": false,\n    \"submit\": true,\n    \"variable_path_for_output\": \"\"\n}",
     "element_type": "Action",
     "id": "3sScfFhiE-qfOMbSpZgR0",
@@ -185,20 +171,6 @@ data = [
     "target": None,
     "targethandle": None,
     "type": "exec_python"
-   },
-   {
-    "data": None,
-    "element_type": "edge",
-    "id": "reactflow__edge-V7lvg8fLqqnTjtnqkrP2Foutput-60MS7MC_fA4ZM-B_oL48Rinput",
-    "parent": "Payment Link",
-    "parentfield": "funnel_definition",
-    "parenttype": "Funnel",
-    "position": None,
-    "source": "V7lvg8fLqqnTjtnqkrP2F",
-    "sourcehandle": "output",
-    "target": "60MS7MC_fA4ZM-B_oL48R",
-    "targethandle": "input",
-    "type": "smoothstep"
    },
    {
     "data": "{\n    \"expression\": \"doc = variables.get('doc')\\nif doc.payment_term:\\n    return True\\nelse:\\n    return False\",\n    \"node_label\": \"Filter Deposit and Normal Payment Link\",\n    \"submit\": true,\n    \"use_python_expression\": true\n}",
@@ -423,6 +395,20 @@ data = [
     "target": None,
     "targethandle": None,
     "type": "send_mail"
+   },
+   {
+    "data": "{\n    \"submit\": true\n}",
+    "element_type": "Trigger",
+    "id": "G_0QqDzEfJ2NEyXNVuyT0",
+    "parent": "Payment Link",
+    "parentfield": "funnel_definition",
+    "parenttype": "Funnel",
+    "position": "{\n    \"x\": 810,\n    \"y\": -210\n}",
+    "source": None,
+    "sourcehandle": None,
+    "target": None,
+    "targethandle": None,
+    "type": "on_funnel_trigger"
    },
    {
     "data": "{\n    \"expression\": \"return variables.get(\\\"is_kg\\\")\",\n    \"node_label\": \"Filter KG / Primary, Secondary\",\n    \"submit\": true,\n    \"use_python_expression\": true,\n    \"variable_path_for_output\": \"\"\n}",
@@ -707,6 +693,20 @@ data = [
    {
     "data": None,
     "element_type": "edge",
+    "id": "reactflow__edge-G_0QqDzEfJ2NEyXNVuyT0output-60MS7MC_fA4ZM-B_oL48Rinput",
+    "parent": "Payment Link",
+    "parentfield": "funnel_definition",
+    "parenttype": "Funnel",
+    "position": None,
+    "source": "G_0QqDzEfJ2NEyXNVuyT0",
+    "sourcehandle": "output",
+    "target": "60MS7MC_fA4ZM-B_oL48R",
+    "targethandle": "input",
+    "type": "smoothstep"
+   },
+   {
+    "data": None,
+    "element_type": "edge",
     "id": "reactflow__edge-nn51msvpeoGuE9BYCD9S-no-1m2YWLNGNSVz9aaYIfJIuinput",
     "parent": "Payment Link",
     "parentfield": "funnel_definition",
@@ -720,12 +720,12 @@ data = [
    }
   ],
   "funnel_name": "Payment Link",
+  "modified": "2024-01-23 20:30:01.648140",
   "name": "Payment Link",
-  "status": "updated",
+  "status": "published",
   "variable_list": "[]",
-  "viewport": "{\"x\":-330.77209826003946,\"y\":262.8039170655971,\"zoom\":0.9178715252088578}"
- },
- {
+  "viewport": "{\"x\":-77.05008579392143,\"y\":362.2505238251506,\"zoom\":0.9178715252088578}"
+ },{
   "archived": 0,
   "docstatus": 0,
   "doctype": "Funnel",

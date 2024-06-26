@@ -1,11 +1,12 @@
 # Copyright (c) 2024, Hybrowlabs Technologies and contributors
 # For license information, please see license.txt
-
+import json
 import frappe
 from edu_quality.public.py.application import enroll_student
 from frappe.model.document import Document
 class MGREnrollmentLog(Document):
     def before_insert(self):
+        return
         try:
             student_applicant = frappe.get_value("Student Applicant", {"lms_id": self.lms_id})
             if student_applicant:
