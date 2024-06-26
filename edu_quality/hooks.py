@@ -343,7 +343,7 @@ fixtures = [
     {
         "dt": "Funnel Node",
         "filters": [
-            ["name", "in", ["Student Referral", "Fee Receipt", "Undertaking OTP"]]
+            ["name", "in", ["Student Referral", "Fee Receipt", "Undertaking OTP","Payment Link"]]
         ],
     },
     # {"dt": "Funnel"},
