@@ -17,6 +17,7 @@ from edu_quality.edu_quality.server_scripts.utils import (
     get_previous_class,
     previous_academic_year,
 )
+from edu_quality.public.py.student import update_student
 
 
 def autoname(doc, method=None):
@@ -121,7 +122,7 @@ def get_deposits(doc):
 
 
 @frappe.whitelist()
-def enroll_student(source_name, email=None, refno=None):
+def enroll_student(source_name, email=None, refno=None, data=None):
     """Creates a Student Record and returns a Program Enrollment.
 
     :param source_name: Student Applicant.
@@ -150,6 +151,9 @@ def enroll_student(source_name, email=None, refno=None):
         student.reference_number = refno
     if email:
         student.student_email_id = email
+
+    student_data = update_student(data)
+    student.update(student_data)
     student.save()
     create_student_account(student, student_applicant)
     program_enrollment = frappe.new_doc("Program Enrollment")

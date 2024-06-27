@@ -1,3 +1,4 @@
+from edu_quality.common.utils.student_import.student_import import get_guardian, map_student_status
 from edu_quality.overrides import make_payment_request
 import time 
 from frappe.utils import today
@@ -133,3 +134,60 @@ def get_parents_details(student):
         parent.update({"relation":guardian.relation})
         parents.append(parent)
     return parents
+
+
+def update_student(data):
+    student_meta = data.get("student_meta")
+    parent_meta = data.get("parent_meta", {})
+    student_data = {
+        "enabled": 1,
+        "form_code": student_meta.get("form_code"),
+        "form_id": student_meta.get("form_id"),
+        "first_name": student_meta.get("first_name"),
+        "middle_name": student_meta.get("middle_name"),
+        "last_name": student_meta.get("last_name"),
+        "first_name_marathi": student_data.get("fname_marathi"),
+        "last_name_marathi": student_data.get("lname_marathi"),
+        "date_of_birth": student_data.get("b_date"),
+        "blood_group": student_data.get("blood_group", ""),
+        "student_mobile_number": student_data.get("student_primary_contact_number"),
+        "gender": student_data.get("gender"),
+        "nationality": student_data.get("nationality"),
+        "address_line_1": student_data.get("bld_house"),
+        "pincode": student_data.get("pin"),
+        "city": student_data.get("city"),
+        "state": student_data.get("state"),
+        "landmark": student_data.get("landmark"),
+        "student_email_id": student_data.get("user_email"),
+        "aadhaar_card_number": student_data.get("adhar_card_no"),
+        "category": student_data.get("category"),
+        "catering": student_data.get("catering"),
+        "caste": student_data.get("caste"),
+        "other_caste": student_data.get("other_caste"),
+        "sub_caste": student_data.get("subcaste"),
+        "other_sub_caste": student_data.get("other_subcaste"),
+        "mother_tongue": student_data.get("mother_tongue"),
+        "is_existing_student": student_data.get("student_isexistingstudent"),
+        "existing_student_ref_number": student_data.get("student_existing_ref_number"),
+        "is_handicap": 1 if student_data.get("handicap") else 0,
+        "handicap": student_data.get("handicap"),
+        "is_student_disabled": 1 if student_data.get("student_isdisability") else 0,
+        "student_disability_name": student_data.get("student_disability_name"),
+        "is_sibling_in_school": student_data.get("student_bro_sis_inschool"),
+        "is_rte": student_data.get("stud_rte"),
+        "single_parent_reason": student_data.get("single_parent_reason"),
+        "religion": student_data.get("religion"),
+        "has_allergies": 1 if student_data.get("allergies") else 0,
+        "allergies": student_data.get("allergies"),
+        "parent_divorced": student_data.get("if_divorced"),
+        "student_status":map_student_status(student_data.get("status")),
+        "birth_place":student_data.get("birthplace"),
+        "last_school_attended": student_data.get("student_last_school_name"),
+        "bus_service_required": student_data.get("bus_service_required"),
+        "source_name": student_data.get("ref_source_name"),
+        "guardians": get_guardian(parent_meta),
+        "whatsapp_number":student_data.get("student_sms_no"),
+        "primary_contact":student_data.get("student_emergency_contact_no")
+    }
+
+    return student_data
