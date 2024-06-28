@@ -246,7 +246,10 @@ def update_not_paid_payment_request(doc, not_paid_filter):
 
 
 def after_submit(doc, method):
-    frappe.enqueue(email_trigger, pr=doc.name,queue='long')
+    try:
+        frappe.enqueue(email_trigger, pr=doc.name,queue='long')
+    except Exception as e:
+        frappe.logger('payment_link').exception(e)
 
 def email_trigger(pr):
     import time
