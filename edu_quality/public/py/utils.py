@@ -87,7 +87,10 @@ def get_email_id(student):
 
 def send_otp(fee, otp,undertaking):
     try:
-        student = frappe.get_value("Fees", fee, "student")
+        doctype = "Fee Advance"
+        if frappe.db.exists("Fees", fee):
+            doctype = "Fees"
+        student = frappe.get_value(doctype, fee, "student")
         student = frappe.get_doc("Student", student)
         email = get_email_id(student)
         mobile = get_mobile_number(student)
