@@ -245,7 +245,7 @@ def update_not_paid_payment_request(doc, not_paid_filter):
         )
 
 
-def after_submit(doc, method):
+def on_submit(doc, method):
     try:
         frappe.enqueue(email_trigger, pr=doc.name,queue='long')
     except Exception as e:
