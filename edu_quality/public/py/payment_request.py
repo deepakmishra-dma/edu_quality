@@ -254,7 +254,7 @@ def on_submit(doc, method):
 def email_trigger(pr):
     import time
     from nextai.funnel.custom_trigger import trigger_event
-    time.sleep(60)
+    time.sleep(25)
     if frappe.db.get_value("Payment Request", pr, "docstatus") == "1":
         doc = frappe.get_doc("Payment Request", pr)
         trigger_event(doc=doc, event_name="payment_link")
