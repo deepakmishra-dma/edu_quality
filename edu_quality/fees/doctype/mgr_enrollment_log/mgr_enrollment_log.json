@@ -12,7 +12,8 @@
   "email",
   "column_break_jr0rf",
   "enrollment__status",
-  "responce"
+  "responce",
+  "erp_responce"
  ],
  "fields": [
   {
@@ -52,11 +53,16 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Email"
+  },
+  {
+   "fieldname": "erp_responce",
+   "fieldtype": "Code",
+   "label": "ERP Responce"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-18 17:11:30.464270",
+ "modified": "2024-01-24 10:27:53.794783",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "MGR Enrollment Log",

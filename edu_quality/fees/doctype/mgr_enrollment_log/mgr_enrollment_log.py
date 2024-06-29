@@ -14,18 +14,18 @@ class MGREnrollmentLog(Document):
                 )
                 if application_status == "Admitted":
                     self.enrollment__status = "Failed"
-                    self.responce = "Student already enrolled"
+                    self.erp_responce = "Student already enrolled"
                     return
                 frappe.set_user("Administrator")
                 data = json.loads(self.responce) if self.responce else {}
                 enroll_student(student_applicant, self.email, self.ref_no, data)
                 self.enrollment__status = "Success"
-                self.responce = "Success"
+                self.erp_responce = "Success"
             else:
                 self.enrollment__status = "Failed"
-                self.responce = "Student Applicant not found"
+                self.erp_responce = "Student Applicant not found"
         except Exception as e:
             self.enrollment__status = "Failed"
-            self.responce = frappe.get_traceback()
+            self.erp_responce = frappe.get_traceback()
             frappe.logger("enrollment").exception(e)
     
