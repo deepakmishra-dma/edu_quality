@@ -1,4 +1,4 @@
-from edu_quality.common.utils.student_import.student_import import get_guardian, map_student_status
+from edu_quality.common.utils.student_import.student_import import map_student_status
 from edu_quality.overrides import make_payment_request
 import time 
 from frappe.utils import today
@@ -158,7 +158,6 @@ def update_student(data):
         "city": student_meta.get("city"),
         "state": student_meta.get("state"),
         "landmark": student_meta.get("landmark"),
-        "student_email_id": student_meta.get("email"),
         "aadhaar_card_number": student_meta.get("adhar_card_no"),
         "category": student_meta.get("category"),
         "catering": student_meta.get("catering"),
@@ -191,3 +190,69 @@ def update_student(data):
     }
 
     return student_data
+
+def get_guardian(data):
+    try:
+        attributes_mapping = {
+            "Father": {
+                "attributes": ["f_name", "m_name", "s_name", "email_id", "mobile_no", "education", "profession", "annual_income", "office_address", "company_name", "designation"],
+                "function": create_guardian,
+            },
+            "Mother": {
+                "attributes": ["f_name", "m_name", "s_name", "email_id", "mobile_no", "education", "profession", "annual_income", "office_address", "company_name", "designation"],
+                "function": create_guardian,
+            },
+        }
+        
+        guardians = []
+        for relation, config in attributes_mapping.items():
+            kwargs = {attr: data.get(f"{relation.lower()}_{attr}") for attr in config["attributes"]}
+            guardian = config["function"](relation, **kwargs)
+            if guardian:
+                guardians.append(guardian)
+        return guardians
+    except Exception as e:
+        frappe.logger("enrollment").exception(e)
+
+def create_guardian(relation, **kwargs):
+    try:
+        if not kwargs.get("f_name", ""):
+            return None
+        first_name = kwargs.get("f_name", "").capitalize()
+        frappe.logger("enrollment").exception(first_name)
+        middle_name = kwargs.get("m_name", "").capitalize() if kwargs.get("m_name") else None
+        last_name = kwargs.get("s_name", "").capitalize() if kwargs.get("s_name") else None
+        guardian_name = f"{first_name} {last_name or ''}"
+        mobile_no = kwargs.get("mobile_no")
+        email_id = kwargs.get("email_id").lower() if kwargs.get("email_id") else None
+        guardian_field = "father" if relation == "Father" else "mother"
+        guardian = frappe.get_value("Guardian", {f"guardian_name": guardian_name, "mobile_number": mobile_no})
+        if not first_name:
+            return None
+        if not guardian:
+            doc = {
+                "doctype": "Guardian",
+                "guardian_name": guardian_name,
+                "first_name": first_name,
+                "middle_name": middle_name,
+                "last_name": last_name,
+                "mobile_number": mobile_no,
+                "email_address": email_id,
+                "education": kwargs.get("education"),
+                "occupation": kwargs.get("profession"),
+                "annual_income": kwargs.get("annual_income"),
+                "work_address": kwargs.get("office_address"),
+                "company_name": kwargs.get("company_name"),
+                "designation": kwargs.get("designation"),
+            }
+            guardian = frappe.get_doc(doc)
+            guardian.insert(ignore_permissions=True)
+        else:
+            guardian = frappe.get_doc("Guardian", guardian)
+        return {
+            "guardian": guardian.name,
+            "guardian_name": guardian.guardian_name,
+            "relation": relation,
+        }
+    except Exception as e:
+        frappe.logger("enrollment").exception(e)

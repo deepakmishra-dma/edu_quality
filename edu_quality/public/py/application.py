@@ -151,9 +151,9 @@ def enroll_student(source_name, email=None, refno=None, data=None):
         student.reference_number = refno
     if email:
         student.student_email_id = email
-
-    student_data = update_student(data)
-    student.update(student_data)
+    if data:
+        student_data = update_student(data)
+        student.update(student_data)
     student.save()
     create_student_account(student, student_applicant)
     program_enrollment = frappe.new_doc("Program Enrollment")
