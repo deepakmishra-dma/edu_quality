@@ -11,7 +11,7 @@
  "is_hidden": 0,
  "label": "Accounts",
  "links": [],
- "modified": "2023-12-14 02:02:23.438025",
+ "modified": "2024-01-25 02:28:43.356371",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Accounts",
@@ -37,7 +37,26 @@
    "label": "General Ledger"
   }
  ],
- "roles": [],
+ "roles": [
+  {
+   "role": "Administrator"
+  },
+  {
+   "role": "System Admin"
+  },
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Walnut Admin"
+  },
+  {
+   "role": "Accounts Manager"
+  },
+  {
+   "role": "Accounts User"
+  }
+ ],
  "sequence_id": 34.0,
  "shortcuts": [],
  "title": "Accounts"
