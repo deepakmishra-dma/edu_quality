@@ -405,3 +405,27 @@ def remove_indian_country_code(number):
     except Exception as e:
         frappe.log_error("Error adding indian country code on number " + number, str(e))
         return str(number)
+
+@frappe.whitelist()
+def email_recipients(variables,student, case):
+    # case 0: only student
+    # case 1: only parent
+    # case 3: both
+    recipients = []
+
+    if case == 0 or case == 3:
+        student_email = frappe.db.get_value("Student", student, "student_email_id")
+        if student_email:
+            recipients.append(student_email)
+
+    if case == 1 or case == 3:
+        parent_emails = frappe.get_all("Student Guardian",
+                                       filters={"parent": student},
+                                       fields=["guardian.email_address"],
+                                       as_list=True)
+        parent_emails = [email[0] for email in parent_emails if email and email[0]]
+        recipients.extend(parent_emails)
+
+    recipients_str =  ", ".join(recipients)
+    variables['recipients_str'] = recipients_str
+
