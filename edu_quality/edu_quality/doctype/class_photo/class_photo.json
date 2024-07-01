@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "format:{name1}-{academic_year}-{division}",
+ "autoname": "format:{name1}-{school_prefix}-{academic_year}-{class_program_name}-{student_group}",
  "creation": "2024-01-23 10:21:10.584157",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -10,7 +10,10 @@
   "academic_year",
   "school",
   "class",
-  "division"
+  "division",
+  "school_prefix",
+  "class_program_name",
+  "student_group"
  ],
  "fields": [
   {
@@ -41,11 +44,31 @@
    "fieldtype": "Link",
    "label": "Division",
    "options": "Student Group"
+  },
+  {
+   "fetch_from": "school.prefix",
+   "fieldname": "school_prefix",
+   "fieldtype": "Data",
+   "label": "School Prefix"
+  },
+  {
+   "fetch_from": "class.program_name",
+   "fieldname": "class_program_name",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "class_program_name"
+  },
+  {
+   "fetch_from": "division.student_group_name",
+   "fieldname": "student_group",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "student_group"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-23 10:34:31.936576",
+ "modified": "2024-01-24 19:35:02.128851",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Class Photo",

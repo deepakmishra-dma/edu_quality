@@ -53,6 +53,10 @@ doctype_list_js = {
         # "public/js/list/list_view.js",
         "public/js/list/carnival_event_list.js",
     ],
+    "Class Photo": [
+        # "public/js/list/list_view.js",
+        "public/js/list/class_photo_list.js",
+    ],
 }
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -343,7 +347,11 @@ fixtures = [
     {
         "dt": "Funnel Node",
         "filters": [
-            ["name", "in", ["Student Referral", "Fee Receipt", "Undertaking OTP","Payment Link"]]
+            [
+                "name",
+                "in",
+                ["Student Referral", "Fee Receipt", "Undertaking OTP", "Payment Link"],
+            ]
         ],
     },
     # {"dt": "Funnel"},

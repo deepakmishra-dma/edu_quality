@@ -155,7 +155,7 @@
    "type": "Link"
   }
  ],
- "modified": "2023-12-14 02:02:20.294494",
+ "modified": "2024-01-25 02:31:40.205989",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Fees Module",
@@ -173,7 +173,29 @@
  "parent_page": "",
  "public": 1,
  "quick_lists": [],
- "roles": [],
+ "roles": [
+  {
+   "role": "System Admin"
+  },
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Administrator"
+  },
+  {
+   "role": "Councellor"
+  },
+  {
+   "role": "Accounts Manager"
+  },
+  {
+   "role": "Accounts User"
+  },
+  {
+   "role": "Walnut Admin"
+  }
+ ],
  "sequence_id": 32.0,
  "shortcuts": [
   {
