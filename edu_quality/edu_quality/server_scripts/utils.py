@@ -142,9 +142,11 @@ def batch_filter(doctype, txt, searchfield, start, page_len, filters):
 def settlement_hook(**kwargs):
     try:
         data = frappe.parse_json(kwargs)
-        doc = frappe.new_doc("Easebuzz Settlement Log")
-        doc.data = data
-        doc.save()
+        doc = frappe.get_doc({
+            "doctype":"Easebuzz Settlement Log",
+            "data": data
+            })
+        doc.insert(ignore_permissions=True)
         return 1
     except Exception as e:
         frappe.logger('settlement').exception(e)
