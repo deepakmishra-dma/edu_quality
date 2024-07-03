@@ -1,4 +1,3 @@
-from edu_quality.common.utils.student_import.student_import import map_student_status
 from edu_quality.overrides import make_payment_request
 import time 
 from frappe.utils import today
@@ -190,6 +189,18 @@ def update_student(data):
     }
 
     return student_data
+
+def map_student_status(status):
+    status = status.lower()
+    student_statuses = {
+        "new": "New student",
+        "current": "Current student",
+        "cancelled": "Cancelled",
+        "not attending": "Not attending",
+        "defaulter": "Defaulter",
+        "alumni": "Alumni"
+    }
+    return student_statuses.get(status, "Unknown status")
 
 def get_guardian(data):
     try:
