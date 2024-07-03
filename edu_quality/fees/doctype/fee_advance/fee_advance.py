@@ -340,6 +340,7 @@ def create_payment_request(doc, method=None):
             frappe.delete_doc("Payment Request",pr.name)
 
     student_email = frappe.db.get_value("Student", doc.student, "student_email_id")
+    days = frappe.db.get_value("Fee Schedule", {"fee_structure": doc.fee_structure}, "create_payment_request_before")
     today_date = frappe.utils.getdate(today())
 
     if isinstance(doc.due_date, str):
@@ -347,7 +348,7 @@ def create_payment_request(doc, method=None):
     else:
         due_date = doc.due_date
 
-    if (due_date - today_date).days < 30:
+    if (due_date - today_date).days <= days:
         make_payment_request(
                 party_type="Student",
                 party=doc.student,
