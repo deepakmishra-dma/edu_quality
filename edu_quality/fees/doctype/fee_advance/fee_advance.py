@@ -369,8 +369,12 @@ def get_components(fee_structure, percent, is_rte):
             rte_excempt = frappe.get_value("Fee Category",component.fees_category, "rte_excempt")
             if rte_excempt:
                 continue
-        label = frappe.get_value("Fee Category",component.fees_category, "custom_label")
-        default_account = frappe.get_value("Fees Settings", None, "default_account")
+        label = component.label
+        if not label:
+            label = frappe.get_value("Fee Category",component.fees_category, "custom_label")
+        if not label:
+            frappe.throw("Label not found for Fee Category {0}".format(component.fees_category))
+        # default_account = frappe.get_value("Fees Settings", None, "default_account")
 
         component_amount = component.amount * percent / 100
         amount += component_amount
@@ -381,7 +385,7 @@ def get_components(fee_structure, percent, is_rte):
                 "description": component.description,
                 "amount": component_amount,
                 "custom_company": company,
-                "label": label or default_account,
+                "label": label,
                 "fee_type": component.fee_type,
                 "school": component.school,
             }
