@@ -133,3 +133,137 @@ def get_parents_details(student):
         parent.update({"relation":guardian.relation})
         parents.append(parent)
     return parents
+
+
+def update_student(data):
+    student_meta = data.get("student_meta")
+    parent_meta = data.get("parent_meta", {})
+    student_data = {
+        "enabled": 1,
+        # "form_id": student_meta.get("form_id"),
+        "form_code": student_meta.get("form_code"),
+        "first_name": student_meta.get("first_name"),
+        "middle_name": student_meta.get("middle_name"),
+        "last_name": student_meta.get("last_name"),
+        # "first_name_marathi": student_meta.get("fname_marathi"),
+        # "last_name_marathi": student_meta.get("lname_marathi"),
+        "date_of_birth": student_meta.get("b_date"),
+        "blood_group": student_meta.get("blood_group", ""),
+        "student_mobile_number": student_meta.get("student_primary_contact_number"),
+        "gender": student_meta.get("gender"),
+        "nationality": student_meta.get("nationality"),
+        "address_line_1": student_meta.get("bld_house"),
+        "pincode": student_meta.get("pin"),
+        "city": student_meta.get("city"),
+        "state": student_meta.get("state"),
+        "landmark": student_meta.get("landmark"),
+        "aadhaar_card_number": student_meta.get("adhar_card_no"),
+        "category": student_meta.get("category"),
+        "catering": student_meta.get("catering"),
+        "caste": student_meta.get("caste"),
+        "other_caste": student_meta.get("other_caste"),
+        "sub_caste": student_meta.get("subcaste"),
+        "other_sub_caste": student_meta.get("other_subcaste"),
+        "mother_tongue": student_meta.get("mother_tongue"),
+        "is_existing_student": student_meta.get("student_isexistingstudent"),
+        "existing_student_ref_number": student_meta.get("student_existing_ref_number"),
+        "is_handicap": 1 if student_meta.get("handicap") else 0,
+        "handicap": student_meta.get("handicap"),
+        "is_student_disabled": 1 if student_meta.get("student_isdisability") else 0,
+        "student_disability_name": student_meta.get("student_disability_name"),
+        "is_sibling_in_school": student_meta.get("student_bro_sis_inschool"),
+        "is_rte": student_meta.get("stud_rte"),
+        "single_parent_reason": student_meta.get("single_parent_reason"),
+        "religion": student_meta.get("religion"),
+        "has_allergies": 1 if student_meta.get("allergies") else 0,
+        "allergies": student_meta.get("allergies"),
+        "parent_divorced": student_meta.get("if_divorced"),
+        "student_status":map_student_status(student_meta.get("status")),
+        "birth_place":student_meta.get("birthplace"),
+        "last_school_attended": student_meta.get("student_last_school_name"),
+        "bus_service_required": student_meta.get("bus_service_required"),
+        "source_name": student_meta.get("ref_source_name"),
+        "guardians": get_guardian(parent_meta),
+        "whatsapp_number":student_meta.get("student_sms_no"),
+        "primary_contact":student_meta.get("student_emergency_contact_no")
+    }
+
+    return student_data
+
+def map_student_status(status):
+    status = status.lower()
+    student_statuses = {
+        "new": "New student",
+        "current": "Current student",
+        "cancelled": "Cancelled",
+        "not attending": "Not attending",
+        "defaulter": "Defaulter",
+        "alumni": "Alumni"
+    }
+    return student_statuses.get(status, "Unknown status")
+
+def get_guardian(data):
+    try:
+        attributes_mapping = {
+            "Father": {
+                "attributes": ["f_name", "m_name", "s_name", "email_id", "mobile_no", "education", "profession", "annual_income", "office_address", "company_name", "designation"],
+                "function": create_guardian,
+            },
+            "Mother": {
+                "attributes": ["f_name", "m_name", "s_name", "email_id", "mobile_no", "education", "profession", "annual_income", "office_address", "company_name", "designation"],
+                "function": create_guardian,
+            },
+        }
+        
+        guardians = []
+        for relation, config in attributes_mapping.items():
+            kwargs = {attr: data.get(f"{relation.lower()}_{attr}") for attr in config["attributes"]}
+            guardian = config["function"](relation, **kwargs)
+            if guardian:
+                guardians.append(guardian)
+        return guardians
+    except Exception as e:
+        frappe.logger("enrollment").exception(e)
+
+def create_guardian(relation, **kwargs):
+    try:
+        if not kwargs.get("f_name", ""):
+            return None
+        first_name = kwargs.get("f_name", "").capitalize()
+        frappe.logger("enrollment").exception(first_name)
+        middle_name = kwargs.get("m_name", "").capitalize() if kwargs.get("m_name") else None
+        last_name = kwargs.get("s_name", "").capitalize() if kwargs.get("s_name") else None
+        guardian_name = f"{first_name} {last_name or ''}"
+        mobile_no = kwargs.get("mobile_no")
+        email_id = kwargs.get("email_id").lower() if kwargs.get("email_id") else None
+        guardian_field = "father" if relation == "Father" else "mother"
+        guardian = frappe.get_value("Guardian", {f"guardian_name": guardian_name, "mobile_number": mobile_no})
+        if not first_name:
+            return None
+        if not guardian:
+            doc = {
+                "doctype": "Guardian",
+                "guardian_name": guardian_name,
+                "first_name": first_name,
+                "middle_name": middle_name,
+                "last_name": last_name,
+                "mobile_number": mobile_no,
+                "email_address": email_id,
+                "education": kwargs.get("education"),
+                "occupation": kwargs.get("profession"),
+                "annual_income": kwargs.get("annual_income"),
+                "work_address": kwargs.get("office_address"),
+                "company_name": kwargs.get("company_name"),
+                "designation": kwargs.get("designation"),
+            }
+            guardian = frappe.get_doc(doc)
+            guardian.insert(ignore_permissions=True)
+        else:
+            guardian = frappe.get_doc("Guardian", guardian)
+        return {
+            "guardian": guardian.name,
+            "guardian_name": guardian.guardian_name,
+            "relation": relation,
+        }
+    except Exception as e:
+        frappe.logger("enrollment").exception(e)
