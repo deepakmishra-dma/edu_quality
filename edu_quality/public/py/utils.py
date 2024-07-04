@@ -87,20 +87,33 @@ def get_email_id(student):
 
 def send_otp(fee, otp,undertaking):
     try:
-        student = frappe.get_value("Fees", fee, "student")
+        doctype = "Fee Advance"
+        if frappe.db.exists("Fees", fee):
+            doctype = "Fees"
+        student = frappe.get_value(doctype, fee, "student")
         student = frappe.get_doc("Student", student)
         email = get_email_id(student)
         mobile = get_mobile_number(student)
+        cc_email  = parents_email(student.name)
         if mobile:
             sms_otp(mobile, otp)
         if email:
-            email_otp(email, otp,undertaking)
+            email_otp(email, otp,undertaking,cc_email)
         return True
     except Exception as e:
         return False
 
+def parents_email(student):
+    recipients = []
+    parent_emails = frappe.db.get_all("Student Guardian",
+                                        filters={"parent": student},
+                                        fields=["guardian.email_address"],
+                                        as_list=True)
+    parent_emails = [email[0] for email in parent_emails if email and email[0]]
+    recipients.extend(parent_emails)
+    return recipients
 
-def email_otp(email, otp,undertaking):
+def email_otp(email, otp,undertaking,cc_email=None):
     try:
         if not undertaking:
             subject = "OTP for Changing Payment Plan"
@@ -109,7 +122,7 @@ def email_otp(email, otp,undertaking):
             return
         template = frappe.get_doc("Email Template", "Walnut - Undertaking OTP")
         context = dict(otp=otp)
-        frappe.sendmail(recipients=email, subject=frappe.render_template(template.subject, context=context),message=frappe.render_template(template.response, context=context), delayed=False,now=True)
+        frappe.sendmail(cc=cc_email,recipients=email, subject=frappe.render_template(template.subject, context=context),message=frappe.render_template(template.response, context=context), delayed=False,now=True)
     except Exception as e:
         frappe.logger('email_otp').exception(e)
 
@@ -402,3 +415,27 @@ def remove_indian_country_code(number):
     except Exception as e:
         frappe.log_error("Error adding indian country code on number " + number, str(e))
         return str(number)
+
+@frappe.whitelist()
+def email_recipients(variables,student, case):
+    # case 0: only student
+    # case 1: only parent
+    # case 3: both
+    recipients = []
+
+    if case == 0 or case == 3:
+        student_email = frappe.db.get_value("Student", student, "student_email_id")
+        if student_email:
+            recipients.append(student_email)
+
+    if case == 1 or case == 3:
+        parent_emails = frappe.get_all("Student Guardian",
+                                       filters={"parent": student},
+                                       fields=["guardian.email_address"],
+                                       as_list=True)
+        parent_emails = [email[0] for email in parent_emails if email and email[0]]
+        recipients.extend(parent_emails)
+
+    recipients_str =  ", ".join(recipients)
+    variables['recipients_str'] = recipients_str
+

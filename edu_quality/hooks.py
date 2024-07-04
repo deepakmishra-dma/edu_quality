@@ -53,6 +53,10 @@ doctype_list_js = {
         # "public/js/list/list_view.js",
         "public/js/list/carnival_event_list.js",
     ],
+    "Class Photo": [
+        # "public/js/list/list_view.js",
+        "public/js/list/class_photo_list.js",
+    ],
 }
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -154,7 +158,7 @@ doc_events = {
     },
     "Payment Request": {
         "before_save": "edu_quality.public.py.payment_request.before_save",
-        "after_submit": "edu_quality.public.py.payment_request.after_submit",
+        "on_submit": "edu_quality.public.py.payment_request.on_submit",
     },
     "Student": {
         "autoname": "edu_quality.public.py.student.autoname",
@@ -338,12 +342,16 @@ fixtures = [
     {"dt": "Custom DocPerm", "filters": [["module", "=", "Edu Quality"]]},
     {"dt": "Program"},
     {"dt": "Lead Sub Status"},
-    {"dt": "School"},
+    # {"dt": "School"},
     {"dt": "Academic Year"},
     {
         "dt": "Funnel Node",
         "filters": [
-            ["name", "in", ["Student Referral", "Fee Receipt", "Undertaking OTP","Payment Link"]]
+            [
+                "name",
+                "in",
+                ["Student Referral", "Fee Receipt", "Undertaking OTP", "Payment Link"],
+            ]
         ],
     },
     # {"dt": "Funnel"},

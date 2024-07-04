@@ -142,16 +142,34 @@ def batch_filter(doctype, txt, searchfield, start, page_len, filters):
 def settlement_hook(**kwargs):
     try:
         data = frappe.parse_json(kwargs)
-        doc = frappe.new_doc("Easebuzz Settlement Log")
-        doc.data = data
-        doc.save()
+        doc = frappe.get_doc({
+            "doctype":"Easebuzz Settlement Log",
+            "data": data
+            })
+        doc.insert(ignore_permissions=True)
         return 1
     except Exception as e:
         frappe.logger('settlement').exception(e)
 
 
+@frappe.whitelist()
+def email_recipients(student, case=0):
+    # case 0: only student
+    # case 1: only parent
+    # case 3: both
+    recipients = []
 
+    if case == 0 or case == 3:
+        student_email = frappe.db.get_value("Student", student, "student_email_id")
+        if student_email:
+            recipients.append(student_email)
 
+    if case == 1 or case == 3:
+        parent_emails = frappe.get_all("Student Guardian",
+                                       filters={"parent": student},
+                                       fields=["guardian.email_address"],
+                                       as_list=True)
+        parent_emails = [email for email in parent_emails if email]
+        recipients.extend(parent_emails)
 
-
-
+    return recipients
