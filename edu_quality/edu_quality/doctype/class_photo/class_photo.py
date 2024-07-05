@@ -14,8 +14,11 @@ class ClassPhoto(Document):
 def move_existing_and_upload_to_drive(**data):
     folder_name = data.get("storedParams").get("folder_name")
     # existing_folder = frappe.db.exists("File", {"name": f"Home/{folder_name}"})
+    service_account_doc = frappe.get_single("Google Service Account")
     file_doc = frappe.get_doc("File", data.get("name"))
-    upload_file(file_doc.file_url, folder_name)
+    upload_file(
+        file_doc.file_url, folder_name, service_account_doc.get("class_photo_folder")
+    )
     file_doc.folder = f"Home/{folder_name}"
     file_doc.save()
     return "SUCCESS"
