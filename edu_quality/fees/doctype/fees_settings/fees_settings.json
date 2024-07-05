@@ -15,7 +15,6 @@
   "payment_method",
   "surcharge_section",
   "surcharge",
-  "default_account",
   "application_fees",
   "fee_receipt_section",
   "print_format"
@@ -61,14 +60,6 @@
    "label": "Surcharge"
   },
   {
-   "fieldname": "default_account",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Default Account For Split Payments",
-   "options": "Bank Account",
-   "reqd": 1
-  },
-  {
    "fieldname": "column_break_c6e9",
    "fieldtype": "Column Break"
   },
@@ -93,7 +84,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-12-26 15:22:40.394442",
+ "modified": "2024-01-25 21:29:01.930411",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Fees Settings",

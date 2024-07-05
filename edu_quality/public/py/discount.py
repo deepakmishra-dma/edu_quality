@@ -258,7 +258,7 @@ def get_label(fee_category):
     if label:
         label = label.split("-")[0].strip()
     else:
-        label = frappe.get_value("Fees Settings", None, "default_account").split("-")[0].strip()
+        frappe.throw("Please set custom label for fee category {0}".format(fee_category))
     return label
 
 
@@ -375,7 +375,7 @@ def time_based_discount(doc):
             if dis.start_date <= getdate(today()) <= dis.end_date:
                 discount_amount = apply_time_based_discount(dis, component, doc)
                 doc.add_discount_entry(component.custom_company, discount_amount)
-                label = get_label(component.fees_category)
+                label = component.label or get_label(component.fees_category)
                 return {label:{component.fees_category:discount_amount}
 }
 
