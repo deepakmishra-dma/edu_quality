@@ -10,7 +10,7 @@ frappe.ui.form.on('Google Service Account', {
 	callback: function(r) {
 		
 		frm.set_df_property('root_folder','options',r.message)
-		
+		frm.set_df_property('class_photo_folder','options',r.message)
 	}})
 	}
 });
