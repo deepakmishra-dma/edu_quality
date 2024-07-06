@@ -60,6 +60,8 @@ class FeeAdvance(AccountsController):
         self.generate_split()
 
     def before_update_after_submit(self):
+        if check_discounts_before_update(self):
+            return
         try:
             add_referral_discount(self)
             pre_doc = self.get_doc_before_save()
@@ -631,3 +633,16 @@ def get_one_time_discounts(doc):
         for discount in map(str.lower, component.custom_discounts.split(", "))
         if "one time" in discount
     }
+
+
+def check_discounts_before_update(doc):
+    """
+    Checks for one time and payplan discounts before updating a fee document.
+    """
+    for component in doc.components:
+        if component.custom_discounts:
+            if "one time" in component.custom_discounts.lower():
+                return True
+            elif "payment plan" in component.custom_discounts.lower():
+                return True
+    return False
