@@ -179,7 +179,7 @@ def get_student_group_mgr(division,doc):
     if program_id:
         return program_id
     return frappe.throw(
-        "No Student Group Available."
+        "No Division Available."
     )
 
 def get_student_group(doc):
