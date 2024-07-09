@@ -4,7 +4,18 @@ async function folderExists(parent, newFolder) {
     formData.append('folder', parent)
 
     try {
+        let googleRes = await fetch(`/api/method/edu_quality.edu_quality.doctype.carnival_event.carnival_event.check_folder_in_drive`, {
+            method: 'POST',
 
+            headers: (() => {
+                const headers = new Headers()
+                headers.append('X-Frappe-CSRF-Token', frappe.csrf_token)
+                headers.append('Content-Type', 'application/json')
+                headers.append('Accept', 'application/json')
+                return headers;
+            })(),
+            body: JSON.stringify({ 'folder_name': newFolder })
+        });
         let res = await fetch(`/api/resource/File/${parent}/${newFolder}`)
         if (res.status === 404) {
             await fetch("/api/method/frappe.core.api.file.create_new_folder", {

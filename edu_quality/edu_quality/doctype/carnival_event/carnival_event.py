@@ -2,12 +2,22 @@
 # For license information, please see license.txt
 
 import frappe
-from edu_quality.api.google_drive_upload import upload_file
+from edu_quality.api.google_drive_upload import (
+    upload_file,
+    check_for_folder_in_google_drive,
+)
 from frappe.model.document import Document
 
 
 class CarnivalEvent(Document):
-    pass
+    def on_update(self, method=None):
+        check_for_folder_in_google_drive(self.name)
+
+
+
+@frappe.whitelist()
+def check_folder_in_drive(folder_name):
+    check_for_folder_in_google_drive(folder_name, None)
 
 
 @frappe.whitelist()
