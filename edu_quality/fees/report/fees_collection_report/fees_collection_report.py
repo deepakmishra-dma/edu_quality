@@ -93,14 +93,16 @@ def get_data(filters):
     from_date = filters.get("from_date")
     to_date = filters.get("to_date")
     school = filters.get("school")
-    doc_filter = {
+    payment_mode = filters.get("payment_mode")
+    fee_filter = {
         "docstatus": 1,
-        # "posting_date": ["between", [from_date, to_date]],
-        # "custom_school": school
+        "posting_date": ["between", [from_date, to_date]],
+        "custom_school": school
     }
+
     fees = frappe.get_all(
         "Fees",
-        doc_filter,
+        fee_filter,
         [
             "name",
             "student",
@@ -110,13 +112,19 @@ def get_data(filters):
             "payment_plan",
         ],
     )
-    print(fees, filters)
     fee_data = []
     for fee in fees:
         refno = frappe.get_value("Student", fee.student, "reference_number")
+        pe_filters = {
+            "reference_name": fee.name,
+            "docstatus": 1,
+            "posting_date": ["between", [from_date, to_date]],
+            "school": school,
+            "mode_of_payment": payment_mode
+        }
         payment_entry = frappe.get_all(
             "Payment Entry",
-            {"reference_name": fee.name},
+            pe_filters,
             [
                 "name",
                 "reference_no",
