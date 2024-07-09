@@ -12,6 +12,7 @@ class MGREnrollmentLog(Document):
                 application_status = frappe.get_value(
                     "Student Applicant", student_applicant, "application_status"
                 )
+                frappe.db.set_value("Student Applicant",student_applicant,"student_email_id",self.email)
                 if application_status == "Admitted":
                     self.enrollment__status = "Failed"
                     self.erp_responce = "Student already enrolled"
