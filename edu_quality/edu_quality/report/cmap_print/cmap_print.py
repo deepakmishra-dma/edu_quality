@@ -7,8 +7,21 @@ from frappe.utils import parse_json, today, getdate
 from edu_quality.edu_quality.server_scripts.utils import projected_strength
 
 
-def generate_school_fields():
-    schools = frappe.get_list("School")
+def generate_school_fields(program=None):
+    if program:
+        programs = frappe.get_list(
+            "Program",
+            filters={"program_name": program},
+            fields=["school", "name", "school", "program_name"],
+            ignore_permissions=True,
+        )
+        schools_set = set([i.get("school") for i in programs])
+        frappe.errprint(programs)
+        schools = [{"name": i} for i in schools_set]
+        frappe.errprint(schools_set)
+        frappe.errprint(schools)
+    else:
+        schools = frappe.get_list("School")
     school_array = []
     for i in schools:
         school_array.append(
@@ -35,8 +48,8 @@ def get_school_fields_sum(row):
     )
 
 
-def get_columns():
-    school_fields = generate_school_fields()
+def get_columns(filters):
+    school_fields = generate_school_fields(filters.get("class"))
     columns = [
         {
             "fieldname": "period",
@@ -111,11 +124,11 @@ def get_columns():
     return columns
 
 
-def transform_data(program_enrollments, CMAPS):
+def transform_data(program_enrollments, CMAPS, class_filter):
     # converting the dict array received to a hashmap
     converted_dict = {item["program"]: item["count"] for item in program_enrollments}
     data = []
-    school_fields = generate_school_fields()
+    school_fields = generate_school_fields(class_filter)
     for i in CMAPS:
         for school in school_fields:
             i[school.get("fieldname")] = (
@@ -203,11 +216,16 @@ def get_data_from_queries(filters=None):
         qty_needed_for_schools = []
         schools = frappe.db.get_list("School")
         schools = [school.get("name") for school in schools]
-        
+
         for school in schools:
+            try:
+                projected_strength = projected_strength(f"{class_filter}-{school}")
+            except:
+                projected_strength = 0
+
             qty_needed_for_schools.append(
                 {
-                    "count": projected_strength(f"{class_filter}-{school}"),
+                    "count": projected_strength,
                     "program": f"{class_filter}-{school}",
                 }
             )
@@ -218,7 +236,7 @@ def get_data_from_queries(filters=None):
             .inner_join(program_enrollment)
             .on(student.name == program_enrollment.student)
             .where(
-                (student.student_status.isin(["Current Student", "Defaulter"]))
+                (student.student_status.isin(["Current student", "Defaulter"]))
                 & (program_enrollment.academic_year == filters.get("academic_year"))
                 & (program_enrollment.program.like(f'{filters.get("class")}-%'))
             )
@@ -228,12 +246,12 @@ def get_data_from_queries(filters=None):
         qty_needed_for_schools = qty_needed_for_schools_query.run(as_dict=True)
 
     frappe.errprint(qty_needed_for_schools)
-    return transform_data(qty_needed_for_schools, cmap_data)
+    return transform_data(qty_needed_for_schools, cmap_data, class_filter)
 
 
 def execute(filters=None):
     frappe.errprint(filters)
-    columns = get_columns()
+    columns = get_columns(filters)
 
     data = get_data_from_queries(filters)
     return columns, data

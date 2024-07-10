@@ -6,6 +6,8 @@ from frappe.model.document import Document
 from frappe.utils import parse_json
 import json
 
+# edu_quality.edu_quality.doctype.cmap.cmap
+
 
 class CMAP(Document):
     def autoname(self, method=None):
@@ -34,10 +36,9 @@ class CMAP(Document):
         generate_text_from_unique_notes(
             self, "Material Required", added_material_required
         )
-        frappe.errprint("h")
-        frappe.errprint(self.as_dict())
-        if self.workflow_state == "Submitted":
-            insert_cmap_assignees(self)
+
+    def after_insert(self, method=None):
+        insert_cmap_assignees(self)
 
 
 def insert_cmap_assignees(self):
@@ -69,9 +70,8 @@ def insert_cmap_assignees(self):
                 "division": i.get("student_group"),
             },
         )
-  
+
     self.table_vwbr = get_unique_cmap_assignees(self.table_vwbr)
-   
 
 
 def generate_text_from_unique_notes(self, type, added_broadcasts):
@@ -81,6 +81,7 @@ def generate_text_from_unique_notes(self, type, added_broadcasts):
             "Item CMAP Material",
             filters=[["name", "in", added_broadcasts]],
             fields=["description", "description"],
+            ignore_permissions=True,
         )
         self.broadcast_text = "\\n".join(
             [item.get("description") for item in descriptions]
@@ -109,6 +110,7 @@ def check_if_note_added_unique(material_type, added_items):
             "material_type",
             "material_type",
         ],
+        ignore_permissions=True,
     )
     frappe.errprint(cmap_materials)
     index_dict = {}
@@ -146,3 +148,21 @@ def get_unique_cmap_assignees(data_list):
             unique_items.append(item)
 
     return unique_items
+
+
+@frappe.whitelist(allow_guest=True)
+def get_cmap_assignees_report(**filters):
+    cmap_table = frappe.qb.DocType("CMAP")
+    instructor_log_table = frappe.qb.DocType("Instructor Log")
+    instructor_table = frappe.qb.DocType("Instructor")
+
+    # cmap_assignment_table = frappe.qb.DocType("CMAP Assignment")
+    # student_group_table = frappe.qb.DocType("Student Group")
+
+    query = (
+        frappe.qb.from_(cmap_table)
+        .inner_join(instructor_log_table)
+        .on((instructor_table.academic_year == cmap_table.academic_year))
+        .select("*")
+    )
+    return query.run(as_dict=True)

@@ -22,6 +22,7 @@
   "links": [
    {
     "dependencies": null,
+    "description": null,
     "hidden": 0,
     "icon": null,
     "is_query_report": 0,
@@ -38,6 +39,7 @@
    },
    {
     "dependencies": "",
+    "description": null,
     "hidden": 0,
     "icon": null,
     "is_query_report": 0,
@@ -54,6 +56,7 @@
    },
    {
     "dependencies": "",
+    "description": null,
     "hidden": 0,
     "icon": null,
     "is_query_report": 0,
@@ -70,6 +73,7 @@
    },
    {
     "dependencies": "",
+    "description": null,
     "hidden": 0,
     "icon": null,
     "is_query_report": 0,
@@ -86,6 +90,7 @@
    },
    {
     "dependencies": "",
+    "description": null,
     "hidden": 0,
     "icon": null,
     "is_query_report": 0,
@@ -102,6 +107,7 @@
    },
    {
     "dependencies": null,
+    "description": null,
     "hidden": 0,
     "icon": null,
     "is_query_report": 0,
@@ -118,6 +124,7 @@
    },
    {
     "dependencies": "",
+    "description": null,
     "hidden": 0,
     "icon": null,
     "is_query_report": 0,
@@ -134,6 +141,7 @@
    },
    {
     "dependencies": "",
+    "description": null,
     "hidden": 0,
     "icon": null,
     "is_query_report": 0,
@@ -150,6 +158,7 @@
    },
    {
     "dependencies": "",
+    "description": null,
     "hidden": 0,
     "icon": null,
     "is_query_report": 0,
@@ -166,6 +175,7 @@
    },
    {
     "dependencies": "",
+    "description": null,
     "hidden": 0,
     "icon": null,
     "is_query_report": 0,
@@ -182,6 +192,7 @@
    },
    {
     "dependencies": "",
+    "description": null,
     "hidden": 0,
     "icon": null,
     "is_query_report": 0,
@@ -198,6 +209,7 @@
    },
    {
     "dependencies": null,
+    "description": null,
     "hidden": 0,
     "icon": null,
     "is_query_report": 0,
@@ -214,6 +226,7 @@
    },
    {
     "dependencies": "",
+    "description": null,
     "hidden": 0,
     "icon": null,
     "is_query_report": 0,
@@ -230,6 +243,7 @@
    },
    {
     "dependencies": "",
+    "description": null,
     "hidden": 0,
     "icon": null,
     "is_query_report": 0,
@@ -246,6 +260,7 @@
    },
    {
     "dependencies": "",
+    "description": null,
     "hidden": 0,
     "icon": null,
     "is_query_report": 0,
@@ -262,6 +277,7 @@
    },
    {
     "dependencies": null,
+    "description": null,
     "hidden": 0,
     "icon": null,
     "is_query_report": 0,
@@ -278,6 +294,7 @@
    },
    {
     "dependencies": "",
+    "description": null,
     "hidden": 0,
     "icon": null,
     "is_query_report": 0,
@@ -294,6 +311,7 @@
    },
    {
     "dependencies": "",
+    "description": null,
     "hidden": 0,
     "icon": null,
     "is_query_report": 0,
@@ -310,6 +328,7 @@
    },
    {
     "dependencies": "",
+    "description": null,
     "hidden": 0,
     "icon": null,
     "is_query_report": 0,
@@ -326,6 +345,7 @@
    },
    {
     "dependencies": "",
+    "description": null,
     "hidden": 0,
     "icon": null,
     "is_query_report": 0,
@@ -342,6 +362,7 @@
    },
    {
     "dependencies": "",
+    "description": null,
     "hidden": 0,
     "icon": null,
     "is_query_report": 0,
@@ -789,7 +810,7 @@
   "is_hidden": 0,
   "label": "Walnut Analytics Dashboard",
   "links": [],
-  "modified": "2023-12-14 02:02:24.929385",
+  "modified": "2024-01-31 08:59:59.131764",
   "module": null,
   "name": "Walnut Analytics Dashboard",
   "number_cards": [
@@ -826,7 +847,50 @@
   "public": 1,
   "quick_lists": [],
   "restrict_to_domain": null,
-  "roles": [],
+  "roles": [
+   {
+    "parent": "Walnut Analytics Dashboard",
+    "parentfield": "roles",
+    "parenttype": "Workspace",
+    "role": "Principal"
+   },
+   {
+    "parent": "Walnut Analytics Dashboard",
+    "parentfield": "roles",
+    "parenttype": "Workspace",
+    "role": "Councellor"
+   },
+   {
+    "parent": "Walnut Analytics Dashboard",
+    "parentfield": "roles",
+    "parenttype": "Workspace",
+    "role": "Vice Principal"
+   },
+   {
+    "parent": "Walnut Analytics Dashboard",
+    "parentfield": "roles",
+    "parenttype": "Workspace",
+    "role": "Administrator"
+   },
+   {
+    "parent": "Walnut Analytics Dashboard",
+    "parentfield": "roles",
+    "parenttype": "Workspace",
+    "role": "System Admin"
+   },
+   {
+    "parent": "Walnut Analytics Dashboard",
+    "parentfield": "roles",
+    "parenttype": "Workspace",
+    "role": "System Manager"
+   },
+   {
+    "parent": "Walnut Analytics Dashboard",
+    "parentfield": "roles",
+    "parenttype": "Workspace",
+    "role": "Walnut Admin"
+   }
+  ],
   "sequence_id": 39.0,
   "shortcuts": [],
   "title": "Walnut Analytics Dashboard"

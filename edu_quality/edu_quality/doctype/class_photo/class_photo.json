@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "format:{name1}-{school_prefix}-{academic_year}-{class_program_name}-{student_group}",
+ "autoname": "format:{academic_year}-{school_prefix}-{class_program_name}-{student_group}",
  "creation": "2024-01-23 10:21:10.584157",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -68,7 +68,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-24 19:35:02.128851",
+ "modified": "2024-01-31 09:33:47.230594",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Class Photo",

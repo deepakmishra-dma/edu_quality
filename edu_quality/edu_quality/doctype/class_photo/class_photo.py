@@ -2,12 +2,27 @@
 # For license information, please see license.txt
 
 import frappe
-from edu_quality.api.google_drive_upload import upload_file
+from edu_quality.api.google_drive_upload import (
+    upload_file,
+    check_for_folder_in_google_drive,
+)
 from frappe.model.document import Document
 
 
 class ClassPhoto(Document):
-    pass
+    def on_update(self, method=None):
+        service_account_doc = frappe.get_single("Google Service Account")
+        check_for_folder_in_google_drive(
+            self.name, service_account_doc.get("class_photo_folder")
+        )
+
+
+@frappe.whitelist()
+def check_folder_in_drive(folder_name):
+    service_account_doc = frappe.get_single("Google Service Account")
+    check_for_folder_in_google_drive(
+        folder_name, service_account_doc.get("class_photo_folder")
+    )
 
 
 @frappe.whitelist()

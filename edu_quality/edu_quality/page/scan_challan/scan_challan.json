@@ -1,0 +1,38 @@
+{
+ "content": null,
+ "creation": "2024-01-25 02:52:24.146103",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2024-01-25 02:53:20.203281",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "scan-challan",
+ "owner": "Administrator",
+ "page_name": "scan-challan",
+ "roles": [
+  {
+   "role": "Administrator"
+  },
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "System Admin"
+  },
+  {
+   "role": "Printer"
+  },
+  {
+   "role": "Watchman"
+  },
+  {
+   "role": "Walnut Admin"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "Scan Challan"
+}
