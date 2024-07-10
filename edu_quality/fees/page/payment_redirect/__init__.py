@@ -147,7 +147,7 @@ def get_discounts(fees):
     return {"referral_discount": referral_discount, "other_discount":other_discount, "referral_discount_company": referral_discount_company, "other_discount_company": other_discount_company}
 
 
-@cache_data(ttl=900)
+
 @frappe.whitelist(allow_guest=True)
 def payment_url(payment_request,payment_method="UPI"):
     return payment_request.get_payment_url(payment_method=payment_method)
