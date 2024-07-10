@@ -1,5 +1,17 @@
 [
  {
+  "academic_year_name": "2018-2019",
+  "custom_current_academic_year": 0,
+  "custom_next_academic_year": 0,
+  "docstatus": 0,
+  "doctype": "Academic Year",
+  "modified": "2023-11-27 09:49:38.923143",
+  "name": "2018-2019",
+  "rolled_over": 0,
+  "year_end_date": "2019-03-31",
+  "year_start_date": "2018-04-01"
+ },
+ {
   "academic_year_name": "2016-2017",
   "custom_current_academic_year": 0,
   "custom_next_academic_year": 0,
