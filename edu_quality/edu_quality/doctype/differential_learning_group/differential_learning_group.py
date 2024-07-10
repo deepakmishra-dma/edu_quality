@@ -5,5 +5,5 @@
 from frappe.model.document import Document
 
 
-class DifferentialLearning(Document):
+class DifferentialLearningGroup(Document):
 	pass

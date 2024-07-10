@@ -62,7 +62,7 @@ def check_for_folder_in_google_drive(folder_name, root_folder=None):
         google_drive_folders = (
             google_drive.files()
             .list(
-                q=f"mimeType='application/vnd.google-apps.folder' and '{service_account_doc.get('root_folder').split('  id:  ')[-1]}' in parents"
+                q=f"mimeType='application/vnd.google-apps.folder' and '{(root_folder or service_account_doc.get('root_folder')).split('  id:  ')[-1]}' in parents"
             )
             .execute()
         )
