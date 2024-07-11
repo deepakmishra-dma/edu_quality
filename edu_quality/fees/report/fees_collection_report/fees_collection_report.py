@@ -90,15 +90,25 @@ def get_columns():
 
 
 def get_data(filters):
+    fee_filter = {"docstatus": 1}
+    pe_filters = {"docstatus": 1}
+    fee_advacne_filter = {"docstatus": 1}
     from_date = filters.get("from_date")
     to_date = filters.get("to_date")
     school = filters.get("school")
     payment_mode = filters.get("payment_mode")
-    fee_filter = {
-        "docstatus": 1,
-        "posting_date": ["between", [from_date, to_date]],
-        "custom_school": school
-    }
+
+    if from_date and to_date:
+        pe_filters["posting_date"] = ["between", [from_date, to_date]]
+    if from_date:
+        pe_filters["posting_date"] = [">=", from_date]
+    if to_date:
+        pe_filters["posting_date"] = ["<=", to_date]
+    if payment_mode:
+        pe_filters["mode_of_payment"] = payment_mode
+    if school:
+        fee_filter["custom_school"] = school
+        fee_advacne_filter['school'] = school 
 
     fees = frappe.get_all(
         "Fees",
@@ -115,13 +125,7 @@ def get_data(filters):
     fee_data = []
     for fee in fees:
         refno = frappe.get_value("Student", fee.student, "reference_number")
-        pe_filters = {
-            "reference_name": fee.name,
-            "docstatus": 1,
-            "posting_date": ["between", [from_date, to_date]],
-            "school": school,
-            "mode_of_payment": payment_mode
-        }
+        pe_filters["reference_name"] =  fee.name
         payment_entry = frappe.get_all(
             "Payment Entry",
             pe_filters,
@@ -152,4 +156,52 @@ def get_data(filters):
                         payment.name,
                     ]
                 )
+    
+    fee_advance = frappe.get_all(
+        "Fee Advance",
+        fee_advacne_filter,
+        [
+            "name",
+            "student",
+            "school",
+            "program",
+            "outstanding_amount",
+            "payment_plan",
+        ],
+    )
+    for fee in fee_advance:
+        refno = frappe.get_value("Student", fee.student, "reference_number")
+        pe_filters["reference_name"] =  fee.name
+        payment_entry = frappe.get_all(
+            "Payment Entry",
+            pe_filters,
+            [
+                "name",
+                "reference_no",
+                "posting_date",
+                "paid_amount",
+                "mode_of_payment",
+                "payment_term",
+            ],
+        )
+        if payment_entry:
+            for payment in payment_entry:
+                fee_data.append(
+                    [
+                        refno,
+                        fee.program,
+                        fee.name,
+                        fee.student,
+                        fee.school,
+                        payment.reference_no,
+                        fee.payment_plan,
+                        payment.payment_term,
+                        payment.mode_of_payment,
+                        payment.paid_amount,
+                        payment.posting_date,
+                        payment.name,
+                    ]
+                )
+
+
     return fee_data
