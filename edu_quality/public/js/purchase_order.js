@@ -2,13 +2,13 @@
 // import DataTable from "frappe-datatable";
 
 // window.DataTable = DataTable;
-function printQR(qrCode){
-        var myImage =qrCode;
-        var image = new Image();
-        image.src = myImage;
-        var myWindow = window.open("", "Image");
-        myWindow.document.body.appendChild(image)
-        myWindow.print()
+function printQR(qrCode) {
+    var myImage = qrCode;
+    var image = new Image();
+    image.src = myImage;
+    var myWindow = window.open("", "Image");
+    myWindow.document.body.appendChild(image)
+    myWindow.print()
 }
 
 function generateColumns(columns) {
@@ -22,7 +22,7 @@ function generateColumns(columns) {
     return generatedColumn
 }
 
-async function getItemQR(item_code){
+async function getItemQR(item_code) {
     // const qrCodeBase64 = await frappe.db.get_value("Purchase Receipt",{"name":item_code},"custom_qr_code_base")
     // printQR(qrCodeBase64)
 
@@ -49,9 +49,9 @@ function generateOrderCard(itemCode, totalQty, chapter, subject, productURL, ite
                   </div>
                   <div style="margin-top:8px;margin-bottom:8px">${subject}</div>
                   <div>${chapter}</div>
-                  <div style="margin-top:8px;margin-bottom:8px;display:flex; gap:12px;"><div><a href="${productURL}"><i class="fa fa-file" style="color:rgb(29 78 216);font-size:22px" aria-hidden="true" ></i></a></div>${item_created?`<button data-is-print="true" data-item-code="${itemCode}" onclick=""><i style="color:rgb(29 78 216);font-size:22px" aria-hidden="true" class="fa fa-qrcode"  data-is-print="true" data-item-code="${itemCode}" aria-hidden="true"></i></button>`:""}</div>
-                  <div >
-                <input data-item-code="${itemCode}" ${item_created ? "disabled" : ""} checked="${item_created}"  type="checkbox" style="width:22px !important;height:22px;flex-shrink:0;margin-top:8px;" ></input></div> 
+                  <div style="margin-top:8px;margin-bottom:8px;display:flex; gap:12px;"><div><a href="${productURL}"><i class="fa fa-file" style="color:rgb(29 78 216);font-size:22px" aria-hidden="true" ></i></a></div>${item_created ? `<button data-is-print="true" data-item-code="${itemCode}" onclick=""><i style="color:rgb(29 78 216);font-size:22px" aria-hidden="true" class="fa fa-qrcode"  data-is-print="true" data-item-code="${itemCode}" aria-hidden="true"></i></button>` : ""}</div>
+                  <div style="display:flex; align-items:center;gap:4px;" >
+                <div style="margin-top:4px;">Printed</div><input data-item-code="${itemCode}" ${item_created ? "disabled" : ""} ${item_created ? `checked="${item_created}"` : ""}  type="checkbox" style="width:22px !important;height:22px;flex-shrink:0;margin-top:8px;" ></input></div> 
                   </div></div>
                 </div>`
 }
@@ -150,7 +150,7 @@ function removeBtnsForPrinters(frm) {
         setTimeout(removeButtons, 1000)
     }
     frm.get_field('custom_print').onclick = function () {
-        printQR( frm.doc.custom_qr_code_base)
+        printQR(frm.doc.custom_qr_code_base)
     }
     frm.get_field('custom_download').onclick = function () {
         var a = document.createElement("a");
@@ -179,10 +179,10 @@ frappe.ui.form.on('Purchase Order', {
 
                     setTimeout(() => {
                         const el = document.createElement('div')
-                        el.addEventListener('click',(e)=>{
-                            console.log('click',e.target)
-                            const dataset =e.target.dataset
-                            if(dataset.isPrint){
+                        el.addEventListener('click', (e) => {
+                            console.log('click', e.target)
+                            const dataset = e.target.dataset
+                            if (dataset.isPrint) {
                                 frappe.call({
                                     method: "edu_quality.overrides_hooks.purchase_order.get_linked_receipts",
                                     args: {
@@ -191,32 +191,32 @@ frappe.ui.form.on('Purchase Order', {
                                     }, callback: function (r) {
                                         if (r.message) {
                                             console.log(r.message.length)
-                                            if(r.message.length)
-                                            frappe.msgprint({
-                                                title: __('Linked Receipts'),
-                                                indicator: 'green',
-                                                message: __(r.message?.map((el=>{
-                                                    return `<div>${el.name}</div>`
-                                                })).join(' '))
-                                            })
-                                          
-                
+                                            if (r.message.length)
+                                                frappe.msgprint({
+                                                    title: __('Linked Receipts'),
+                                                    indicator: 'green',
+                                                    message: __(r.message?.map((el => {
+                                                        return `<div>${el.name}</div>`
+                                                    })).join(' '))
+                                                })
+
+
                                         }
-                
+
                                     }
                                 })
-                             
+
                                 getItemQR(e.target.dataset.itemCode)
                             }
                         })
-                        el.classList.add(["d-flex","flex-column"])
-                        frm.fields_dict.custom_challan_detail.wrapper.innerHTML=''
-                        el.innerHTML= `${data.map((datum) => (
+                        el.classList.add(["d-flex", "flex-column"])
+                        frm.fields_dict.custom_challan_detail.wrapper.innerHTML = ''
+                        el.innerHTML = `${data.map((datum) => (
                             generateOrderCard(datum.item_code, datum.total_qty, datum.chapter, datum.subject, datum.product_url, datum.receipt_created)
                         ))}
                         
                     `
-                    frm.fields_dict.custom_challan_detail.wrapper.appendChild(el)
+                        frm.fields_dict.custom_challan_detail.wrapper.appendChild(el)
                     }, 1000)
 
                 }
