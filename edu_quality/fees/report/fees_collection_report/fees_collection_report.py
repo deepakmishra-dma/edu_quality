@@ -91,7 +91,7 @@ def get_columns():
 
 def get_data(filters):
     fee_filter = {"docstatus": 1}
-    pe_filters = {"docstatus": 1}
+    pe_filters = {"docstatus": 1,"status":"Paid"}
     fee_advacne_filter = {"docstatus": 1}
     from_date = filters.get("from_date")
     to_date = filters.get("to_date")
@@ -99,11 +99,11 @@ def get_data(filters):
     payment_mode = filters.get("payment_mode")
 
     if from_date and to_date:
-        pe_filters["posting_date"] = ["between", [from_date, to_date]]
+        pe_filters["creation"] = ["between", [from_date, to_date]]
     if from_date:
-        pe_filters["posting_date"] = [">=", from_date]
+        pe_filters["creation"] = [">=", from_date]
     if to_date:
-        pe_filters["posting_date"] = ["<=", to_date]
+        pe_filters["creation"] = ["<=", to_date]
     if payment_mode:
         pe_filters["mode_of_payment"] = payment_mode
     if school:
@@ -127,13 +127,13 @@ def get_data(filters):
         refno = frappe.get_value("Student", fee.student, "reference_number")
         pe_filters["reference_name"] =  fee.name
         payment_entry = frappe.get_all(
-            "Payment Entry",
+            "Payment Request",
             pe_filters,
             [
                 "name",
-                "reference_no",
-                "posting_date",
-                "paid_amount",
+                "party",
+                "creation",
+                "grand_total",
                 "mode_of_payment",
                 "payment_term",
             ],
@@ -147,12 +147,12 @@ def get_data(filters):
                         fee.name,
                         fee.student,
                         fee.custom_school,
-                        payment.reference_no,
+                        payment.party,
                         fee.payment_plan,
                         payment.payment_term,
                         payment.mode_of_payment,
-                        payment.paid_amount,
-                        payment.posting_date,
+                        payment.grand_total,
+                        payment.creation,
                         payment.name,
                     ]
                 )
@@ -173,13 +173,13 @@ def get_data(filters):
         refno = frappe.get_value("Student", fee.student, "reference_number")
         pe_filters["reference_name"] =  fee.name
         payment_entry = frappe.get_all(
-            "Payment Entry",
+            "Payment Request",
             pe_filters,
             [
                 "name",
-                "reference_no",
-                "posting_date",
-                "paid_amount",
+                "party",
+                "creation",
+                "grand_total",
                 "mode_of_payment",
                 "payment_term",
             ],
@@ -193,12 +193,12 @@ def get_data(filters):
                         fee.name,
                         fee.student,
                         fee.school,
-                        payment.reference_no,
+                        payment.party,
                         fee.payment_plan,
                         payment.payment_term,
                         payment.mode_of_payment,
-                        payment.paid_amount,
-                        payment.posting_date,
+                        payment.grand_total,
+                        payment.creation,
                         payment.name,
                     ]
                 )
