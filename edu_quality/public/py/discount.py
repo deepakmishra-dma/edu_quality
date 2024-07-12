@@ -193,6 +193,8 @@ def update_component(component_name, discount_name, final_discount, discounted_a
         invoice_portion = frappe.get_value("Payment Schedule", {"payment_term":fees.payment_term, "parent": fees.payment_plan}, "invoice_portion")
         grand_discount_amount = grand_discount_amount * invoice_portion / 100
         discounted_amount += grand_discount_amount
+        if invoice_portion != 100:
+            amount += grand_discount_amount
 
     fee_component_fields = {
         "custom_discounts": discount_name,
@@ -225,6 +227,9 @@ def remove_and_update_component(component_name, discount_name, discount, discoun
         invoice_portion = frappe.get_value("Payment Schedule", {"payment_term":fees.payment_term, "parent": fees.payment_plan}, "invoice_portion")
         grand_discount_amount = grand_discount_amount * invoice_portion / 100
         discounted_amount -= grand_discount_amount
+        if invoice_portion != 100:
+            amount -= grand_discount_amount
+            discount = calculate_discount(amount, discounted_amount)
 
     fee_component_update = {
         "custom_discounts": discount_name,
