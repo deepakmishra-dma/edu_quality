@@ -32,6 +32,7 @@ class FeeAdvance(AccountsController):
         generate_split_payment(self)
 
     def update_split(self):
+        self.reload()
         generate_split_payment(self, update=True)
 
 

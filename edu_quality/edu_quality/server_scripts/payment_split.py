@@ -60,8 +60,11 @@ def generate_split_payment(fees,update=0):
             "breakup": components,
             "is_deposit": False
         }
-
-    if update:
+    if update and fees.doctype == "Fee Advance":
+        frappe.db.set_value("Fee Advance",fees.name,'split_payments',json.dumps(split_payment))
+        frappe.db.set_value("Fee Advance",fees.name,'company_split',json.dumps(company_wise))
+        frappe.db.set_value("Fee Advance",fees.name,'component_split',json.dumps(component_wise))
+    elif update and fees.doctype == "Fees":
         frappe.db.set_value("Fees",fees.name,'split_payments',json.dumps(split_payment))
         frappe.db.set_value("Fees",fees.name,'company_split',json.dumps(company_wise))
         frappe.db.set_value("Fees",fees.name,'component_split',json.dumps(component_wise))
@@ -167,7 +170,7 @@ def get_split_fee_advance(fees):
                 label = label.split("-")[0].strip()
 
             split[label] = split.get(label, 0) + amount
-            paid_to = paid_to = frappe.get_value("Company", component.custom_company, "default_easebuzz_account")
+            paid_to = frappe.get_value("Company", component.custom_company, "default_easebuzz_account")
             paid_from = frappe.db.get_value("Company",component.custom_company,"default_receivable_account")
             cost_center = frappe.get_value(
                 "Cost Center", {"company": component.custom_company}, ["name"]
@@ -177,7 +180,7 @@ def get_split_fee_advance(fees):
                 "fees_category":component.fees_category,
                 "company": component.custom_company,
                 "amount": amount,   
-                "discount_amount":0
+                "discount_amount":component.custom_discount_amount
                 })
 
             if component.custom_company in company_wise:
