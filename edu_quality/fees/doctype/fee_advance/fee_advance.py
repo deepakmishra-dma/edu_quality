@@ -32,6 +32,7 @@ class FeeAdvance(AccountsController):
         generate_split_payment(self)
 
     def update_split(self):
+        self.reload()
         generate_split_payment(self, update=True)
 
 
@@ -49,17 +50,21 @@ class FeeAdvance(AccountsController):
 
 
     def before_save(self):
-        add_referral_discount(self)
+        if self.referral_amount > 0:
+            add_referral_discount(self)
+        elif self.referral_amount == 0:
+            remove_referral_discount(self)
 
 
     def before_submit(self):
         if frappe.get_value("Fees",{"student":self.student,"program":self.next_program,"docstatus":1}) or frappe.get_value("Fee Advance",{"student":self.student,"next_program":self.next_program,"docstatus":1}):
             frappe.throw("Fees or Fee Advance are already present for this class, so you cannot submit it.")
-        referal_discount(self)
         payment_plan(self)
         self.generate_split()
 
     def before_update_after_submit(self):
+        if check_discounts_before_update(self):
+            return
         try:
             add_referral_discount(self)
             pre_doc = self.get_doc_before_save()
@@ -324,6 +329,22 @@ def add_referral_discount(doc, method=None):
             component.custom_amount_after_discount = component.amount - component.custom_discount_amount
         grand_total += component.custom_amount_after_discount or component.amount
     doc.amount = doc.outstanding_amount = grand_total
+
+
+def remove_referral_discount(doc):
+    referral_amount = 0
+    for component in doc.components:
+        if component.fees_category == 'Tuition Fee':
+            if not component.custom_discounts:
+                return
+            if "Referral" in component.custom_discounts:
+                referral_amount += component.custom_discount_amount
+                component.custom_discounts = ""
+                component.custom_discount_amount = 0
+                component.custom_discount_percentage = 0
+                component.custom_amount_after_discount = 0
+    doc.amount += referral_amount
+    doc.outstanding_amount += referral_amount
 
 
 def create_payment_request(doc, method=None):
@@ -631,3 +652,16 @@ def get_one_time_discounts(doc):
         for discount in map(str.lower, component.custom_discounts.split(", "))
         if "one time" in discount
     }
+
+
+def check_discounts_before_update(doc):
+    """
+    Checks for one time and payplan discounts before updating a fee document.
+    """
+    for component in doc.components:
+        if component.custom_discounts:
+            if "one time" in component.custom_discounts.lower():
+                return True
+            elif "payment plan" in component.custom_discounts.lower():
+                return True
+    return False
