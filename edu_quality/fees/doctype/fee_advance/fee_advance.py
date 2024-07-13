@@ -50,10 +50,11 @@ class FeeAdvance(AccountsController):
 
 
     def before_save(self):
-        if self.referral_amount > 0:
-            add_referral_discount(self)
-        elif self.referral_amount == 0:
-            remove_referral_discount(self)
+        if self.referral_amount:
+            if self.referral_amount > 0:
+                add_referral_discount(self)
+            elif self.referral_amount == 0:
+                remove_referral_discount(self)
 
 
     def before_submit(self):
