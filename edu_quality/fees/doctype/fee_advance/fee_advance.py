@@ -96,7 +96,7 @@ class FeeAdvance(AccountsController):
         if frappe.db.exists("Payment Request", {"reference_name": self.name}):
             pr_list = frappe.get_all("Payment Request", {"reference_name": self.name})
             for pr in pr_list:
-                frappe.delete_doc("Payment Request", pr.name)
+                frappe.delete_doc("Payment Request", pr.name, ignore_permissions=True)
     
     
         
@@ -359,7 +359,7 @@ def create_payment_request(doc, method=None):
         pr = frappe.get_doc("Payment Request",not_paid_filter)
         if not pr.docstatus.is_cancelled() and not pr.docstatus.is_draft():
             pr.cancel()
-            frappe.delete_doc("Payment Request",pr.name)
+            frappe.delete_doc("Payment Request",pr.name, ignore_permissions=True)
 
     student_email = frappe.db.get_value("Student", doc.student, "student_email_id")
     days = frappe.db.get_value("Fee Schedule", {"fee_structure": doc.fee_structure}, "create_payment_request_before")
