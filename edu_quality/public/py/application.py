@@ -168,7 +168,7 @@ def enroll_student(source_name, email=None, refno=None, data=None,division=None)
     program_enrollment.academic_term = student_applicant.academic_term
     program_enrollment.student_group = student_group
     program_enrollment.save()
-    program_enrollment.submit()
+    # program_enrollment.submit()
     frappe.publish_realtime(
         "enroll_student_progress", {"progress": [2, 4]}, user=frappe.session.user
     )
