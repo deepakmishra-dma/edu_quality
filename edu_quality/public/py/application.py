@@ -122,7 +122,7 @@ def get_deposits(doc):
 
 
 @frappe.whitelist()
-def enroll_student(source_name, email=None, refno=None, data=None):
+def enroll_student(source_name, email=None, refno=None, data=None,division=None):
     """Creates a Student Record and returns a Program Enrollment.
 
     :param source_name: Student Applicant.
@@ -145,8 +145,10 @@ def enroll_student(source_name, email=None, refno=None, data=None):
     student_applicant = frappe.get_doc("Student Applicant", source_name)
     if student_applicant.custom_referred_by:
         add_referral_discount(student_applicant.custom_referred_by, student_applicant)
-
-    student_group = get_student_group(student_applicant)
+    if division:
+        student_group = get_student_group_mgr(division,student_applicant)
+    else:
+        student_group = get_student_group(student_applicant)
     if refno:
         student.reference_number = refno
     if email:
@@ -172,6 +174,13 @@ def enroll_student(source_name, email=None, refno=None, data=None):
     )
     return program_enrollment
 
+def get_student_group_mgr(division,doc):
+    program_id = frappe.get_value("Student Group",{'academic_year':doc.academic_year,'program':doc.program,'student_group_name':division})
+    if program_id:
+        return program_id
+    return frappe.throw(
+        "No Division Available."
+    )
 
 def get_student_group(doc):
     query = """
