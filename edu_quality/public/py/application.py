@@ -120,6 +120,44 @@ def get_deposits(doc):
             "fee_components", {"fees_category": deposit.name, "amount": deposit.amount,'label': label,'school':school,'custom_company':company}
         )
 
+def baby_school(student_applicant):
+    school_map = {
+    "Walnut School at Wakad": "Baby Walnut Wakad",
+    "Walnut School at Fursungi": "Baby Walnut Fursungi",
+    "Walnut School at Shivane": "Baby Walnut Shivane"
+    }
+    frappe.logger('enr').exception('called')
+    program = student_applicant.program.lower()
+    if not ("kg" in program or "nursery" in program):
+        return 
+    frappe.logger('enr').exception('true')
+    school = school_map[student_applicant.school] 
+    frappe.logger('enr').exception(school)
+    new_program = check_class(student_applicant.program,school)
+    frappe.logger('enr').exception(new_program)
+    student_applicant.school = school
+    student_applicant.program = new_program
+    student_applicant.fee_structure = None 
+    student_applicant.fee_schedule = None
+    student_applicant.application_fees = 0
+    student_applicant.fee_components = []
+    student_applicant.total_amount = 0
+    student_applicant.save(ignore_permissions=True)
+    frappe.logger('enr').exception(new_program)
+    student_applicant.reload()
+    if not student_applicant.fee_schedule:
+        frappe.throw("Please create fee schedule for the program - {0}".format(new_program))
+
+def check_class(program, school):
+    current = frappe.get_doc("Program", program)
+    if frappe.db.exists("Program", {'school':school,"program_name":current.program_name}):
+        return frappe.db.get_value("Program", {'school':school,"program_name":current.program_name})
+    frappe.throw("Please Create Class -{0} in the school - {1}".format(current.program_name,school))
+
+
+        
+    
+
 
 @frappe.whitelist()
 def enroll_student(source_name, email=None, refno=None, data=None,division=None):
@@ -143,6 +181,9 @@ def enroll_student(source_name, email=None, refno=None, data=None,division=None)
         ignore_permissions=True,
     )
     student_applicant = frappe.get_doc("Student Applicant", source_name)
+    baby_school(student_applicant)
+    student_applicant.reload()
+
     if student_applicant.custom_referred_by:
         add_referral_discount(student_applicant.custom_referred_by, student_applicant)
     if division:
