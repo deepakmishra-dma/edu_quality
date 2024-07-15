@@ -30,7 +30,8 @@ def get_selected_item_map(items):
 def transform_data(items, selected_items, purchase_receipt_items=None):
     item_map = {}
     item_codes = [item.get("item_code") for item in items]
-
+    frappe.errprint('sds')
+    frappe.errprint(selected_items)
     item_data = frappe.db.get_list(
         "Item",
         filters=[["item_code", "in", item_codes]],
@@ -193,10 +194,14 @@ def generate_challan_list(self, selected_items=None):
     else:
         purchase_receipt_items = None
     self = transform_data(self.get("items"), selected_items, purchase_receipt_items)
+    all_classes = frappe.db.get_list("Item",fields=["custom_class"],filters=[['name','in',selected_items]])
+    classes_array = [i.get('custom_class') for i in all_classes]
+    all_schools = frappe.db.get_list("Program", fields=["school"],filters=[['program_name','in',classes_array]], group_by="school")
+    schools_array = [i.get('school') for i in all_schools]
 
-    all_schools = frappe.db.get_list("School", fields=["name"])
+    school_docs = frappe.db.get_list('School',filters=[['name','in',schools_array]])
     # school_names = [name.get("name") for name in all_schools]
-    columns = get_columns(all_schools)
+    columns = get_columns(school_docs)
 
     return all_schools, columns, self
 
