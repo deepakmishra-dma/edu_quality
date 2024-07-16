@@ -82,10 +82,10 @@ doctype_list_js = {
 # ----------
 
 # add methods and filters to jinja environment
-jinja = {
-	"methods": ["edu_quality.overrides_hooks.purchase_order"],
-	# "filters": "edu_quality.utils.jinja_filters"
-}
+# jinja = {
+# 	"methods": "edu_quality.utils.jinja_methods",
+# 	"filters": "edu_quality.utils.jinja_filters"
+# }
 
 # Installation
 # ------------
@@ -425,10 +425,6 @@ fixtures = [
                     "Financial Reports",
                     "Receivables",
                     "Payables",
-                    "Education",
-                    "Website",
-                    "Tools",
-                    "Integrations"
                 ],
             ]
         ],

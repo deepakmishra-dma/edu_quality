@@ -32,19 +32,6 @@ function queryTextbook(frm) {
         }
     })
 }
-function uploadFileButton(frm) {
-    if (frm.doc.__islocal) return
-    frm.get_field('custom_upload_file_to_drive').onclick = function () {
-        const dialog = new frappe.ui.FileUploader({
-            doctype: frm.doc.doctype,
-            docname: frm.doc.name,
-            method: "edu_quality.overrides_hooks.item.upload_to_drive",
-            // as_dataurl: true,
-        })
-    }
-
-
-}
 function queryTopic(frm) {
     frm.set_query("custom_chapter", function () {
         return {
@@ -68,7 +55,6 @@ function NotCmapFilter(frm) {
 }
 frappe.ui.form.on("Item", {
     refresh: function (frm) {
-        uploadFileButton(frm)
         queryTextbook(frm)
         queryTopic(frm)
         if (!frm.doc.__islocal)
