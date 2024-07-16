@@ -16,7 +16,7 @@ function generateColumns(columns) {
 
     columns.forEach((column) => {
         generatedColumn.push({
-            ...column, format: (value, row, column, data) => { return value }
+            ...column, format: (value, row, column, data) => { console.log(value, row, column, data); return value }
         })
     })
     return generatedColumn
@@ -113,7 +113,6 @@ function createReceiptButton(frm) {
                     }, callback: function (r) {
                         if (r.message) {
                             const challan_html = frm.get_field('custom_challan_detail');
-                            console.log(r.message, 'sss')
                             var columns = generateColumns(r.message[1])
                             var data = r.message[2]
                             const datatable = new DataTable(d.fields_dict.challan_table.wrapper, { columns, data });
