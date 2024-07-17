@@ -3,6 +3,10 @@ from frappe.utils import strip
 import json
 from edu_quality.public.py.utils import im_2_b64, gen_qr_code_b64
 from weasyprint import CSS, HTML
+from edu_quality.api.google_drive_upload import (
+    upload_file_stream_to_drive,
+)
+import datetime
 
 # from pdf2image import convert_from_bytes
 # import imgkit
@@ -128,6 +132,38 @@ def generate_worksheet_template(chapter_name, subject_name, qr_code, worksheet_n
     )
     frappe.local.response.filecontent = main_doc
     frappe.local.response.type = "pdf"
+
+
+# edu_quality.overrides_hooks.item.upload_to_drive
+@frappe.whitelist()
+def upload_to_drive():
+    service_account_doc = frappe.get_single("Google Service Account")
+    files = frappe.request.files
+    is_private = frappe.form_dict.is_private
+    doctype = frappe.form_dict.doctype
+    docname = frappe.form_dict.docname
+    fieldname = frappe.form_dict.fieldname
+    file_url = frappe.form_dict.file_url
+    folder = frappe.form_dict.folder or "Home"
+    method = frappe.form_dict.method
+    filename = frappe.form_dict.file_name
+    optimize = frappe.form_dict.optimize
+    content = None
+    item_doc = frappe.get_doc("Item",docname)
+
+    if "file" not in files:
+        return
+
+    id = upload_file_stream_to_drive(
+        frappe.local.uploaded_file,
+        service_account_doc.get("products_folder"),
+        docname,
+        files["file"].mimetype,
+    )
+    item_doc.custom_upload_date_on_drive = datetime.datetime.now()
+    item_doc.custom_product_url = f"https://drive.google.com/file/d/{id.get('id')}" or "Something went wrong"
+    item_doc.save()
+    
 
 
 @frappe.whitelist()

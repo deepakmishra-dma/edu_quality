@@ -5,6 +5,7 @@ from requests import get, post
 from googleapiclient.errors import HttpError
 import os
 from urllib.parse import quote
+import tempfile
 
 from apiclient.http import MediaFileUpload
 
@@ -22,20 +23,21 @@ def get_google_drive_object():
     return google_drive
 
 
-def check_for_folder_in_google_drive(folder_name, root_folder=None):
+def check_for_folder_in_google_drive(folder_name=None, root_folder=None):
     """Checks if folder exists in Google Drive else create it."""
+    service_account_doc = frappe.get_single("Google Service Account")
+    root_folder_id = (root_folder or service_account_doc.get(("root_folder"))).split(
+        "  id:  "
+    )[-1]
+
+    if folder_name == None:
+        return root_folder_id
 
     def _create_folder_in_google_drive(google_drive, folder_name):
-        service_account_doc = frappe.get_single("Google Service Account")
-
         file_metadata = {
             "name": folder_name,
             "mimeType": "application/vnd.google-apps.folder",
-            "parents": [
-                (root_folder or service_account_doc.get("root_folder")).split(
-                    "  id:  "
-                )[-1]
-            ],
+            "parents": [root_folder_id],
         }
 
         try:
@@ -58,11 +60,10 @@ def check_for_folder_in_google_drive(folder_name, root_folder=None):
     google_drive = get_google_drive_object()
 
     try:
-        service_account_doc = frappe.get_single("Google Service Account")
         google_drive_folders = (
             google_drive.files()
             .list(
-                q=f"mimeType='application/vnd.google-apps.folder' and '{(root_folder or service_account_doc.get('root_folder')).split('  id:  ')[-1]}' in parents"
+                q=f"mimeType='application/vnd.google-apps.folder' and '{root_folder_id}' in parents"
             )
             .execute()
         )
@@ -113,6 +114,32 @@ def upload_file_to_drive(file_url, folder_name, root_folder=None):
         frappe.throw(("Google Drive - Could not locate - {0}").format(e))
 
     return "Google Drive Backup Successful."
+
+
+def upload_file_stream_to_drive(file_content, root_folder, file_name, mimetype):
+    # Get Google Drive Object
+
+    google_drive = get_google_drive_object()
+    id = check_for_folder_in_google_drive(None, root_folder)
+    file_metadata = {"name": file_name, "parents": [id]}
+
+    temp_file = tempfile.NamedTemporaryFile(delete=False)
+    temp_file.write(file_content)
+    temp_file.close()
+
+    try:
+        media = MediaFileUpload(temp_file.name, mimetype=mimetype, resumable=True)
+        result = google_drive.files().create(
+            body=file_metadata, media_body=media, fields="id"
+        ).execute()
+        return result
+        
+    except Exception as e:
+        frappe.throw(("Google Drive - Could not locate - {0}").format(e))
+    finally:
+        print(temp_file.name, "caha")
+        os.remove(temp_file.name)
+    return "Google Drive File Upload Successful"
 
 
 # edu_quality.edu_quality.api.google_drive_upload.upload_file

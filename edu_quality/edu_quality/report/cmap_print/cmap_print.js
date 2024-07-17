@@ -11,18 +11,16 @@ function calculateTotalQty(rowIndex) {
 	// const totalQty = frappe.query_report.data[rowIndex]["qty_for_shivane"] + frappe.query_report.data[rowIndex]["qty_for_wakad"] + frappe.query_report.data[rowIndex]["qty_for_fursungi"] + frappe.query_report.data[rowIndex]["extra_qty_per_school"]
 	let totalQty = 0;
 	Object.keys(frappe.query_report.data[rowIndex]).forEach((key) => {
-		if (key.includes("qty_for_")) {
+		if (key.includes("qty_for_") && !key.includes("extra")) {
 			console.log(key)
-			totalQty += Number(frappe.query_report.data[rowIndex][key]) + Number(frappe.query_report.data[rowIndex]["extra_qty_per_school"])
+			totalQty += Number(frappe.query_report.data[rowIndex][key]) + Number(frappe.query_report.data[rowIndex][`extra_${key}`])
 		}
 	})
 
 	frappe.query_report.data[rowIndex]["total_quantity"] = totalQty
 	const el = document.querySelector(`.dt-cell[data-row-index="${rowIndex}"] input#total_quantity`)
-	console.log(el)
 	if (el)
 		el.value = totalQty
-	console.log(totalQty)
 }
 frappe.query_reports["CMAP Print"] = {
 	"filters": [
@@ -32,10 +30,7 @@ frappe.query_reports["CMAP Print"] = {
 			"options": "Academic Year",
 			"label": "Academic Year",
 			get_data: function (year) {
-				console.log(frappe.db.get_link_options('Academic Year', year, {
-					custom_current_academic_year: 1,
-					custom_next_academic_year: 1,
-				}), 'haha')
+
 				return frappe.db.get_link_options('Academic Year', year, {
 					custom_current_academic_year: 1,
 					custom_next_academic_year: 1,
