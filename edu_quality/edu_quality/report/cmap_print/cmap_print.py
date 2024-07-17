@@ -29,11 +29,38 @@ def generate_school_fields(program=None):
                 "fieldname": f"qty_for_{i.get('name')}",
                 "label": f"{i.get('name')}",
                 "fieldtype": "Data",
-                "width": 200,
-            }
+                "width": 200,            
+            },        
         ),
     return school_array
 
+def generate_extra_school_qty(program):
+    if program:
+        programs = frappe.get_list(
+            "Program",
+            filters={"program_name": program},
+            fields=["school", "name", "school", "program_name"],
+            ignore_permissions=True,
+        )
+        schools_set = set([i.get("school") for i in programs])
+        frappe.errprint(programs)
+        schools = [{"name": i} for i in schools_set]
+        frappe.errprint(schools_set)
+        frappe.errprint(schools)
+    else:
+        schools = frappe.get_list("School")
+    school_array=[]
+    for i in schools:
+        school_array.append(
+                {
+                    "fieldname": f"extra_qty_for_{i.get('name')}",
+                    "label": f"Extra Qty {i.get('name')}",
+                    "fieldtype": "Data",
+                    "width": 250,
+                },
+                
+            )
+    return school_array
 
 @frappe.whitelist()
 def get_school_fields_sum(row):
@@ -42,7 +69,7 @@ def get_school_fields_sum(row):
     frappe.errprint(row)
     return sum(
         [
-            row.get(field, 0) + row.get("extra_qty_per_school", 0)
+            row.get(field, 0) + row.get(f"extra_{field}", 0)
             for field in school_fields_to_sum
         ]
     )
@@ -50,6 +77,7 @@ def get_school_fields_sum(row):
 
 def get_columns(filters):
     school_fields = generate_school_fields(filters.get("class"))
+    extra_fields = generate_extra_school_qty(filters.get("class"))
     columns = [
         {
             "fieldname": "period",
@@ -84,12 +112,13 @@ def get_columns(filters):
         #     "width": 50,
         # },
         *school_fields,
-        {
-            "fieldname": "extra_qty_per_school",
-            "label": "Extra Quantity per school",
-            "fieldtype": "Data",
-            "width": 175,
-        },
+        *extra_fields,
+        # {
+        #     "fieldname": "extra_qty_per_school",
+        #     "label": "Extra Quantity per school",
+        #     "fieldtype": "Data",
+        #     "width": 175,
+        # },
         {
             "fieldname": "total_quantity",
             "label": "Total Quantity",
@@ -134,8 +163,8 @@ def transform_data(program_enrollments, CMAPS, class_filter):
             i[school.get("fieldname")] = (
                 converted_dict.get(f'{i.get("class")}-{school.get("label")}', 0) or 0
             )
-
-        i["extra_qty_per_school"] = 30
+            i[f"extra_{school.get('fieldname')}"] = 30
+        
 
         i["total_quantity"] = get_school_fields_sum(i)
 
@@ -284,12 +313,15 @@ def create_purchase_order(rows):
 def append_items(purchase_order, row, school_field):
     school_doc = frappe.get_doc("School", school_field.get("label"))
 
+    if(int(row.get(school_field.get("fieldname", 0),0))==0):
+        return
+    
     purchase_order.append(
         "items",
         {
             "item_code": row.get("product_code"),
-            "qty": int(row.get(school_field.get("fieldname", 0)))
-            + int(row.get("extra_qty_per_school", 0)),
+            "qty": int(row.get(school_field.get("fieldname", 0),0))
+            + int(row.get("extra_"+school_field.get("fieldname", 0), 0)),
             "schedule_date": frappe.utils.nowdate(),
             "warehouse": school_doc.get("warehouse"),
             "uom": "Nos",
