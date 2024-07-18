@@ -219,7 +219,7 @@ def insert_program_enrollment(student, data=None,joining_date=None):
             program_enrollment.submit()
     except Exception as e:
         frappe.logger("student_import").exception(e)
-        cleaned_data = {key: value for key, value in data.items() if not isinstance(value, (datetime, timedelta))}
+        cleaned_data = {key: value.strftime("%Y-%m-%d") if isinstance(value, (datetime, timedelta)) else value for key, value in data.items()}
         error_obj={
                 "filename":"program_enrollment",
                 "object": cleaned_data,
