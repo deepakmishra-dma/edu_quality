@@ -28,8 +28,7 @@ def get_columns():
         {
             "label": "Student",
             "fieldname": "student",
-            "fieldtype": "Link",
-            "options": "Student",
+            "fieldtype": "Data",
             "width": 150,
         },
         {
@@ -107,8 +106,8 @@ def get_data(filters):
     if payment_mode:
         pe_filters["mode_of_payment"] = payment_mode
     if school:
-        fee_filter["custom_school"] = school
-        fee_advacne_filter['school'] = school 
+        fee_filter["custom_school"] = ["in", school]
+        fee_advacne_filter['school'] = ["in", school] 
 
     fees = frappe.get_all(
         "Fees",
@@ -125,6 +124,7 @@ def get_data(filters):
     fee_data = []
     for fee in fees:
         refno = frappe.get_value("Student", fee.student, "reference_number")
+        student_name = get_student_name(fee)
         pe_filters["reference_name"] =  fee.name
         payment_entry = frappe.get_all(
             "Payment Request",
@@ -145,7 +145,7 @@ def get_data(filters):
                         refno,
                         fee.program,
                         fee.name,
-                        fee.student,
+                        student_name,
                         fee.custom_school,
                         payment.party,
                         fee.payment_plan,
@@ -171,6 +171,7 @@ def get_data(filters):
     )
     for fee in fee_advance:
         refno = frappe.get_value("Student", fee.student, "reference_number")
+        student_name = get_student_name(fee)
         pe_filters["reference_name"] =  fee.name
         payment_entry = frappe.get_all(
             "Payment Request",
@@ -191,7 +192,7 @@ def get_data(filters):
                         refno,
                         fee.program,
                         fee.name,
-                        fee.student,
+                        student_name,
                         fee.school,
                         payment.party,
                         fee.payment_plan,
@@ -205,3 +206,9 @@ def get_data(filters):
 
 
     return fee_data
+
+
+def get_student_name(fee):
+	student_name = frappe.get_value("Student", fee.student, ["first_name", "last_name"], as_dict=True)
+	name = f"{student_name.first_name or ''} {student_name.last_name or ''}".strip()
+	return name
