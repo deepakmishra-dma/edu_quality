@@ -1,7 +1,7 @@
 // Copyright (c) 2024, Hybrowlabs Technologies and contributors
 // For license information, please see license.txt
 
-frappe.query_reports["Fees Collection Report"] = {
+frappe.query_reports["Fees Defaulter Report"] = {
 	"filters": [
 		{
 			"fieldname": "from_date",
@@ -24,13 +24,6 @@ frappe.query_reports["Fees Collection Report"] = {
 			get_data: function(txt) {
 				return frappe.db.get_link_options('School', txt);
 			}
-		},
-		{
-			"fieldname": "payment_mode",
-			"label": __("Payment Mode"),
-			"fieldtype": "Link",
-			"options": "Mode of Payment",
-			"width": "80",	
 		}
 	]
 };
