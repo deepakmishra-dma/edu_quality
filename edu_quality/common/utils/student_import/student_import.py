@@ -224,9 +224,10 @@ def insert_program_enrollment(student, data=None,joining_date=None):
         class_name = data.get("admitted_class")
         begin_batch_time = data.get("begintime")
         end_batch_time = data.get("endtime")
+        division_batch = get_formated_date(begin_batch_time, end_batch_time)
         error_obj={
                 "filename":"program_enrollment",
-                "object": {"refno": refno, "division": division, "class_name": class_name, "begin_batch_time": begin_batch_time, "end_batch_time": end_batch_time},
+                "object": {"refno": refno, "division": division, "class_name": class_name, "division_batch": division_batch},
                 "Traceback": frappe.get_traceback(),
             },
         frappe.log_error(
