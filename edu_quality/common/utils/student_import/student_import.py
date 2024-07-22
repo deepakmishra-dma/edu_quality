@@ -219,10 +219,15 @@ def insert_program_enrollment(student, data=None,joining_date=None):
             program_enrollment.submit()
     except Exception as e:
         frappe.logger("student_import").exception(e)
-        cleaned_data = {key: value.strftime("%Y-%m-%d") if isinstance(value, (datetime, timedelta)) else value for key, value in data.items()}
+        refno = data.get("refno")
+        division = data.get("division_name")
+        class_name = data.get("admitted_class")
+        begin_batch_time = data.get("begintime")
+        end_batch_time = data.get("endtime")
+        division_batch = get_formated_date(begin_batch_time, end_batch_time)
         error_obj={
                 "filename":"program_enrollment",
-                "object": cleaned_data,
+                "object": {"refno": refno, "division": division, "class_name": class_name, "division_batch": division_batch},
                 "Traceback": frappe.get_traceback(),
             },
         frappe.log_error(
