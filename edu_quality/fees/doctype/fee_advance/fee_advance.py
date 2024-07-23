@@ -449,6 +449,7 @@ def create_fee_advance(student, program_enrollment,all_len=None,index=None):
     program_enrollment: Previous Program Enrollment Doc
     """
     try:
+        from edu_quality.edu_quality.server_scripts.utils import next_academic_year as next_yr
         if frappe.get_value("Program", program_enrollment.program, "custom_is_passing_out_class"):
             frappe.log_error(title="Fee Advance",message="Since there is not a class scheduled for {class_name}, we will not be creating a fee advance.".format(class_name =program_enrollment.program))
             return 
@@ -457,7 +458,7 @@ def create_fee_advance(student, program_enrollment,all_len=None,index=None):
         school = frappe.get_value("Program", program_enrollment.program,"school")
         next_program = get_next_program(program_enrollment.program, school)
         institution = frappe.get_value("School", frappe.get_value("Program", next_program,"school"),"institution")
-        next_academic_year = frappe.get_value("Academic Year",{"custom_next_academic_year":1})
+        next_academic_year = next_yr()
         fee_structure = get_fee_structure(next_academic_year, school, next_program)
         payment_plan = get_payment_plan(fee_structure, program_enrollment)
         term, due_date = get_first_payment_term(payment_plan)
@@ -490,6 +491,8 @@ def get_next_program(program, school):
     sequence = frappe.get_value("Program", program, "sequence")
     next_program = int(sequence) + 1
     next_program = frappe.get_value("Program", {"sequence": str(next_program), "school":school})
+    if not next_program:
+        next_program = frappe.get_value("Program", {"previous_class":program})
     return next_program
 
 
