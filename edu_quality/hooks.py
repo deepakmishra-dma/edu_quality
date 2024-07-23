@@ -302,6 +302,8 @@ scheduler_events = {
 
 fixtures = [
     {"dt": "Workflow"},
+    {'dt': 'Workflow State'},
+    {'dt': 'Workflow Action Master'},
     {"dt": "Server Script", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
     {"dt": "Property Setter", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
     {"dt": "Client Script", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
@@ -318,24 +320,7 @@ fixtures = [
             [
                 "name",
                 "in",
-                ["Head Administration", "Councellor", "Teacher", "Printer", "Watchman"],
-            ]
-        ],
-    },
-    {
-        "dt": "Role",
-        "filters": [
-            [
-                "name",
-                "in",
-                [
-                    "Head Administration",
-                    "Councellor",
-                    "Teacher",
-                    "Content Creator",
-                    "Printer",
-                    "Watchman",
-                ],
+                ["Head Administration", "Councellor", "Teacher", "Printer", "Watchman","Clerk"],
             ]
         ],
     },
