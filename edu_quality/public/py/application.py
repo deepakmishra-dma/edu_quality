@@ -186,6 +186,8 @@ def enroll_student(source_name, email=None, refno=None, data=None,division=None)
 
     if student_applicant.custom_referred_by:
         add_referral_discount(student_applicant.custom_referred_by, student_applicant)
+        student.referred_by = student_applicant.custom_referred_by
+        student.referrer_school = student_applicant.custom_referrer_school
     if division:
         student_group = get_student_group_mgr(division,student_applicant)
     else:
