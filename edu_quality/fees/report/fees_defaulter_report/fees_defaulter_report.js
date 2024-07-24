@@ -24,6 +24,23 @@ frappe.query_reports["Fees Defaulter Report"] = {
 			get_data: function(txt) {
 				return frappe.db.get_link_options('School', txt);
 			}
-		}
+		},
+		{
+			"fieldname": "program",
+			"label": __("Class"),
+			"fieldtype": "MultiSelectList",
+			"options": "Class",
+			"width": "80",
+			get_data: function(txt) {
+				return frappe.db.get_link_options('Program', txt);
+			}
+		},
+		{
+			"fieldname": "term",
+			"label": __("Term"),
+			"fieldtype": "Link",
+			"options": "Payment Term",
+			"width": "80",
+		},
 	]
 };
