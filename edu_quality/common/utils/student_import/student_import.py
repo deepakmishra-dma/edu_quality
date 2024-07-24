@@ -419,8 +419,6 @@ def get_sql_query():
                     wsi.catering,
                     wsi.academic_year,
                     wsi.last_name,
-                    wsi.father_f_name,
-                    wsi.mother_f_name,
                     wsi.adhar_card_no,
                     wsi.gender,
                     wsi.nationality,
