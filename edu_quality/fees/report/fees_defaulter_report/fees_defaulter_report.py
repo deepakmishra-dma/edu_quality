@@ -66,6 +66,13 @@ def get_columns():
             "width": 150,
         },
         {
+            "label": "Academic Year",
+            "fieldname": "academic_year",
+            "fieldtype": "Link",
+            "options": "Academic Year",
+            "width": 150,
+        },
+        {
             "label": "Admission Date",
             "fieldname": "admission_date",
             "fieldtype": "Date",
@@ -106,6 +113,8 @@ def get_data(filters):
     from_date = filters.get("from_date")
     to_date = filters.get("to_date")
     school = filters.get("school")
+    program = filters.get("program")
+    term = filters.get("term")
 
     if from_date and to_date:
         pr_filters["creation"] = ["between", [from_date, to_date]]
@@ -116,6 +125,11 @@ def get_data(filters):
     if school:
         fee_filter["custom_school"] = ["in", school]
         fee_advance_filter["school"] = ["in", school]
+    if program:
+        fee_filter["program"] = ["in", program]
+        fee_advance_filter["program"] = ["in", program]
+    if term:
+        pr_filters["payment_term"] = term
 
     fees = frappe.get_all(
         "Fees",
@@ -127,6 +141,7 @@ def get_data(filters):
             "program",
             "outstanding_amount",
             "payment_plan",
+            "academic_year",
         ],
     )
     fee_data = []
@@ -168,6 +183,7 @@ def get_data(filters):
                             fee.payment_plan,
                             payment_term,
                             payment.grand_total,
+                            fee.academic_year,
                             admission_date,
                             payment.creation,
                             due_date,
@@ -187,6 +203,7 @@ def get_data(filters):
             "outstanding_amount",
             "payment_plan",
             "due_date",
+            "academic_year"
         ],
     )
     for fee in fee_advance:
@@ -221,6 +238,7 @@ def get_data(filters):
                         fee.payment_plan,
                         payment_request.payment_term,
                         payment_request.grand_total,
+                        fee.academic_year,
                         admission_date,
                         payment_request.creation,
                         fee.due_date,
