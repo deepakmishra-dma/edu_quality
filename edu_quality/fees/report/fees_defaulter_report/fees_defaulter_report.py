@@ -115,6 +115,7 @@ def get_data(filters):
     school = filters.get("school")
     program = filters.get("program")
     term = filters.get("term")
+    student_status = filters.get("student_status")
 
     if from_date and to_date:
         pr_filters["creation"] = ["between", [from_date, to_date]]
@@ -146,10 +147,32 @@ def get_data(filters):
     )
     fee_data = []
     for fee in fees:
-        refno = frappe.get_value("Student", fee.student, "reference_number")
-        admission_date = frappe.get_value("Student", fee.student, "joining_date")
-        email = frappe.get_value("Student", fee.student, "student_email_id")
-        mobile = frappe.get_value("Student", fee.student, "student_mobile_number")
+        if student_status:
+            student = frappe.get_value(
+                "Student",
+                {"name": fee.student, "student_status": student_status},
+                [
+                    "reference_number",
+                    "joining_date",
+                    "student_email_id",
+                    "student_mobile_number",
+                ],
+                as_dict=True,
+            )
+        else:
+            student = frappe.get_value(
+                "Student",
+                {"name": fee.student},
+                [
+                    "reference_number",
+                    "joining_date",
+                    "student_email_id",
+                    "student_mobile_number",
+                ],
+                as_dict=True,
+            )
+        if not student:
+            continue
         student_name = get_student_name(fee)
         fee_head_name = get_fee_heads(fee)
         pr_filters["reference_name"] = fee.name
@@ -174,7 +197,7 @@ def get_data(filters):
                 if due_date and due_date < getdate(nowdate()):
                     fee_data.append(
                         [
-                            refno,
+                            student.reference_number,
                             fee.program,
                             fee.name,
                             student_name,
@@ -184,11 +207,11 @@ def get_data(filters):
                             payment_term,
                             payment.grand_total,
                             fee.academic_year,
-                            admission_date,
+                            student.joining_date,
                             payment.creation,
                             due_date,
-                            email,
-                            mobile,
+                            student.student_email_id,
+                            student.student_mobile_number,
                         ]
                     )
 
@@ -203,14 +226,36 @@ def get_data(filters):
             "outstanding_amount",
             "payment_plan",
             "due_date",
-            "academic_year"
+            "academic_year",
         ],
     )
     for fee in fee_advance:
-        refno = frappe.get_value("Student", fee.student, "reference_number")
-        admission_date = frappe.get_value("Student", fee.student, "joining_date")
-        email = frappe.get_value("Student", fee.student, "student_email_id")
-        mobile = frappe.get_value("Student", fee.student, "student_mobile_number")
+        if student_status:
+            student = frappe.get_value(
+                "Student",
+                {"name": fee.student, "student_status": student_status},
+                [
+                    "reference_number",
+                    "joining_date",
+                    "student_email_id",
+                    "student_mobile_number",
+                ],
+                as_dict=True,
+            )
+        else:
+            student = frappe.get_value(
+                "Student",
+                {"name": fee.student},
+                [
+                    "reference_number",
+                    "joining_date",
+                    "student_email_id",
+                    "student_mobile_number",
+                ],
+                as_dict=True,
+            )
+        if not student:
+            continue
         fee_head_name = get_fee_heads(fee)
         student_name = get_student_name(fee)
         pr_filters["reference_name"] = fee.name
@@ -229,7 +274,7 @@ def get_data(filters):
             if fee.due_date < getdate(nowdate()):
                 fee_data.append(
                     [
-                        refno,
+                        student.reference_number,
                         fee.program,
                         fee.name,
                         student_name,
@@ -239,11 +284,11 @@ def get_data(filters):
                         payment_request.payment_term,
                         payment_request.grand_total,
                         fee.academic_year,
-                        admission_date,
+                        student.joining_date,
                         payment_request.creation,
                         fee.due_date,
-                        email,
-                        mobile,
+                        student.student_email_id,
+                        student.student_mobile_number,
                     ]
                 )
 
@@ -259,7 +304,10 @@ def get_fee_heads(fees):
     fee_head_names = [component.fees_category for component in components]
     return ", ".join(fee_head_names)
 
+
 def get_student_name(fee):
-	student_name = frappe.get_value("Student", fee.student, ["first_name", "last_name"], as_dict=True)
-	name = f"{student_name.first_name or ''} {student_name.last_name or ''}".strip()
-	return name
+    student_name = frappe.get_value(
+        "Student", fee.student, ["first_name", "last_name"], as_dict=True
+    )
+    name = f"{student_name.first_name or ''} {student_name.last_name or ''}".strip()
+    return name

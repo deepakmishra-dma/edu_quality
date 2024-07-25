@@ -42,5 +42,12 @@ frappe.query_reports["Fees Defaulter Report"] = {
 			"options": "Payment Term",
 			"width": "80",
 		},
+		{
+			"fieldname": "student_status",
+			"label": __("Student Status"),
+			"fieldtype": "Select",
+			"options": ["", "New student", "Current student", "Cancelled", "Not attending", "Defaulter", "Alumni"],
+			"width": "80",
+		},
 	]
 };
