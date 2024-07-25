@@ -106,6 +106,22 @@ def get_columns():
     return columns
 
 
+def get_student_data(student_name, student_status=None):
+    filters = {"name": student_name}
+    if student_status:
+        filters["student_status"] = student_status
+    return frappe.get_value(
+        "Student",
+        filters,
+        [
+            "reference_number",
+            "joining_date",
+            "student_email_id",
+            "student_mobile_number",
+        ],
+        as_dict=True,
+    )
+
 def get_data(filters):
     fee_filter = {"docstatus": 1}
     pr_filters = {"docstatus": 1, "status": ["!=", "Paid"]}
@@ -147,30 +163,7 @@ def get_data(filters):
     )
     fee_data = []
     for fee in fees:
-        if student_status:
-            student = frappe.get_value(
-                "Student",
-                {"name": fee.student, "student_status": student_status},
-                [
-                    "reference_number",
-                    "joining_date",
-                    "student_email_id",
-                    "student_mobile_number",
-                ],
-                as_dict=True,
-            )
-        else:
-            student = frappe.get_value(
-                "Student",
-                {"name": fee.student},
-                [
-                    "reference_number",
-                    "joining_date",
-                    "student_email_id",
-                    "student_mobile_number",
-                ],
-                as_dict=True,
-            )
+        student = get_student_data(fee.student, student_status)
         if not student:
             continue
         student_name = get_student_name(fee)
@@ -230,30 +223,7 @@ def get_data(filters):
         ],
     )
     for fee in fee_advance:
-        if student_status:
-            student = frappe.get_value(
-                "Student",
-                {"name": fee.student, "student_status": student_status},
-                [
-                    "reference_number",
-                    "joining_date",
-                    "student_email_id",
-                    "student_mobile_number",
-                ],
-                as_dict=True,
-            )
-        else:
-            student = frappe.get_value(
-                "Student",
-                {"name": fee.student},
-                [
-                    "reference_number",
-                    "joining_date",
-                    "student_email_id",
-                    "student_mobile_number",
-                ],
-                as_dict=True,
-            )
+        student = get_student_data(fee.student, student_status)
         if not student:
             continue
         fee_head_name = get_fee_heads(fee)
@@ -311,3 +281,32 @@ def get_student_name(fee):
     )
     name = f"{student_name.first_name or ''} {student_name.last_name or ''}".strip()
     return name
+
+
+@frappe.whitelist()
+def send_payment_reminder(**kwargs):
+    try:
+        from nextai.funnel.custom_trigger import trigger_event
+        kwargs['school'] = frappe.json.loads(kwargs.get('school'))
+        kwargs['program'] = frappe.json.loads(kwargs.get('program'))
+        data = get_data(kwargs)
+        if not data:
+            return "No data found"
+        for row in data:
+            payment_request = frappe.get_doc("Payment Request", {"reference_name": row[2]}, "name")
+            trigger_event(doc=payment_request, event_name="payment_link")
+        frappe.response["message"] = {
+            "title": "Success",
+            "msg": "Payment reminders sent successfully",
+        }
+    except ImportError:
+        frappe.response["message"] = {
+            "title": "Error",
+            "msg": "Please install nextai app",
+        }
+    except Exception as e:
+        frappe.logger("payment_reminder").exception(e)
+        frappe.response["message"] = {
+            "title": "Error",
+            "msg": "Something went wrong",
+        }
