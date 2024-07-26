@@ -53,42 +53,50 @@ frappe.query_reports["Fees Defaulter Report"] = {
 
 	onload: function (report) {
 		report.page.add_inner_button(__('Payment Reminder'), function () {
-			var filters = report.get_values();
-			if (filters.school) {
-				frappe.call({
-					method: "edu_quality.fees.report.fees_defaulter_report.fees_defaulter_report.send_payment_reminder",
-					type: "POST",
-					args: {
-						from_date: filters.from_date,
-						to_date: filters.to_date,
-						school: filters.school,
-						program: filters.program,
-						term: filters.term,
-						student_status: filters.student_status
-					},
-					callback: function (r) {
-						if (r.message) {
-							if (r.message.title == "Success") {
-								frappe.show_alert({
-									message: __(r.message.msg),
-									indicator: 'green'
-								});
-							} else if (r.message.title == "Error") {
-								frappe.show_alert({
-									message: __(r.message.msg),
-									indicator: 'red'
-								});
+			frappe.confirm('Are you sure you want to proceed?',
+				() => {
+					var filters = report.get_values();
+					if (filters.school) {
+						frappe.call({
+							method: "edu_quality.fees.report.fees_defaulter_report.fees_defaulter_report.send_payment_reminder",
+							type: "POST",
+							args: {
+								from_date: filters.from_date,
+								to_date: filters.to_date,
+								school: filters.school,
+								program: filters.program,
+								term: filters.term,
+								student_status: filters.student_status
+							},
+							callback: function (r) {
+								if (r.message) {
+									if (r.message.title == "Success") {
+										frappe.show_alert({
+											message: __(r.message.msg),
+											indicator: 'green'
+										});
+									} else if (r.message.title == "Error") {
+										frappe.show_alert({
+											message: __(r.message.msg),
+											indicator: 'red'
+										});
+									}
+								}
 							}
-						}
+						});
 					}
+					else {
+						frappe.show_alert({
+							message: __("Please select School"),
+							indicator: 'red'
+						});
+					}
+				}, () => {
+					frappe.show_alert({
+						message: __("Action Cancelled"),
+						indicator: 'red'
+					});
 				});
-			}
-			else {
-				frappe.show_alert({
-					message: __("Please select School"),
-					indicator: 'red'
-				});
-			}
 		});
 
 		report.page.add_inner_button(__('Mark Student Defaulter'), function () {
@@ -136,7 +144,7 @@ frappe.query_reports["Fees Defaulter Report"] = {
 						indicator: 'red'
 					});
 				});
-			}
+		}
 		);
 	}
 };
