@@ -181,7 +181,7 @@ def get_data(filters):
         )
         if payment_request:
             for payment in payment_request:
-                payment_term = "Deposit" if not payment.term else payment.term
+                payment_term = "Deposit" if not payment.payment_term else payment.payment_term
                 due_date = frappe.get_value(
                     "Payment Schedule",
                     {"parent": fee.name, "payment_term": payment_term},
