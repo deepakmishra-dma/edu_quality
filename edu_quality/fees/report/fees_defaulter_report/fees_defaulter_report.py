@@ -294,7 +294,7 @@ def send_payment_reminder(**kwargs):
             return "No data found"
         for row in data:
             payment_request = frappe.get_doc("Payment Request", {"reference_name": row[2]})
-            trigger_event(doc=payment_request, event_name="payment_link")
+            trigger_event(doc=payment_request, event_name="payment_link_remainder")
         frappe.response["message"] = {
             "title": "Success",
             "msg": "Payment reminders sent successfully",

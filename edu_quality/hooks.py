@@ -335,7 +335,7 @@ fixtures = [
             [
                 "name",
                 "in",
-                ["Student Referral", "Fee Receipt", "Undertaking OTP", "Payment Link"],
+                ["Student Referral", "Fee Receipt", "Undertaking OTP", "Payment Link","Payment Link Remainder"],
             ]
         ],
     },
