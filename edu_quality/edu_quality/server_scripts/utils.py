@@ -96,6 +96,8 @@ def get_next_class(current_class):
     school,current_sequence = frappe.db.get_value("Program",current_class,["school","sequence"])
     if frappe.db.exists("Program",{"school":school,"sequence":current_sequence+1}):
         return frappe.db.get_value("Program",{"school":school,"sequence":current_sequence+1})
+    elif frappe.db.exists("Program",{"previous_class":current_class}):
+        return frappe.db.get_value("Program",{"previous_class":current_class})
     return None
 
 

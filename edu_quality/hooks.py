@@ -82,10 +82,10 @@ doctype_list_js = {
 # ----------
 
 # add methods and filters to jinja environment
-# jinja = {
-# 	"methods": "edu_quality.utils.jinja_methods",
-# 	"filters": "edu_quality.utils.jinja_filters"
-# }
+jinja = {
+	"methods": ["edu_quality.overrides_hooks.purchase_order"],
+	# "filters": "edu_quality.utils.jinja_filters"
+}
 
 # Installation
 # ------------
@@ -302,6 +302,8 @@ scheduler_events = {
 
 fixtures = [
     {"dt": "Workflow"},
+    {'dt': 'Workflow State'},
+    {'dt': 'Workflow Action Master'},
     {"dt": "Server Script", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
     {"dt": "Property Setter", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
     {"dt": "Client Script", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
@@ -318,24 +320,7 @@ fixtures = [
             [
                 "name",
                 "in",
-                ["Head Administration", "Councellor", "Teacher", "Printer", "Watchman"],
-            ]
-        ],
-    },
-    {
-        "dt": "Role",
-        "filters": [
-            [
-                "name",
-                "in",
-                [
-                    "Head Administration",
-                    "Councellor",
-                    "Teacher",
-                    "Content Creator",
-                    "Printer",
-                    "Watchman",
-                ],
+                ["Head Administration", "Councellor", "Teacher", "Printer", "Watchman","Clerk"],
             ]
         ],
     },
@@ -350,7 +335,7 @@ fixtures = [
             [
                 "name",
                 "in",
-                ["Student Referral", "Fee Receipt", "Undertaking OTP", "Payment Link"],
+                ["Student Referral", "Fee Receipt", "Undertaking OTP", "Payment Link","Payment Link Remainder"],
             ]
         ],
     },
@@ -425,6 +410,10 @@ fixtures = [
                     "Financial Reports",
                     "Receivables",
                     "Payables",
+                    "Education",
+                    "Website",
+                    "Tools",
+                    "Integrations"
                 ],
             ]
         ],

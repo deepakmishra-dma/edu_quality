@@ -2,7 +2,11 @@ import frappe
 from frappe.utils import strip
 import json
 from edu_quality.public.py.utils import im_2_b64, gen_qr_code_b64
-from weasyprint import CSS, HTML
+# from weasyprint import CSS, HTML
+from edu_quality.api.google_drive_upload import (
+    upload_file_stream_to_drive,
+)
+import datetime
 
 # from pdf2image import convert_from_bytes
 # import imgkit
@@ -11,33 +15,35 @@ from weasyprint import CSS, HTML
 
 @frappe.whitelist()
 def name(self):
-    self = json.loads(self) if isinstance(self, str) else self
+    try:
+        self = json.loads(self) if isinstance(self, str) else self
 
-    if not self.get("item_group"):
-        return
+        if not self.get("item_group"):
+            return
 
-    current_item_group = frappe.get_doc("Item Group", self.get("item_group"))
-    if current_item_group.get("parent_item_group") != "CMAP":
-        return
+        current_item_group = frappe.get_doc("Item Group", self.get("item_group"))
+        if current_item_group.get("parent_item_group") != "CMAP":
+            return
 
-    short_code = current_item_group.custom_group_code
-    subject = frappe.get_doc("Course", self.get("custom_subject"))
-    textbook = frappe.get_doc("Textbook", self.get("custom_textbook"))
-    chapter = frappe.get_doc("Topic", self.get("custom_chapter"))
-    syllabus = subject.get("custom_syllabus")
-    language = subject.get("custom_language")
-    class_name = self.get("custom_class")
-    textbook_short_code = textbook.get("short_code")
-    class_doc = frappe.get_doc("Class Type", class_name)
-    syllabus_code = "C" if syllabus == "CBSE" else "S"
-    language_short_code = "E" if language == "English" else "M"
-    chapter_code = chapter.get("custom_chapter_number")
-    sheet_number = self.get("custom_sheet_number")
-    item_code = strip(
-        f"{short_code}{language_short_code}{syllabus_code}{class_doc.short_code}{textbook_short_code}{str(chapter_code).zfill(2)}{str(sheet_number).zfill(2)}"
-    )
-    return item_code
-
+        short_code = current_item_group.custom_group_code
+        subject = frappe.get_doc("Course", self.get("custom_subject"))
+        textbook = frappe.get_doc("Textbook", self.get("custom_textbook"))
+        chapter = frappe.get_doc("Topic", self.get("custom_chapter"))
+        syllabus = subject.get("custom_syllabus")
+        language = subject.get("custom_language")
+        class_name = self.get("custom_class")
+        textbook_short_code = textbook.get("short_code")
+        class_doc = frappe.get_doc("Class Type", class_name)
+        syllabus_code = "C" if syllabus == "CBSE" else "S"
+        language_short_code = "E" if language == "English" else "M"
+        chapter_code = chapter.get("custom_chapter_number")
+        sheet_number = self.get("custom_sheet_number")
+        item_code = strip(
+            f"{short_code}{language_short_code}{syllabus_code}{class_doc.short_code}{textbook_short_code}{str(chapter_code).zfill(2)}{str(sheet_number).zfill(2)}"
+        )
+        return item_code
+    except Exception as e:
+        frappe.msgprint(str(e))
 
 def autoname(self, method=None):
     self.item_code = name(self)
@@ -128,6 +134,38 @@ def generate_worksheet_template(chapter_name, subject_name, qr_code, worksheet_n
     )
     frappe.local.response.filecontent = main_doc
     frappe.local.response.type = "pdf"
+
+
+# edu_quality.overrides_hooks.item.upload_to_drive
+@frappe.whitelist()
+def upload_to_drive():
+    service_account_doc = frappe.get_single("Google Service Account")
+    files = frappe.request.files
+    is_private = frappe.form_dict.is_private
+    doctype = frappe.form_dict.doctype
+    docname = frappe.form_dict.docname
+    fieldname = frappe.form_dict.fieldname
+    file_url = frappe.form_dict.file_url
+    folder = frappe.form_dict.folder or "Home"
+    method = frappe.form_dict.method
+    filename = frappe.form_dict.file_name
+    optimize = frappe.form_dict.optimize
+    content = None
+    item_doc = frappe.get_doc("Item",docname)
+
+    if "file" not in files:
+        return
+
+    id = upload_file_stream_to_drive(
+        frappe.local.uploaded_file,
+        service_account_doc.get("products_folder"),
+        docname,
+        files["file"].mimetype,
+    )
+    item_doc.custom_upload_date_on_drive = datetime.datetime.now()
+    item_doc.custom_product_url = f"https://drive.google.com/file/d/{id.get('id')}" or "Something went wrong"
+    item_doc.save()
+    
 
 
 @frappe.whitelist()
