@@ -164,7 +164,7 @@ def get_linked_receipts(name,item_code):
      purchase_receipt_items = frappe.db.get_list(
         "Purchase Receipt Item",
         filters={"purchase_order": name,'item_code':item_code},
-        fields=["name", "item_code"],
+        fields=["name", "item_code","parent"],
         ignore_permissions=True
     )
      return purchase_receipt_items

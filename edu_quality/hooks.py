@@ -441,3 +441,5 @@ after_migrate = [
     "edu_quality.public.py.utils.migrate",
     "edu_quality.tasks.update_academic_year",
 ]
+
+website_route_rules = [{'from_route': '/walsh/<path:app_path>', 'to_route': 'walsh'},]
