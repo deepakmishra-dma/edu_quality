@@ -33,6 +33,12 @@ def get_columns():
             "width": 200,
         },
         {
+            "label": "Student Status",
+            "fieldname": "student_status",
+            "fieldtype": "Data",
+            "width": 200,
+        },
+        {
             "label": "School",
             "fieldname": "school",
             "fieldtype": "Link",
@@ -118,6 +124,7 @@ def get_student_data(student_name, student_status=None):
             "joining_date",
             "student_email_id",
             "student_mobile_number",
+            "student_status"
         ],
         as_dict=True,
     )
@@ -194,6 +201,7 @@ def get_data(filters):
                             fee.program,
                             fee.name,
                             student_name,
+                            student.student_status,
                             fee.custom_school,
                             fee_head_name,
                             fee.payment_plan,
@@ -248,6 +256,7 @@ def get_data(filters):
                         fee.program,
                         fee.name,
                         student_name,
+                        student.student_status,
                         fee.school,
                         fee_head_name,
                         fee.payment_plan,
