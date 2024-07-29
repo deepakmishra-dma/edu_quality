@@ -99,7 +99,7 @@ frappe.query_reports["Fees Defaulter Report"] = {
 				});
 		});
 
-		report.page.add_inner_button(__('Mark Student Defaulter'), function () {
+		report.page.add_inner_button(__('Mark As Defaulter'), function () {
 			frappe.confirm('Are you sure you want to proceed?',
 				() => {
 					var filters = report.get_values();
