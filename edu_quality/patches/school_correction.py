@@ -1,6 +1,7 @@
 import frappe 
 
 def execute():
+    return
     data = get_data()
     process_data(data)
     
