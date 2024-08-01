@@ -1,9 +1,26 @@
 // Copyright (c) 2023, Hybrowlabs Technologies and contributors
 // For license information, please see license.txt
+async function getPeriodNo(frm) {
+    if (!frm.doc.subject || !frm.doc.class || !frm.doc.unit || !frm.doc.academic_year) return
+    if (frm.doc.__islocal) {
+        frappe.call({
+            method: "edu_quality.edu_quality.doctype.cmap.cmap.get_cmap_period_no",
+            args: {
+                self: frm.doc
+            }, callback: function (r) {
+                // frm.set_value('custom_sheet_number', r.message)
+                if (!frm.doc.period)
+                    frm.set_value('period', r.message)
+            }
+        })
+
+
+    }
+}
 function getNoteQuery(cur_frm, fieldName, fieldGroup) {
 
     cur_frm.fields_dict['products'].grid.get_field(fieldName).on_change = function () {
-  
+
     }
     cur_frm.fields_dict['products'].grid.get_field(fieldName).get_query = function (doc, cdt, dn) {
         let d = locals[cdt][dn];
@@ -126,7 +143,15 @@ frappe.ui.form.on("CMAP", {
             };
         }
     },
-
+    class: (frm) => {
+        getPeriodNo(frm)
+    },
+    unit: (frm) => {
+        getPeriodNo(frm)
+    },
+    academic_year: (frm) => {
+        getPeriodNo(frm)
+    }
 
 });
 
@@ -145,7 +170,7 @@ frappe.ui.form.on("Item Detail", {
     },
     material_required: async (frm) => {
         const res = await checkNotes("material_required", frm, "Material Required")
-    }
+    },
 
 })
 

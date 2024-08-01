@@ -197,7 +197,7 @@ frappe.ui.form.on('Purchase Order', {
                                                     title: __('Linked Receipts'),
                                                     indicator: 'green',
                                                     message: __(r.message?.map((el => {
-                                                        return `<div>${el.name}</div>`
+                                                        return `<div><a href="/app/purchase-receipt/${el.parent}" data-name="${el.parent}" data-value="${el.parent}" onclick="event.stopPropagation();event.preventDefault();frappe.set_route('/app/purchase-receipt/${el.parent}')">${el.parent}</a></div>`
                                                     })).join(' '))
                                                 })
 
