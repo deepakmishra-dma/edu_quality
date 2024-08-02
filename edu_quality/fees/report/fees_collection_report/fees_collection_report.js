@@ -18,9 +18,12 @@ frappe.query_reports["Fees Collection Report"] = {
 		{
 			"fieldname": "school",
 			"label": __("School"),
-			"fieldtype": "Link",
+			"fieldtype": "MultiSelectList",
 			"options": "School",
 			"width": "80",
+			get_data: function(txt) {
+				return frappe.db.get_link_options('School', txt);
+			}
 		},
 		{
 			"fieldname": "payment_mode",

@@ -166,3 +166,22 @@ def get_cmap_assignees_report(**filters):
         .select("*")
     )
     return query.run(as_dict=True)
+
+@frappe.whitelist()
+def get_cmap_period_no(self):
+    self = json.loads(self) if isinstance(self, str) else self
+    if( not self.get('subject') or not self.get('academic_year') or not self.get('unit')): return
+    
+    max_period_list = frappe.db.get_list("CMAP",filters={
+        "subject":self.get('subject') ,
+        "academic_year":self.get('academic_year'),
+       
+        "class":self.get('class'),
+        "unit":self.get('unit')
+    },fields=["MAX(period)"])
+
+    max_period = max_period_list[0].get("MAX(period)",0)
+    if(not self.get('period') and not max_period):
+        return 1
+    elif(str(self.get('period')) == max_period or  not self.get('period')):
+        return int(max_period)+1

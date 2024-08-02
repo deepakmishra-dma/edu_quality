@@ -19,6 +19,17 @@ class MGREnrollmentLog(Document):
                     return
                 frappe.set_user("Administrator")
                 data = json.loads(self.responce) if self.responce else {}
+                student_meta = data.get("student_meta", {})
+                student_referral = student_meta.get("student_referral", "").lower()
+                if student_referral == "yes":
+                    student_referral_refno = student_meta.get("student_referral_refno", "").upper()
+                    referral_school_name = student_meta.get("referral_school_name")
+                    referred_by = frappe.get_value("Student", {"reference_number": student_referral_refno, "school": referral_school_name})
+                    if referred_by:
+                        frappe.db.set_value("Student Applicant", student_applicant, {
+                            "custom_referred_by": referred_by,
+                            "custom_referrer_school": referral_school_name
+                        })
                 enroll_student(student_applicant, self.email, self.ref_no, data,data.get("division"))
                 self.enrollment__status = "Success"
                 self.erp_responce = "Success"

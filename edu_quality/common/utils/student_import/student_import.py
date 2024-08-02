@@ -365,7 +365,7 @@ def create_guardian(relation, **kwargs):
     mobile_no = kwargs.get("mobile_no")
     email_id = kwargs.get("email_id").lower() if kwargs.get("email_id") else None
     guardian = frappe.get_value("Guardian", {"guardian_name": guardian_name, "mobile_number": mobile_no})
-    if not first_name:
+    if first_name==' ':
         return None
     if not guardian:
         doc = {
@@ -419,8 +419,6 @@ def get_sql_query():
                     wsi.catering,
                     wsi.academic_year,
                     wsi.last_name,
-                    wsi.father_f_name,
-                    wsi.mother_f_name,
                     wsi.adhar_card_no,
                     wsi.gender,
                     wsi.nationality,

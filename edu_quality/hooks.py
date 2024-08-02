@@ -41,6 +41,7 @@ doctype_js = {
     "Purchase Receipt": "public/js/purchase_receipt.js",
     "Topic": "public/js/topic.js",
     "Instructor": "public/js/instructor.js",
+    "Payment Request": "public/js/payment_request.js",
 }
 doctype_list_js = {
     "Student Applicant": "public/js/list/student_applicant_list.js",
@@ -302,6 +303,8 @@ scheduler_events = {
 
 fixtures = [
     {"dt": "Workflow"},
+    {'dt': 'Workflow State'},
+    {'dt': 'Workflow Action Master'},
     {"dt": "Server Script", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
     {"dt": "Property Setter", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
     {"dt": "Client Script", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
@@ -318,24 +321,7 @@ fixtures = [
             [
                 "name",
                 "in",
-                ["Head Administration", "Councellor", "Teacher", "Printer", "Watchman"],
-            ]
-        ],
-    },
-    {
-        "dt": "Role",
-        "filters": [
-            [
-                "name",
-                "in",
-                [
-                    "Head Administration",
-                    "Councellor",
-                    "Teacher",
-                    "Content Creator",
-                    "Printer",
-                    "Watchman",
-                ],
+                ["Head Administration", "Councellor", "Teacher", "Printer", "Watchman","Clerk"],
             ]
         ],
     },
@@ -350,7 +336,7 @@ fixtures = [
             [
                 "name",
                 "in",
-                ["Student Referral", "Fee Receipt", "Undertaking OTP", "Payment Link"],
+                ["Student Referral", "Fee Receipt", "Undertaking OTP", "Payment Link","Payment Link Remainder"],
             ]
         ],
     },
@@ -456,3 +442,5 @@ after_migrate = [
     "edu_quality.public.py.utils.migrate",
     "edu_quality.tasks.update_academic_year",
 ]
+
+website_route_rules = [{'from_route': '/walsh/<path:app_path>', 'to_route': 'walsh'},]

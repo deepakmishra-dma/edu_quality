@@ -131,7 +131,7 @@ def email_otp(email, otp,undertaking,cc_email=None):
 def sms_otp(number, otp):
     api_key = "***REMOVED-SMS-KEY***"
     message = (
-        f"{otp} is OTP for updating child details (JE08) initiated by you -Team Walnut"
+        f"{otp} is OTP for updating child details initiated by you -Team Walnut"
     )
     template_id = 1007162244812510707
     sender = "WLTSCL"
