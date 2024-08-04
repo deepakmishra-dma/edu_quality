@@ -361,7 +361,6 @@ def make_payment_request(**args):
     """Make payment request"""
 
     args = frappe._dict(args)
-
     ref_doc = frappe.get_doc(args.dt, args.dn)
     gateway_account = get_gateway_details(args) or frappe._dict()
     grand_total = get_amount(ref_doc, gateway_account.get("payment_account"), args.is_deposit, args.payment_term)
@@ -388,57 +387,57 @@ def make_payment_request(**args):
         {"reference_doctype": args.dt, "reference_name": args.dn, "docstatus": 0},
     )
 
-    existing_payment_request_amount = get_existing_payment_request_amount(args.dt, args.dn)
+    # existing_payment_request_amount = get_existing_payment_request_amount(args.dt, args.dn)
 
-    if existing_payment_request_amount:
-        grand_total -= existing_payment_request_amount
-    if draft_payment_request:
-        frappe.db.set_value(
-            "Payment Request", draft_payment_request, "grand_total", grand_total, update_modified=False
-        )
-        pr = frappe.get_doc("Payment Request", draft_payment_request)
-    else:
-        pr = frappe.new_doc("Payment Request")
-        pr.update(
-            {
-                "payment_gateway_account": gateway_account.get("name"),
-                "payment_gateway": gateway_account.get("payment_gateway"),
-                "payment_account": gateway_account.get("payment_account"),
-                "payment_channel": gateway_account.get("payment_channel"),
-                "payment_request_type": args.get("payment_request_type"),
-                "currency": "INR",
-                "grand_total": grand_total,
-                "mode_of_payment": args.mode_of_payment,
-                "email_to": args.recipient_id or ref_doc.owner,
-                "subject": _("Payment Request for {0}").format(args.dn),
-                "message": gateway_account.get("message") or get_dummy_message(ref_doc),
-                "reference_doctype": args.dt,
-                "reference_name": args.dn,
-                "party_type": args.get("party_type") or "Customer",
-                "party": args.get("party") or ref_doc.get("customer"),
-                "bank_account": bank_account,
-                "payment_term": args.payment_term,
-                "company": ref_doc.get("company"),
-            }
-        )
+    # if existing_payment_request_amount:
+    #     grand_total -= existing_payment_request_amount
+    # if draft_payment_request:
+    #     frappe.db.set_value(
+    #         "Payment Request", draft_payment_request, "grand_total", grand_total, update_modified=False
+    #     )
+    #     pr = frappe.get_doc("Payment Request", draft_payment_request)
+    # else:
+    pr = frappe.new_doc("Payment Request")
+    pr.update(
+        {
+            "payment_gateway_account": gateway_account.get("name"),
+            "payment_gateway": gateway_account.get("payment_gateway"),
+            "payment_account": gateway_account.get("payment_account"),
+            "payment_channel": gateway_account.get("payment_channel"),
+            "payment_request_type": args.get("payment_request_type"),
+            "currency": "INR",
+            "grand_total": grand_total,
+            "mode_of_payment": args.mode_of_payment,
+            "email_to": args.recipient_id or ref_doc.owner,
+            "subject": _("Payment Request for {0}").format(args.dn),
+            "message": gateway_account.get("message") or get_dummy_message(ref_doc),
+            "reference_doctype": args.dt,
+            "reference_name": args.dn,
+            "party_type": args.get("party_type") or "Customer",
+            "party": args.get("party") or ref_doc.get("customer"),
+            "bank_account": bank_account,
+            "payment_term": args.payment_term,
+            "company": ref_doc.get("company"),
+        }
+    )
 
-        # Update dimensions
-        pr.update(
-            {
-                "cost_center": ref_doc.get("cost_center"),
-                "project": ref_doc.get("project"),
-            }
-        )
+    # Update dimensions
+    pr.update(
+        {
+            "cost_center": ref_doc.get("cost_center"),
+            "project": ref_doc.get("project"),
+        }
+    )
 
-        for dimension in get_accounting_dimensions():
-            pr.update({dimension: ref_doc.get(dimension)})
+    for dimension in get_accounting_dimensions():
+        pr.update({dimension: ref_doc.get(dimension)})
 
-        if args.order_type == "Shopping Cart" or args.mute_email:
-            pr.flags.mute_email = True
+    if args.order_type == "Shopping Cart" or args.mute_email:
+        pr.flags.mute_email = True
 
-        pr.insert(ignore_permissions=True)
-        if args.submit_doc:
-            pr.submit()
+    pr.insert(ignore_permissions=True)
+    if args.submit_doc:
+        pr.submit()
 
     if args.order_type == "Shopping Cart":
         frappe.db.commit()

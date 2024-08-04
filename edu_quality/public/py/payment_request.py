@@ -229,7 +229,6 @@ def update_payment_request_after_discount(doc):
 
 # create new payment request if previous payment request is not paid
 def update_not_paid_payment_request(doc, not_paid_filter):
-    frappe.logger('p_req').exception('unpaid' + str(doc.name))
     pr = frappe.get_doc("Payment Request", not_paid_filter)
     if not pr.docstatus.is_cancelled() and not pr.docstatus.is_draft():
         pr.cancel()
@@ -247,6 +246,7 @@ def update_not_paid_payment_request(doc, not_paid_filter):
 
 def on_submit(doc, method):
     try:
+        frappe.logger('pr12').exception(doc.payment_term)
         frappe.enqueue(email_trigger, pr=doc.name,queue='long')
     except Exception as e:
         frappe.logger('payment_link').exception(e)
