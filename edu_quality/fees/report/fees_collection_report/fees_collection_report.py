@@ -95,6 +95,7 @@ def get_payment_entries_and_append_fee_data(pe_filters, fee, student_name, refno
         "mode_of_payment",
         "payment_term",
     ]
+    pe_filters["reference_name"] = fee.name
     payment_entries = frappe.get_all("Payment Entry", pe_filters, fields)
     for payment in payment_entries:
         fee_data.append(
@@ -127,7 +128,7 @@ def get_data(filters):
         pe_filters["creation"] = [">=", from_date]
     if to_date:
         pe_filters["creation"] = ["<=", to_date]
-    if payment_mode and payment_mode != "Online":
+    if payment_mode:
         pe_filters["mode_of_payment"] = payment_mode
     if school:
         fee_filter["custom_school"] = ["in", school]
@@ -150,13 +151,6 @@ def get_data(filters):
         for fee in fees:
             refno = frappe.get_value("Student", fee.student, "reference_number")
             student_name = get_student_name(fee)
-
-            if payment_mode == "Online":
-                payment_request = frappe.get_value("Payment Request", {"reference_name": fee.name}, "name")
-                pe_filters["reference_no"] = payment_request
-            else:
-                pe_filters["reference_name"] =  fee.name
-
             get_payment_entries_and_append_fee_data(pe_filters, fee, student_name, refno, fee_data)
 
     return fee_data
