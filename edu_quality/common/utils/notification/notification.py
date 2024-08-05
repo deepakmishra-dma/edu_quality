@@ -9,8 +9,12 @@ def create_notification_log(variables):
         due_date = fee.due_date
     subject = f"Payment Reminder sent to {fee.student}"
     email_content = f"""
-        Payment reminders sent successfully to {fee.student} for {fee.doctype}\n
+        Dear {fee.student},\n
+        This is the reminder for the payment of {fee.name}.\n
+        <b>Amount: </b>{doc.grand_total}\n
         <b>Due Date: </b>{due_date}\n
+        Click here to make the payment: <a href="{doc.payment_url}">Make Payment</a>\n
+        Please make the payment on time to avoid any inconvenience.\n
     """
     user = frappe.get_value("Student", fee.student, "user")
 
