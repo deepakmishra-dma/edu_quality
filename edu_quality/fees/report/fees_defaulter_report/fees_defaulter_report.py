@@ -108,6 +108,12 @@ def get_columns():
             "fieldtype": "Data",
             "width": 150,
         },
+        {
+            "label": "Notification Count",
+            "fieldname": "notification_count",
+            "fieldtype": "Data",
+            "width": 150,
+        },
     ]
     return columns
 
@@ -124,10 +130,11 @@ def get_student_data(student_name, student_status=None):
             "joining_date",
             "student_email_id",
             "student_mobile_number",
-            "student_status"
+            "student_status",
         ],
         as_dict=True,
     )
+
 
 def get_data(filters):
     fee_filter = {"docstatus": 1}
@@ -139,6 +146,7 @@ def get_data(filters):
     program = filters.get("program")
     term = filters.get("term")
     student_status = filters.get("student_status")
+    academic_year = filters.get("academic_year")
 
     if from_date and to_date:
         pr_filters["creation"] = ["between", [from_date, to_date]]
@@ -154,6 +162,9 @@ def get_data(filters):
         fee_advance_filter["program"] = ["in", program]
     if term:
         pr_filters["payment_term"] = term
+    if academic_year:
+        fee_filter["academic_year"] = academic_year
+        fee_advance_filter["academic_year"] = academic_year
 
     fees = frappe.get_all(
         "Fees",
@@ -188,7 +199,9 @@ def get_data(filters):
         )
         if payment_request:
             for payment in payment_request:
-                payment_term = "Deposit" if not payment.payment_term else payment.payment_term
+                payment_term = (
+                    "Deposit" if not payment.payment_term else payment.payment_term
+                )
                 due_date = frappe.get_value(
                     "Payment Schedule",
                     {"parent": fee.name, "payment_term": payment_term},
@@ -213,6 +226,12 @@ def get_data(filters):
                             due_date,
                             student.student_email_id,
                             student.student_mobile_number,
+                            get_notification_log_count(
+                                fee.student,
+                                fee.program,
+                                fee.academic_year,
+                                payment_term,
+                            ),
                         ]
                     )
 
@@ -268,6 +287,12 @@ def get_data(filters):
                         fee.due_date,
                         student.student_email_id,
                         student.student_mobile_number,
+                        get_notification_log_count(
+                            fee.student,
+                            fee.program,
+                            fee.academic_year,
+                            payment_request.payment_term,
+                        ),
                     ]
                 )
 
@@ -292,17 +317,33 @@ def get_student_name(fee):
     return name
 
 
+def get_notification_log_count(student, program, academic_year, payment_term):
+    notifications = frappe.get_all(
+        "Notification Log",
+        {
+            "student": student,
+            "class": program,
+            "academic_year": academic_year,
+            "payment_term": payment_term,
+        },
+    )
+    return len(notifications)
+
+
 @frappe.whitelist()
 def send_payment_reminder(**kwargs):
     try:
         from nextai.funnel.custom_trigger import trigger_event
-        kwargs['school'] = frappe.json.loads(kwargs.get('school'))
-        kwargs['program'] = frappe.json.loads(kwargs.get('program'))
+
+        kwargs["school"] = frappe.json.loads(kwargs.get("school"))
+        kwargs["program"] = frappe.json.loads(kwargs.get("program"))
         data = get_data(kwargs)
         if not data:
             return "No data found"
         for row in data:
-            payment_request = frappe.get_doc("Payment Request", {"reference_name": row[2]})
+            payment_request = frappe.get_doc(
+                "Payment Request", {"reference_name": row[2]}
+            )
             trigger_event(doc=payment_request, event_name="payment_link_remainder")
         frappe.response["message"] = {
             "title": "Success",
@@ -320,17 +361,23 @@ def send_payment_reminder(**kwargs):
             "msg": "Something went wrong",
         }
 
+
 @frappe.whitelist()
 def change_student_status(**kwargs):
     try:
-        kwargs['school'] = frappe.json.loads(kwargs.get('school'))
-        kwargs['program'] = frappe.json.loads(kwargs.get('program'))
+        kwargs["school"] = frappe.json.loads(kwargs.get("school"))
+        kwargs["program"] = frappe.json.loads(kwargs.get("program"))
         data = get_data(kwargs)
         if not data:
             return "No data found"
         for row in data:
             if row[0]:
-                frappe.db.set_value("Student", {"reference_number":row[0]}, "student_status", "Defaulter")
+                frappe.db.set_value(
+                    "Student",
+                    {"reference_number": row[0]},
+                    "student_status",
+                    "Defaulter",
+                )
         frappe.response["message"] = {
             "title": "Success",
             "msg": "Student Marked As Defaulter Successfully",

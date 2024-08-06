@@ -10,7 +10,11 @@ def create_notification_log(variables):
     subject = f"Payment Reminder sent to {fee.student}"
     email_content = f"""
         Dear {fee.student},\n
-        This is the reminder for the payment of {fee.name}.\n
+        This is the reminder for the payment of <b>{fee.name}</b>.\n
+        <b>School: </b>{fee.custom_school}\n
+        <b>Class: </b>{fee.program}\n
+        <b>Academic Year: </b>{fee.academic_year}\n
+        <b>Term: </b>{doc.payment_term}\n
         <b>Amount: </b>{doc.grand_total}\n
         <b>Due Date: </b>{due_date}\n
         Click here to make the payment: <a href="{doc.payment_url}">Make Payment</a>\n
@@ -26,6 +30,11 @@ def create_notification_log(variables):
         "document_name": fee.name,
         "type": "Alert",
         "user": user,
+        "student": fee.student,
+        "school": fee.custom_school,
+        "class": fee.program,
+        "academic_year": fee.academic_year,
+        "payment_term": doc.payment_term
     })
     notification_log.insert(ignore_permissions=True)
 
