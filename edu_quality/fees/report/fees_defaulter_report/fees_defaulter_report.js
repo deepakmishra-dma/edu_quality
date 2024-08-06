@@ -49,6 +49,13 @@ frappe.query_reports["Fees Defaulter Report"] = {
 			"options": ["", "New student", "Current student", "Cancelled", "Not attending", "Defaulter", "Alumni"],
 			"width": "80",
 		},
+		{
+			"fieldname": "academic_year",
+			"label": __("Academic Year"),
+			"fieldtype": "Link",
+			"options": "Academic Year",
+			"width": "80",
+		},
 	],
 
 	onload: function (report) {
@@ -66,7 +73,8 @@ frappe.query_reports["Fees Defaulter Report"] = {
 								school: filters.school,
 								program: filters.program,
 								term: filters.term,
-								student_status: filters.student_status
+								student_status: filters.student_status,
+								academic_year: filters.academic_year
 							},
 							callback: function (r) {
 								if (r.message) {
@@ -114,6 +122,7 @@ frappe.query_reports["Fees Defaulter Report"] = {
 								program: filters.program,
 								term: filters.term,
 								student_status: filters.student_status,
+								academic_year: filters.academic_year
 							},
 							callback: function (r) {
 								if (r.message) {
