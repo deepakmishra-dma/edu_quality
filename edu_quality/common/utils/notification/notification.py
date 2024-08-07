@@ -31,7 +31,7 @@ def create_notification_log(variables):
         "type": "Alert",
         "user": user,
         "student": fee.student,
-        "school": fee.custom_school,
+        "school": fee.custom_school if fee.doctype == "Fees" else fee.school,
         "class": fee.program,
         "academic_year": fee.academic_year,
         "payment_term": doc.payment_term
