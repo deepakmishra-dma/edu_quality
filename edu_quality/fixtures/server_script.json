@@ -280,11 +280,11 @@
   "doctype": "Server Script",
   "doctype_event": "Before Submit",
   "event_frequency": "All",
-  "modified": "2023-08-08 17:12:42.815755",
+  "modified": "2024-02-12 15:45:11.291606",
   "module": "Fees",
   "name": "Create Fees for new Student",
   "reference_doctype": "Program Enrollment",
-  "script": "filters = {\"academic_year\": doc.academic_year, \"program\": doc.program, \"student_category\": doc.student_category}\nif frappe.db.exists(\"Student Group\", filters):\n    sg = frappe.get_doc(\"Student Group\", filters)\n    roll_no = len(sg.students)+1\n    sg.append(\"students\", {\n        \"student\":doc.student,\n        \"student_name\": doc.student_name,\n        \"group_roll_number\": roll_no,\n        \"active\": 1\n    })\n    sg.save()\n    \n    if frappe.db.exists(\"Fee Schedule\", filters):\n        fs = frappe.get_doc(\"Fee Schedule\", filters)\n        for g in fs.student_groups:\n            if g.student_group == sg.name:\n                total_students = int(g.total_students) + 1\n                frappe.db.set_value(\"Fee Schedule Student Group\", g.name, \"total_students\", total_students)",
+  "script": "filters = {\"academic_year\": doc.academic_year, \"program\": doc.program, \"student_category\": doc.student_category}\nif frappe.db.exists(\"Student Group\", doc.student_group):\n    sg = frappe.get_doc(\"Student Group\", doc.student_group)\n    roll_no = len(sg.students)+1\n    sg.append(\"students\", {\n        \"student\":doc.student,\n        \"student_name\": doc.student_name,\n        \"group_roll_number\": roll_no,\n        \"active\": 1\n    })\n    sg.save()\n    \n    if frappe.db.exists(\"Fee Schedule\", filters):\n        fs = frappe.get_doc(\"Fee Schedule\", filters)\n        for g in fs.student_groups:\n            if g.student_group == sg.name:\n                total_students = int(g.total_students) + 1\n                frappe.db.set_value(\"Fee Schedule Student Group\", g.name, \"total_students\", total_students)",
   "script_type": "DocType Event"
  },
  {

@@ -1,5 +1,26 @@
 frappe.ui.form.on('Fees', {
     refresh: function (frm) {
+
+        frm.add_custom_button(__('Split Deposits'), function () {
+            frappe.call({
+                method: "edu_quality.edu_quality.server_scripts.fees.separate_deposits",
+                type: "POST",
+                args: {
+                    fees: frm.doc.name
+                },
+                callback: function (response) {
+                    if(response.message){
+                        frappe.show_alert("Deposits Separated!",)
+                    frm.reload_doc();
+                }
+                    else{
+                        frappe.show_alert("Something went Wrong!")
+                    }
+                }
+            });
+
+        })
+
         frm.add_custom_button(__('Add Discount'), function () {
             let d = new frappe.ui.Dialog({
                 title: 'Add Discount',
