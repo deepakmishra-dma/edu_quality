@@ -149,9 +149,8 @@ def settlement_hook(**kwargs):
             "doctype":"Easebuzz Settlement Log",
             "data": data
             })
-        frappe.db.commit()
         doc.insert(ignore_permissions=True)
-
+        frappe.db.commit()
         return 1
     except Exception as e:
         frappe.logger('settlement').exception(e)
