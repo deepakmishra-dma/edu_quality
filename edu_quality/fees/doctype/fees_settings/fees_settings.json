@@ -9,6 +9,7 @@
  "field_order": [
   "student_applicant_section",
   "apply_deposits",
+  "combine_deposit_and_due_fees",
   "column_break_c6e9",
   "apply_fees",
   "payment_methods_section",
@@ -79,12 +80,20 @@
    "fieldtype": "Link",
    "label": "Print Format",
    "options": "Print Format"
+  },
+  {
+   "default": "1",
+   "fieldname": "combine_deposit_and_due_fees",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Combine Deposit and Due Fees",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-01-25 21:29:01.930411",
+ "modified": "2024-02-07 14:16:18.117598",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Fees Settings",

@@ -18,7 +18,7 @@ class CMAP(Document):
         class_sortcode = frappe.db.get_value(
             "Class Type", self.get("class"), "short_code"
         )
-        self.name = f"{self.academic_year}-{course_doc.name}{course_short_code}{class_sortcode}{self.unit}{self.period}"
+        self.name = f"{self.academic_year}-{course_short_code}{class_sortcode}{self.unit}{self.period}"
 
     def before_validate(self, method=None):
         frappe.errprint(self.products)
@@ -170,14 +170,14 @@ def get_cmap_assignees_report(**filters):
 @frappe.whitelist()
 def get_cmap_period_no(self):
     self = json.loads(self) if isinstance(self, str) else self
-    if( not self.get('subject') or not self.get('academic_year') or not self.get('unit')): return
+    if( not self.get('subject') or not self.get('academic_year') ): return
     
     max_period_list = frappe.db.get_list("CMAP",filters={
         "subject":self.get('subject') ,
         "academic_year":self.get('academic_year'),
        
         "class":self.get('class'),
-        "unit":self.get('unit')
+      
     },fields=["MAX(period)"])
 
     max_period = max_period_list[0].get("MAX(period)",0)
@@ -185,3 +185,18 @@ def get_cmap_period_no(self):
         return 1
     elif(str(self.get('period')) == max_period or  not self.get('period')):
         return int(max_period)+1
+
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def get_unique_material_query(doctype, txt, searchfield, start, page_len, filters):
+    materials = frappe.db.get_list(doctype=doctype,filters=filters,   start=start,
+    page_length=page_len,
+    as_list=True,ignore_permissions=True,fields=['name','description'])
+    merged_array = []
+    merged_dict = {}
+    for key, value in materials:
+        if( value not in merged_dict ):
+            merged_dict[value] = key
+            merged_array.append((key,value))
+
+    return merged_array

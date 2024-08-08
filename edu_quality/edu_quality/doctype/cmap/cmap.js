@@ -1,7 +1,7 @@
 // Copyright (c) 2023, Hybrowlabs Technologies and contributors
 // For license information, please see license.txt
 async function getPeriodNo(frm) {
-    if (!frm.doc.subject || !frm.doc.class || !frm.doc.unit || !frm.doc.academic_year) return
+    if (!frm.doc.subject || !frm.doc.class || !frm.doc.academic_year) return
     if (frm.doc.__islocal) {
         frappe.call({
             method: "edu_quality.edu_quality.doctype.cmap.cmap.get_cmap_period_no",
@@ -25,11 +25,12 @@ function getNoteQuery(cur_frm, fieldName, fieldGroup) {
     cur_frm.fields_dict['products'].grid.get_field(fieldName).get_query = function (doc, cdt, dn) {
         let d = locals[cdt][dn];
         return {
+            "query": "edu_quality.edu_quality.doctype.cmap.cmap.get_unique_material_query",
             "filters": {
                 "parent": d.item,
                 "material_type": fieldGroup,
 
-            }
+            },
         };
     }
 }
@@ -64,9 +65,9 @@ async function checkNotes(type, frm, materialType) {
             console.log(r.message)
         }
     });
-    const data = await res.json()
-    return data.message
+
 }
+
 async function getNotes(frm) {
     // const products = frm.get_field('products').grid.data || []
     // const data = await Promise.all(products.map(product => {
@@ -158,6 +159,7 @@ frappe.ui.form.on("CMAP", {
 frappe.ui.form.on("Item Detail", {
     broadcast: async (frm) => {
         const res = await checkNotes("broadcast", frm, "Broadcast")
+
     },
     parent_note: async (frm) => {
         const res = await checkNotes("parent_note", frm, "Parent Note")
@@ -173,5 +175,6 @@ frappe.ui.form.on("Item Detail", {
     },
 
 })
+
 
 

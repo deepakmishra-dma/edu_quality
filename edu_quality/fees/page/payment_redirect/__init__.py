@@ -77,7 +77,10 @@ def get_payment_details(**kwargs):
     if payment_request.payment_term:
         component = json.loads(fees.component_split)[payment_request.payment_term]
         breakup = get_breakup(fees,payment_request.payment_term)
-        due_date = component['due_date']
+        if fees.doctype == "Fees":
+            due_date = frappe.get_value("Payment Schedule",{'parent':fees.name,'payment_term':payment_request.payment_term},'due_date')
+        elif fees.doctype == "Fee Advance":
+            due_date = fees.due_date
         is_deposit = component['is_deposit']
         if fees.doctype == "Fees":
             student_name = fees.student_name

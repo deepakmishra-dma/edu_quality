@@ -320,17 +320,25 @@ def payment_plan(doc, method=None):
                     if difference.days > before_days and initial_payment>0:
                             only_deposit(doc)
                     elif difference.days <= before_days:
-                        payment_amount = payment_amount + initial_payment
-                        if initial_payment>0:
-                            description = description + " and deposit/application fee"
-                        frappe.enqueue(
-                                "edu_quality.public.py.student.create_payment_request",
-                                fee=doc,
-                                term = schedule.payment_term,
-                                is_async=True,
-                                queue="long",
-                                timeout=1800,
-                            )
+                        #global check case
+                        if not frappe.db.get_single_value("Fees Settings", "combine_deposit_and_due_fees"):
+                            separate_links(doc,schedule.payment_term)
+                        #student check
+                        elif pe.do_not_combine_deposit_and_due_fees:
+                            separate_links(doc,schedule.payment_term)
+                        #combination case                      
+                        else:
+                            payment_amount = payment_amount + initial_payment
+                            if initial_payment>0:
+                                description = description + " and deposit/application fee"
+                            frappe.enqueue(
+                                    "edu_quality.public.py.student.create_payment_request",
+                                    fee=doc,
+                                    term = schedule.payment_term,
+                                    is_async=True,
+                                    queue="long",
+                                    timeout=1800,
+                                )
             i = i+1
             doc.append("payment_schedule",{
                 'payment_term': schedule.payment_term,
@@ -341,8 +349,21 @@ def payment_plan(doc, method=None):
                 'outstanding': payment_amount,
             })
 
+def separate_links(doc,term):
+    only_deposit(doc)
+    frappe.enqueue(
+        "edu_quality.public.py.student.create_payment_request",
+        fee=doc,
+        term = term,
+        is_async=True,
+        queue="long",
+        timeout=1800,
+    )
+
+
 
 def only_deposit(doc):    
+    frappe.logger('only').exception('called')
     make_payment_request(
         party_type="Student",
         party=doc.student,

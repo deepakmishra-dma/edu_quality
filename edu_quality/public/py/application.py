@@ -126,15 +126,12 @@ def baby_school(student_applicant):
     "Walnut School at Fursungi": "Baby Walnut Fursungi",
     "Walnut School at Shivane": "Baby Walnut Shivane"
     }
-    frappe.logger('enr').exception('called')
     program = student_applicant.program.lower()
     if not ("kg" in program or "nursery" in program):
         return 
-    frappe.logger('enr').exception('true')
+    return
     school = school_map[student_applicant.school] 
-    frappe.logger('enr').exception(school)
     new_program = check_class(student_applicant.program,school)
-    frappe.logger('enr').exception(new_program)
     student_applicant.school = school
     student_applicant.program = new_program
     student_applicant.fee_structure = None 
