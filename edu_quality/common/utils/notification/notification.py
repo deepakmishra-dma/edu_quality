@@ -30,7 +30,7 @@ def create_notification_log(variables):
         "document_type": fee.doctype,
         "document_name": fee.name,
         "type": "Alert",
-        "user": user,
+        "for_user": user,
         "student": fee.student,
         "school": school,
         "class": fee.program,
