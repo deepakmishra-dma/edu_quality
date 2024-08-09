@@ -33,8 +33,16 @@ function queryTextbook(frm) {
     })
 }
 function uploadFileButton(frm) {
-    if (frm.doc.__islocal) return
+
     frm.get_field('custom_upload_file_to_drive').onclick = function () {
+        if (frm.doc.__islocal) {
+            frappe.msgprint({
+                message: __("Please Save the item before uploading product document on drive"),
+                indicator: "red",
+                title: __("Error")
+            });
+            return
+        }
         const dialog = new frappe.ui.FileUploader({
             doctype: frm.doc.doctype,
             docname: frm.doc.name,
@@ -82,10 +90,15 @@ frappe.ui.form.on("Item", {
                 }
             })
         frm.get_field('custom_view_worksheet_header').onclick = function () {
+            if (frm.doc.__islocal) {
+                frappe.msgprint({
+                    message: __("Please Save the item before accessing the worksheet header"),
+                    indicator: "red",
+                    title: __("Error getting worksheet header")
+                });
+            }
             if (!frm.doc.__islocal) {
-
                 window.open(`/api/method/edu_quality.overrides_hooks.item.get_worksheet_template?name=${frm.doc.name}`)
-
             }
         }
     },

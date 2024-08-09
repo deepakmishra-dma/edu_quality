@@ -225,10 +225,19 @@ def payment_entry(doc, ref_doc, party_amount, paid_from, paid_to, company, cost_
                 school = frappe.get_value("Fee Component", {"fees_category":fee_name, "parent": ref_doc.name}, "school")
                 payment_entry.update({"school": school})
 
+    if not frappe.db.exists("Mode of Payment", "Online"):
+        frappe.get_doc({
+                "doctype": "Mode of Payment",
+                "name": "Online",
+                "mode_of_payment": "Online",
+            }).insert(ignore_permissions=True)
+
+
     payment_entry.update({
         'reference_doctype': ref_doc.doctype, # 'Fees' or 'Fee Advance'
         'reference_name': ref_doc.name,
         'payment_request': doc.name,
+        'mode_of_payment': "Online",
     })
 
     payment_entry.insert(ignore_permissions=True)

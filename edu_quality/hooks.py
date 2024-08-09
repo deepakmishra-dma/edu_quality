@@ -41,6 +41,7 @@ doctype_js = {
     "Purchase Receipt": "public/js/purchase_receipt.js",
     "Topic": "public/js/topic.js",
     "Instructor": "public/js/instructor.js",
+    "Payment Request": "public/js/payment_request.js",
 }
 doctype_list_js = {
     "Student Applicant": "public/js/list/student_applicant_list.js",
@@ -336,7 +337,7 @@ fixtures = [
             [
                 "name",
                 "in",
-                ["Student Referral", "Fee Receipt", "Undertaking OTP", "Payment Link"],
+                ["Student Referral", "Fee Receipt", "Undertaking OTP", "Payment Link","Payment Link Remainder"],
             ]
         ],
     },
@@ -442,3 +443,5 @@ after_migrate = [
     "edu_quality.public.py.utils.migrate",
     "edu_quality.tasks.update_academic_year",
 ]
+
+website_route_rules = [{'from_route': '/walsh/<path:app_path>', 'to_route': 'walsh'},]

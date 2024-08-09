@@ -259,3 +259,10 @@ def email_trigger(pr):
     if status == 1:
         doc = frappe.get_doc("Payment Request", pr)
         trigger_event(doc=doc, event_name="payment_link")
+
+
+@frappe.whitelist()
+def get_payment_plan_details(payment_request):
+    payment_request = frappe.get_doc("Payment Request", payment_request)
+    fees = frappe.get_doc(payment_request.reference_doctype, payment_request.reference_name)
+    return fees.payment_plan
