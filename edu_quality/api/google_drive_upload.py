@@ -22,6 +22,15 @@ def get_google_drive_object():
 
     return google_drive
 
+def get_google_folder_name_with_id(folder_id):
+    try:
+        folder_exist = get_google_drive_object().files().get(fileId=folder_id, fields='name').execute()
+        return folder_exist
+    except HttpError as e:
+        if e.resp.status == 404: 
+            return False
+        frappe.msgprint("Something Went Wrong")
+
 
 def check_for_folder_in_google_drive(folder_name=None, root_folder=None):
     """Checks if folder exists in Google Drive else create it."""
@@ -79,6 +88,7 @@ def check_for_folder_in_google_drive(folder_name=None, root_folder=None):
         if f.get("name") == folder_name:
             frappe.db.commit()
             backup_folder_exists = True
+            print(f.get("id"),'hah')
             return f.get("id")
     if not backup_folder_exists:
         return _create_folder_in_google_drive(google_drive, folder_name)

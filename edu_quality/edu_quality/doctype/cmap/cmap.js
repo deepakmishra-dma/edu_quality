@@ -173,8 +173,18 @@ frappe.ui.form.on("Item Detail", {
     material_required: async (frm) => {
         const res = await checkNotes("material_required", frm, "Material Required")
     },
+    item: function (frm, cdt, cdn) {
 
+        var d = locals[cdt][cdn];
+        frm.doc.products.forEach(function (row, i) {
+
+            if (row.item === d.item && row.name != d.name) {
+                console.log('hi')
+                frappe.msgprint('Item you added already exists on the table.');
+                frappe.model.remove_from_locals(cdt, cdn);
+                frm.refresh_field('products');
+                return false;
+            }
+        });
+    }
 })
-
-
-

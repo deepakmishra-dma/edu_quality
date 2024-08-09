@@ -38,12 +38,13 @@
   {
    "fieldname": "name1",
    "fieldtype": "Data",
-   "label": "Name"
+   "label": "Name",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-09 04:01:12.262262",
+ "modified": "2024-02-12 16:08:33.528752",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Textbook",

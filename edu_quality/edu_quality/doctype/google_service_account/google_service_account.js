@@ -13,6 +13,7 @@ frappe.ui.form.on('Google Service Account', {
 				frm.set_df_property('root_folder', 'options', r.message)
 				frm.set_df_property('class_photo_folder', 'options', r.message)
 				frm.set_df_property('products_folder', 'options', r.message)
+				frm.set_df_property('final_product_folder', 'options', r.message)
 			}
 		})
 	}
