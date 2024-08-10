@@ -2,10 +2,12 @@ import frappe
 from frappe.utils import strip
 import json
 from edu_quality.public.py.utils import im_2_b64, gen_qr_code_b64
+
 # from weasyprint import CSS, HTML
 from edu_quality.api.google_drive_upload import (
     upload_file_stream_to_drive,
-    check_for_folder_in_google_drive,get_google_folder_name_with_id
+    check_for_folder_in_google_drive,
+    get_google_folder_name_with_id,
 )
 import datetime
 
@@ -45,6 +47,7 @@ def name(self):
         return item_code
     except Exception as e:
         frappe.msgprint(str(e))
+
 
 def autoname(self, method=None):
     self.item_code = name(self)
@@ -87,6 +90,7 @@ def calculate_sheet_number(self):
 def before_insert(self, method=None):
     self.custom_sheet_number = calculate_sheet_number(self)
     create_item_directory(self)
+
 
 @frappe.whitelist()
 def get_qr_code(name):
@@ -152,8 +156,10 @@ def upload_to_drive():
     filename = frappe.form_dict.file_name
     optimize = frappe.form_dict.optimize
     content = None
-    item_doc = frappe.get_doc("Item",docname)
-    drive_existing_folder = get_google_folder_name_with_id(item_doc.custom_product_folder)
+    item_doc = frappe.get_doc("Item", docname)
+    drive_existing_folder = get_google_folder_name_with_id(
+        item_doc.custom_product_folder
+    )
     if not drive_existing_folder:
         create_item_directory(item_doc)
 
@@ -167,9 +173,10 @@ def upload_to_drive():
         files["file"].mimetype,
     )
     item_doc.custom_upload_date_on_drive = datetime.datetime.now()
-    item_doc.custom_product_url = f"https://drive.google.com/file/d/{id.get('id')}" or "Something went wrong"
+    item_doc.custom_product_url = (
+        f"https://drive.google.com/file/d/{id.get('id')}" or "Something went wrong"
+    )
     item_doc.save()
-    
 
 
 @frappe.whitelist()
@@ -215,18 +222,37 @@ def gen_subject_name(worksheet_id, subject_doc):
         )
     return new_string
 
-def create_product_class_textbook(class_name,textbook):
-    service_account_doc = frappe.get_single("Google Service Account")
-    return check_for_folder_in_google_drive(f"{class_name} {textbook}",service_account_doc.get('products_folder'))
 
-def create_product_chapter_folder(product_class_folder,chapter_number,chapter_name):
-    return check_for_folder_in_google_drive(f"{chapter_number} {chapter_name}",product_class_folder)
+def create_product_class_textbook(class_name, textbook):
+    service_account_doc = frappe.get_single("Google Service Account")
+    root_products_folder = service_account_doc.get("products_folder")
+    try:
+        if not root_products_folder:
+            return frappe.msgprint(
+                "Error creating product directory, product directory not set in google service account settings"
+            )
+
+        return check_for_folder_in_google_drive(
+            f"{class_name} {textbook}", root_products_folder
+        )
+    except:
+        frappe.msgprint("Error creating product directory")
+
+
+def create_product_chapter_folder(product_class_folder, chapter_number, chapter_name):
+    return check_for_folder_in_google_drive(
+        f"{chapter_number} {chapter_name}", product_class_folder
+    )
+
 
 def create_item_directory(self):
-    subject_folder = create_product_class_textbook(self.get("custom_class"),self.get("custom_textbook"))
-   
+    subject_folder = create_product_class_textbook(
+        self.get("custom_class"), self.get("custom_textbook")
+    )
+
     chapter = frappe.get_doc("Topic", self.get("custom_chapter"))
-    print(subject_folder,'yo',)
-    product_folder=create_product_chapter_folder(subject_folder,chapter.get('custom_chapter_number'),chapter.get('topic_name'))
+
+    product_folder = create_product_chapter_folder(
+        subject_folder, chapter.get("custom_chapter_number"), chapter.get("topic_name")
+    )
     self.custom_product_folder = product_folder
-    print(product_folder,'yo',)

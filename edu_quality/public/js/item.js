@@ -105,7 +105,20 @@ frappe.ui.form.on("Item", {
     onload: function (frm) {
         if (frm.doc__islocal) {
             frm.set_value('custom_sheet_number', 0);
-        } NotCmapFilter(frm);
+        }
+        if (!frm.doc.custom_is_cmap) {
+            NotCmapFilter(frm);
+        }
+        else if (frm.doc.custom_is_cmap === 1) {
+            frm.set_query("item_group", function () {
+                return {
+                    "filters": {
+                        "parent_item_group": "CMAP",
+
+                    }
+                }
+            })
+        }
     },
     custom_is_cmap: function (frm) {
         console.log(frm)
