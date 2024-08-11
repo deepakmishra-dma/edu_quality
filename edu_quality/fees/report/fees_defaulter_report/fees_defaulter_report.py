@@ -157,18 +157,57 @@ def get_data(filters):
             pr.docstatus = 1
             AND pr.status != 'Paid'
             AND COALESCE(f1.docstatus, f2.docstatus) = 1
-            AND ps.due_date < CURDATE()
-            AND (pr.creation BETWEEN %s AND %s)
-            AND (COALESCE(f1.custom_school, f2.school) IN %s)
-            AND (COALESCE(f1.program, f2.next_program) IN %s)
-            AND (pr.payment_term = %s)
-            AND (student.student_status = %s)
-            AND (COALESCE(f1.academic_year, f2.academic_year) = %s)
+            AND COALESCE(ps.due_date,  f2.due_date) < CURDATE()
+            {creation_condition}
+            {school_condition}
+            {class_condition}
+            {term_condition}
+            {s_s_condition}
+            {academic_year_condition}
         GROUP BY 
             refno, program, fees, student, student_status, school, payment_plan, payment_term, amount_due, academic_year, admission_date, creation_date, due_date, email_id, mobile_number;
     """
-    values = (from_date, to_date, tuple(school), tuple(program), term, student_status, academic_year)
-    data = frappe.db.sql(sql_query, values, as_dict=True)
+    academic_year_condition = ""
+    if academic_year:
+        academic_year_condition  += " AND (COALESCE(f1.academic_year, f2.academic_year) =%(academic_year)s)"
+    s_s_condition = ""
+    if student_status:
+        s_s_condition  += " AND student.student_status = %(student_status)s"
+    term_condition = ""
+    if term:
+        term_condition  += " AND pr.payment_term = %(term)s"
+    creation_condition = ""
+    if from_date and to_date:
+        creation_condition += " AND pr.creation BETWEEN %(from_date)s AND %(to_date)s"
+    if from_date:
+        creation_condition += " AND pr.creation >= %(from_date)s"
+    if to_date:
+        creation_condition += " AND pr.creation <= %(to_date)s"
+
+    school_condition = ""
+    if school:
+        school_condition += " AND (f1.custom_school IS NULL OR f1.custom_school IN %(school)s) AND (f2.school IS NULL OR f2.school IN %(school)s)"
+    class_condition = ""
+    if program:
+        class_condition += " AND (f1.program IS NULL OR f1.program IN %(program)s) AND (f2.next_program IS NULL OR f2.next_program IN %(program)s)"
+
+    sql_query = sql_query.format(
+        creation_condition=creation_condition,
+        class_condition=class_condition,
+        school_condition=school_condition,
+        term_condition=term_condition,
+        s_s_condition=s_s_condition,
+        academic_year_condition=academic_year_condition
+    )
+    filter_data= {"from_date":from_date,
+                  "to_date":to_date,
+                  "school":tuple(school),
+                  "program":tuple(program),
+                  "term": term,
+                  "student_status":student_status,
+                  "academic_year":academic_year}
+    frappe.logger("ssaaaaa").exception(filter_data)
+    data = frappe.db.sql(sql_query, filter_data, as_dict=True)
     return data
 
 
