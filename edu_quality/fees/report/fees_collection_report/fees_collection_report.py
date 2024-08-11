@@ -86,77 +86,70 @@ def get_columns():
     ]
     return columns
 
-def get_payment_entries_and_append_fee_data(pe_filters, fee, student_name, refno, fee_data):
-    fields = [
-        "name",
-        "reference_no",
-        "reference_date",
-        "paid_amount",
-        "mode_of_payment",
-        "payment_term",
-    ]
-    pe_filters["reference_name"] = fee.name
-    payment_entries = frappe.get_all("Payment Entry", pe_filters, fields)
-    for payment in payment_entries:
-        fee_data.append(
-            [
-                refno,
-                fee.program,
-                fee.name,
-                student_name,
-                fee.custom_school,
-                payment.reference_no,
-                fee.payment_plan,
-                payment.payment_term,
-                payment.mode_of_payment,
-                payment.paid_amount,
-                payment.reference_date,
-                payment.name,
-            ]
-        )
-
 def get_data(filters):
-    fee_filter = {"docstatus": 1}
-    pe_filters = {"docstatus": 1}
-    fee_advance_filter = {"docstatus": 1}
+    filter_data = {"docstatus": 1}
     from_date = filters.get("from_date")
     to_date = filters.get("to_date")
     school = filters.get("school")
     payment_mode = filters.get("payment_mode")
 
     if from_date:
-        pe_filters["creation"] = [">=", from_date]
+        filter_data["from_date"] = from_date
     if to_date:
-        pe_filters["creation"] = ["<=", to_date]
+        filter_data["to_date"] = to_date
     if payment_mode:
-        pe_filters["mode_of_payment"] = payment_mode
+        filter_data["mode_of_payment"] = payment_mode
     if school:
-        fee_filter["custom_school"] = ["in", school]
-        fee_advance_filter['school'] = ["in", school] 
+        filter_data["school"] = tuple(school)
 
     fee_data = []
-    for fee_type, filters in [("Fees", fee_filter), ("Fee Advance", fee_advance_filter)]:
-        fees = frappe.get_all(
-            fee_type,
-            filters,
-            [
-                "name",
-                "student",
-                "custom_school" if fee_type == "Fees" else "school",
-                "program",
-                "outstanding_amount",
-                "payment_plan",
-            ],
-        )
-        for fee in fees:
-            refno = frappe.get_value("Student", fee.student, "reference_number")
-            student_name = get_student_name(fee)
-            get_payment_entries_and_append_fee_data(pe_filters, fee, student_name, refno, fee_data)
 
+    temp = """
+           SELECT 
+                s.reference_number as refno,
+                COALESCE(f1.program, f2.next_program) AS program,
+                COALESCE(f1.name, f2.name) AS fees,
+                CONCAT_WS(" ", s.first_name, s.middle_name, s.last_name) AS student,
+                COALESCE(f1.custom_school, f2.school) AS school,
+                pe.reference_no as cheque_no,
+                COALESCE(f1.payment_plan, f2.payment_plan) AS payment_plan,
+                pe.payment_term,
+                pe.mode_of_payment,
+                pe.paid_amount,
+                pe.reference_date as transaction_date,
+                pe.name as receipt_id
+
+
+        FROM `tabPayment Entry` pe
+            LEFT JOIN `tabFees` AS f1 ON pe.reference_doctype = 'Fees' AND f1.name = pe.reference_name
+            LEFT JOIN `tabFee Advance` AS f2 ON pe.reference_doctype = 'Fee Advance' AND f2.name = pe.reference_name
+            LEFT JOIN `tabStudent` AS s ON s.name = COALESCE(f1.student, f2.student)
+        WHERE 
+           pe.docstatus = %(docstatus)s
+            {creation_condition}
+            {mode_of_payment_condition}
+            {school_condition};
+        """
+    creation_condition = ""
+    if from_date and to_date:
+        creation_condition += " AND pe.reference_date BETWEEN %(from_date)s AND %(to_date)s"
+    if from_date:
+        creation_condition += " AND pe.reference_date >= %(from_date)s"
+    if to_date:
+        creation_condition += " AND pe.reference_date <= %(to_date)s"
+    mode_of_payment_condition = ""
+    if payment_mode:
+        mode_of_payment_condition = " AND (pe.mode_of_payment IS NULL OR pe.mode_of_payment = %(mode_of_payment)s)"
+
+    school_condition = ""
+    if school:
+        school_condition += " AND (f1.custom_school IS NULL OR f1.custom_school IN %(school)s) AND (f2.school IS NULL OR f2.school IN %(school)s)"
+
+    # Replace placeholders in the query
+    temp = temp.format(
+        creation_condition=creation_condition,
+        mode_of_payment_condition=mode_of_payment_condition,
+        school_condition=school_condition
+    )
+    fee_data = frappe.db.sql(temp, filter_data, as_dict=True)
     return fee_data
-
-
-def get_student_name(fee):
-	student_name = frappe.get_value("Student", fee.student, ["first_name", "last_name"], as_dict=True)
-	name = f"{student_name.first_name or ''} {student_name.last_name or ''}".strip()
-	return name
