@@ -87,20 +87,20 @@ def get_columns():
     return columns
 
 def get_data(filters):
-    filter = {"docstatus": 1}
+    filter_data = {"docstatus": 1}
     from_date = filters.get("from_date")
     to_date = filters.get("to_date")
     school = filters.get("school")
     payment_mode = filters.get("payment_mode")
 
     if from_date:
-        filter["from_date"] = from_date
+        filter_data["from_date"] = from_date
     if to_date:
-        filter["to_date"] = to_date
+        filter_data["to_date"] = to_date
     if payment_mode:
-        filter["mode_of_payment"] = payment_mode
+        filter_data["mode_of_payment"] = payment_mode
     if school:
-        filter["school"] = tuple(school)
+        filter_data["school"] = tuple(school)
 
     fee_data = []
 
@@ -151,5 +151,5 @@ def get_data(filters):
         mode_of_payment_condition=mode_of_payment_condition,
         school_condition=school_condition
     )
-    fee_data = frappe.db.sql(temp, filter, as_dict=True)
+    fee_data = frappe.db.sql(temp, filter_data, as_dict=True)
     return fee_data
