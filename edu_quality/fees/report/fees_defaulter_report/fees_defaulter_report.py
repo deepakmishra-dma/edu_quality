@@ -108,242 +108,81 @@ def get_columns():
             "fieldtype": "Data",
             "width": 150,
         },
-        {
-            "label": "Notification Count",
-            "fieldname": "notification_count",
-            "fieldtype": "Data",
-            "width": 150,
-        },
     ]
     return columns
 
 
-def get_student_data(student_name, student_status=None):
-    filters = {"name": student_name}
-    if student_status:
-        filters["student_status"] = student_status
-    return frappe.get_value(
-        "Student",
-        filters,
-        [
-            "reference_number",
-            "joining_date",
-            "student_email_id",
-            "student_mobile_number",
-            "student_status",
-        ],
-        as_dict=True,
-    )
-
-
 def get_data(filters):
-    fee_filter = {"docstatus": 1}
-    pr_filters = {"docstatus": 1, "status": ["!=", "Paid"]}
-    fee_advance_filter = {"docstatus": 1}
-    from_date = filters.get("from_date")
-    to_date = filters.get("to_date")
-    school = filters.get("school")
-    program = filters.get("program")
-    term = filters.get("term")
-    student_status = filters.get("student_status")
-    academic_year = filters.get("academic_year")
+    from_date = filters.get("from_date", "")
+    to_date = filters.get("to_date", "")
+    school = filters.get("school", ())
+    program = filters.get("program", ())
+    term = filters.get("term", "")
+    student_status = filters.get("student_status", "")
+    academic_year = filters.get("academic_year", "")
 
-    if from_date and to_date:
-        pr_filters["creation"] = ["between", [from_date, to_date]]
-    if from_date:
-        pr_filters["creation"] = [">=", from_date]
-    if to_date:
-        pr_filters["creation"] = ["<=", to_date]
-    if school:
-        fee_filter["custom_school"] = ["in", school]
-        fee_advance_filter["school"] = ["in", school]
-    if program:
-        fee_filter["program"] = ["in", program]
-        fee_advance_filter["program"] = ["in", program]
-    if term:
-        pr_filters["payment_term"] = term
-    if academic_year:
-        fee_filter["academic_year"] = academic_year
-        fee_advance_filter["academic_year"] = academic_year
+    sql_query = """
+        SELECT 
+            student.reference_number AS refno,
+            CASE
+                WHEN pr.reference_doctype = 'Fees' THEN f1.program
+                WHEN pr.reference_doctype = 'Fee Advance' THEN f2.next_program
+                ELSE NULL
+            END AS program,
+            COALESCE(f1.name, f2.name) AS fees,
+            CONCAT_WS(" ", student.first_name, COALESCE(student.middle_name, ''), student.last_name) AS student,
+            student.student_status AS student_status,
+            COALESCE(f1.custom_school, f2.school) AS school,
+            GROUP_CONCAT(DISTINCT fc.fees_category) AS fee_head_name,
+            COALESCE(f1.payment_plan, f2.payment_plan) AS payment_plan,
+            pr.payment_term AS payment_term,
+            pr.grand_total AS amount_due,
+            COALESCE(f1.academic_year, f2.academic_year) AS academic_year,
+            student.joining_date AS admission_date, 
+            COALESCE(f1.creation, f2.creation) AS creation_date,
+            ps.due_date AS due_date,
+            student.student_email_id AS email_id, 
+            student.student_mobile_number AS mobile_number, 
+            COUNT(DISTINCT notification.name) AS notification_count
 
-    fees = frappe.get_all(
-        "Fees",
-        fee_filter,
-        [
-            "name",
-            "student",
-            "custom_school",
-            "program",
-            "outstanding_amount",
-            "payment_plan",
-            "academic_year",
-        ],
-    )
-    fee_data = []
-    for fee in fees:
-        student = get_student_data(fee.student, student_status)
-        if not student:
-            continue
-        student_name = get_student_name(fee)
-        fee_head_name = get_fee_heads(fee)
-        pr_filters["reference_name"] = fee.name
-        payment_request = frappe.get_all(
-            "Payment Request",
-            pr_filters,
-            [
-                "name",
-                "creation",
-                "grand_total",
-                "payment_term",
-            ],
-        )
-        if payment_request:
-            for payment in payment_request:
-                payment_term = (
-                    "Deposit" if not payment.payment_term else payment.payment_term
-                )
-                due_date = frappe.get_value(
-                    "Payment Schedule",
-                    {"parent": fee.name, "payment_term": payment_term},
-                    "due_date",
-                )
-                if due_date and due_date < getdate(nowdate()):
-                    fee_data.append(
-                        [
-                            student.reference_number,
-                            fee.program,
-                            fee.name,
-                            student_name,
-                            student.student_status,
-                            fee.custom_school,
-                            fee_head_name,
-                            fee.payment_plan,
-                            payment_term,
-                            payment.grand_total,
-                            fee.academic_year,
-                            student.joining_date,
-                            payment.creation,
-                            due_date,
-                            student.student_email_id,
-                            student.student_mobile_number,
-                            get_notification_log_count(
-                                fee.student,
-                                fee.program,
-                                fee.academic_year,
-                                payment_term,
-                            ),
-                        ]
-                    )
+        FROM `tabPayment Request` AS pr        
+        LEFT JOIN `tabFees` AS f1 ON pr.reference_doctype = 'Fees' AND f1.name = pr.reference_name
+        LEFT JOIN `tabFee Advance` AS f2 ON pr.reference_doctype = 'Fee Advance' AND f2.name = pr.reference_name
+        LEFT JOIN `tabStudent` AS student ON pr.party = student.name
+        LEFT JOIN `tabPayment Schedule` AS ps ON COALESCE(f1.name, f2.name) = ps.parent AND pr.payment_term = ps.payment_term
+        LEFT JOIN `tabNotification Log` AS notification ON pr.party = notification.student AND COALESCE(f1.program, f2.program) = notification.class AND COALESCE(f1.academic_year, f2.academic_year) = notification.academic_year AND pr.payment_term = notification.payment_term
+        LEFT JOIN `tabFee Component` AS fc ON COALESCE(f1.name, f2.name) = fc.parent
 
-    fee_advance = frappe.get_all(
-        "Fee Advance",
-        fee_advance_filter,
-        [
-            "name",
-            "student",
-            "school",
-            "program",
-            "outstanding_amount",
-            "payment_plan",
-            "due_date",
-            "academic_year",
-        ],
-    )
-    for fee in fee_advance:
-        student = get_student_data(fee.student, student_status)
-        if not student:
-            continue
-        fee_head_name = get_fee_heads(fee)
-        student_name = get_student_name(fee)
-        pr_filters["reference_name"] = fee.name
-        payment_request = frappe.get_value(
-            "Payment Request",
-            pr_filters,
-            [
-                "name",
-                "creation",
-                "grand_total",
-                "payment_term",
-            ],
-            as_dict=True,
-        )
-        if payment_request:
-            if fee.due_date < getdate(nowdate()):
-                fee_data.append(
-                    [
-                        student.reference_number,
-                        fee.program,
-                        fee.name,
-                        student_name,
-                        student.student_status,
-                        fee.school,
-                        fee_head_name,
-                        fee.payment_plan,
-                        payment_request.payment_term,
-                        payment_request.grand_total,
-                        fee.academic_year,
-                        student.joining_date,
-                        payment_request.creation,
-                        fee.due_date,
-                        student.student_email_id,
-                        student.student_mobile_number,
-                        get_notification_log_count(
-                            fee.student,
-                            fee.program,
-                            fee.academic_year,
-                            payment_request.payment_term,
-                        ),
-                    ]
-                )
-
-    return fee_data
-
-
-def get_fee_heads(fees):
-    components = frappe.get_all(
-        "Fee Component",
-        {"parent": fees.name},
-        ["fees_category"],
-    )
-    fee_head_names = [component.fees_category for component in components]
-    return ", ".join(fee_head_names)
-
-
-def get_student_name(fee):
-    student_name = frappe.get_value(
-        "Student", fee.student, ["first_name", "last_name"], as_dict=True
-    )
-    name = f"{student_name.first_name or ''} {student_name.last_name or ''}".strip()
-    return name
-
-
-def get_notification_log_count(student, program, academic_year, payment_term):
-    notifications = frappe.get_all(
-        "Notification Log",
-        {
-            "student": student,
-            "class": program,
-            "academic_year": academic_year,
-            "payment_term": payment_term,
-        },
-    )
-    return len(notifications)
+        WHERE 
+            pr.docstatus = 1
+            AND pr.status != 'Paid'
+            AND COALESCE(f1.docstatus, f2.docstatus) = 1
+            AND ps.due_date < CURDATE()
+            AND (pr.creation BETWEEN %s AND %s)
+            AND (COALESCE(f1.custom_school, f2.school) IN %s)
+            AND (COALESCE(f1.program, f2.next_program) IN %s)
+            AND (pr.payment_term = %s)
+            AND (student.student_status = %s)
+            AND (COALESCE(f1.academic_year, f2.academic_year) = %s)
+        GROUP BY 
+            refno, program, fees, student, student_status, school, payment_plan, payment_term, amount_due, academic_year, admission_date, creation_date, due_date, email_id, mobile_number;
+    """
+    values = (from_date, to_date, tuple(school), tuple(program), term, student_status, academic_year)
+    data = frappe.db.sql(sql_query, values, as_dict=True)
+    return data
 
 
 @frappe.whitelist()
 def send_payment_reminder(**kwargs):
     try:
         from nextai.funnel.custom_trigger import trigger_event
-
-        kwargs["school"] = frappe.json.loads(kwargs.get("school"))
-        kwargs["program"] = frappe.json.loads(kwargs.get("program"))
+        kwargs['school'] = frappe.json.loads(kwargs.get('school'))
+        kwargs['program'] = frappe.json.loads(kwargs.get('program'))
         data = get_data(kwargs)
         if not data:
             return "No data found"
         for row in data:
-            payment_request = frappe.get_doc(
-                "Payment Request", {"reference_name": row[2]}
-            )
+            payment_request = frappe.get_doc("Payment Request", {"reference_name": row[2]})
             trigger_event(doc=payment_request, event_name="payment_link_remainder")
         frappe.response["message"] = {
             "title": "Success",
@@ -361,23 +200,17 @@ def send_payment_reminder(**kwargs):
             "msg": "Something went wrong",
         }
 
-
 @frappe.whitelist()
 def change_student_status(**kwargs):
     try:
-        kwargs["school"] = frappe.json.loads(kwargs.get("school"))
-        kwargs["program"] = frappe.json.loads(kwargs.get("program"))
+        kwargs['school'] = frappe.json.loads(kwargs.get('school'))
+        kwargs['program'] = frappe.json.loads(kwargs.get('program'))
         data = get_data(kwargs)
         if not data:
             return "No data found"
         for row in data:
             if row[0]:
-                frappe.db.set_value(
-                    "Student",
-                    {"reference_number": row[0]},
-                    "student_status",
-                    "Defaulter",
-                )
+                frappe.db.set_value("Student", {"reference_number":row[0]}, "student_status", "Defaulter")
         frappe.response["message"] = {
             "title": "Success",
             "msg": "Student Marked As Defaulter Successfully",
