@@ -200,23 +200,25 @@ def send_payment_reminder(**kwargs):
             "msg": "Something went wrong",
         }
 
-@frappe.whitelist()
-def change_student_status(**kwargs):
+def mark_student_as_defaulter(data):
     try:
-        kwargs['school'] = frappe.json.loads(kwargs.get('school'))
-        kwargs['program'] = frappe.json.loads(kwargs.get('program'))
-        data = get_data(kwargs)
-        if not data:
-            return "No data found"
         for row in data:
-            if row[0]:
-                frappe.db.set_value("Student", {"reference_number":row[0]}, "student_status", "Defaulter")
+            frappe.db.set_value("Student", {"reference_number": row.get("refno"), "school": row.get("school")}, "student_status", "Defaulter")
+    except Exception as e:
+        frappe.logger("mark_student_as_defaulter").exception(e)
+            
+
+@frappe.whitelist()
+def mark_as_defaulter(data):
+    try:
+        data = frappe.json.loads(data)
+        frappe.enqueue(method=mark_student_as_defaulter, data=data, queue="long")
         frappe.response["message"] = {
             "title": "Success",
             "msg": "Student Marked As Defaulter Successfully",
         }
     except Exception as e:
-        frappe.logger("change_student_status").exception(e)
+        frappe.logger("mark_student_as_defaulter").exception(e)
         frappe.response["message"] = {
             "title": "Error",
             "msg": "Something went wrong",
