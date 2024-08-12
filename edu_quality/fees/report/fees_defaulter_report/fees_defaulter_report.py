@@ -108,6 +108,12 @@ def get_columns():
             "fieldtype": "Data",
             "width": 150,
         },
+        {
+            "label": "Notification Count",
+            "fieldname": "notification_count",
+            "fieldtype": "Int",
+            "width": 150,
+        },
     ]
     return columns
 
@@ -158,16 +164,34 @@ def get_data(filters):
             AND pr.status != 'Paid'
             AND COALESCE(f1.docstatus, f2.docstatus) = 1
             AND ps.due_date < CURDATE()
-            AND (pr.creation BETWEEN %s AND %s)
-            AND (COALESCE(f1.custom_school, f2.school) IN %s)
-            AND (COALESCE(f1.program, f2.next_program) IN %s)
-            AND (pr.payment_term = %s)
-            AND (student.student_status = %s)
-            AND (COALESCE(f1.academic_year, f2.academic_year) = %s)
-        GROUP BY 
+        """
+    values = []
+    if from_date:
+        sql_query += "AND (pr.creation >= %s)"
+        values.append(from_date)
+    if to_date:
+        sql_query += "AND (pr.creation <= %s)"
+        values.append(to_date)
+    if school:
+        sql_query += "AND (COALESCE(f1.custom_school, f2.school) IN %s)"
+        values.append(tuple(school))
+    if program:
+        sql_query += "AND (COALESCE(f1.program, f2.next_program) IN %s)"
+        values.append(tuple(program))
+    if term:
+        sql_query += "AND (pr.payment_term = %s)"
+        values.append(term)
+    if student_status:
+        sql_query += "AND (student.student_status = %s)"
+        values.append(student_status)
+    if academic_year:
+        sql_query += "AND (COALESCE(f1.academic_year, f2.academic_year) = %s)"
+        values.append(academic_year)
+
+    sql_query += """
+        GROUP BY
             refno, program, fees, student, student_status, school, payment_plan, payment_term, amount_due, academic_year, admission_date, creation_date, due_date, email_id, mobile_number;
     """
-    values = (from_date, to_date, tuple(school), tuple(program), term, student_status, academic_year)
     data = frappe.db.sql(sql_query, values, as_dict=True)
     return data
 
