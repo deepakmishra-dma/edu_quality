@@ -140,7 +140,7 @@ def get_data(filters):
             COALESCE(f1.academic_year, f2.academic_year) AS academic_year,
             student.joining_date AS admission_date, 
             COALESCE(f1.creation, f2.creation) AS creation_date,
-            ps.due_date AS due_date,
+            COALESCE(ps.due_date,  f2.due_date) AS due_date,
             student.student_email_id AS email_id, 
             student.student_mobile_number AS mobile_number, 
             COUNT(DISTINCT notification.name) AS notification_count
