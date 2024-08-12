@@ -196,26 +196,33 @@ def get_data(filters):
     return data
 
 
-@frappe.whitelist()
-def send_payment_reminder(**kwargs):
+def payment_reminder(data):
     try:
         from nextai.funnel.custom_trigger import trigger_event
-        kwargs['school'] = frappe.json.loads(kwargs.get('school'))
-        kwargs['program'] = frappe.json.loads(kwargs.get('program'))
-        data = get_data(kwargs)
-        if not data:
-            return "No data found"
+
         for row in data:
-            payment_request = frappe.get_doc("Payment Request", {"reference_name": row[2]})
+            payment_request = frappe.get_doc(
+                "Payment Request",
+                {
+                    "reference_name": row.get("fees"),
+                    "docstatus": 1,
+                    "status": ["!=", "Paid"],
+                    "payment_term": row.get('payment_term')
+                },
+            )
             trigger_event(doc=payment_request, event_name="payment_link_remainder")
+    except Exception as e:
+        frappe.logger("payment_reminder").exception(e)
+
+
+@frappe.whitelist()
+def send_payment_reminder(data):
+    try:
+        data = frappe.json.loads(data)
+        frappe.enqueue(method=payment_reminder, data=data, queue="long")
         frappe.response["message"] = {
             "title": "Success",
             "msg": "Payment reminders sent successfully",
-        }
-    except ImportError:
-        frappe.response["message"] = {
-            "title": "Error",
-            "msg": "Please install nextai app",
         }
     except Exception as e:
         frappe.logger("payment_reminder").exception(e)
@@ -224,13 +231,19 @@ def send_payment_reminder(**kwargs):
             "msg": "Something went wrong",
         }
 
+
 def mark_student_as_defaulter(data):
     try:
         for row in data:
-            frappe.db.set_value("Student", {"reference_number": row.get("refno"), "school": row.get("school")}, "student_status", "Defaulter")
+            frappe.db.set_value(
+                "Student",
+                {"reference_number": row.get("refno"), "school": row.get("school")},
+                "student_status",
+                "Defaulter",
+            )
     except Exception as e:
         frappe.logger("mark_student_as_defaulter").exception(e)
-            
+
 
 @frappe.whitelist()
 def mark_as_defaulter(data):
