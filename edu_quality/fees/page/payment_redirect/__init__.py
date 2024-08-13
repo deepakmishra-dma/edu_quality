@@ -77,7 +77,10 @@ def get_payment_details(**kwargs):
     if payment_request.payment_term:
         component = json.loads(fees.component_split)[payment_request.payment_term]
         breakup = get_breakup(fees,payment_request.payment_term)
-        due_date = component['due_date']
+        if fees.doctype == "Fees":
+            due_date = frappe.get_value("Payment Schedule",{'parent':fees.name,'payment_term':payment_request.payment_term},'due_date')
+        elif fees.doctype == "Fee Advance":
+            due_date = fees.due_date
         is_deposit = component['is_deposit']
         if fees.doctype == "Fees":
             student_name = fees.student_name
@@ -147,7 +150,7 @@ def get_discounts(fees):
     return {"referral_discount": referral_discount, "other_discount":other_discount, "referral_discount_company": referral_discount_company, "other_discount_company": other_discount_company}
 
 
-@cache_data(ttl=900)
+
 @frappe.whitelist(allow_guest=True)
 def payment_url(payment_request,payment_method="UPI"):
     return payment_request.get_payment_url(payment_method=payment_method)

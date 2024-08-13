@@ -79,12 +79,12 @@ def get_columns(filters):
     school_fields = generate_school_fields(filters.get("class"))
     extra_fields = generate_extra_school_qty(filters.get("class"))
     columns = [
-        {
-            "fieldname": "period",
-            "label": "Period No.",
-            "fieldtype": "Data",
-            "width": 75,
-        },
+        # {
+        #     "fieldname": "period",
+        #     "label": "Period No.",
+        #     "fieldtype": "Data",
+        #     "width": 75,
+        # },
         {
             "fieldname": "product_code",
             "label": "Product Code",
@@ -212,9 +212,8 @@ def get_data_from_queries(filters=None):
             )
             & (item.custom_is_cmap == 1)
             & (item.custom_print_ready == 1)
-        )
+        ).groupby(item_detail.item)
         .select(
-            cmap.period,
             item.custom_chapter.as_("chapter"),
             cmap.name,
             cmap["class"],
@@ -325,6 +324,6 @@ def append_items(purchase_order, row, school_field):
             "schedule_date": frappe.utils.nowdate(),
             "warehouse": school_doc.get("warehouse"),
             "uom": "Nos",
-            "custom_period": row.get("period"),
+            "school":school_doc.get("name",None)
         },
     )

@@ -33,8 +33,16 @@ function queryTextbook(frm) {
     })
 }
 function uploadFileButton(frm) {
-    if (frm.doc.__islocal) return
+
     frm.get_field('custom_upload_file_to_drive').onclick = function () {
+        if (frm.doc.__islocal) {
+            frappe.msgprint({
+                message: __("Please Save the item before uploading product document on drive"),
+                indicator: "red",
+                title: __("Error")
+            });
+            return
+        }
         const dialog = new frappe.ui.FileUploader({
             doctype: frm.doc.doctype,
             docname: frm.doc.name,
@@ -82,17 +90,35 @@ frappe.ui.form.on("Item", {
                 }
             })
         frm.get_field('custom_view_worksheet_header').onclick = function () {
+            if (frm.doc.__islocal) {
+                frappe.msgprint({
+                    message: __("Please Save the item before accessing the worksheet header"),
+                    indicator: "red",
+                    title: __("Error getting worksheet header")
+                });
+            }
             if (!frm.doc.__islocal) {
-
                 window.open(`/api/method/edu_quality.overrides_hooks.item.get_worksheet_template?name=${frm.doc.name}`)
-
             }
         }
     },
     onload: function (frm) {
         if (frm.doc__islocal) {
             frm.set_value('custom_sheet_number', 0);
-        } NotCmapFilter(frm);
+        }
+        if (!frm.doc.custom_is_cmap) {
+            NotCmapFilter(frm);
+        }
+        else if (frm.doc.custom_is_cmap === 1) {
+            frm.set_query("item_group", function () {
+                return {
+                    "filters": {
+                        "parent_item_group": "CMAP",
+
+                    }
+                }
+            })
+        }
     },
     custom_is_cmap: function (frm) {
         console.log(frm)

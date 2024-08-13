@@ -29,16 +29,17 @@ def set_as_paid(filters,data,payment_mode):
         for i in data:
             if entry.company == i.get("company"):
                 reference_no = i.get("reference_number")
-                update_reference(reference_no, entry)
+                update_reference(reference_no, entry, payment_mode)
 
 
 
-def update_reference(reference_no, entry):
+def update_reference(reference_no, entry, payment_mode="Cash"):
     date = frappe.utils.nowdate()
     remarks = f"Amount INR {entry.paid_amount} received from {entry.party} Transaction reference no {reference_no} dated {date}"
     frappe.db.set_value("Payment Entry", entry.name, "reference_no", reference_no)
     frappe.db.set_value("Payment Entry", entry.name, "reference_date", date)
     frappe.db.set_value("Payment Entry", entry.name, "remarks", remarks)
+    frappe.db.set_value("Payment Entry", entry.name, "mode_of_payment", payment_mode)
 
  
 @frappe.whitelist()

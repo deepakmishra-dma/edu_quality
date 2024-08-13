@@ -8,6 +8,6 @@ def get_otp(phone_number):
 
 @frappe.whitelist(allow_guest=True)
 def login(otp,phone_number):
-    l
+    pass
 
     

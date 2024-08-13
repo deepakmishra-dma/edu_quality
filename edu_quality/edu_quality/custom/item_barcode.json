@@ -37,7 +37,6 @@
    "is_virtual": 0,
    "label": "UOM",
    "length": 0,
-   "link_filters": null,
    "mandatory_depends_on": null,
    "modified": "2020-10-07 02:03:39.297065",
    "modified_by": "Administrator",

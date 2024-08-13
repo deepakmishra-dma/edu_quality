@@ -49,7 +49,7 @@ function generateOrderCard(itemCode, totalQty, chapter, subject, productURL, ite
                   </div>
                   <div style="margin-top:8px;margin-bottom:8px">${subject}</div>
                   <div>${chapter}</div>
-                  <div style="margin-top:8px;margin-bottom:8px;display:flex; gap:12px;"><div><a href="${productURL}"><i class="fa fa-file" style="color:rgb(29 78 216);font-size:22px" aria-hidden="true" ></i></a></div>${item_created ? `<button data-is-print="true" data-item-code="${itemCode}" onclick=""><i style="color:rgb(29 78 216);font-size:22px" aria-hidden="true" class="fa fa-qrcode"  data-is-print="true" data-item-code="${itemCode}" aria-hidden="true"></i></button>` : ""}</div>
+                  <div style="margin-top:8px;margin-bottom:8px;display:flex; gap:12px;"><div><a href="${productURL}" target="__blank"><i class="fa fa-file" style="color:rgb(29 78 216);font-size:22px" aria-hidden="true" ></i></a></div>${item_created ? `<button data-is-print="true" data-item-code="${itemCode}" onclick=""><i style="color:rgb(29 78 216);font-size:22px" aria-hidden="true" class="fa fa-qrcode"  data-is-print="true" data-item-code="${itemCode}" aria-hidden="true"></i></button>` : ""}</div>
                   <div style="display:flex; align-items:center;gap:4px;" >
                 <div style="margin-top:4px;">Printed</div><input data-item-code="${itemCode}" ${item_created ? "disabled" : ""} ${item_created ? `checked="${item_created}"` : ""}  type="checkbox" style="width:22px !important;height:22px;flex-shrink:0;margin-top:8px;" ></input></div> 
                   </div></div>
