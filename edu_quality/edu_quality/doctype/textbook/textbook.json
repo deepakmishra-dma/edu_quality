@@ -1,5 +1,6 @@
 {
  "actions": [],
+ "allow_import": 1,
  "allow_rename": 1,
  "autoname": "format:{name1}-{subject}-{class}",
  "creation": "2023-11-27 08:59:41.430342",
@@ -44,7 +45,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-12 16:08:33.528752",
+ "modified": "2024-02-14 07:57:49.574536",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Textbook",
