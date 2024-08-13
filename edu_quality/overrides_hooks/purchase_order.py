@@ -57,11 +57,9 @@ def transform_data(items, selected_items, purchase_receipt_items=None):
         if not item_map.get(item.get("item_code"), False):
             item_map[item.get("item_code")] = {
                 "item_code": item.get("item_code"),
-                "chapter": item_code_data.get(item.get("item_code"), {}).custom_chapter,
-                "subject": item_code_data.get(item.get("item_code"), {}).custom_subject,
-                "product_url": item_code_data.get(
-                    item.get("item_code", {})
-                ).custom_product_url,
+                "chapter": item_code_data.get(item.get("item_code"), {}).get('custom_chapter'),
+                "subject": item_code_data.get(item.get("item_code"), {}).get('custom_subject'),
+                "product_url": item_code_data.get(item.get("item_code"), {}).get('custom_product_url'),
                 "receipt_created": purchase_receipt_items.get(item.get("item_code"))
                 if purchase_receipt_items
                 else False,
