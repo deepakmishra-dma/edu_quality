@@ -9,7 +9,7 @@ frappe.listview_settings['Purchase Order'] = {
 		} else if(doc.status !== "Closed"){
             let printed_count=0;
             let total_count=0;
-            doc.items.array.forEach(element => {
+            doc.items.forEach(element => {
                 if(element.printed == 1){
                     printed_count = printed_count + 1;
                 }
