@@ -7,7 +7,8 @@
  "engine": "InnoDB",
  "field_order": [
   "name1",
-  "short_code"
+  "short_code",
+  "subject"
  ],
  "fields": [
   {
@@ -20,11 +21,17 @@
    "fieldname": "short_code",
    "fieldtype": "Data",
    "label": "Short Code"
+  },
+  {
+   "fieldname": "subject",
+   "fieldtype": "Table",
+   "label": "Subject",
+   "options": "Class Subject Map"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-11-29 02:56:19.620180",
+ "modified": "2024-02-14 10:00:37.392552",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Class Type",

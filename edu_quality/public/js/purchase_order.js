@@ -165,6 +165,21 @@ function removeBtnsForPrinters(frm) {
 frappe.ui.form.on('Purchase Order', {
     onload(frm) {
         createReceiptButton(frm)
+        if (!frm.doc.__islocal) {
+            frm.add_custom_button(__('Send Test Mail'), () => {
+                frappe.msgprint(
+                    {
+                        title: __('Notification'),
+                        message: __('Are you sure you want to proceed, with sending the email to content creator group?'),
+                        primary_action: {
+                            'label': 'Proceed',
+                            // either one of the actions can be passed
+                            'server_action': 'edu_quality.overrides_hooks.purchase_order.send_test_order_email',
+                            'args': { self: frm.doc }
+                        }
+                    })
+            })
+        }
 
         frappe.call({
             method: "edu_quality.overrides_hooks.purchase_order.generate_challan_list",

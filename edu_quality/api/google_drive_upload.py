@@ -22,12 +22,18 @@ def get_google_drive_object():
 
     return google_drive
 
+
 def get_google_folder_name_with_id(folder_id):
     try:
-        folder_exist = get_google_drive_object().files().get(fileId=folder_id, fields='name').execute()
+        folder_exist = (
+            get_google_drive_object()
+            .files()
+            .get(fileId=folder_id, fields="name")
+            .execute()
+        )
         return folder_exist
     except HttpError as e:
-        if e.resp.status == 404: 
+        if e.resp.status == 404:
             return False
         frappe.msgprint("Something Went Wrong")
 
@@ -88,7 +94,7 @@ def check_for_folder_in_google_drive(folder_name=None, root_folder=None):
         if f.get("name") == folder_name:
             frappe.db.commit()
             backup_folder_exists = True
-            print(f.get("id"),'hah')
+            print(f.get("id"), "hah")
             return f.get("id")
     if not backup_folder_exists:
         return _create_folder_in_google_drive(google_drive, folder_name)
@@ -139,17 +145,57 @@ def upload_file_stream_to_drive(file_content, root_folder, file_name, mimetype):
 
     try:
         media = MediaFileUpload(temp_file.name, mimetype=mimetype, resumable=True)
-        result = google_drive.files().create(
-            body=file_metadata, media_body=media, fields="id"
-        ).execute()
+        result = (
+            google_drive.files()
+            .create(body=file_metadata, media_body=media, fields="id")
+            .execute()
+        )
         return result
-        
+
     except Exception as e:
         frappe.throw(("Google Drive - Could not locate - {0}").format(e))
     finally:
         print(temp_file.name, "caha")
         os.remove(temp_file.name)
     return "Google Drive File Upload Successful"
+
+
+def find_file_by_name_and_folder(file_name, root_folder_id):
+    google_drive = get_google_drive_object()
+    query = f"name='{file_name}' and '{root_folder_id}' in parents"
+
+    results = google_drive.files().list(q=query, fields="files(id, name)").execute()
+    files = results.get("files", [])
+
+    if files:
+        return files[0]
+    else:
+        print("No files found with that name.")
+
+
+def update_file_stream_on_drive(file_content, file_id, mimetype):
+    # Get Google Drive Object
+
+    google_drive = get_google_drive_object()
+    temp_file = tempfile.NamedTemporaryFile(delete=False)
+    temp_file.write(file_content)
+    temp_file.close()
+
+    try:
+        media = MediaFileUpload(temp_file.name, mimetype=mimetype, resumable=True)
+        result = (
+            google_drive.files()
+            .update(fileId=file_id, media_body=media, fields="id")
+            .execute()
+        )
+        return result
+
+    except Exception as e:
+        frappe.throw(("Google Drive - Could not locate - {0}").format(e))
+    finally:
+
+        os.remove(temp_file.name)
+    return "Google Drive File Update Successful"
 
 
 # edu_quality.edu_quality.api.google_drive_upload.upload_file

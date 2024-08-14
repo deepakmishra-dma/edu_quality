@@ -43,12 +43,40 @@ function uploadFileButton(frm) {
             });
             return
         }
-        const dialog = new frappe.ui.FileUploader({
-            doctype: frm.doc.doctype,
-            docname: frm.doc.name,
-            method: "edu_quality.overrides_hooks.item.upload_to_drive",
-            // as_dataurl: true,
-        })
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.pdf,.ppt,.pptx';
+        input.onchange = function () {
+            const file = input.files[0];
+            if (file) {
+                const ext = file.name.split('.').pop().toLowerCase();
+                if (['pdf', 'ppt', 'pptx', 'ppsx'].includes(ext)) {
+                    const form_data = new FormData();
+                    form_data.append('file', file);
+                    form_data.append('doctype', frm.doctype);
+                    form_data.append('docname', frm.docname);
+                    form_data.append('file_fieldname', 'attach_files'); // Change this to your file fieldname
+                    form_data.append('files', input.files)
+                    // Send the FormData object to the server
+                    fetch('/api/method/edu_quality.overrides_hooks.item.upload_to_drive', {
+                        method: 'POST',
+                        body: form_data
+                    }).then(response => {
+                        if (response.ok) {
+                            frm.reload_doc();
+                        } else {
+                            frappe.msgprint(__('Failed to upload file.'));
+                        }
+                    }).catch(error => {
+                        frappe.msgprint(__('An error occurred while uploading file.'));
+                        console.error('Error:', error);
+                    });
+                } else {
+                    frappe.msgprint(__('Please upload only PDF or PowerPoint (PPT/PPTX) files.'));
+                }
+            }
+        };
+        input.click();
     }
 
 

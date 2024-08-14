@@ -29,10 +29,11 @@ def generate_school_fields(program=None):
                 "fieldname": f"qty_for_{i.get('name')}",
                 "label": f"{i.get('name')}",
                 "fieldtype": "Data",
-                "width": 200,            
-            },        
+                "width": 200,
+            },
         ),
     return school_array
+
 
 def generate_extra_school_qty(program):
     if program:
@@ -49,18 +50,18 @@ def generate_extra_school_qty(program):
         frappe.errprint(schools)
     else:
         schools = frappe.get_list("School")
-    school_array=[]
+    school_array = []
     for i in schools:
         school_array.append(
-                {
-                    "fieldname": f"extra_qty_for_{i.get('name')}",
-                    "label": f"Extra Qty {i.get('name')}",
-                    "fieldtype": "Data",
-                    "width": 250,
-                },
-                
-            )
+            {
+                "fieldname": f"extra_qty_for_{i.get('name')}",
+                "label": f"Extra Qty {i.get('name')}",
+                "fieldtype": "Data",
+                "width": 250,
+            },
+        )
     return school_array
+
 
 @frappe.whitelist()
 def get_school_fields_sum(row):
@@ -164,7 +165,6 @@ def transform_data(program_enrollments, CMAPS, class_filter):
                 converted_dict.get(f'{i.get("class")}-{school.get("label")}', 0) or 0
             )
             i[f"extra_{school.get('fieldname')}"] = 30
-        
 
         i["total_quantity"] = get_school_fields_sum(i)
 
@@ -212,7 +212,8 @@ def get_data_from_queries(filters=None):
             )
             & (item.custom_is_cmap == 1)
             & (item.custom_print_ready == 1)
-        ).groupby(item_detail.item)
+        )
+        .groupby(item_detail.item)
         .select(
             item.custom_chapter.as_("chapter"),
             cmap.name,
@@ -297,6 +298,7 @@ def create_purchase_order(rows):
             "purpose": "Purchase",
             "items": [],
             "supplier": "Printer",
+            "custom_is_cmap_print": 1,
         }
     )
 
@@ -312,18 +314,18 @@ def create_purchase_order(rows):
 def append_items(purchase_order, row, school_field):
     school_doc = frappe.get_doc("School", school_field.get("label"))
 
-    if(int(row.get(school_field.get("fieldname", 0),0))==0):
+    if int(row.get(school_field.get("fieldname", 0), 0)) == 0:
         return
-    
+
     purchase_order.append(
         "items",
         {
             "item_code": row.get("product_code"),
-            "qty": int(row.get(school_field.get("fieldname", 0),0))
-            + int(row.get("extra_"+school_field.get("fieldname", 0), 0)),
+            "qty": int(row.get(school_field.get("fieldname", 0), 0))
+            + int(row.get("extra_" + school_field.get("fieldname", 0), 0)),
             "schedule_date": frappe.utils.nowdate(),
             "warehouse": school_doc.get("warehouse"),
             "uom": "Nos",
-            "school":school_doc.get("name",None)
+            "school": school_doc.get("name", None),
         },
     )
