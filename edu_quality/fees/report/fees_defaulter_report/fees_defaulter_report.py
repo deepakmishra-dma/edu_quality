@@ -108,6 +108,12 @@ def get_columns():
             "fieldtype": "Data",
             "width": 150,
         },
+        {
+            "label": "Notification Count",
+            "fieldname": "notification_count",
+            "fieldtype": "Int",
+            "width": 150,
+        },
     ]
     return columns
 
@@ -158,79 +164,65 @@ def get_data(filters):
             AND pr.status != 'Paid'
             AND COALESCE(f1.docstatus, f2.docstatus) = 1
             AND COALESCE(ps.due_date,  f2.due_date) < CURDATE()
-            {creation_condition}
-            {school_condition}
-            {class_condition}
-            {term_condition}
-            {s_s_condition}
-            {academic_year_condition}
-        GROUP BY 
+        """
+    values = []
+    if from_date:
+        sql_query += "AND (pr.creation >= %s)"
+        values.append(from_date)
+    if to_date:
+        sql_query += "AND (pr.creation <= %s)"
+        values.append(to_date)
+    if school:
+        sql_query += "AND (COALESCE(f1.custom_school, f2.school) IN %s)"
+        values.append(tuple(school))
+    if program:
+        sql_query += "AND (COALESCE(f1.program, f2.next_program) IN %s)"
+        values.append(tuple(program))
+    if term:
+        sql_query += "AND (pr.payment_term = %s)"
+        values.append(term)
+    if student_status:
+        sql_query += "AND (student.student_status = %s)"
+        values.append(student_status)
+    if academic_year:
+        sql_query += "AND (COALESCE(f1.academic_year, f2.academic_year) = %s)"
+        values.append(academic_year)
+
+    sql_query += """
+        GROUP BY
             refno, program, fees, student, student_status, school, payment_plan, payment_term, amount_due, academic_year, admission_date, creation_date, due_date, email_id, mobile_number;
     """
-    academic_year_condition = ""
-    if academic_year:
-        academic_year_condition  += " AND (COALESCE(f1.academic_year, f2.academic_year) =%(academic_year)s)"
-    s_s_condition = ""
-    if student_status:
-        s_s_condition  += " AND student.student_status = %(student_status)s"
-    term_condition = ""
-    if term:
-        term_condition  += " AND pr.payment_term = %(term)s"
-    creation_condition = ""
-    if from_date and to_date:
-        creation_condition += " AND pr.creation BETWEEN %(from_date)s AND %(to_date)s"
-    if from_date:
-        creation_condition += " AND pr.creation >= %(from_date)s"
-    if to_date:
-        creation_condition += " AND pr.creation <= %(to_date)s"
-
-    school_condition = ""
-    if school:
-        school_condition += " AND (f1.custom_school IS NULL OR f1.custom_school IN %(school)s) AND (f2.school IS NULL OR f2.school IN %(school)s)"
-    class_condition = ""
-    if program:
-        class_condition += " AND (f1.program IS NULL OR f1.program IN %(program)s) AND (f2.next_program IS NULL OR f2.next_program IN %(program)s)"
-
-    sql_query = sql_query.format(
-        creation_condition=creation_condition,
-        class_condition=class_condition,
-        school_condition=school_condition,
-        term_condition=term_condition,
-        s_s_condition=s_s_condition,
-        academic_year_condition=academic_year_condition
-    )
-    filter_data= {"from_date":from_date,
-                  "to_date":to_date,
-                  "school":tuple(school),
-                  "program":tuple(program),
-                  "term": term,
-                  "student_status":student_status,
-                  "academic_year":academic_year}
-    frappe.logger("ssaaaaa").exception(filter_data)
-    data = frappe.db.sql(sql_query, filter_data, as_dict=True)
+    data = frappe.db.sql(sql_query, values, as_dict=True)
     return data
 
 
-@frappe.whitelist()
-def send_payment_reminder(**kwargs):
+def payment_reminder(data):
     try:
         from nextai.funnel.custom_trigger import trigger_event
-        kwargs['school'] = frappe.json.loads(kwargs.get('school'))
-        kwargs['program'] = frappe.json.loads(kwargs.get('program'))
-        data = get_data(kwargs)
-        if not data:
-            return "No data found"
+
         for row in data:
-            payment_request = frappe.get_doc("Payment Request", {"reference_name": row[2]})
+            payment_request = frappe.get_doc(
+                "Payment Request",
+                {
+                    "reference_name": row.get("fees"),
+                    "docstatus": 1,
+                    "status": ["!=", "Paid"],
+                    "payment_term": row.get('payment_term')
+                },
+            )
             trigger_event(doc=payment_request, event_name="payment_link_remainder")
+    except Exception as e:
+        frappe.logger("payment_reminder").exception(e)
+
+
+@frappe.whitelist()
+def send_payment_reminder(data):
+    try:
+        data = frappe.json.loads(data)
+        frappe.enqueue(method=payment_reminder, data=data, queue="long")
         frappe.response["message"] = {
             "title": "Success",
             "msg": "Payment reminders sent successfully",
-        }
-    except ImportError:
-        frappe.response["message"] = {
-            "title": "Error",
-            "msg": "Please install nextai app",
         }
     except Exception as e:
         frappe.logger("payment_reminder").exception(e)
@@ -239,23 +231,31 @@ def send_payment_reminder(**kwargs):
             "msg": "Something went wrong",
         }
 
-@frappe.whitelist()
-def change_student_status(**kwargs):
+
+def mark_student_as_defaulter(data):
     try:
-        kwargs['school'] = frappe.json.loads(kwargs.get('school'))
-        kwargs['program'] = frappe.json.loads(kwargs.get('program'))
-        data = get_data(kwargs)
-        if not data:
-            return "No data found"
         for row in data:
-            if row[0]:
-                frappe.db.set_value("Student", {"reference_number":row[0]}, "student_status", "Defaulter")
+            frappe.db.set_value(
+                "Student",
+                {"reference_number": row.get("refno"), "school": row.get("school")},
+                "student_status",
+                "Defaulter",
+            )
+    except Exception as e:
+        frappe.logger("mark_student_as_defaulter").exception(e)
+
+
+@frappe.whitelist()
+def mark_as_defaulter(data):
+    try:
+        data = frappe.json.loads(data)
+        frappe.enqueue(method=mark_student_as_defaulter, data=data, queue="long")
         frappe.response["message"] = {
             "title": "Success",
             "msg": "Student Marked As Defaulter Successfully",
         }
     except Exception as e:
-        frappe.logger("change_student_status").exception(e)
+        frappe.logger("mark_student_as_defaulter").exception(e)
         frappe.response["message"] = {
             "title": "Error",
             "msg": "Something went wrong",
