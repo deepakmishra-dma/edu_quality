@@ -41,9 +41,7 @@ def get_google_folder_name_with_id(folder_id):
 def check_for_folder_in_google_drive(folder_name=None, root_folder=None):
     """Checks if folder exists in Google Drive else create it."""
     service_account_doc = frappe.get_single("Google Service Account")
-    root_folder_id = (root_folder or service_account_doc.get(("root_folder"))).split(
-        "  id:  "
-    )[-1]
+    root_folder_id = (root_folder or service_account_doc.get(("root_folder")))
 
     if folder_name == None:
         return root_folder_id

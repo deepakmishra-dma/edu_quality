@@ -102,11 +102,41 @@ function NotCmapFilter(frm) {
         }
     })
 }
+
+async function getLinkedSubject(frm) {
+    frappe.call({
+        method: "frappe.client.get",
+        args: {
+            doctype: "Class Type",
+            name: frm.doc.custom_class,
+        },
+        callback(r) {
+            if (r.message) {
+                const classData = r.message;
+
+                const arrayOfSubjects = classData.subject.map(function (obj) {
+                    return obj.subject;
+                });
+                frm.set_query("custom_subject", function () {
+                    return {
+                        filters: [['name', 'in', arrayOfSubjects]]
+                    }
+                })
+            }
+        }
+    });
+
+
+
+}
+
 frappe.ui.form.on("Item", {
     refresh: function (frm) {
         uploadFileButton(frm)
+        getLinkedSubject(frm)
         queryTextbook(frm)
         queryTopic(frm)
+
         if (!frm.doc.__islocal)
             frappe.call({
                 method: "edu_quality.overrides_hooks.item.get_qr_code",
@@ -165,7 +195,8 @@ frappe.ui.form.on("Item", {
         }
     },
     item_group: getItemCode,
-    custom_chapter: getItemCode
+    custom_chapter: getItemCode,
+    custom_class: getLinkedSubject
     // item_group: function (frm) {
     //     console.log(frm.item_group, frm)
     //     if (frm.item_group.parent_item_group === "CMAP") {

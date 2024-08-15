@@ -3,7 +3,7 @@ from frappe.utils import strip
 import json
 from edu_quality.public.py.utils import im_2_b64, gen_qr_code_b64
 
-# from weasyprint import CSS, HTML
+from weasyprint import CSS, HTML
 from edu_quality.api.google_drive_upload import (
     upload_file_stream_to_drive,
     check_for_folder_in_google_drive,
@@ -180,7 +180,7 @@ def upload_to_drive(**doc):
 
         if "file" not in files:
             return
-        
+
         file = files["file"]
         file_binary = file.stream.read()
 
@@ -226,7 +226,7 @@ def get_worksheet_template(name):
 def gen_chapter_name(chapter_doc):
     chapter_code = str(chapter_doc.get("custom_chapter_number", "")).zfill(2)
     str_without_name = f"{chapter_code}: TO_REPLACE - {chapter_code}"
-    length_left = 38 - len(str_without_name)
+    length_left = 48 - len(str_without_name)
     name_chapter = chapter_doc.topic_name.split("-")[1].strip()
     if len(name_chapter) <= length_left:
         new_string = str_without_name.replace("TO_REPLACE", name_chapter)
@@ -240,7 +240,7 @@ def gen_chapter_name(chapter_doc):
 def gen_subject_name(worksheet_id, subject_doc):
     subject = str(subject_doc.get("name", "")).zfill(2)
     str_without_name = f"{worksheet_id}: TO_REPLACE "
-    length_left = 23 - len(str_without_name)
+    length_left = 33 - len(str_without_name)
     if len(subject) <= length_left:
         new_string = str_without_name.replace("TO_REPLACE", subject)
     else:

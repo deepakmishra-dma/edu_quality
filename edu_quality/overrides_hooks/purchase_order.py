@@ -56,12 +56,21 @@ def transform_data(items, selected_items, purchase_receipt_items=None):
         if not item_map.get(item.get("item_code"), False):
             item_map[item.get("item_code")] = {
                 "item_code": item.get("item_code"),
-                "chapter": item_code_data.get(item.get("item_code"), {}).get('custom_chapter'),
-                "subject": item_code_data.get(item.get("item_code"), {}).get('custom_subject'),
-                "product_url": item_code_data.get(item.get("item_code"), {}).get('custom_product_url'),
-                "receipt_created": purchase_receipt_items.get(item.get("item_code"))
-                if purchase_receipt_items
-                else False,
+                "chapter": item_code_data.get(item.get("item_code"), {}).get(
+                    "custom_chapter"
+                ),
+                "subject": item_code_data.get(item.get("item_code"), {}).get(
+                    "custom_subject"
+                ),
+                "product_url": item_code_data.get(item.get("item_code"), {}).get(
+                    "custom_product_url"
+                ),
+                "receipt_created": (
+                    purchase_receipt_items.get(item.get("item_code"))
+                    if purchase_receipt_items
+                    else False
+                ),
+                "printed": item.get("printed"),
                 school_name: item.get("qty", 0),
                 "total_qty": item.get("qty", 0),
             }
@@ -95,6 +104,7 @@ def transform_data(items, selected_items, purchase_receipt_items=None):
 
 def before_validate(self, method=None):
     self.custom_qr_code_base = gen_qr_code_b64(self.name)
+    calculate_print_count(self)
 
 
 def get_columns(school_fields):
@@ -290,3 +300,33 @@ def send_test_order_email():
         return "Success"
     except Exception as e:
         frappe.msgprint(str(e))
+
+
+# marks item as printed
+
+
+@frappe.whitelist()
+def mark_item_as_printed(purchase_ord, item_code, checked):
+    purchase_ord_doc = frappe.get_doc("Purchase Order", purchase_ord)
+    frappe.errprint(checked)
+    for i in purchase_ord_doc.items:
+        if i.get("item_code") == item_code:
+
+            i.printed = 1 if checked == "true" else 0
+            # frappe.db.set_value(
+            #     "Purchase Order Item",
+            #     i.get("name"),
+            #     "printed",
+            #     1 if checked == "true" else 0,
+            # )
+            # i["printed"] = checked
+    calculate_print_count(purchase_ord_doc)
+    purchase_ord_doc.save(ignore_permissions=True)
+    purchase_ord_doc.reload()
+
+
+def calculate_print_count(self):
+    self.custom_total_items = len(self.items)
+    print(self.items)
+    [print(i.get("printed")) for i in self.items]
+    self.custom_printed_count = len([i for i in self.items if i.get("printed")])
