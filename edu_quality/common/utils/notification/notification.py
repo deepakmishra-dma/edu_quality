@@ -8,7 +8,7 @@ def create_notification_log(variables):
     else:
         due_date = fee.due_date
     school = fee.custom_school if fee.doctype == "Fees" else fee.school
-    subject = f"Payment Reminder sent to {fee.student}"
+    subject = f"Payment Reminder For {fee.student}"
     email_content = f"""
         Dear {fee.student},\n
         This is the reminder for the payment of <b>{fee.name}</b>.\n
@@ -27,8 +27,6 @@ def create_notification_log(variables):
         "doctype": "Notification Log",
         "subject": subject,
         "email_content": email_content,
-        "document_type": fee.doctype,
-        "document_name": fee.name,
         "type": "Alert",
         "for_user": user,
         "student": fee.student,
@@ -38,4 +36,7 @@ def create_notification_log(variables):
         "payment_term": doc.payment_term
     })
     notification_log.insert(ignore_permissions=True)
+    notification_log.document_type = notification_log.doctype
+    notification_log.document_name = notification_log.name
+    notification_log.save(ignore_permissions=True)
 
