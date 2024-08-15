@@ -72,3 +72,19 @@ def create_google_user(email_key, first_name, last_name, recovery_mail, phone_no
         )
     # frappe.log_error("google account created with" + str(existing_user))
     return existing_user
+
+
+def suspend_google_user(email):
+    user_service = get_google_admin_object()
+    user_service.users().update(
+        userKey=email,
+        body={"suspended": True},
+    ).execute()
+
+
+def unsuspend_google_user(email):
+    user_service = get_google_admin_object()
+    user_service.users().update(
+        userKey=email,
+        body={"suspended": False},
+    ).execute()
