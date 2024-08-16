@@ -101,8 +101,48 @@ async function getNotes(frm) {
     // materialRequired.set_options()
     // parentNote.set_options()
 }
+async function getLinkedSubject(frm) {
+    if (frm.doc.class)
+        frappe.call({
+            method: "frappe.client.get",
+            args: {
+                doctype: "Class Type",
+                name: frm.doc.class,
+            },
+            callback(r) {
+                if (r.message) {
+                    const classData = r.message;
+
+                    const arrayOfSubjects = classData.subject.map(function (obj) {
+                        return obj.subject;
+                    });
+                    frm.set_query("subject", function () {
+                        return {
+                            filters: [['name', 'in', arrayOfSubjects]]
+                        }
+                    })
+                }
+            }
+        });
+
+
+
+}
+function texbookQuery(frm) {
+    frm.fields_dict['products'].grid.get_field('textbook').get_query = function (doc, cdt, dn) {
+        let d = locals[cdt][dn];
+        return {
+            "filters": {
+                "subject": cur_frm.doc.subject,
+                "class": cur_frm.doc.class
+            },
+
+        };
+    }
+}
 frappe.ui.form.on("CMAP", {
     refresh(frm) {
+
         getNotes(frm)
         cur_frm.fields_dict['products'].grid.get_field('item_group').get_query = function (doc, cdt, dn) {
             let d = locals[cdt][dn];
@@ -132,6 +172,7 @@ frappe.ui.form.on("CMAP", {
 
             };
         }
+        texbookQuery(cur_frm)
         setupNotesColumns(cur_frm)
         cur_frm.fields_dict['table_vwbr'].grid.get_field('division').get_query = function (doc, cdt, dn) {
             let d = locals[cdt][dn];
@@ -145,7 +186,9 @@ frappe.ui.form.on("CMAP", {
         }
     },
     class: (frm) => {
+        getLinkedSubject(frm)
         getPeriodNo(frm)
+        texbookQuery(frm)
     },
     unit: (frm) => {
         getPeriodNo(frm)
@@ -153,6 +196,11 @@ frappe.ui.form.on("CMAP", {
     academic_year: (frm) => {
         getPeriodNo(frm)
     }
+    , subject: (frm) => {
+        getPeriodNo(frm)
+        texbookQuery(frm)
+    }
+
 
 });
 
@@ -173,8 +221,18 @@ frappe.ui.form.on("Item Detail", {
     material_required: async (frm) => {
         const res = await checkNotes("material_required", frm, "Material Required")
     },
+    item: function (frm, cdt, cdn) {
 
+        var d = locals[cdt][cdn];
+        frm.doc.products.forEach(function (row, i) {
+
+            if (row.item === d.item && row.name != d.name) {
+                console.log('hi')
+                frappe.msgprint('Item you added already exists on the table.');
+                frappe.model.remove_from_locals(cdt, cdn);
+                frm.refresh_field('products');
+                return false;
+            }
+        });
+    }
 })
-
-
-

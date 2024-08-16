@@ -43,12 +43,40 @@ function uploadFileButton(frm) {
             });
             return
         }
-        const dialog = new frappe.ui.FileUploader({
-            doctype: frm.doc.doctype,
-            docname: frm.doc.name,
-            method: "edu_quality.overrides_hooks.item.upload_to_drive",
-            // as_dataurl: true,
-        })
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.pdf,.ppt,.pptx';
+        input.onchange = function () {
+            const file = input.files[0];
+            if (file) {
+                const ext = file.name.split('.').pop().toLowerCase();
+                if (['pdf', 'ppt', 'pptx', 'ppsx'].includes(ext)) {
+                    const form_data = new FormData();
+                    form_data.append('file', file);
+                    form_data.append('doctype', frm.doctype);
+                    form_data.append('docname', frm.docname);
+                    form_data.append('file_fieldname', 'attach_files'); // Change this to your file fieldname
+                    form_data.append('files', input.files)
+                    // Send the FormData object to the server
+                    fetch('/api/method/edu_quality.overrides_hooks.item.upload_to_drive', {
+                        method: 'POST',
+                        body: form_data
+                    }).then(response => {
+                        if (response.ok) {
+                            frm.reload_doc();
+                        } else {
+                            frappe.msgprint(__('Failed to upload file.'));
+                        }
+                    }).catch(error => {
+                        frappe.msgprint(__('An error occurred while uploading file.'));
+                        console.error('Error:', error);
+                    });
+                } else {
+                    frappe.msgprint(__('Please upload only PDF or PowerPoint (PPT/PPTX) files.'));
+                }
+            }
+        };
+        input.click();
     }
 
 
@@ -74,11 +102,42 @@ function NotCmapFilter(frm) {
         }
     })
 }
+
+async function getLinkedSubject(frm) {
+    if (frm.doc.custom_class)
+        frappe.call({
+            method: "frappe.client.get",
+            args: {
+                doctype: "Class Type",
+                name: frm.doc.custom_class,
+            },
+            callback(r) {
+                if (r.message) {
+                    const classData = r.message;
+
+                    const arrayOfSubjects = classData.subject.map(function (obj) {
+                        return obj.subject;
+                    });
+                    frm.set_query("custom_subject", function () {
+                        return {
+                            filters: [['name', 'in', arrayOfSubjects]]
+                        }
+                    })
+                }
+            }
+        });
+
+
+
+}
+
 frappe.ui.form.on("Item", {
     refresh: function (frm) {
         uploadFileButton(frm)
+        getLinkedSubject(frm)
         queryTextbook(frm)
         queryTopic(frm)
+
         if (!frm.doc.__islocal)
             frappe.call({
                 method: "edu_quality.overrides_hooks.item.get_qr_code",
@@ -105,7 +164,20 @@ frappe.ui.form.on("Item", {
     onload: function (frm) {
         if (frm.doc__islocal) {
             frm.set_value('custom_sheet_number', 0);
-        } NotCmapFilter(frm);
+        }
+        if (!frm.doc.custom_is_cmap) {
+            NotCmapFilter(frm);
+        }
+        else if (frm.doc.custom_is_cmap === 1) {
+            frm.set_query("item_group", function () {
+                return {
+                    "filters": {
+                        "parent_item_group": "CMAP",
+
+                    }
+                }
+            })
+        }
     },
     custom_is_cmap: function (frm) {
         console.log(frm)
@@ -124,7 +196,8 @@ frappe.ui.form.on("Item", {
         }
     },
     item_group: getItemCode,
-    custom_chapter: getItemCode
+    custom_chapter: getItemCode,
+    custom_class: getLinkedSubject
     // item_group: function (frm) {
     //     console.log(frm.item_group, frm)
     //     if (frm.item_group.parent_item_group === "CMAP") {

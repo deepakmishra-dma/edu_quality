@@ -30,7 +30,6 @@ def get_selected_item_map(items):
 def transform_data(items, selected_items, purchase_receipt_items=None):
     item_map = {}
     item_codes = [item.get("item_code") for item in items]
-    frappe.errprint('sds')
     frappe.errprint(selected_items)
     item_data = frappe.db.get_list(
         "Item",
@@ -57,14 +56,21 @@ def transform_data(items, selected_items, purchase_receipt_items=None):
         if not item_map.get(item.get("item_code"), False):
             item_map[item.get("item_code")] = {
                 "item_code": item.get("item_code"),
-                "chapter": item_code_data.get(item.get("item_code"), {}).custom_chapter,
-                "subject": item_code_data.get(item.get("item_code"), {}).custom_subject,
-                "product_url": item_code_data.get(
-                    item.get("item_code", {})
-                ).custom_product_url,
-                "receipt_created": purchase_receipt_items.get(item.get("item_code"))
-                if purchase_receipt_items
-                else False,
+                "chapter": item_code_data.get(item.get("item_code"), {}).get(
+                    "custom_chapter"
+                ),
+                "subject": item_code_data.get(item.get("item_code"), {}).get(
+                    "custom_subject"
+                ),
+                "product_url": item_code_data.get(item.get("item_code"), {}).get(
+                    "custom_product_url"
+                ),
+                "receipt_created": (
+                    purchase_receipt_items.get(item.get("item_code"))
+                    if purchase_receipt_items
+                    else False
+                ),
+                "printed": item.get("printed"),
                 school_name: item.get("qty", 0),
                 "total_qty": item.get("qty", 0),
             }
@@ -74,9 +80,9 @@ def transform_data(items, selected_items, purchase_receipt_items=None):
             )
             total_qty = item_map.get(item.get("item_code"), {}).get("total_qty", 0) or 0
 
-            item_map[item.get("item_code")][
-                school_name
-            ] = last_qty_of_school + item.get("qty", 0)
+            item_map[item.get("item_code")][school_name] = (
+                last_qty_of_school + item.get("qty", 0)
+            )
 
             item_map[item.get("item_code")]["total_qty"] = total_qty + item.get(
                 "qty", 0
@@ -98,6 +104,7 @@ def transform_data(items, selected_items, purchase_receipt_items=None):
 
 def before_validate(self, method=None):
     self.custom_qr_code_base = gen_qr_code_b64(self.name)
+    calculate_print_count(self)
 
 
 def get_columns(school_fields):
@@ -159,19 +166,22 @@ def get_columns(school_fields):
         *school_array,
     ]
     return columns
+
+
 @frappe.whitelist()
-def get_linked_receipts(name,item_code):
-     purchase_receipt_items = frappe.db.get_list(
+def get_linked_receipts(name, item_code):
+    purchase_receipt_items = frappe.db.get_list(
         "Purchase Receipt Item",
-        filters={"purchase_order": name,'item_code':item_code},
-        fields=["name", "item_code","parent"],
-        ignore_permissions=True
+        filters={"purchase_order": name, "item_code": item_code},
+        fields=["name", "item_code", "parent"],
+        ignore_permissions=True,
     )
-     return purchase_receipt_items
+    return purchase_receipt_items
+
 
 @frappe.whitelist()
 def generate_challan_list(self, selected_items=None):
-    
+
     self = json.loads(self) if isinstance(self, str) else self
     selected_items = (
         json.loads(selected_items)
@@ -184,7 +194,7 @@ def generate_challan_list(self, selected_items=None):
         "Purchase Receipt Item",
         filters={"purchase_order": self.get("name")},
         fields=["name", "item_code"],
-        ignore_permissions=True
+        ignore_permissions=True,
     )
     frappe.errprint(purchase_receipt_items)
     if len(purchase_receipt_items):
@@ -194,12 +204,19 @@ def generate_challan_list(self, selected_items=None):
     else:
         purchase_receipt_items = None
     self = transform_data(self.get("items"), selected_items, purchase_receipt_items)
-    all_classes = frappe.db.get_list("Item",fields=["custom_class"],filters=[['name','in',selected_items]])
-    classes_array = [i.get('custom_class') for i in all_classes]
-    all_schools = frappe.db.get_list("Program", fields=["school"],filters=[['program_name','in',classes_array]], group_by="school")
-    schools_array = [i.get('school') for i in all_schools]
+    all_classes = frappe.db.get_list(
+        "Item", fields=["custom_class"], filters=[["name", "in", selected_items]]
+    )
+    classes_array = [i.get("custom_class") for i in all_classes]
+    all_schools = frappe.db.get_list(
+        "Program",
+        fields=["school"],
+        filters=[["program_name", "in", classes_array]],
+        group_by="school",
+    )
+    schools_array = [i.get("school") for i in all_schools]
 
-    school_docs = frappe.db.get_list('School',filters=[['name','in',schools_array]])
+    school_docs = frappe.db.get_list("School", filters=[["name", "in", schools_array]])
     # school_names = [name.get("name") for name in all_schools]
     columns = get_columns(school_docs)
 
@@ -210,7 +227,11 @@ def generate_challan_list(self, selected_items=None):
 @frappe.whitelist()
 def create_purchase_receipt(self, school, selected_items=[]):
     self = json.loads(self) if isinstance(self, str) else self
-    selected_items = json.loads(selected_items) if isinstance(selected_items, str) else selected_items
+    selected_items = (
+        json.loads(selected_items)
+        if isinstance(selected_items, str)
+        else selected_items
+    )
     # if not len(selected_items):
     #     frappe.throw("No items selected")
     school_prefix = frappe.db.get_value("School", school, "prefix")
@@ -218,9 +239,9 @@ def create_purchase_receipt(self, school, selected_items=[]):
         "Purchase Receipt Item",
         filters={"purchase_order": self.get("name")},
         fields=["name", "item_code", "warehouse"],
-        ignore_permissions=True
+        ignore_permissions=True,
     )
-    frappe.errprint('hh')
+    frappe.errprint("hh")
     frappe.errprint(selected_items)
     selected_item_map = get_selected_item_map(selected_items)
     warehouse_to_item_map = get_warehouse_to_item_map(purchase_receipt_items)
@@ -261,3 +282,51 @@ def create_purchase_receipt_for_all_schools(self, selected_items=None):
     for school in schools:
         create_purchase_receipt(self, school, selected_items)
     return "Receipts Created Successfully"
+
+
+@frappe.whitelist()
+# edu_quality.overrides_hooks.purchase_order.send_test_order_email
+def send_test_order_email():
+    try:
+        self = frappe.form_dict.args
+        self = json.loads(self).get("self") if isinstance(self, str) else self
+
+        from nextai.funnel.custom_trigger import trigger_event
+
+        if self.get("custom_is_cmap_print"):
+            doc = frappe.get_doc("Purchase Order", self.get("name"))
+            trigger_event(doc=doc, event_name="purchase_order")
+            frappe.clear_messages()
+        return "Success"
+    except Exception as e:
+        frappe.msgprint(str(e))
+
+
+# marks item as printed
+
+
+@frappe.whitelist()
+def mark_item_as_printed(purchase_ord, item_code, checked):
+    purchase_ord_doc = frappe.get_doc("Purchase Order", purchase_ord)
+    frappe.errprint(checked)
+    for i in purchase_ord_doc.items:
+        if i.get("item_code") == item_code:
+
+            i.printed = 1 if checked == "true" else 0
+            # frappe.db.set_value(
+            #     "Purchase Order Item",
+            #     i.get("name"),
+            #     "printed",
+            #     1 if checked == "true" else 0,
+            # )
+            # i["printed"] = checked
+    calculate_print_count(purchase_ord_doc)
+    purchase_ord_doc.save(ignore_permissions=True)
+    purchase_ord_doc.reload()
+
+
+def calculate_print_count(self):
+    if not self.items:
+        return 0
+    self.custom_total_items = len(self.items)
+    self.custom_printed_count = len([i for i in self.items if i.get("printed")])

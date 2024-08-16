@@ -50,6 +50,7 @@ doctype_list_js = {
     "Student": "public/js/list/student_list.js",
     "Student ID Card": "public/js/list/student_id_card.js",
     "Fees": "public/js/list/fees_list.js",
+    "Purchase Order": "public/js/list/purchase_order_list.js",
     "Carnival Event": [
         # "public/js/list/list_view.js",
         "public/js/list/carnival_event_list.js",
@@ -164,6 +165,7 @@ doc_events = {
     "Student": {
         "autoname": "edu_quality.public.py.student.autoname",
         "before_insert": "edu_quality.public.py.student.before_insert",
+        "before_save": "edu_quality.public.py.student.before_save",
     },
     "Custom Field": {"after_insert": "edu_quality.public.py.fixtures.custom_fields"},
     "Custom DocPerm": {
