@@ -10,7 +10,7 @@ from edu_quality.public.py.discount import (
 from edu_quality.edu_quality.server_scripts.student_applicant import (
     add_referral_discount,
 )
-from edu_quality.api.google_admin import create_google_user
+from edu_quality.api.google_admin import create_google_user, add_user_to_group
 
 from edu_quality.edu_quality.server_scripts.utils import (
     is_rolled_over,
@@ -287,6 +287,10 @@ def create_student_account(student, student_applicant):
             email_address,
             mobile_number,
         ).get("primaryEmail", "")
+
+        group_email = frappe.get_value('School', student.school, 'group_email')
+        if group_email:
+            add_user_to_group(created_email, group_email)
 
         student.student_email_id = created_email
         student.save()
