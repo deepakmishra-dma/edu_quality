@@ -104,27 +104,28 @@ function NotCmapFilter(frm) {
 }
 
 async function getLinkedSubject(frm) {
-    frappe.call({
-        method: "frappe.client.get",
-        args: {
-            doctype: "Class Type",
-            name: frm.doc.custom_class,
-        },
-        callback(r) {
-            if (r.message) {
-                const classData = r.message;
+    if (frm.doc.custom_class)
+        frappe.call({
+            method: "frappe.client.get",
+            args: {
+                doctype: "Class Type",
+                name: frm.doc.custom_class,
+            },
+            callback(r) {
+                if (r.message) {
+                    const classData = r.message;
 
-                const arrayOfSubjects = classData.subject.map(function (obj) {
-                    return obj.subject;
-                });
-                frm.set_query("custom_subject", function () {
-                    return {
-                        filters: [['name', 'in', arrayOfSubjects]]
-                    }
-                })
+                    const arrayOfSubjects = classData.subject.map(function (obj) {
+                        return obj.subject;
+                    });
+                    frm.set_query("custom_subject", function () {
+                        return {
+                            filters: [['name', 'in', arrayOfSubjects]]
+                        }
+                    })
+                }
             }
-        }
-    });
+        });
 
 
 

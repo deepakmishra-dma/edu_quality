@@ -4,7 +4,7 @@
 import frappe
 from frappe.query_builder.functions import Count
 from frappe.utils import parse_json, today, getdate
-from edu_quality.edu_quality.server_scripts.utils import projected_strength
+from edu_quality.edu_quality.server_scripts.utils import calculate_strength_previous
 
 
 def generate_school_fields(program=None):
@@ -241,6 +241,7 @@ def get_data_from_queries(filters=None):
         "Academic Year", {"custom_current_academic_year": 1}, "name"
     )
     qty_needed_for_schools_query = ""
+
     if academic_year_doc.custom_next_academic_year:
         qty_needed_for_schools = []
         schools = frappe.db.get_list("School")
@@ -248,8 +249,11 @@ def get_data_from_queries(filters=None):
 
         for school in schools:
             try:
-                projected_strength = projected_strength(f"{class_filter}-{school}")
-            except:
+                projected_strength = calculate_strength_previous(
+                    f"{class_filter}-{school}", filters.get("academic_year")
+                )
+            except Exception as e:
+                frappe.errprint(str(e))
                 projected_strength = 0
 
             qty_needed_for_schools.append(

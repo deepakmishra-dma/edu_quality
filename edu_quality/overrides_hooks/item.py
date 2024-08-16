@@ -172,8 +172,8 @@ def upload_to_drive(**doc):
             file_doc = find_file_by_name_and_folder(
                 docname, item_doc.custom_product_folder
             )
-
-            file_id = file_doc.get("id")
+            if file_doc:
+                file_id = file_doc.get("id")
 
         if not drive_existing_folder:
             create_item_directory(item_doc)

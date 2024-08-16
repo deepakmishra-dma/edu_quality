@@ -41,7 +41,7 @@ def get_google_folder_name_with_id(folder_id):
 def check_for_folder_in_google_drive(folder_name=None, root_folder=None):
     """Checks if folder exists in Google Drive else create it."""
     service_account_doc = frappe.get_single("Google Service Account")
-    root_folder_id = (root_folder or service_account_doc.get(("root_folder")))
+    root_folder_id = root_folder or service_account_doc.get(("root_folder"))
 
     if folder_name == None:
         return root_folder_id
@@ -169,6 +169,7 @@ def find_file_by_name_and_folder(file_name, root_folder_id):
         return files[0]
     else:
         print("No files found with that name.")
+        return False
 
 
 def update_file_stream_on_drive(file_content, file_id, mimetype):

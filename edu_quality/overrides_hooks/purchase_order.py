@@ -326,7 +326,7 @@ def mark_item_as_printed(purchase_ord, item_code, checked):
 
 
 def calculate_print_count(self):
+    if not self.items:
+        return 0
     self.custom_total_items = len(self.items)
-    print(self.items)
-    [print(i.get("printed")) for i in self.items]
     self.custom_printed_count = len([i for i in self.items if i.get("printed")])

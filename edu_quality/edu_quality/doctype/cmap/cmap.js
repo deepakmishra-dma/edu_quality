@@ -102,27 +102,28 @@ async function getNotes(frm) {
     // parentNote.set_options()
 }
 async function getLinkedSubject(frm) {
-    frappe.call({
-        method: "frappe.client.get",
-        args: {
-            doctype: "Class Type",
-            name: frm.doc.class,
-        },
-        callback(r) {
-            if (r.message) {
-                const classData = r.message;
+    if (frm.doc.class)
+        frappe.call({
+            method: "frappe.client.get",
+            args: {
+                doctype: "Class Type",
+                name: frm.doc.class,
+            },
+            callback(r) {
+                if (r.message) {
+                    const classData = r.message;
 
-                const arrayOfSubjects = classData.subject.map(function (obj) {
-                    return obj.subject;
-                });
-                frm.set_query("subject", function () {
-                    return {
-                        filters: [['name', 'in', arrayOfSubjects]]
-                    }
-                })
+                    const arrayOfSubjects = classData.subject.map(function (obj) {
+                        return obj.subject;
+                    });
+                    frm.set_query("subject", function () {
+                        return {
+                            filters: [['name', 'in', arrayOfSubjects]]
+                        }
+                    })
+                }
             }
-        }
-    });
+        });
 
 
 
@@ -196,6 +197,7 @@ frappe.ui.form.on("CMAP", {
         getPeriodNo(frm)
     }
     , subject: (frm) => {
+        getPeriodNo(frm)
         texbookQuery(frm)
     }
 
