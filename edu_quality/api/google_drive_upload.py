@@ -155,8 +155,8 @@ def upload_file_stream_to_drive(file_content, root_folder, file_name, mimetype):
     except Exception as e:
         frappe.throw(("Google Drive - Could not locate - {0}").format(e))
     finally:
-        print(temp_file.name, "caha")
-        os.remove(temp_file.name)
+        if os and temp_file and temp_file.name:
+            os.remove(temp_file.name)
     return "Google Drive File Upload Successful"
 
 
