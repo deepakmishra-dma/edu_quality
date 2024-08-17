@@ -167,7 +167,7 @@ def upload_to_drive(**doc):
         )
         file_id = None
 
-        if drive_existing_folder.get("name"):
+        if drive_existing_folder and drive_existing_folder.get("name"):
 
             file_doc = find_file_by_name_and_folder(
                 docname, item_doc.custom_product_folder
@@ -176,7 +176,7 @@ def upload_to_drive(**doc):
                 file_id = file_doc.get("id")
 
         if not drive_existing_folder:
-            create_item_directory(item_doc)
+            custom_product_folder = create_item_directory(item_doc)
 
         if "file" not in files:
             return
@@ -187,7 +187,7 @@ def upload_to_drive(**doc):
         if not drive_existing_folder or not file_id:
             id = upload_file_stream_to_drive(
                 file_binary,
-                item_doc.custom_product_folder,
+                item_doc.custom_product_folder or custom_product_folder,
                 docname,
                 files["file"].mimetype,
             )
@@ -289,6 +289,7 @@ def create_item_directory(self):
             chapter.get("topic_name"),
         )
         self.custom_product_folder = product_folder
+        return product_folder
     except Exception as e:
         frappe.errprint(str(e))
         frappe.msgprint("Error creating product directory")

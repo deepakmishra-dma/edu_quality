@@ -25,6 +25,8 @@ def get_google_drive_object():
 
 def get_google_folder_name_with_id(folder_id):
     try:
+        if not folder_id:
+            return False
         folder_exist = (
             get_google_drive_object()
             .files()
