@@ -19,6 +19,7 @@ def before_insert(doc, method=None):
     else:
         doc.contact_doc = doc.create_contact()
     doc.custom_contact_link = doc.contact_doc.get("name")
+    doc.contact_doc.reload()
     doc.contact_doc.flags.ignore_permissions = True
 
 
@@ -46,6 +47,7 @@ def after_insert(doc, method=None):
             )
 
     doc.contact_doc.save(ignore_permissions=True)
+    doc.contact_doc.reload()
     if doc.get("fathers_email"):
         content = enqueue_email(doc)
         if content:

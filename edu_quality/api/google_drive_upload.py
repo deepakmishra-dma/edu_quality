@@ -25,6 +25,8 @@ def get_google_drive_object():
 
 def get_google_folder_name_with_id(folder_id):
     try:
+        if not folder_id:
+            return False
         folder_exist = (
             get_google_drive_object()
             .files()
@@ -32,10 +34,12 @@ def get_google_folder_name_with_id(folder_id):
             .execute()
         )
         return folder_exist
-    except HttpError as e:
+    except Exception as e:
         if e.resp.status == 404:
             return False
         frappe.msgprint("Something Went Wrong")
+        return False
+        
 
 
 def check_for_folder_in_google_drive(folder_name=None, root_folder=None):
@@ -153,22 +157,27 @@ def upload_file_stream_to_drive(file_content, root_folder, file_name, mimetype):
     except Exception as e:
         frappe.throw(("Google Drive - Could not locate - {0}").format(e))
     finally:
-        print(temp_file.name, "caha")
-        os.remove(temp_file.name)
+        if os and temp_file and temp_file.name:
+            os.remove(temp_file.name)
     return "Google Drive File Upload Successful"
 
 
 def find_file_by_name_and_folder(file_name, root_folder_id):
-    google_drive = get_google_drive_object()
-    query = f"name='{file_name}' and '{root_folder_id}' in parents"
+    try:
+        if not root_folder_id or not file_name:
+            return False
+        google_drive = get_google_drive_object()
+        query = f"name='{file_name}' and '{root_folder_id}' in parents"
 
-    results = google_drive.files().list(q=query, fields="files(id, name)").execute()
-    files = results.get("files", [])
+        results = google_drive.files().list(q=query, fields="files(id, name)").execute()
+        files = results.get("files", [])
 
-    if files:
-        return files[0]
-    else:
-        print("No files found with that name.")
+        if files:
+            return files[0]
+        else:
+            print("No files found with that name.")
+            return False
+    except Exception as e:
         return False
 
 
