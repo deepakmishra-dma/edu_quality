@@ -48,13 +48,13 @@ def is_rolled_over(academic_year=None):
         return frappe.db.get_value("Academic Year", filter, order_by="year_start_date")
 
 
-def get_previous_class(program):
-    filters = [
-        ["Program", "school", "=", program.school],
-        ["Program", "sequence", "=", program.sequence - 1],
-    ]
-    if frappe.db.exists("Program", filters):
-        return frappe.db.get_value("Program", filters)
+# def get_previous_class(program):
+#     filters = [
+#         ["Program", "school", "=", program.school],
+#         ["Program", "sequence", "=", program.sequence - 1],
+#     ]
+#     if frappe.db.exists("Program", filters):
+#         return frappe.db.get_value("Program", filters)
 
 
 def next_class(program):
@@ -133,7 +133,11 @@ def get_next_class(current_class):
 
 
 @frappe.whitelist()
-def projected_strength(current_class):
+def projected_strength(current_class,academic_year=None):
+    if not academic_year:
+        academic_year = current_academic_year()
+    prev_class = get_previous_class(current_class)
+    count = frappe.db.count("Program Enrollment",{"program": prev_class,"academic_year":academic_year})
     next_class = get_next_class(current_class)
     strength = frappe.db.count(
         "Program Enrollment",
@@ -157,9 +161,7 @@ def get_previous_class(current_class):
         return frappe.db.get_value(
             "Program", {"school": school, "sequence": current_sequence - 1}
         )
-    elif frappe.db.exists("Program", {"previous_class": current_class}):
-        return frappe.db.get_value("Program", {"previous_class": current_class})
-    return None
+    return frappe.db.get_value("Program",current_class,"previous_class")
 
 
 def calculate_strength_previous(current_class, academic_year=None):
@@ -184,6 +186,7 @@ def calculate_strength_previous(current_class, academic_year=None):
         )
         result = query.run(as_dict=True)
         strength += len(result)
+        frappe.errprint(query)
 
 
 
@@ -198,6 +201,7 @@ def calculate_strength_previous(current_class, academic_year=None):
         )
         .select(stud_table.name)
     )
+    frappe.errprint(query)
     result = query.run(as_dict=True)
 
     strength += len(result)
