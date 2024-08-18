@@ -31,9 +31,7 @@ def previous_academic_year(current=None):
     )
     filters = [["Academic Year", "year_end_date", "<=", current_start_date]]
     if frappe.db.exists("Academic Year", filters):
-        return frappe.db.get_all("Academic Year", filters, order_by="year_end_date")[
-            0
-        ].name
+        return frappe.db.get_all("Academic Year", filters, order_by="year_end_date")[-1].name
 
 
 def is_rolled_over(academic_year=None):
