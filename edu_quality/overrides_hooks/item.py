@@ -170,10 +170,12 @@ def upload_to_drive(**doc):
         if drive_existing_folder and drive_existing_folder.get("name"):
 
             file_doc = find_file_by_name_and_folder(
-                docname, item_doc.custom_product_folder
+                docname, item_doc.get("custom_product_folder")
             )
             if file_doc:
                 file_id = file_doc.get("id")
+
+        custom_product_folder=item_doc.get("custom_product_folder",None)
 
         if not drive_existing_folder:
             custom_product_folder = create_item_directory(item_doc)
@@ -187,7 +189,7 @@ def upload_to_drive(**doc):
         if not drive_existing_folder or not file_id:
             id = upload_file_stream_to_drive(
                 file_binary,
-                item_doc.custom_product_folder or custom_product_folder,
+                item_doc.get("custom_product_folder", custom_product_folder),
                 docname,
                 files["file"].mimetype,
             )
@@ -253,26 +255,22 @@ def gen_subject_name(worksheet_id, subject_doc):
 def create_product_class_textbook(class_name, textbook):
     service_account_doc = frappe.get_single("Google Service Account")
     root_products_folder = service_account_doc.get("products_folder")
-    try:
-        if not root_products_folder:
-            return frappe.msgprint(
-                "Error creating product directory, product directory not set in google service account settings"
-            )
 
-        return check_for_folder_in_google_drive(
-            f"{class_name} {textbook}", root_products_folder
+    if not root_products_folder:
+        return frappe.msgprint(
+            "Error creating product directory, product directory not set in google service account settings"
         )
-    except:
-        frappe.msgprint("Error creating product directory")
+
+    return check_for_folder_in_google_drive(
+        f"{class_name} {textbook}", root_products_folder
+    )
 
 
 def create_product_chapter_folder(product_class_folder, chapter_number, chapter_name):
-    try:
-        return check_for_folder_in_google_drive(
-            f"{chapter_number} {chapter_name}", product_class_folder
-        )
-    except Exception as e:
-        frappe.errprint(str(e))
+
+    return check_for_folder_in_google_drive(
+        f"{chapter_number} {chapter_name}", product_class_folder
+    )
 
 
 def create_item_directory(self):
