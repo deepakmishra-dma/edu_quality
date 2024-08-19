@@ -1,5 +1,6 @@
 import frappe 
 from edu_quality.overrides import make_payment_request
+from edu_quality.public.py.discount import only_deposit
 
 @frappe.whitelist()
 def separate_deposits(fees):
@@ -20,11 +21,9 @@ def separate_deposits(fees):
                 fees.update_split()
                 if frappe.db.exists("Payment Request",{"reference_name":fees.name,"payment_term":schedule.payment_term}):
                     pr = frappe.get_doc("Payment Request",{"reference_name":fees.name,"payment_term":schedule.payment_term})
-                    frappe.db.set_value("Payment Request",pr.name,{
-                        "grand_total":deposit_amount,
-                        "payment_term": ""
-                        })
-                    pr.reload()
+                    pr.cancel()
+
+                only_deposit(fees)
 
                 frappe.enqueue(
                     "edu_quality.public.py.student.create_payment_request",
