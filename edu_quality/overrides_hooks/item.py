@@ -175,7 +175,7 @@ def upload_to_drive(**doc):
             if file_doc:
                 file_id = file_doc.get("id")
 
-        custom_product_folder=item_doc.get("custom_product_folder",None)
+        custom_product_folder = item_doc.get("custom_product_folder", None)
 
         if not drive_existing_folder:
             custom_product_folder = create_item_directory(item_doc)
@@ -229,7 +229,7 @@ def gen_chapter_name(chapter_doc):
     chapter_code = str(chapter_doc.get("custom_chapter_number", "")).zfill(2)
     str_without_name = f"{chapter_code}: TO_REPLACE - {chapter_code}"
     length_left = 48 - len(str_without_name)
-    name_chapter = chapter_doc.topic_name.split("-")[1].strip()
+    name_chapter = chapter_doc.topic_name
     if len(name_chapter) <= length_left:
         new_string = str_without_name.replace("TO_REPLACE", name_chapter)
     else:

@@ -85,8 +85,8 @@ doctype_list_js = {
 
 # add methods and filters to jinja environment
 jinja = {
-	"methods": ["edu_quality.overrides_hooks.purchase_order"],
-	# "filters": "edu_quality.utils.jinja_filters"
+    "methods": ["edu_quality.overrides_hooks.purchase_order"],
+    # "filters": "edu_quality.utils.jinja_filters"
 }
 
 # Installation
@@ -144,7 +144,10 @@ doc_events = {
         "autoname": "edu_quality.public.py.application.autoname",
     },
     "Program Enrollment": {
-        "on_submit": "edu_quality.public.py.fee.create_fees",
+        "on_submit": [
+            "edu_quality.public.py.fee.create_fees",
+            "edu_quality.public.py.fee.create_id_card",
+        ],
         "after_insert": "edu_quality.public.py.fee.append_program_enrollment",
         "on_trash": "edu_quality.public.py.fee.remove_program_enrollment",
     },
@@ -305,8 +308,8 @@ scheduler_events = {
 
 fixtures = [
     {"dt": "Workflow"},
-    {'dt': 'Workflow State'},
-    {'dt': 'Workflow Action Master'},
+    {"dt": "Workflow State"},
+    {"dt": "Workflow Action Master"},
     {"dt": "Server Script", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
     {"dt": "Property Setter", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
     {"dt": "Client Script", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
@@ -323,7 +326,14 @@ fixtures = [
             [
                 "name",
                 "in",
-                ["Head Administration", "Councellor", "Teacher", "Printer", "Watchman","Clerk"],
+                [
+                    "Head Administration",
+                    "Councellor",
+                    "Teacher",
+                    "Printer",
+                    "Watchman",
+                    "Clerk",
+                ],
             ]
         ],
     },
@@ -338,7 +348,13 @@ fixtures = [
             [
                 "name",
                 "in",
-                ["Student Referral", "Fee Receipt", "Undertaking OTP", "Payment Link","Payment Link Remainder"],
+                [
+                    "Student Referral",
+                    "Fee Receipt",
+                    "Undertaking OTP",
+                    "Payment Link",
+                    "Payment Link Remainder",
+                ],
             ]
         ],
     },
@@ -416,7 +432,7 @@ fixtures = [
                     "Education",
                     "Website",
                     "Tools",
-                    "Integrations"
+                    "Integrations",
                 ],
             ]
         ],
@@ -445,4 +461,6 @@ after_migrate = [
     "edu_quality.tasks.update_academic_year",
 ]
 
-website_route_rules = [{'from_route': '/walsh/<path:app_path>', 'to_route': 'walsh'},]
+website_route_rules = [
+    {"from_route": "/walsh/<path:app_path>", "to_route": "walsh"},
+]
