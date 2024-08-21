@@ -90,7 +90,8 @@ def calculate_sheet_number(self):
 
 
 def before_insert(self, method=None):
-    self.custom_sheet_number = calculate_sheet_number(self)
+    if not frappe.flags.in_import:
+        self.custom_sheet_number = calculate_sheet_number(self)
     create_item_directory(self)
 
 
