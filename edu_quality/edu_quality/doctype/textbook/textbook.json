@@ -2,7 +2,7 @@
  "actions": [],
  "allow_import": 1,
  "allow_rename": 1,
- "autoname": "format:{name1}-{subject}-{class}",
+ "autoname": "field:name1",
  "creation": "2023-11-27 08:59:41.430342",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -49,7 +49,7 @@
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Textbook",
- "naming_rule": "Expression",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {
