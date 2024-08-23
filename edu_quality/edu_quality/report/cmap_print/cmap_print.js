@@ -94,6 +94,7 @@ frappe.query_reports["CMAP Print"] = {
 		return value
 		// console.log(value)
 	}, "onload": function (report) {
+
 		report.page.add_inner_button(__('Create Order'), () => {
 			let indexes = frappe.query_report.datatable.rowmanager.getCheckedRows();
 			let selected_rows = indexes.map(i => frappe.query_report.data[i]);
@@ -111,10 +112,12 @@ frappe.query_reports["CMAP Print"] = {
 
 
 			frappe.confirm(__(message), () => {
+				const academic_year = report.filters.find(el => el.fieldname === "academic_year").input.value
 				frappe.call({
 					"method": "edu_quality.edu_quality.report.cmap_print.cmap_print.create_purchase_order",
 					"args": {
-						rows: selected_rows
+						rows: selected_rows,
+						academic_year: academic_year
 					},
 					callback: function (r) {
 						if (r.message) {
