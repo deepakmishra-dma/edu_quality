@@ -6,30 +6,7 @@ frappe.pages['id-card-photo'].on_page_load = function (wrapper) {
 	});
 	setTimeout(() => {
 		const el = document.querySelector('.container.page-body')
-		// const d = make_fieldgroup(el, [
-		// 	{
-		// 		label: 'Scanner',
-		// 		fieldname: 'scanner',
-		// 		fieldtype: 'button',
-		// 		click: () => {
-		// 			new frappe.ui.Scanner({
-		// 				dialog: true, // open camera scanner in a dialog
-		// 				multiple: false, // stop after scanning one value
-		// 				on_scan: async (data) => {
-		// 					// d.set_value('ref_no', images?.data)
-		// 					await nativeInterface.execute('openWebViewCamera', {
 
-		// 						preferredCameraType: 'rear',
-		// 						galleryTitle: frm.doc.name,
-		// 						saveInMedia: true,
-
-		// 						// backgroundStorageKey: "Carnival Events"
-		// 					})
-		// 				}
-		// 			});
-		// 		}
-		// 	},
-		// ])
 		const d = make_fieldgroup(el, [
 			{
 				label: 'Enter Ref No',
@@ -54,7 +31,7 @@ frappe.pages['id-card-photo'].on_page_load = function (wrapper) {
 					if (!ref_no) {
 						frappe.msgprint("Enter Ref no or Scan QR")
 					}
-					await nativeInterface.execute('openWebViewCamera', {
+					const images = await nativeInterface.execute('openWebViewCamera', {
 						multiple: true,
 
 						preferredCameraType: 'rear',
@@ -63,6 +40,9 @@ frappe.pages['id-card-photo'].on_page_load = function (wrapper) {
 						saveInFileName: ref_no,
 
 					})
+					if (images.length || !images) {
+						d.set_value('ref_no', '')
+					}
 				}
 			},
 

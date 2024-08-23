@@ -12,6 +12,9 @@ from edu_quality.api.google_drive_upload import (
     update_file_stream_on_drive,
 )
 import datetime
+import fitz
+from PIL import Image
+from io import BytesIO
 
 # from pdf2image import convert_from_bytes
 # import imgkit
@@ -111,15 +114,7 @@ def generate_worksheet_template(chapter_name, subject_name, qr_code, worksheet_n
             "worksheet_name": worksheet_name,
         },
     )
-    # test2 = imgkit.from_string(
-    #     template,
-    #     output_path=False,
-    # )
-    # frappe.errprint(render_template_to_image(template))
-    # print(test2)
-    # test = HTML(string=template)
-    # test.write_png()
-    # frappe.errprint(test)
+
     html = HTML(
         string=template,
         base_url=base_url,
@@ -127,21 +122,26 @@ def generate_worksheet_template(chapter_name, subject_name, qr_code, worksheet_n
     main_doc = html.render()
     main_doc = main_doc.write_pdf()
     # frappe.errprint(main_doc)
-    kitoptions = {
-        "enable-local-file-access": None,
-        # "width": 2480,
-        # "height": 831,
-        # "disable-smart-width": "",
-    }
-    # return template
-    # image_bytes = imgkit.from_string(template, False, options=kitoptions)
-    # image = base64.b64encode(image_bytes).decode("utf-8")
-    # return f"data:image/png;base64,{image}"
-    frappe.local.response.filename = "Temporary Id Card.pdf".format(
-        name="Worksheet No.pdf".replace(" ", "-").replace("/", "-")
-    )
-    frappe.local.response.filecontent = main_doc
-    frappe.local.response.type = "pdf"
+    doc = fitz.open("pdf", main_doc)
+    page = doc[0]
+    pix = page.get_pixmap()
+
+    doc = fitz.open("pdf", main_doc)
+    page = doc.load_page(0)
+    pix = page.get_pixmap(alpha=True)
+    img_byte_array = BytesIO()
+    img = Image.frombytes("RGBA", [pix.width, pix.height], pix.samples)
+    img.save(img_byte_array, format="PNG")
+    img_byte_array.seek(0)
+
+    image_data = img_byte_array.read()
+
+    frappe.local.response.filename = f"Header {worksheet_name}.png"
+    frappe.local.response.filecontent = image_data
+    frappe.local.response.type = "download"
+    frappe.response.display_content_as = "attachment"
+
+    doc.close()
 
 
 # edu_quality.overrides_hooks.item.upload_to_drive
@@ -235,20 +235,21 @@ def gen_chapter_name(chapter_doc):
         new_string = str_without_name.replace("TO_REPLACE", name_chapter)
     else:
         new_string = str_without_name.replace(
-            "TO_REPLACE", name_chapter[:: length_left - 3] + "..."
+            "TO_REPLACE", name_chapter[: length_left - 3 :] + "..."
         )
     return new_string
 
 
 def gen_subject_name(worksheet_id, subject_doc):
     subject = str(subject_doc.get("name", "")).zfill(2)
-    str_without_name = f"{worksheet_id}: TO_REPLACE "
+    str_without_name = f"{worksheet_id}: TO_REPLACE"
+
     length_left = 33 - len(str_without_name)
     if len(subject) <= length_left:
         new_string = str_without_name.replace("TO_REPLACE", subject)
     else:
         new_string = str_without_name.replace(
-            "TO_REPLACE", subject[:: length_left - 3] + "..."
+            "TO_REPLACE", subject[: length_left - 3 :] + "..."
         )
     return new_string
 
