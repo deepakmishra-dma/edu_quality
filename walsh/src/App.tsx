@@ -1,53 +1,35 @@
-import { Authenticated, GitHubBanner, Refine } from "@refinedev/core";
-import { DevtoolsPanel, DevtoolsProvider } from "@refinedev/devtools";
-import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
+import {Authenticated, Refine} from "@refinedev/core";
+import {DevtoolsProvider} from "@refinedev/devtools";
+import {RefineKbar, RefineKbarProvider} from "@refinedev/kbar";
 
-import {
-  ErrorComponent,
-  notificationProvider,
-  RefineThemes,
-  ThemedLayoutV2,
-} from "@refinedev/mantine";
+import {notificationProvider,} from "@refinedev/mantine";
 
-import {
-  ColorScheme,
-  ColorSchemeProvider,
-  Global,
-  MantineProvider,
-} from "@mantine/core";
-import { useLocalStorage } from "@mantine/hooks";
-import { NotificationsProvider } from "@mantine/notifications";
+import {ColorScheme, ColorSchemeProvider, Global, MantineProvider,} from "@mantine/core";
+import {useLocalStorage} from "@mantine/hooks";
+import {NotificationsProvider} from "@mantine/notifications";
 import routerBindings, {
-  CatchAllNavigate,
   DocumentTitleHandler,
   NavigateToResource,
   UnsavedChangesNotifier,
 } from "@refinedev/react-router-v6";
 import dataProvider from "@refinedev/simple-rest";
-import { useTranslation } from "react-i18next";
-import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
-import { authProvider } from "./providers/auth";
-import { Header } from "./components/organisms/main-header";
-import {
-  BlogPostCreate,
-  BlogPostEdit,
-  BlogPostList,
-  BlogPostShow,
-} from "./pages/blog-posts";
-import {
-  CategoryCreate,
-  CategoryEdit,
-  CategoryList,
-  CategoryShow,
-} from "./pages/categories";
-import { ForgotPassword } from "./pages/forgotPassword";
-import { Login } from "./pages/login";
-import { Register } from "./pages/register";
+import {useTranslation} from "react-i18next";
+import {BrowserRouter, Outlet, Route, Routes, useLocation} from "react-router-dom";
+import {authProvider} from "./providers/auth";
+import {Header} from "./components";
+import {Login} from "./pages/login";
 import "./index.css";
-import { SelectStudent } from "./pages/select-student";
-import { SubHeader } from "./components/organisms/sub-header";
-import { BaseLayout } from "./components/layouts/BaseLayout";
-import { OtpPage } from "./pages/login/otp";
+import {BaseLayout} from "./components/layouts/BaseLayout";
+import {OtpPage} from "./pages/login/otp";
+import theme from "./config/theme.ts";
+
+const TempError = () => {
+  const location = useLocation()
+  console.log({location})
+  return <>
+    error
+  </>
+};
 
 function App() {
   const [colorScheme, setColorScheme] = useLocalStorage<ColorScheme>({
@@ -55,7 +37,7 @@ function App() {
     defaultValue: "light",
     getInitialValueInEffect: true,
   });
-  const { t, i18n } = useTranslation();
+  const {t, i18n} = useTranslation();
 
   const toggleColorScheme = (value?: ColorScheme) =>
     setColorScheme(value || (colorScheme === "dark" ? "light" : "dark"));
@@ -67,7 +49,7 @@ function App() {
   };
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/walsh">
       <RefineKbarProvider>
         <ColorSchemeProvider
           colorScheme={colorScheme}
@@ -75,44 +57,16 @@ function App() {
         >
           {/* You can change the theme colors here. example: theme={{ ...RefineThemes.Magenta, colorScheme:colorScheme }} */}
           <MantineProvider
-            theme={{
-              ...{
-                globalStyles: (theme) => ({
-                  body: {
-                    backgroundColor:
-                      theme.colorScheme === "dark"
-                        ? theme.colors.dark[8]
-                        : theme.colors.gray[0],
-                  },
-                }),
-
-                colors: {
-                  brand: [
-                    "#fafafa", // 50
-                    "#f5f5f5", // 100
-                    "#e5e5e5", // 200
-                    "#d4d4d4", // 300
-                    "#a3a3a3", // 400
-
-                    "#262626", // 800
-                    "#171717", // 900
-                    "#0a0a0a", // 950
-                  ],
-                },
-                primaryColor: "brand",
-              },
-              colorScheme: colorScheme,
-              fontFamily: "Inter, sans-serif",
-            }}
+            theme={theme(colorScheme)}
             withNormalizeCSS
             withGlobalStyles
           >
-            <Global styles={{ body: { WebkitFontSmoothing: "auto" } }} />
+            <Global styles={{body: {WebkitFontSmoothing: "auto"}}}/>
             <NotificationsProvider position="top-right">
               <DevtoolsProvider>
                 <Refine
                   dataProvider={dataProvider(
-                    "https://api.fake-rest.refine.dev"
+                    window.location.href
                   )}
                   notificationProvider={notificationProvider}
                   routerProvider={routerBindings}
@@ -120,11 +74,16 @@ function App() {
                   i18nProvider={i18nProvider}
                   resources={[
                     {
-                      name: "blog_posts",
-                      list: "/blog-posts",
-                      create: "/blog-posts/create",
-                      edit: "/blog-posts/edit/:id",
-                      show: "/blog-posts/show/:id",
+                      name: "notice-board",
+                      list: "/notice-board",
+                      show: "/notice-board/:id",
+                    },
+                    {
+                      name: "notice-boardx",
+                      list: "/notice-boardx",
+                      create: "/notice-boardx/create",
+                      edit: "/notice-boardx/edit/:id",
+                      show: "/notice-boardx/show/:id",
                       meta: {
                         canDelete: true,
                       },
@@ -151,46 +110,34 @@ function App() {
                     <Route
                       element={
                         <div>
-                          <Header />
-
-                          <Outlet />
+                          <Header/>
+                          <Outlet/>
                         </div>
                       }
                     >
-                      <Route
-                        index
-                        element={<NavigateToResource resource="blog_posts" />}
-                      />
-                      <Route path="/blog-posts">
-                        <Route index element={<BlogPostList />} />
-                        <Route path="create" element={<BlogPostCreate />} />
-                        <Route path="edit/:id" element={<BlogPostEdit />} />
-                        <Route path="show/:id" element={<BlogPostShow />} />
-                      </Route>
-                      <Route path="/categories">
-                        <Route index element={<CategoryList />} />
-                        <Route path="create" element={<CategoryCreate />} />
-                        <Route path="edit/:id" element={<CategoryEdit />} />
-                        <Route path="show/:id" element={<CategoryShow />} />
-                      </Route>
-                      <Route path="*" element={<ErrorComponent />} />
+                      <Route path="*" element={<TempError/>}/>
                     </Route>
                     <Route
                       element={
                         <Authenticated
                           key="authenticated-outer"
-                          fallback={<Outlet />}
+                          fallback={<Outlet/>}
+                          v3LegacyAuthProviderCompatible
                         >
-                          <NavigateToResource />
+                          <NavigateToResource/>
                         </Authenticated>
                       }
                     >
-                      <Route path="/login" element={<Login />} />
+                      <Route
+                        index
+                        element={<NavigateToResource resource="login"/>}
+                      />
+                      <Route path="/login" element={<Login/>}/>
                       <Route
                         path="/otp"
                         element={
                           <BaseLayout name={"Enter OTP"}>
-                            <OtpPage />
+                            <OtpPage/>
                           </BaseLayout>
                         }
                       />
@@ -199,15 +146,14 @@ function App() {
                       path="/select-student"
                       element={
                         <BaseLayout name={"Options"}>
-                          <SelectStudent />
+                          <Outlet/>
                         </BaseLayout>
                       }
                     />
                   </Routes>
-
-                  <RefineKbar />
-                  <UnsavedChangesNotifier />
-                  <DocumentTitleHandler />
+                  <RefineKbar/>
+                  <UnsavedChangesNotifier/>
+                  <DocumentTitleHandler/>
                 </Refine>
                 {/* <DevtoolsPanel /> */}
               </DevtoolsProvider>

@@ -1,45 +1,27 @@
 import {
-  ActionIcon,
-  Avatar,
+  Box,
   Flex,
-  Group,
   Header as MantineHeader,
-  Menu,
   Sx,
   Text,
-  Title,
-  Box,
   useMantineColorScheme,
   useMantineTheme,
 } from "@mantine/core";
-import { useGetIdentity, useGetLocale, useSetLocale } from "@refinedev/core";
-import {
-  HamburgerMenu,
-  RefineThemedLayoutV2HeaderProps,
-} from "@refinedev/mantine";
-import {
-  IconLanguage,
-  IconMoonStars,
-  IconSun,
-  IconArrowLeft,
-} from "@tabler/icons";
-import i18n from "i18next";
-import React from "react";
+// @ts-expect-error types error
+import {IconArrowLeft,} from "@tabler/icons";
 
-type IUser = {
-  id: number;
-  name: string;
-  avatar: string;
-};
-export function SubHeader({ name, goBack }) {
-  const { data: user } = useGetIdentity<IUser>();
+// type IUser = {
+//   id: number;
+//   name: string;
+//   avatar: string;
+// };
+
+export function SubHeader({name}: any) {
+  // const {data: user} = useGetIdentity<IUser>();
   const sticky = true;
-  const changeLanguage = useSetLocale();
 
   const theme = useMantineTheme();
-  const locale = useGetLocale();
-  const currentLocale = locale();
-  const { colorScheme, toggleColorScheme } = useMantineColorScheme();
+  const {colorScheme} = useMantineColorScheme();
   const dark = colorScheme === "dark";
 
   const borderColor = dark ? theme.colors.dark[6] : theme.colors.gray[2];
@@ -72,7 +54,7 @@ export function SubHeader({ name, goBack }) {
         }}
         gap={12}
       >
-        <IconArrowLeft style={{ weight: 400 }} />
+        <IconArrowLeft style={{weight: 400}}/>
         <Box>
           <Text size={"xl"} weight={"600"}>
             {name}

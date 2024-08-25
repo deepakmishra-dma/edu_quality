@@ -1,6 +1,9 @@
+import json
+import random
+
 import frappe
-import math, random, json
-from edu_quality.public.py.utils import sms_otp, verify_otp, get_email_id, get_mobile_number
+
+from edu_quality.public.py.utils import sms_otp, verify_otp, get_mobile_number
 
 try:
     from nextai.whatsapp_business_api_integration.doctype.whatsapp_message.whatsapp_message import (
@@ -20,7 +23,7 @@ def generate_undertaking_otp(payment_hash=None, fee=None, fee_advance=None):
     # fee_doc = frappe.get_doc(doctype, docname)
     # trigger_event(doc=fee_doc, event_name="undertaking_otp")
     from edu_quality.public.py.utils import generate_otp
-    generate_otp(docname,undertaking=1)
+    generate_otp(docname, undertaking=1)
 
     # generate_otp({"doc": fee_doc})
     return True
@@ -28,9 +31,9 @@ def generate_undertaking_otp(payment_hash=None, fee=None, fee_advance=None):
 
 @frappe.whitelist(allow_guest=True)
 def verify_undertaking_otp(otp, payment_hash=None, fee=None, fee_advance=None):
-    doctype, docname = (fee and ("Fees", fee)) or (fee_advance and ("Fee Advance", fee_advance)) or get_fee(payment_hash)
+    doctype, docname = (fee and ("Fees", fee)) or (fee_advance and ("Fee Advance", fee_advance)) or get_fee(
+        payment_hash)
     return verify_otp(docname, otp)
-
 
 
 def get_fee(payment_hash):
@@ -50,7 +53,8 @@ def generate_otp(variables):
     rs.set_value(key, OTP, expires_in_sec=600)
 
     variables["otp"] = OTP
-    return send_otp(doc.doctype,doc.name, OTP)
+    return send_otp(doc.doctype, doc.name, OTP)
+
 
 def send_otp(doctype, docname, otp):
     try:
