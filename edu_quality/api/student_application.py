@@ -599,12 +599,12 @@ def serialize_lead_to_application(doc: dict):
 
 
 id_to_location_map_fb = {
-    "wakad": "Wakad",
-    "shivane": "Shivane",
-    "fursungi": "Fursungi",
-    "walnut school at wakad": "Wakad",
-    "walnut school at shivane": "Shivane",
-    "walnut school at fursungi": "Fursungi",
+    "wakad": "Walnut School at Wakad",
+    "shivane": "Walnut School at Shivane",
+    "fursungi": "Walnut School at Fursungi",
+    "walnut school at wakad": "Walnut School at Wakad",
+    "walnut school at shivane": "Walnut School at Shivane",
+    "walnut school at fursungi": "Walnut School at Fursungi",
 }
 
 
@@ -640,11 +640,7 @@ def get_existing_leads(first_name, fathers_phone):
 
 
 def get_school(location):
-    return frappe.db.get_value(
-        "School",
-        {"location": id_to_location_map_fb.get(str(location).lower(), "")},
-        "name",
-    )
+    return id_to_location_map_fb.get(str(location).lower())
 
 
 def get_class(school_name, class_name):
@@ -661,7 +657,7 @@ def get_class(school_name, class_name):
 def get_school_code(location):
     return frappe.db.get_value(
         "School",
-        {"location": id_to_location_map_fb.get(str(location).lower(), "")},
+        {"name": id_to_location_map_fb.get(str(location).lower(), "")},
         "prefix",
     )
 
@@ -735,18 +731,24 @@ def create_lead(kwargs):
             "school_from_lead_source": kwargs.get("school"),
             "center": school_name,
             "class": class_name,
-            "status": "Hot"
-            if kwargs.get("source", "").lower() == "walkin"
-            or kwargs.get("lead_mode", "") == "school_walkin"
-            else "Fresh",
+            "status": (
+                "Hot"
+                if kwargs.get("source", "").lower() == "walkin"
+                or kwargs.get("lead_mode", "") == "school_walkin"
+                else "Fresh"
+            ),
             "class_from_lead_source": kwargs.get("class"),
             "custom_previous_school": kwargs.get("current_school", ""),
             "source": source or "Website" or "Others",
-            "custom_preferred_communication_mode": "Call"
-            if kwargs.get("communication_mode", "").lower() == "yes"
-            else "Chat"
-            if kwargs.get("communication_mode", "").lower() == "no"
-            else "Call",
+            "custom_preferred_communication_mode": (
+                "Call"
+                if kwargs.get("communication_mode", "").lower() == "yes"
+                else (
+                    "Chat"
+                    if kwargs.get("communication_mode", "").lower() == "no"
+                    else "Call"
+                )
+            ),
             "custom_preferred_communication_day": kwargs.get(
                 "communication_day", "Monday"
             ),
@@ -852,9 +854,7 @@ def update_communication(lead, kwargs):
     lead.custom_preferred_communication_mode = (
         "Call"
         if kwargs.get("communication_mode", "").lower() == "yes"
-        else "Chat"
-        if kwargs.get("communication_mode", "").lower() == "no"
-        else "Call"
+        else "Chat" if kwargs.get("communication_mode", "").lower() == "no" else "Call"
     )
     lead.custom_preferred_communication_day = kwargs.get("communication_day", "Monday")
     lead.custom_preferred_communication_time = kwargs.get("communication_time")
