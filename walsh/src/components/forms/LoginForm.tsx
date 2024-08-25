@@ -1,4 +1,4 @@
-import { PHONE_REGEX } from "../../constants";
+// import { PHONE_REGEX } from "../../constants";
 
 export default {
   initialValues: {
