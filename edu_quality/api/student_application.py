@@ -640,7 +640,7 @@ def get_existing_leads(first_name, fathers_phone):
 
 
 def get_school(location):
-    return id_to_location_map_fb.get(str(location).lower())
+    return id_to_location_map_fb.get(str(location).lower(), "")
 
 
 def get_class(school_name, class_name):
