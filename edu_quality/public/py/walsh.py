@@ -36,7 +36,7 @@ def match_otp(wa_phone_no, otp):
     cache = frappe.cache()
     key = "walsh_otp_" + wa_phone_no
     cache_otp = cache.get_value(key)
-    print(wa_phone_no, "otp", otp, "cache_otp", cache_otp)
+    # print(wa_phone_no, "otp", otp, "cache_otp", cache_otp)
     return otp == cache_otp
 
 
@@ -65,7 +65,7 @@ def get_guardian_from_phone(full_phone_no):
 
 
 def get_or_create_user(full_phone_no):
-    print("create or get user", full_phone_no)
+    # print("create or get user", full_phone_no)
     if frappe.db.exists("User", {"phone": full_phone_no}):
         return frappe.get_doc("User", {"phone": full_phone_no})
 
@@ -85,7 +85,7 @@ def get_or_create_user(full_phone_no):
 
 
 def check_user_exists(phone_no):
-    print("check exists", phone_no)
+    # print("check exists", phone_no)
     if frappe.db.exists("User", {"phone": phone_no}):
         return True
     guardian_number = remove_indian_country_code(phone_no)
@@ -95,7 +95,7 @@ def check_user_exists(phone_no):
 
 
 def check_guardian_exists(full_phone_no):
-    print("check_guardian_exists", full_phone_no)
+    # print("check_guardian_exists", full_phone_no)
     guardian_number = remove_indian_country_code(full_phone_no)
     if frappe.db.exists("Guardian", {"mobile_number": guardian_number}):
         return True
@@ -109,7 +109,7 @@ def get_guardian_mail_from_phone(phone_no):
 
 
 def get_user_from_email(email_id):
-    print("get user from email", email_id)
+    # print("get user from email", email_id)
     if frappe.db.exists("User", {"name": email_id}):
         return frappe.get_doc("User", {"name": email_id})
 
