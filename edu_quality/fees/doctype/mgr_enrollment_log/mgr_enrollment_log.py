@@ -41,6 +41,13 @@ class MGREnrollmentLog(Document):
             self.erp_responce = frappe.get_traceback()
             frappe.logger("enrollment").exception(e)
 
+
+    def after_insert(self):
+        if self.enrollment__status == "Failed":
+            from frappe.integrations.doctype.webhook.webhook import enqueue_webhook
+            frappe.enqueue(enqueue_webhook, doc=self, webhook={"name": "MGR Enrollment Error"})
+
+
 @frappe.whitelist()    
 def re_enroll_student(id):
     try:
