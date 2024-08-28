@@ -14,7 +14,7 @@ import frappe.integrations.google_oauth as oauth
 
 CALLBACK_METHOD = "/api/method/frappe.integrations.google_oauth.callback"
 _SCOPES = {
-    "admin": "https://www.googleapis.com/auth/admin.directory.user",
+    "admin": ["https://www.googleapis.com/auth/admin.directory.user","https://www.googleapis.com/auth/admin.directory.group","https://www.googleapis.com/auth/admin.directory.group.member"],
     "mail": ("https://mail.google.com/"),
     "contacts": ("https://www.googleapis.com/auth/contacts"),
     "drive": ("https://www.googleapis.com/auth/drive"),

@@ -9,7 +9,7 @@ def autoname(self, method=None):
         "Textbook", self.custom_textbook, "short_code"
     )
     class_shortcode = frappe.db.get_value("Class Type", self.custom_class, "short_code")
-    name = f"{course_shortcode}{textbook_shortcode}{class_shortcode}{self.custom_chapter_number} - {self.topic_name}"
+    name = f"{textbook_shortcode}{class_shortcode}{self.custom_chapter_number} - {self.topic_name}"
     self.name = name
     self.custom_name = name
 

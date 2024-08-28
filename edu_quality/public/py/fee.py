@@ -172,7 +172,22 @@ def get_deposit(doc_payment_plan, payment_plan):
 
 
 
-
+def create_id_card(doc,method=None):
+    student = frappe.get_doc("Student", doc.student)
+    qrcode_image = gen_qr_code_b64(
+        f"{doc.get('academic_year')}/{doc.get('custom_school')}/{student.get('reference_number')}"
+    )
+    doc.custom_id_card = (
+        frappe.get_doc(
+            {
+                "doctype": "Student ID Card",
+                "program_enrolled_in": doc.name,
+                "qr_code": qrcode_image,
+            }
+        )
+        .insert()
+        .get("name")
+    )
 
 def create_fees(doc, method=None):
     try:
@@ -281,23 +296,6 @@ def create_fees(doc, method=None):
 
 def append_program_enrollment(doc, method=None):
     return
-    student = frappe.get_doc("Student", doc.student)
-    # create id card
-    qrcode_image = gen_qr_code_b64(
-        f"{doc.get('academic_year')}/{doc.get('custom_school')}/{student.get('reference_number')}"
-    )
-
-    doc.custom_id_card = (
-        frappe.get_doc(
-            {
-                "doctype": "Student ID Card",
-                "program_enrolled_in": doc.name,
-                "qr_code": qrcode_image,
-            }
-        )
-        .insert()
-        .get("name")
-    )
     student.append(
         "class_details",
         {

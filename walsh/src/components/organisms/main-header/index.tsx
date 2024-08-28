@@ -1,22 +1,15 @@
 import {
-  ActionIcon,
   Avatar,
   Flex,
   Group,
   Header as MantineHeader,
-  Menu,
   Sx,
   Title,
   useMantineColorScheme,
   useMantineTheme,
 } from "@mantine/core";
-import { useGetIdentity, useGetLocale, useSetLocale } from "@refinedev/core";
-import {
-  HamburgerMenu,
-  RefineThemedLayoutV2HeaderProps,
-} from "@refinedev/mantine";
-import { IconLanguage, IconMoonStars, IconSun } from "@tabler/icons";
-import i18n from "i18next";
+import {useGetIdentity} from "@refinedev/core";
+import {HamburgerMenu, RefineThemedLayoutV2HeaderProps,} from "@refinedev/mantine";
 import React from "react";
 
 type IUser = {
@@ -25,18 +18,15 @@ type IUser = {
   avatar: string;
 };
 
-export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
-  sticky = true,
-}) => {
-  const { data: user } = useGetIdentity<IUser>();
+export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = (
+  {sticky = true,}
+) => {
+  const {data: user} = useGetIdentity<IUser>();
 
-  const changeLanguage = useSetLocale();
-  const locale = useGetLocale();
-  const currentLocale = locale();
 
   const theme = useMantineTheme();
 
-  const { colorScheme, toggleColorScheme } = useMantineColorScheme();
+  const {colorScheme} = useMantineColorScheme();
   const dark = colorScheme === "dark";
 
   const borderColor = dark ? theme.colors.dark[6] : theme.colors.gray[2];
@@ -68,12 +58,12 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
           height: "100%",
         }}
       >
-        <HamburgerMenu />
+        <HamburgerMenu/>
         <Group>
           {(user?.name || user?.avatar) && (
             <Group spacing="xs">
               {user?.name && <Title order={6}>{user?.name}</Title>}
-              <Avatar src={user?.avatar} alt={user?.name} radius="xl" />
+              <Avatar src={user?.avatar} alt={user?.name} radius="xl"/>
             </Group>
           )}
         </Group>
