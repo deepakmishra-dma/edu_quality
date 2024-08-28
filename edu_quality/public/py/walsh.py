@@ -75,8 +75,7 @@ def get_or_create_user(full_phone_no):
     # create user with guardian details
     user = frappe.get_doc({
         "doctype": "User",
-        "first_name": guardian.first_name,
-        "last_name": guardian.last_name,
+        "first_name": guardian.guardian_name,
         "email": guardian.email_address,
         "phone": full_phone_no
     })
