@@ -219,37 +219,39 @@ def get_worksheet_template(name):
 
     qr_code = gen_qr_code_b64(name)
     return generate_worksheet_template(
-        chapter_name=gen_chapter_name(chapter_doc),
-        subject_name=gen_subject_name(worksheet_doc.custom_sheet_number, subject_doc),
+        chapter_name=gen_chapter_name(
+            chapter_doc, worksheet_doc.get("custom_sheet_number")
+        ),
+        subject_name=gen_subject_name(worksheet_doc.get("custom_class"), subject_doc),
         qr_code=qr_code,
         worksheet_name=name,
     )
 
 
-def gen_chapter_name(chapter_doc):
+def gen_chapter_name(chapter_doc, sheet_no):
     chapter_code = str(chapter_doc.get("custom_chapter_number", "")).zfill(2)
-    str_without_name = f"{chapter_code}: TO_REPLACE - {chapter_code}"
+    str_without_name = f"{chapter_code}: TO_REPLACE - {sheet_no}"
     length_left = 48 - len(str_without_name)
     name_chapter = chapter_doc.topic_name
     if len(name_chapter) <= length_left:
         new_string = str_without_name.replace("TO_REPLACE", name_chapter)
     else:
         new_string = str_without_name.replace(
-            "TO_REPLACE", name_chapter[: length_left - 3 :] + "..."
+            "TO_REPLACE", name_chapter[: length_left - 3 :].upper() + "..."
         )
     return new_string
 
 
-def gen_subject_name(worksheet_id, subject_doc):
+def gen_subject_name(class_id, subject_doc):
     subject = str(subject_doc.get("name", "")).zfill(2)
-    str_without_name = f"{worksheet_id}: TO_REPLACE"
+    str_without_name = f"{class_id}: TO_REPLACE"
 
     length_left = 33 - len(str_without_name)
     if len(subject) <= length_left:
         new_string = str_without_name.replace("TO_REPLACE", subject)
     else:
         new_string = str_without_name.replace(
-            "TO_REPLACE", subject[: length_left - 3 :] + "..."
+            "TO_REPLACE", subject[: length_left - 3 :].upper() + "..."
         )
     return new_string
 

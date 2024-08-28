@@ -373,7 +373,7 @@ fixtures = [
     # {"dt": "Funnel"},
     # {"dt": "Email Template"},
     # {"dt": "Letter Head"},
-    {"dt": "Class Type"},
+    # {"dt": "Class Type"},
     {"dt": "Item Group"},
     {"dt": "CRM Settings"},
     {
