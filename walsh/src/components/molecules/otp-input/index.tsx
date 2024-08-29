@@ -1,12 +1,12 @@
 import ReactOtpInput from "react-otp-input";
-import { NumberInput, TextInput, useMantineTheme } from "@mantine/core";
+import {TextInput, useMantineTheme} from "@mantine/core";
 
-const OtpInput = (props) => {
+const OtpInput = (props: any) => {
   const theme = useMantineTheme();
   return (
     <ReactOtpInput
-      numInputs={6}
-      value="123457"
+      numInputs={4}
+      value="1234"
       onChange={() => {
         console.log("s");
       }}

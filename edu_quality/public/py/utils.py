@@ -1,11 +1,11 @@
-import frappe
-import math, random
-import requests
-import urllib
+import base64
+import random
 import re
 from io import BytesIO
-import base64
+
+import frappe
 import qrcode
+import requests
 
 
 def set_property(doctype, fieldname, prop, property_type, value):
@@ -51,8 +51,9 @@ def is_deposit(fees, term):
                 deposit = True
     return deposit
 
+
 @frappe.whitelist()
-def generate_otp(fee,undertaking=0):
+def generate_otp(fee, undertaking=0):
     try:
         rs = frappe.cache()
         key = fee
@@ -60,7 +61,7 @@ def generate_otp(fee,undertaking=0):
         for i in range(4):
             OTP += str(random.randint(1, 9))
         rs.set_value(key, OTP, expires_in_sec=600)
-        return send_otp(fee, OTP,undertaking)
+        return send_otp(fee, OTP, undertaking)
     except Exception as e:
         frappe.logger('otp').exception(e)
 
@@ -83,9 +84,9 @@ def get_email_id(student):
         return student.student_email_id
     else:
         return False
-    
 
-def send_otp(fee, otp,undertaking):
+
+def send_otp(fee, otp, undertaking):
     try:
         doctype = "Fee Advance"
         if frappe.db.exists("Fees", fee):
@@ -94,35 +95,39 @@ def send_otp(fee, otp,undertaking):
         student = frappe.get_doc("Student", student)
         email = get_email_id(student)
         mobile = get_mobile_number(student)
-        cc_email  = parents_email(student.name)
+        cc_email = parents_email(student.name)
         if mobile:
             sms_otp(mobile, otp)
         if email:
-            email_otp(email, otp,undertaking,cc_email)
+            email_otp(email, otp, undertaking, cc_email)
         return True
     except Exception as e:
         return False
 
+
 def parents_email(student):
     recipients = []
     parent_emails = frappe.db.get_all("Student Guardian",
-                                        filters={"parent": student},
-                                        fields=["guardian.email_address"],
-                                        as_list=True)
+                                      filters={"parent": student},
+                                      fields=["guardian.email_address"],
+                                      as_list=True)
     parent_emails = [email[0] for email in parent_emails if email and email[0]]
     recipients.extend(parent_emails)
     return recipients
 
-def email_otp(email, otp,undertaking,cc_email=None):
+
+def email_otp(email, otp, undertaking, cc_email=None):
     try:
         if not undertaking:
             subject = "OTP for Changing Payment Plan"
             message = f"OTP for Changing Payment Plan is {otp}"
-            frappe.sendmail(recipients=email, subject=subject, message=message, delayed=False,now=True)
+            frappe.sendmail(recipients=email, subject=subject, message=message, delayed=False, now=True)
             return
         template = frappe.get_doc("Email Template", "Walnut - Undertaking OTP")
         context = dict(otp=otp)
-        frappe.sendmail(cc=cc_email,recipients=email, subject=frappe.render_template(template.subject, context=context),message=frappe.render_template(template.response, context=context), delayed=False,now=True)
+        frappe.sendmail(cc=cc_email, recipients=email,
+                        subject=frappe.render_template(template.subject, context=context),
+                        message=frappe.render_template(template.response, context=context), delayed=False, now=True)
     except Exception as e:
         frappe.logger('email_otp').exception(e)
 
@@ -274,7 +279,7 @@ def handle_undertaking_submission(**kwargs):
 
     if not frappe.db.exists(
         "Rules and Regulation Submission",
-        {"student": student_doc.name,"program":class_name},
+        {"student": student_doc.name, "program": class_name},
     ):
         new_doc = frappe.new_doc("Rules and Regulation Submission")
         new_doc.student = student_doc.name
@@ -372,7 +377,7 @@ def add_indian_country_code(number, add_plus=False):
             return number
         else:
             if add_plus:
-                return "+91"+number
+                return "+91" + number
             return "91" + number
 
     except Exception as e:
@@ -393,6 +398,7 @@ def im_2_b64(image):
 def gen_qr_code_b64(str):
     frappe.errprint("hiya")
     return im_2_b64(qrcode.make(str))
+
 
 def remove_indian_country_code(number):
     if not number:
@@ -416,8 +422,9 @@ def remove_indian_country_code(number):
         frappe.log_error("Error adding indian country code on number " + number, str(e))
         return str(number)
 
+
 @frappe.whitelist()
-def email_recipients(variables,student, case):
+def email_recipients(variables, student, case):
     # case 0: only student
     # case 1: only parent
     # case 3: both
@@ -436,6 +443,5 @@ def email_recipients(variables,student, case):
         parent_emails = [email[0] for email in parent_emails if email and email[0]]
         recipients.extend(parent_emails)
 
-    recipients_str =  ", ".join(recipients)
+    recipients_str = ", ".join(recipients)
     variables['recipients_str'] = recipients_str
-

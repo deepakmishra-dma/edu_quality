@@ -4,13 +4,35 @@
  "docstatus": 0,
  "doctype": "Page",
  "idx": 0,
- "modified": "2024-02-19 03:19:05.544734",
+ "modified": "2024-02-20 16:47:23.096865",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "id-card-photo",
  "owner": "Administrator",
  "page_name": "id-card-photo",
- "roles": [],
+ "roles": [
+  {
+   "role": "Clerk"
+  },
+  {
+   "role": "Councellor"
+  },
+  {
+   "role": "System Admin"
+  },
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Walnut Admin"
+  },
+  {
+   "role": "Principal"
+  },
+  {
+   "role": "Vice Principal"
+  }
+ ],
  "script": null,
  "standard": "Yes",
  "style": null,

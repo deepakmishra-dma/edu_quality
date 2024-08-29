@@ -216,11 +216,11 @@
   "doctype": "Server Script",
   "doctype_event": "Before Save",
   "event_frequency": "All",
-  "modified": "2024-01-09 10:01:26.100916",
+  "modified": "2024-02-15 20:19:50.284978",
   "module": "Fees",
   "name": "Payment Term",
   "reference_doctype": "Payment Request",
-  "script": "if doc.reference_doctype == \"Fees\":\n    fee = frappe.get_doc(\"Fees\", doc.reference_name)\n    if fee.payment_plan is not None:\n        for ps in fee.payment_schedule:\n            d = ps.due_date\n            today = frappe.utils.getdate(frappe.utils.today())\n            if frappe.utils.date_diff(d, today) < 30:\n                doc.payment_term = ps.payment_term\n                \nif doc.reference_doctype == \"Fee Advance\":\n    fee = frappe.get_doc(\"Fee Advance\", doc.reference_name)\n    doc.payment_term = fee.payment_term",
+  "script": "if doc.reference_doctype == \"Fees\":\n    fee = frappe.get_doc(\"Fees\", doc.reference_name)\n    if fee.payment_plan is not None:\n        for ps in fee.payment_schedule:\n            d = ps.due_date\n            today = frappe.utils.getdate(frappe.utils.today())\n            # if frappe.utils.date_diff(d, today) < 30:\n            #     doc.payment_term = ps.payment_term\n                \nif doc.reference_doctype == \"Fee Advance\":\n    fee = frappe.get_doc(\"Fee Advance\", doc.reference_name)\n    doc.payment_term = fee.payment_term",
   "script_type": "DocType Event"
  },
  {
