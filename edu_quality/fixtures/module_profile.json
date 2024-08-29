@@ -807,5 +807,272 @@
   "modified": "2023-12-14 09:53:14.927696",
   "module_profile_name": "Watchman",
   "name": "Watchman"
+ },
+ {
+  "block_modules": [
+   {
+    "module": "Accounts",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "Assets",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "Automation",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "Bulk Transaction",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "Buying",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "Communication",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "Contacts",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "CRM",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "E-commerce",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "Email",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "ERPNext Integrations",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "Fees",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "Form Builder",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "Funnel",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "Geo",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "HR",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "Insights",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "Integrations",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "Library Management",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "library_management",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "Maintenance",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "Manufacturing",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "Nextai",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "Password Manager",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "Payment Gateways",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "Payments",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "Payroll",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "Portal",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "POSAwesome",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "Printing",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "Projects",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "Quality Management",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "Regional",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "Selling",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "Setup",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "Social",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "Stock",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "Subcontracting",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "Support",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "Telephony",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "Utilities",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "Website",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   },
+   {
+    "module": "WhatsApp Business API Integration",
+    "parent": "Clerk",
+    "parentfield": "block_modules",
+    "parenttype": "Module Profile"
+   }
+  ],
+  "docstatus": 0,
+  "doctype": "Module Profile",
+  "modified": "2024-02-20 16:45:52.388057",
+  "module_profile_name": "Clerk",
+  "name": "Clerk"
  }
 ]
