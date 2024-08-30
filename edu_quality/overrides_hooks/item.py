@@ -178,7 +178,7 @@ def upload_to_drive(**doc):
 
         custom_product_folder = item_doc.get("custom_product_folder", None)
 
-        if not drive_existing_folder:
+        if not drive_existing_folder or not custom_product_folder:
             custom_product_folder = create_item_directory(item_doc)
 
         if "file" not in files:
@@ -279,10 +279,11 @@ def create_product_chapter_folder(product_class_folder, chapter_number, chapter_
 
 def create_item_directory(self):
     try:
-        subject_folder = create_product_class_textbook(
+        
+        subject_folder = self.custom_class_subject_folder or create_product_class_textbook(
             self.get("custom_class"), self.get("custom_textbook")
         )
-
+        self.custom_class_subject_folder = subject_folder
         chapter = frappe.get_doc("Topic", self.get("custom_chapter"))
 
         product_folder = create_product_chapter_folder(
