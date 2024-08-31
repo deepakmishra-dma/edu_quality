@@ -52,6 +52,12 @@ class CustomLead(Lead):
             if content:
                 add_email_activity(self, content)
 
+    def link_to_contact(self):
+            # update contact links
+            if self.contact_doc:
+                self.contact_doc.append(
+                    "links", {"link_doctype": "Lead", "link_name": self.name, "link_title": self.lead_name}
+                )
 
 def enqueue_email(doc):
     try:
