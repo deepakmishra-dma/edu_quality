@@ -234,7 +234,7 @@ def gen_chapter_name(chapter_doc, sheet_no):
     length_left = 48 - len(str_without_name)
     name_chapter = chapter_doc.topic_name
     if len(name_chapter) <= length_left:
-        new_string = str_without_name.replace("TO_REPLACE", name_chapter)
+        new_string = str_without_name.replace("TO_REPLACE", name_chapter).upper()
     else:
         new_string = str_without_name.replace(
             "TO_REPLACE", name_chapter[: length_left - 3 :].upper() + "..."
@@ -248,7 +248,7 @@ def gen_subject_name(class_id, subject_doc):
 
     length_left = 33 - len(str_without_name)
     if len(subject) <= length_left:
-        new_string = str_without_name.replace("TO_REPLACE", subject)
+        new_string = str_without_name.replace("TO_REPLACE", subject).upper()
     else:
         new_string = str_without_name.replace(
             "TO_REPLACE", subject[: length_left - 3 :].upper() + "..."
@@ -279,9 +279,12 @@ def create_product_chapter_folder(product_class_folder, chapter_number, chapter_
 
 def create_item_directory(self):
     try:
-        
-        subject_folder = self.custom_class_subject_folder or create_product_class_textbook(
-            self.get("custom_class"), self.get("custom_textbook")
+
+        subject_folder = (
+            self.custom_class_subject_folder
+            or create_product_class_textbook(
+                self.get("custom_class"), self.get("custom_textbook")
+            )
         )
         self.custom_class_subject_folder = subject_folder
         chapter = frappe.get_doc("Topic", self.get("custom_chapter"))
