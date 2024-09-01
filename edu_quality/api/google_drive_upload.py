@@ -39,7 +39,6 @@ def get_google_folder_name_with_id(folder_id):
             return False
         frappe.msgprint("Something Went Wrong")
         return False
-        
 
 
 def check_for_folder_in_google_drive(folder_name=None, root_folder=None):
@@ -80,7 +79,7 @@ def check_for_folder_in_google_drive(folder_name=None, root_folder=None):
         google_drive_folders = (
             google_drive.files()
             .list(
-                q=f"mimeType='application/vnd.google-apps.folder' and '{root_folder_id}' in parents"
+                q=f"mimeType='application/vnd.google-apps.folder' and name='{folder_name}' and '{root_folder_id}' in parents"
             )
             .execute()
         )
@@ -94,9 +93,7 @@ def check_for_folder_in_google_drive(folder_name=None, root_folder=None):
     backup_folder_exists = False
     for f in google_drive_folders.get("files"):
         if f.get("name") == folder_name:
-            frappe.db.commit()
             backup_folder_exists = True
-            print(f.get("id"), "hah")
             return f.get("id")
     if not backup_folder_exists:
         return _create_folder_in_google_drive(google_drive, folder_name)

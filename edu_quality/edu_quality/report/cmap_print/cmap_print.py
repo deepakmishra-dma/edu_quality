@@ -190,6 +190,7 @@ def get_data_from_queries(filters=None):
     item_detail = frappe.qb.DocType("Item Detail")
     cmap = frappe.qb.DocType("CMAP")
     item = frappe.qb.DocType("Item")
+    item_group = frappe.qb.DocType("Item Group")
     class_filter = filters.get("class")
     subject_filter = filters.get("subject")
     unit_filter = filters.get("unit")
@@ -200,6 +201,8 @@ def get_data_from_queries(filters=None):
         .on(cmap.name == item_detail.parent)
         .inner_join(item)
         .on(item_detail.item == item.name)
+        .inner_join(item_group)
+        .on(item.item_group == item_group.name)
         .where(
             (cmap.academic_year == filters.get("academic_year"))
             & (cmap["class"] == class_filter)
@@ -212,6 +215,7 @@ def get_data_from_queries(filters=None):
             )
             & (item.custom_is_cmap == 1)
             & (item.custom_print_ready == 1)
+            & (item_group.custom_printable == 1)
         )
         .groupby(item_detail.item)
         .select(

@@ -131,6 +131,7 @@ override_doctype_class = {
     "Fees": "edu_quality.edu_quality.overrides.fees.CustomFees",
     "Student": "edu_quality.edu_quality.overrides.student.CustomStudent",
     "Payment Entry": "edu_quality.edu_quality.overrides.payment_entry.CustomPaymentEntry",
+    "Lead": "edu_quality.public.py.lead.CustomLead",
 }
 
 # Document Events
@@ -173,10 +174,6 @@ doc_events = {
     "Custom Field": {"after_insert": "edu_quality.public.py.fixtures.custom_fields"},
     "Custom DocPerm": {
         "after_insert": "edu_quality.public.py.fixtures.custom_doc_perm"
-    },
-    "Lead": {
-        "after_insert": "edu_quality.public.py.lead.after_insert",
-        "before_insert": "edu_quality.public.py.lead.before_insert",
     },
     "Payment Entry": {
         "validate": "edu_quality.edu_quality.server_scripts.payment_entry.validate"
