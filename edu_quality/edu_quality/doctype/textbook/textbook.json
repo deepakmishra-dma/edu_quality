@@ -2,7 +2,7 @@
  "actions": [],
  "allow_import": 1,
  "allow_rename": 1,
- "autoname": "field:name1",
+ "autoname": "format:{class} {name1}",
  "creation": "2023-11-27 08:59:41.430342",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -45,11 +45,11 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-14 07:57:49.574536",
+ "modified": "2024-02-14 07:57:50.574536",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Textbook",
- "naming_rule": "By fieldname",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {
