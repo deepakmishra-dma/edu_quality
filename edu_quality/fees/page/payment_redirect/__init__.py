@@ -83,13 +83,15 @@ def get_payment_details(**kwargs):
             due_date = fees.due_date
         is_deposit = component['is_deposit']
         if fees.doctype == "Fees":
-            student_name = fees.student_name
+            student_name = f"{fees.first_name} {fees.last_name or ''}"
             company = fees.company
         elif fees.doctype == "Fee Advance":
-            student_name = frappe.db.get_value("Student", fees.student, "student_name")
+            first_name = frappe.db.get_value("Student", fees.student, "first_name")
+            last_name = frappe.db.get_value("Student", fees.student, "last_name")
+            student_name = f"{first_name} {last_name or ''}"
             company = fees.company
     else:
-        student_name = fees.student_name
+        student_name = f"{fees.first_name} {fees.last_name or ''}"
         due_date = fees.due_date
         for fee in fees.components:
             fee_type = frappe.db.get_value("Fee Category",fee.fees_category,"type")
