@@ -1,0 +1,43 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"imx0vUcMzv\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Watchman</span>\",\"col\":12}},{\"id\":\"eLIgWfEMnl\",\"type\":\"quick_list\",\"data\":{\"quick_list_name\":\"Purchase Order\",\"col\":12}},{\"id\":\"Cnq1SyvY6X\",\"type\":\"custom_block\",\"data\":{\"custom_block_name\":\"Watchman Scanner\",\"col\":12}}]",
+ "creation": "2024-02-21 13:13:39.279615",
+ "custom_blocks": [
+  {
+   "custom_block_name": "Watchman Scanner",
+   "label": "Watchman Scanner"
+  }
+ ],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "clipboard",
+ "idx": 0,
+ "indicator_color": "green",
+ "is_hidden": 0,
+ "label": "Watchman",
+ "links": [],
+ "modified": "2024-02-21 16:55:48.848739",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "Watchman",
+ "number_cards": [],
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [
+  {
+   "document_type": "Purchase Order",
+   "label": "Purchase Order",
+   "quick_list_filter": "[]"
+  }
+ ],
+ "roles": [
+  {
+   "role": "Watchman"
+  }
+ ],
+ "sequence_id": 8.1,
+ "shortcuts": [],
+ "title": "Watchman"
+}
