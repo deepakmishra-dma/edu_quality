@@ -2,7 +2,7 @@ import frappe
 from frappe.utils import strip
 import json
 from edu_quality.public.py.utils import im_2_b64, gen_qr_code_b64
-
+import os
 from weasyprint import CSS, HTML
 from edu_quality.api.google_drive_upload import (
     upload_file_stream_to_drive,
@@ -10,15 +10,20 @@ from edu_quality.api.google_drive_upload import (
     get_google_folder_name_with_id,
     find_file_by_name_and_folder,
     update_file_stream_on_drive,
+    delete_file_from_drive,
 )
 import datetime
 import fitz
 from PIL import Image
 from io import BytesIO
+import mimetypes
+import re
 
 # from pdf2image import convert_from_bytes
 # import imgkit
 # import base64
+
+drive_url_id_re = r"/file/d/([^/]+)"
 
 
 @frappe.whitelist()
@@ -98,6 +103,23 @@ def before_insert(self, method=None):
     create_item_directory(self)
 
 
+def search_file_id(url):
+    try:
+        file_id = re.search(drive_url_id_re, url).group(1)
+        return file_id
+    except Exception as e:
+        return None
+
+
+def after_delete(self, method=None):
+    try:
+        file_id = search_file_id(self.custom_product_url)
+
+        delete_file_from_drive(file_id)
+    except:
+        pass
+
+
 @frappe.whitelist()
 def get_qr_code(name):
     return gen_qr_code_b64(name)
@@ -162,16 +184,27 @@ def upload_to_drive(**doc):
         optimize = frappe.form_dict.optimize
         content = None
 
+        file_extension = ""
+
+        try:
+            file_extension = mimetypes.guess_extension(files["file"].mimetype)
+        except:
+            file_extension = ""
+
         item_doc = frappe.get_doc("Item", docname)
+        file_name_with_ext = f"{docname}{file_extension}"
+        # search for extension with
+
         drive_existing_folder = get_google_folder_name_with_id(
             item_doc.custom_product_folder
         )
-        file_id = None
+        file_id = search_file_id(item_doc.custom_product_folder)
 
-        if drive_existing_folder and drive_existing_folder.get("name"):
+        if drive_existing_folder and drive_existing_folder.get("name") and not file_id:
 
             file_doc = find_file_by_name_and_folder(
-                docname, item_doc.get("custom_product_folder")
+                file_name_with_ext,
+                item_doc.get("custom_product_folder"),
             )
             if file_doc:
                 file_id = file_doc.get("id")
@@ -191,12 +224,12 @@ def upload_to_drive(**doc):
             id = upload_file_stream_to_drive(
                 file_binary,
                 item_doc.get("custom_product_folder", custom_product_folder),
-                docname,
+                file_name_with_ext,
                 files["file"].mimetype,
             )
         else:
             id = update_file_stream_on_drive(
-                file_binary, file_id, files["file"].mimetype
+                file_binary, file_id, files["file"].mimetype, file_name_with_ext
             )
 
         item_doc.custom_upload_date_on_drive = datetime.datetime.now()
@@ -273,7 +306,7 @@ def create_product_class_textbook(class_name, textbook):
 def create_product_chapter_folder(product_class_folder, chapter_number, chapter_name):
 
     return check_for_folder_in_google_drive(
-        f"{chapter_number} {chapter_name}", product_class_folder
+        f"{chapter_number}. {chapter_name}", product_class_folder
     )
 
 
