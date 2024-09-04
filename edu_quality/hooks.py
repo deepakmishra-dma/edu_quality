@@ -12,7 +12,9 @@ app_license = "MIT"
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/edu_quality/css/edu_quality.css"
-app_include_js = ["/assets/edu_quality/js/carnivalEvent.js"]
+app_include_js = [
+    "/assets/edu_quality/js/carnivalEvent.js",
+]
 
 # include js, css files in header of web template
 # web_include_css = "/assets/edu_quality/css/edu_quality.css"
@@ -181,6 +183,7 @@ doc_events = {
     "Item": {
         "autoname": "edu_quality.overrides_hooks.item.autoname",
         "before_insert": "edu_quality.overrides_hooks.item.before_insert",
+        "after_delete": "edu_quality.overrides_hooks.item.after_delete",
     },
     "Program": {"validate": "edu_quality.public.py.program.validate"},
     "Topic": {

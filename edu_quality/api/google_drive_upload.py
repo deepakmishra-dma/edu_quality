@@ -165,7 +165,7 @@ def find_file_by_name_and_folder(file_name, root_folder_id):
             return False
         google_drive = get_google_drive_object()
         query = f"name='{file_name}' and '{root_folder_id}' in parents"
-
+        
         results = google_drive.files().list(q=query, fields="files(id, name)").execute()
         files = results.get("files", [])
 
@@ -178,19 +178,21 @@ def find_file_by_name_and_folder(file_name, root_folder_id):
         return False
 
 
-def update_file_stream_on_drive(file_content, file_id, mimetype):
+def update_file_stream_on_drive(file_content, file_id, mimetype, new_name=None):
     # Get Google Drive Object
 
     google_drive = get_google_drive_object()
     temp_file = tempfile.NamedTemporaryFile(delete=False)
     temp_file.write(file_content)
     temp_file.close()
-
+    file_metadata = None
+    if new_name:
+        file_metadata = {"name": new_name}
     try:
         media = MediaFileUpload(temp_file.name, mimetype=mimetype, resumable=True)
         result = (
             google_drive.files()
-            .update(fileId=file_id, media_body=media, fields="id")
+            .update(fileId=file_id, body=file_metadata, media_body=media, fields="id")
             .execute()
         )
         return result
@@ -215,3 +217,12 @@ def upload_file(file_url, folder_name, root_folder=None):
         root_folder=root_folder,
     )
     return "Queued Successfully"
+
+
+def delete_file_from_drive(file_id):
+    try:
+        google_drive = get_google_drive_object()
+        google_drive.files().delete(fileId=file_id).execute()
+    except Exception as e:
+        frappe.log_error("Error deleting folder ", str([e, "with id ", file_id]))
+        frappe.throw(("Google Drive - Could not Delete - {0}").format(e))
