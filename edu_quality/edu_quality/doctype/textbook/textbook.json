@@ -1,11 +1,13 @@
 {
  "actions": [],
+ "allow_import": 1,
  "allow_rename": 1,
- "autoname": "prompt",
+ "autoname": "format:{class} {name1}",
  "creation": "2023-11-27 08:59:41.430342",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
+  "name1",
   "class",
   "short_code",
   "subject"
@@ -33,15 +35,21 @@
    "label": "Subject",
    "options": "Course",
    "reqd": 1
+  },
+  {
+   "fieldname": "name1",
+   "fieldtype": "Data",
+   "label": "Name",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-12-04 01:54:04.800779",
+ "modified": "2024-02-21 14:10:19.330558",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Textbook",
- "naming_rule": "Set by user",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {
@@ -57,7 +65,9 @@
    "write": 1
   }
  ],
+ "show_title_field_in_link": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": []
+ "states": [],
+ "title_field": "name1"
 }

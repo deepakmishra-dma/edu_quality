@@ -2,6 +2,8 @@ from edu_quality.overrides import make_payment_request
 import time 
 from frappe.utils import today
 import frappe
+from edu_quality.api.google_admin import suspend_google_user, unsuspend_google_user
+
 
 def autoname(doc, method=None):
     school_prefixes = {
@@ -39,6 +41,19 @@ def autoname(doc, method=None):
 
 def before_insert(doc, method=None):
     frappe.flags.in_import = True
+
+
+def before_save(doc, method=None):
+    try:
+        prev_doc = doc.get_doc_before_save()
+        if prev_doc and prev_doc.student_status != doc.student_status:
+            if doc.student_status == "Defaulter":
+                suspend_google_user(doc.student_email_id)
+            else:
+                unsuspend_google_user(doc.student_email_id)
+    except Exception as e:
+        frappe.logger("google_user").exception(e)
+
 
 def get_reference(program):
     if not frappe.db.get_value("Academic Year",[["Academic Year","year_start_date","<=",today()],["Academic Year","year_end_date",">=",today()]],"rolled_over"):

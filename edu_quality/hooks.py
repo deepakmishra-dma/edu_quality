@@ -12,7 +12,9 @@ app_license = "MIT"
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/edu_quality/css/edu_quality.css"
-app_include_js = ["/assets/edu_quality/js/carnivalEvent.js"]
+app_include_js = [
+    "/assets/edu_quality/js/carnivalEvent.js",
+]
 
 # include js, css files in header of web template
 # web_include_css = "/assets/edu_quality/css/edu_quality.css"
@@ -50,6 +52,7 @@ doctype_list_js = {
     "Student": "public/js/list/student_list.js",
     "Student ID Card": "public/js/list/student_id_card.js",
     "Fees": "public/js/list/fees_list.js",
+    "Purchase Order": "public/js/list/purchase_order_list.js",
     "Carnival Event": [
         # "public/js/list/list_view.js",
         "public/js/list/carnival_event_list.js",
@@ -84,8 +87,8 @@ doctype_list_js = {
 
 # add methods and filters to jinja environment
 jinja = {
-	"methods": ["edu_quality.overrides_hooks.purchase_order"],
-	# "filters": "edu_quality.utils.jinja_filters"
+    "methods": ["edu_quality.overrides_hooks.purchase_order"],
+    # "filters": "edu_quality.utils.jinja_filters"
 }
 
 # Installation
@@ -130,6 +133,7 @@ override_doctype_class = {
     "Fees": "edu_quality.edu_quality.overrides.fees.CustomFees",
     "Student": "edu_quality.edu_quality.overrides.student.CustomStudent",
     "Payment Entry": "edu_quality.edu_quality.overrides.payment_entry.CustomPaymentEntry",
+    "Lead": "edu_quality.public.py.lead.CustomLead",
 }
 
 # Document Events
@@ -143,7 +147,10 @@ doc_events = {
         "autoname": "edu_quality.public.py.application.autoname",
     },
     "Program Enrollment": {
-        "on_submit": "edu_quality.public.py.fee.create_fees",
+        "on_submit": [
+            "edu_quality.public.py.fee.create_fees",
+            "edu_quality.public.py.fee.create_id_card",
+        ],
         "after_insert": "edu_quality.public.py.fee.append_program_enrollment",
         "on_trash": "edu_quality.public.py.fee.remove_program_enrollment",
     },
@@ -164,14 +171,11 @@ doc_events = {
     "Student": {
         "autoname": "edu_quality.public.py.student.autoname",
         "before_insert": "edu_quality.public.py.student.before_insert",
+        "before_save": "edu_quality.public.py.student.before_save",
     },
     "Custom Field": {"after_insert": "edu_quality.public.py.fixtures.custom_fields"},
     "Custom DocPerm": {
         "after_insert": "edu_quality.public.py.fixtures.custom_doc_perm"
-    },
-    "Lead": {
-        "after_insert": "edu_quality.public.py.lead.after_insert",
-        "before_insert": "edu_quality.public.py.lead.before_insert",
     },
     "Payment Entry": {
         "validate": "edu_quality.edu_quality.server_scripts.payment_entry.validate"
@@ -179,6 +183,7 @@ doc_events = {
     "Item": {
         "autoname": "edu_quality.overrides_hooks.item.autoname",
         "before_insert": "edu_quality.overrides_hooks.item.before_insert",
+        "after_delete": "edu_quality.overrides_hooks.item.after_delete",
     },
     "Program": {"validate": "edu_quality.public.py.program.validate"},
     "Topic": {
@@ -303,8 +308,8 @@ scheduler_events = {
 
 fixtures = [
     {"dt": "Workflow"},
-    {'dt': 'Workflow State'},
-    {'dt': 'Workflow Action Master'},
+    {"dt": "Workflow State"},
+    {"dt": "Workflow Action Master"},
     {"dt": "Server Script", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
     {"dt": "Property Setter", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
     {"dt": "Client Script", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
@@ -321,7 +326,14 @@ fixtures = [
             [
                 "name",
                 "in",
-                ["Head Administration", "Councellor", "Teacher", "Printer", "Watchman","Clerk"],
+                [
+                    "Head Administration",
+                    "Councellor",
+                    "Teacher",
+                    "Printer",
+                    "Watchman",
+                    "Clerk",
+                ],
             ]
         ],
     },
@@ -336,7 +348,13 @@ fixtures = [
             [
                 "name",
                 "in",
-                ["Student Referral", "Fee Receipt", "Undertaking OTP", "Payment Link","Payment Link Remainder"],
+                [
+                    "Student Referral",
+                    "Fee Receipt",
+                    "Undertaking OTP",
+                    "Payment Link",
+                    "Payment Link Remainder",
+                ],
             ]
         ],
     },
@@ -355,7 +373,7 @@ fixtures = [
     # {"dt": "Funnel"},
     # {"dt": "Email Template"},
     # {"dt": "Letter Head"},
-    {"dt": "Class Type"},
+    # {"dt": "Class Type"},
     {"dt": "Item Group"},
     {"dt": "CRM Settings"},
     {
@@ -414,7 +432,7 @@ fixtures = [
                     "Education",
                     "Website",
                     "Tools",
-                    "Integrations"
+                    "Integrations",
                 ],
             ]
         ],
@@ -443,4 +461,6 @@ after_migrate = [
     "edu_quality.tasks.update_academic_year",
 ]
 
-website_route_rules = [{'from_route': '/walsh/<path:app_path>', 'to_route': 'walsh'},]
+website_route_rules = [
+    {"from_route": "/walsh/<path:app_path>", "to_route": "walsh"},
+]

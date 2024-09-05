@@ -4,6 +4,7 @@ from edu_quality.overrides import make_payment_request
 
 
 def before_save(doc, method=None):
+    set_parent_email(doc)
     if doc.reference_doctype == "Fees":
         # only deposit and application fee
         if not frappe.db.exists("Payment Request", {"reference_name": doc.reference_name}):
@@ -229,7 +230,6 @@ def update_payment_request_after_discount(doc):
 
 # create new payment request if previous payment request is not paid
 def update_not_paid_payment_request(doc, not_paid_filter):
-    frappe.logger('p_req').exception('unpaid' + str(doc.name))
     pr = frappe.get_doc("Payment Request", not_paid_filter)
     if not pr.docstatus.is_cancelled() and not pr.docstatus.is_draft():
         pr.cancel()
@@ -247,6 +247,7 @@ def update_not_paid_payment_request(doc, not_paid_filter):
 
 def on_submit(doc, method):
     try:
+        frappe.logger('pr12').exception(doc.payment_term)
         frappe.enqueue(email_trigger, pr=doc.name,queue='long')
     except Exception as e:
         frappe.logger('payment_link').exception(e)
@@ -266,3 +267,12 @@ def get_payment_plan_details(payment_request):
     payment_request = frappe.get_doc("Payment Request", payment_request)
     fees = frappe.get_doc(payment_request.reference_doctype, payment_request.reference_name)
     return fees.payment_plan
+
+
+def set_parent_email(doc):
+    mother = frappe.get_value("Student Guardian", {"parent": doc.party, "relation": "Mother"}, "guardian")
+    father = frappe.get_value("Student Guardian", {"parent": doc.party, "relation": "Father"}, "guardian")
+    if father:
+        doc.email_to = frappe.get_value("Guardian", mother, "email_address")
+    if mother:
+        doc.email_to = frappe.get_value("Guardian", father, "email_address")

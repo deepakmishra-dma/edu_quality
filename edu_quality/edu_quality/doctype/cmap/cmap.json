@@ -1,5 +1,6 @@
 {
  "actions": [],
+ "allow_import": 1,
  "allow_rename": 1,
  "creation": "2023-11-23 10:19:52.045571",
  "doctype": "DocType",
@@ -203,7 +204,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-18 17:38:19.721161",
+ "modified": "2024-02-14 07:56:39.325703",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "CMAP",

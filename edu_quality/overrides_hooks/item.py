@@ -2,15 +2,28 @@ import frappe
 from frappe.utils import strip
 import json
 from edu_quality.public.py.utils import im_2_b64, gen_qr_code_b64
-# from weasyprint import CSS, HTML
+import os
+from weasyprint import CSS, HTML
 from edu_quality.api.google_drive_upload import (
     upload_file_stream_to_drive,
+    check_for_folder_in_google_drive,
+    get_google_folder_name_with_id,
+    find_file_by_name_and_folder,
+    update_file_stream_on_drive,
+    delete_file_from_drive,
 )
 import datetime
+import fitz
+from PIL import Image
+from io import BytesIO
+import mimetypes
+import re
 
 # from pdf2image import convert_from_bytes
 # import imgkit
 # import base64
+
+drive_url_id_re = r"/file/d/([^/]+)"
 
 
 @frappe.whitelist()
@@ -44,6 +57,7 @@ def name(self):
         return item_code
     except Exception as e:
         frappe.msgprint(str(e))
+
 
 def autoname(self, method=None):
     self.item_code = name(self)
@@ -84,7 +98,26 @@ def calculate_sheet_number(self):
 
 
 def before_insert(self, method=None):
-    self.custom_sheet_number = calculate_sheet_number(self)
+    if not frappe.flags.in_import:
+        self.custom_sheet_number = calculate_sheet_number(self)
+    create_item_directory(self)
+
+
+def search_file_id(url):
+    try:
+        file_id = re.search(drive_url_id_re, url).group(1)
+        return file_id
+    except Exception as e:
+        return None
+
+
+def after_delete(self, method=None):
+    try:
+        file_id = search_file_id(self.custom_product_url)
+
+        delete_file_from_drive(file_id)
+    except:
+        pass
 
 
 @frappe.whitelist()
@@ -103,15 +136,7 @@ def generate_worksheet_template(chapter_name, subject_name, qr_code, worksheet_n
             "worksheet_name": worksheet_name,
         },
     )
-    # test2 = imgkit.from_string(
-    #     template,
-    #     output_path=False,
-    # )
-    # frappe.errprint(render_template_to_image(template))
-    # print(test2)
-    # test = HTML(string=template)
-    # test.write_png()
-    # frappe.errprint(test)
+
     html = HTML(
         string=template,
         base_url=base_url,
@@ -119,53 +144,102 @@ def generate_worksheet_template(chapter_name, subject_name, qr_code, worksheet_n
     main_doc = html.render()
     main_doc = main_doc.write_pdf()
     # frappe.errprint(main_doc)
-    kitoptions = {
-        "enable-local-file-access": None,
-        # "width": 2480,
-        # "height": 831,
-        # "disable-smart-width": "",
-    }
-    # return template
-    # image_bytes = imgkit.from_string(template, False, options=kitoptions)
-    # image = base64.b64encode(image_bytes).decode("utf-8")
-    # return f"data:image/png;base64,{image}"
-    frappe.local.response.filename = "Temporary Id Card.pdf".format(
-        name="Worksheet No.pdf".replace(" ", "-").replace("/", "-")
-    )
-    frappe.local.response.filecontent = main_doc
-    frappe.local.response.type = "pdf"
+    doc = fitz.open("pdf", main_doc)
+    page = doc[0]
+    pix = page.get_pixmap()
+
+    doc = fitz.open("pdf", main_doc)
+    page = doc.load_page(0)
+    pix = page.get_pixmap(alpha=True)
+    img_byte_array = BytesIO()
+    img = Image.frombytes("RGBA", [pix.width, pix.height], pix.samples)
+    img.save(img_byte_array, format="PNG")
+    img_byte_array.seek(0)
+
+    image_data = img_byte_array.read()
+
+    frappe.local.response.filename = f"Header {worksheet_name}.png"
+    frappe.local.response.filecontent = image_data
+    frappe.local.response.type = "download"
+    frappe.response.display_content_as = "attachment"
+
+    doc.close()
 
 
 # edu_quality.overrides_hooks.item.upload_to_drive
 @frappe.whitelist()
-def upload_to_drive():
-    service_account_doc = frappe.get_single("Google Service Account")
-    files = frappe.request.files
-    is_private = frappe.form_dict.is_private
-    doctype = frappe.form_dict.doctype
-    docname = frappe.form_dict.docname
-    fieldname = frappe.form_dict.fieldname
-    file_url = frappe.form_dict.file_url
-    folder = frappe.form_dict.folder or "Home"
-    method = frappe.form_dict.method
-    filename = frappe.form_dict.file_name
-    optimize = frappe.form_dict.optimize
-    content = None
-    item_doc = frappe.get_doc("Item",docname)
+def upload_to_drive(**doc):
+    try:
+        service_account_doc = frappe.get_single("Google Service Account")
+        files = frappe.request.files
 
-    if "file" not in files:
-        return
+        is_private = frappe.form_dict.is_private
+        doctype = frappe.form_dict.doctype
+        docname = frappe.form_dict.docname
+        fieldname = frappe.form_dict.fieldname
+        file_url = frappe.form_dict.file_url
+        folder = frappe.form_dict.folder or "Home"
+        method = frappe.form_dict.method
+        filename = frappe.form_dict.file_name
+        optimize = frappe.form_dict.optimize
+        content = None
 
-    id = upload_file_stream_to_drive(
-        frappe.local.uploaded_file,
-        service_account_doc.get("products_folder"),
-        docname,
-        files["file"].mimetype,
-    )
-    item_doc.custom_upload_date_on_drive = datetime.datetime.now()
-    item_doc.custom_product_url = f"https://drive.google.com/file/d/{id.get('id')}" or "Something went wrong"
-    item_doc.save()
-    
+        file_extension = ""
+
+        try:
+            file_extension = mimetypes.guess_extension(files["file"].mimetype)
+        except:
+            file_extension = ""
+
+        item_doc = frappe.get_doc("Item", docname)
+        file_name_with_ext = f"{docname}{file_extension}"
+        # search for extension with
+
+        drive_existing_folder = get_google_folder_name_with_id(
+            item_doc.custom_product_folder
+        )
+        file_id = search_file_id(item_doc.custom_product_folder)
+
+        if drive_existing_folder and drive_existing_folder.get("name") and not file_id:
+
+            file_doc = find_file_by_name_and_folder(
+                file_name_with_ext,
+                item_doc.get("custom_product_folder"),
+            )
+            if file_doc:
+                file_id = file_doc.get("id")
+
+        custom_product_folder = item_doc.get("custom_product_folder", None)
+
+        if not drive_existing_folder or not custom_product_folder:
+            custom_product_folder = create_item_directory(item_doc)
+
+        if "file" not in files:
+            return
+
+        file = files["file"]
+        file_binary = file.stream.read()
+
+        if not drive_existing_folder or not file_id:
+            id = upload_file_stream_to_drive(
+                file_binary,
+                item_doc.get("custom_product_folder", custom_product_folder),
+                file_name_with_ext,
+                files["file"].mimetype,
+            )
+        else:
+            id = update_file_stream_on_drive(
+                file_binary, file_id, files["file"].mimetype, file_name_with_ext
+            )
+
+        item_doc.custom_upload_date_on_drive = datetime.datetime.now()
+        item_doc.custom_product_url = (
+            f"https://drive.google.com/file/d/{id.get('id')}" or "Something went wrong"
+        )
+        item_doc.save()
+    except Exception as e:
+        print(str(e))
+        frappe.msgprint(str(e))
 
 
 @frappe.whitelist()
@@ -178,35 +252,83 @@ def get_worksheet_template(name):
 
     qr_code = gen_qr_code_b64(name)
     return generate_worksheet_template(
-        chapter_name=gen_chapter_name(chapter_doc),
-        subject_name=gen_subject_name(worksheet_doc.custom_sheet_number, subject_doc),
+        chapter_name=gen_chapter_name(
+            chapter_doc, worksheet_doc.get("custom_sheet_number")
+        ),
+        subject_name=gen_subject_name(worksheet_doc.get("custom_class"), subject_doc),
         qr_code=qr_code,
         worksheet_name=name,
     )
 
 
-def gen_chapter_name(chapter_doc):
+def gen_chapter_name(chapter_doc, sheet_no):
     chapter_code = str(chapter_doc.get("custom_chapter_number", "")).zfill(2)
-    str_without_name = f"{chapter_code}: TO_REPLACE - {chapter_code}"
-    length_left = 38 - len(str_without_name)
-    name_chapter = chapter_doc.topic_name.split("-")[1].strip()
+    str_without_name = f"{chapter_code}: TO_REPLACE - {sheet_no}"
+    length_left = 48 - len(str_without_name)
+    name_chapter = chapter_doc.topic_name
     if len(name_chapter) <= length_left:
-        new_string = str_without_name.replace("TO_REPLACE", name_chapter)
+        new_string = str_without_name.replace("TO_REPLACE", name_chapter).upper()
     else:
         new_string = str_without_name.replace(
-            "TO_REPLACE", name_chapter[:: length_left - 3] + "..."
+            "TO_REPLACE", name_chapter[: length_left - 3 :].upper() + "..."
         )
     return new_string
 
 
-def gen_subject_name(worksheet_id, subject_doc):
+def gen_subject_name(class_id, subject_doc):
     subject = str(subject_doc.get("name", "")).zfill(2)
-    str_without_name = f"{worksheet_id}: TO_REPLACE "
-    length_left = 23 - len(str_without_name)
+    str_without_name = f"{class_id}: TO_REPLACE"
+
+    length_left = 33 - len(str_without_name)
     if len(subject) <= length_left:
-        new_string = str_without_name.replace("TO_REPLACE", subject)
+        new_string = str_without_name.replace("TO_REPLACE", subject).upper()
     else:
         new_string = str_without_name.replace(
-            "TO_REPLACE", subject[:: length_left - 3] + "..."
+            "TO_REPLACE", subject[: length_left - 3 :].upper() + "..."
         )
     return new_string
+
+
+def create_product_class_textbook(class_name, textbook):
+    service_account_doc = frappe.get_single("Google Service Account")
+    root_products_folder = service_account_doc.get("products_folder")
+
+    if not root_products_folder:
+        return frappe.msgprint(
+            "Error creating product directory, product directory not set in google service account settings"
+        )
+
+    return check_for_folder_in_google_drive(
+        f"{class_name} {textbook}", root_products_folder
+    )
+
+
+def create_product_chapter_folder(product_class_folder, chapter_number, chapter_name):
+
+    return check_for_folder_in_google_drive(
+        f"{chapter_number}. {chapter_name}", product_class_folder
+    )
+
+
+def create_item_directory(self):
+    try:
+
+        subject_folder = (
+            self.custom_class_subject_folder
+            or create_product_class_textbook(
+                self.get("custom_class"), self.get("custom_textbook")
+            )
+        )
+        self.custom_class_subject_folder = subject_folder
+        chapter = frappe.get_doc("Topic", self.get("custom_chapter"))
+
+        product_folder = create_product_chapter_folder(
+            subject_folder,
+            chapter.get("custom_chapter_number"),
+            chapter.get("topic_name"),
+        )
+        self.custom_product_folder = product_folder
+        return product_folder
+    except Exception as e:
+        frappe.errprint(str(e))
+        frappe.msgprint("Error creating product directory")

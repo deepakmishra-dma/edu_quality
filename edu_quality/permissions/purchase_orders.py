@@ -5,7 +5,11 @@ def purchase_query(user):
     user = frappe.session.user
     roles = frappe.get_roles(frappe.session.user)
 
-    if "Printer" in roles and "Administrator" not in roles:
+    if (
+        "Printer" in roles
+        and "Administrator" not in roles
+        and "System Manager" not in roles
+    ):
         supplier = frappe.qb.DocType("Supplier")
         portal_user = frappe.qb.DocType("Portal User")
 
@@ -32,9 +36,5 @@ def purchase_query(user):
         frappe.errprint(tuple(suppliers))
 
         if len(suppliers) == 1:
-            return (
-                f"`tabPurchase Order`.`supplier`= '{suppliers[0]}'"  # noqa: ignore=E501
-            )
-        return (
-            f"`tabPurchase Order`.`supplier` IN {tuple(suppliers)}"  # noqa: ignore=E501
-        )
+            return f"`tabPurchase Order`.`supplier`= '{suppliers[0]} ' and docstatus = 1"  # noqa: ignore=E501
+        return f"`tabPurchase Order`.`supplier` IN {tuple(suppliers)} and docstatus = 1"  # noqa: ignore=E501

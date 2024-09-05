@@ -1,5 +1,5 @@
 edu_quality.patches.clear_communication #01-11-2023
-edu_quality.patches.email_template #07-11-2023 1
+edu_quality.patches.email_template #20-2-2023 1
 edu_quality.patches.class #07-11-2023 
 edu_quality.patches.school #07-11-2023
 edu_quality.patches.payment_term #08-11-2023

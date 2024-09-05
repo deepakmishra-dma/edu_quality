@@ -4,7 +4,7 @@
 import frappe
 from frappe.query_builder.functions import Count
 from frappe.utils import parse_json, today, getdate
-from edu_quality.edu_quality.server_scripts.utils import projected_strength
+from edu_quality.edu_quality.server_scripts.utils import calculate_strength_previous
 
 
 def generate_school_fields(program=None):
@@ -29,10 +29,11 @@ def generate_school_fields(program=None):
                 "fieldname": f"qty_for_{i.get('name')}",
                 "label": f"{i.get('name')}",
                 "fieldtype": "Data",
-                "width": 200,            
-            },        
+                "width": 200,
+            },
         ),
     return school_array
+
 
 def generate_extra_school_qty(program):
     if program:
@@ -49,18 +50,18 @@ def generate_extra_school_qty(program):
         frappe.errprint(schools)
     else:
         schools = frappe.get_list("School")
-    school_array=[]
+    school_array = []
     for i in schools:
         school_array.append(
-                {
-                    "fieldname": f"extra_qty_for_{i.get('name')}",
-                    "label": f"Extra Qty {i.get('name')}",
-                    "fieldtype": "Data",
-                    "width": 250,
-                },
-                
-            )
+            {
+                "fieldname": f"extra_qty_for_{i.get('name')}",
+                "label": f"Extra Qty {i.get('name')}",
+                "fieldtype": "Data",
+                "width": 250,
+            },
+        )
     return school_array
+
 
 @frappe.whitelist()
 def get_school_fields_sum(row):
@@ -79,12 +80,12 @@ def get_columns(filters):
     school_fields = generate_school_fields(filters.get("class"))
     extra_fields = generate_extra_school_qty(filters.get("class"))
     columns = [
-        {
-            "fieldname": "period",
-            "label": "Period No.",
-            "fieldtype": "Data",
-            "width": 75,
-        },
+        # {
+        #     "fieldname": "period",
+        #     "label": "Period No.",
+        #     "fieldtype": "Data",
+        #     "width": 75,
+        # },
         {
             "fieldname": "product_code",
             "label": "Product Code",
@@ -164,7 +165,6 @@ def transform_data(program_enrollments, CMAPS, class_filter):
                 converted_dict.get(f'{i.get("class")}-{school.get("label")}', 0) or 0
             )
             i[f"extra_{school.get('fieldname')}"] = 30
-        
 
         i["total_quantity"] = get_school_fields_sum(i)
 
@@ -190,6 +190,7 @@ def get_data_from_queries(filters=None):
     item_detail = frappe.qb.DocType("Item Detail")
     cmap = frappe.qb.DocType("CMAP")
     item = frappe.qb.DocType("Item")
+    item_group = frappe.qb.DocType("Item Group")
     class_filter = filters.get("class")
     subject_filter = filters.get("subject")
     unit_filter = filters.get("unit")
@@ -200,6 +201,8 @@ def get_data_from_queries(filters=None):
         .on(cmap.name == item_detail.parent)
         .inner_join(item)
         .on(item_detail.item == item.name)
+        .inner_join(item_group)
+        .on(item.item_group == item_group.name)
         .where(
             (cmap.academic_year == filters.get("academic_year"))
             & (cmap["class"] == class_filter)
@@ -212,9 +215,10 @@ def get_data_from_queries(filters=None):
             )
             & (item.custom_is_cmap == 1)
             & (item.custom_print_ready == 1)
+            & (item_group.custom_printable == 1)
         )
+        .groupby(item_detail.item)
         .select(
-            cmap.period,
             item.custom_chapter.as_("chapter"),
             cmap.name,
             cmap["class"],
@@ -241,6 +245,7 @@ def get_data_from_queries(filters=None):
         "Academic Year", {"custom_current_academic_year": 1}, "name"
     )
     qty_needed_for_schools_query = ""
+
     if academic_year_doc.custom_next_academic_year:
         qty_needed_for_schools = []
         schools = frappe.db.get_list("School")
@@ -248,8 +253,11 @@ def get_data_from_queries(filters=None):
 
         for school in schools:
             try:
-                projected_strength = projected_strength(f"{class_filter}-{school}")
-            except:
+                projected_strength = calculate_strength_previous(
+                    f"{class_filter}-{school}", filters.get("academic_year")
+                )
+            except Exception as e:
+                frappe.errprint(str(e))
                 projected_strength = 0
 
             qty_needed_for_schools.append(
@@ -287,7 +295,7 @@ def execute(filters=None):
 
 
 @frappe.whitelist()
-def create_purchase_order(rows):
+def create_purchase_order(rows, academic_year=None):
     if isinstance(rows, str):
         rows = parse_json(rows)
 
@@ -298,6 +306,8 @@ def create_purchase_order(rows):
             "purpose": "Purchase",
             "items": [],
             "supplier": "Printer",
+            "custom_is_cmap_print": 1,
+            "custom_academic_year": academic_year,
         }
     )
 
@@ -313,18 +323,18 @@ def create_purchase_order(rows):
 def append_items(purchase_order, row, school_field):
     school_doc = frappe.get_doc("School", school_field.get("label"))
 
-    if(int(row.get(school_field.get("fieldname", 0),0))==0):
+    if int(row.get(school_field.get("fieldname", 0), 0)) == 0:
         return
-    
+
     purchase_order.append(
         "items",
         {
             "item_code": row.get("product_code"),
-            "qty": int(row.get(school_field.get("fieldname", 0),0))
-            + int(row.get("extra_"+school_field.get("fieldname", 0), 0)),
+            "qty": int(row.get(school_field.get("fieldname", 0), 0))
+            + int(row.get("extra_" + school_field.get("fieldname", 0), 0)),
             "schedule_date": frappe.utils.nowdate(),
             "warehouse": school_doc.get("warehouse"),
             "uom": "Nos",
-            "custom_period": row.get("period"),
+            "school": school_doc.get("name", None),
         },
     )

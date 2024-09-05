@@ -72,3 +72,35 @@ def create_google_user(email_key, first_name, last_name, recovery_mail, phone_no
         )
     # frappe.log_error("google account created with" + str(existing_user))
     return existing_user
+
+
+def add_user_to_group(email, group_email):
+    try:
+        user_service = get_google_admin_object()
+        user_service.members().insert(groupKey=group_email, body={"email": email,'role': 'MEMBER'}).execute()
+    except Exception as e:
+        frappe.logger('google_groups').exception(e)
+
+
+def remove_user_from_group(email, group_email):
+    try:
+        user_service = get_google_admin_object()
+        user_service.members().delete(groupKey=group_email, memberKey=email)
+    except Exception as e:
+        frappe.logger('google_groups').exception(e)
+
+
+def suspend_google_user(email):
+    user_service = get_google_admin_object()
+    user_service.users().update(
+        userKey=email,
+        body={"suspended": True},
+    ).execute()
+
+
+def unsuspend_google_user(email):
+    user_service = get_google_admin_object()
+    user_service.users().update(
+        userKey=email,
+        body={"suspended": False},
+    ).execute()

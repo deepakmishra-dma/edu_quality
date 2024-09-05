@@ -30,7 +30,7 @@ async function getItemQR(item_code) {
 }
 
 
-function generateOrderCard(itemCode, totalQty, chapter, subject, productURL, item_created) {
+function generateOrderCard(itemCode, totalQty, chapter, subject, productURL, item_created, printed) {
 
 
     return `<div
@@ -38,7 +38,7 @@ function generateOrderCard(itemCode, totalQty, chapter, subject, productURL, ite
                     border-radius: var(--border-radius-md);
                     border: 1px solid ${item_created ? "var(--alert-text-success)" : "var(--border-color)"};
                     box-shadow: none;
-                    background-color: var(--card-bg);
+                    background-color: ${item_created ? '#f0fdf4' : 'var(--card-bg)'};
                     padding:8px 12px;
                   "
                 >
@@ -49,9 +49,9 @@ function generateOrderCard(itemCode, totalQty, chapter, subject, productURL, ite
                   </div>
                   <div style="margin-top:8px;margin-bottom:8px">${subject}</div>
                   <div>${chapter}</div>
-                  <div style="margin-top:8px;margin-bottom:8px;display:flex; gap:12px;"><div><a href="${productURL}"><i class="fa fa-file" style="color:rgb(29 78 216);font-size:22px" aria-hidden="true" ></i></a></div>${item_created ? `<button data-is-print="true" data-item-code="${itemCode}" onclick=""><i style="color:rgb(29 78 216);font-size:22px" aria-hidden="true" class="fa fa-qrcode"  data-is-print="true" data-item-code="${itemCode}" aria-hidden="true"></i></button>` : ""}</div>
+                  <div style="margin-top:8px;margin-bottom:8px;display:flex; gap:12px;"><div><a href="${productURL}" target="__blank"><i class="fa fa-file" style="color:rgb(29 78 216);font-size:22px" aria-hidden="true" ></i></a></div>${item_created ? `<button data-is-print="true" data-item-code="${itemCode}" onclick=""><i style="color:rgb(29 78 216);font-size:22px" aria-hidden="true" class="fa fa-qrcode"  data-is-print="true" data-item-code="${itemCode}" aria-hidden="true"></i></button>` : ""}</div>
                   <div style="display:flex; align-items:center;gap:4px;" >
-                <div style="margin-top:4px;">Printed</div><input data-item-code="${itemCode}" ${item_created ? "disabled" : ""} ${item_created ? `checked="${item_created}"` : ""}  type="checkbox" style="width:22px !important;height:22px;flex-shrink:0;margin-top:8px;" ></input></div> 
+                <div style="margin-top:4px;">Printed</div><input data-is-check="true" data-item-code="${itemCode}"  ${item_created ? "disabled" : ""} ${item_created ? `checked="${item_created}"` : printed ? `checked="${printed}"` : ''}}  type="checkbox" style="width:22px !important;height:22px;flex-shrink:0;margin-top:8px;" ></input></div> 
                   </div></div>
                 </div>`
 }
@@ -165,6 +165,23 @@ function removeBtnsForPrinters(frm) {
 frappe.ui.form.on('Purchase Order', {
     onload(frm) {
         createReceiptButton(frm)
+        if (!frm.doc.__islocal) {
+            if (!(frappe.user_roles.includes("Printer") && !frappe.user_roles.includes("Administrator") && !frappe.user_roles.includes("Walnut Admin") && !frappe.user_roles.includes("System Manager"))) {
+                frm.add_custom_button(__('Send Test Mail'), () => {
+                    frappe.msgprint(
+                        {
+                            title: __('Notification'),
+                            message: __('Are you sure you want to proceed, with sending the email to content creator group?'),
+                            primary_action: {
+                                'label': 'Proceed',
+                                // either one of the actions can be passed
+                                'server_action': 'edu_quality.overrides_hooks.purchase_order.send_test_order_email',
+                                'args': { self: frm.doc }
+                            }
+                        })
+                })
+            }
+        }
 
         frappe.call({
             method: "edu_quality.overrides_hooks.purchase_order.generate_challan_list",
@@ -183,6 +200,7 @@ frappe.ui.form.on('Purchase Order', {
                         el.addEventListener('click', (e) => {
                             console.log('click', e.target)
                             const dataset = e.target.dataset
+                            console.log(dataset)
                             if (dataset.isPrint) {
                                 frappe.call({
                                     method: "edu_quality.overrides_hooks.purchase_order.get_linked_receipts",
@@ -209,14 +227,25 @@ frappe.ui.form.on('Purchase Order', {
 
                                 getItemQR(e.target.dataset.itemCode)
                             }
+                            if (dataset.isCheck) {
+                                frappe.call({
+                                    method: "edu_quality.overrides_hooks.purchase_order.mark_item_as_printed",
+                                    args: {
+                                        purchase_ord: frm.doc.name,
+                                        item_code: dataset.itemCode,
+                                        checked: e.target.checked
+                                    }, callback: function (r) {
+                                        if (r.message) {
+
+                                        }
+
+                                    }
+                                })
+                            }
                         })
                         el.classList.add(["d-flex", "flex-column"])
                         frm.fields_dict.custom_challan_detail.wrapper.innerHTML = ''
-                        el.innerHTML = `${data.map((datum) => (
-                            generateOrderCard(datum.item_code, datum.total_qty, datum.chapter, datum.subject, datum.product_url, datum.receipt_created)
-                        ))}
-                        
-                    `
+                        renderOrderCards(data, el)
                         frm.fields_dict.custom_challan_detail.wrapper.appendChild(el)
                     }, 1000)
 
@@ -231,3 +260,11 @@ frappe.ui.form.on('Purchase Order', {
 
     }
 })
+
+function renderOrderCards(data, el) {
+    el.innerHTML = `${data.map((datum) => (
+        generateOrderCard(datum.item_code, datum.total_qty, datum.chapter, datum.subject, datum.product_url, datum.receipt_created, datum.printed)
+    ))}
+    
+`
+}

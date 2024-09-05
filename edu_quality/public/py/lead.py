@@ -1,56 +1,63 @@
 import frappe
-
+from erpnext.crm.doctype.lead.lead import Lead
 from edu_quality.public.py.utils import add_indian_country_code
 
 
-def before_insert(doc, method=None):
-    contacts = frappe.db.get_list(
-        "Contact",
-        {"whatsapp_id": add_indian_country_code(doc.fathers_phone)},
-        limit_page_length=1,
-        order_by="creation desc",
-        ignore_permissions=True,
-    )
-
-    if len(contacts):
-        doc.contact_doc = frappe.get_doc(
-            "Contact", contacts[0], ignore_permissions=True
+class CustomLead(Lead):
+    def before_insert(self, method=None):
+        contacts = frappe.db.get_list(
+            "Contact",
+            {"whatsapp_id": add_indian_country_code(self.fathers_phone)},
+            limit_page_length=1,
+            order_by="creation desc",
+            ignore_permissions=True,
         )
-    else:
-        doc.contact_doc = doc.create_contact()
-    doc.custom_contact_link = doc.contact_doc.get("name")
-    doc.contact_doc.flags.ignore_permissions = True
 
-
-def after_insert(doc, method=None):
-    if not doc.contact_doc:
-        return
-    doc.contact_doc.whatsapp_id = add_indian_country_code(doc.fathers_phone)
-    if len(doc.contact_doc.phone_nos) == 0:
-        if doc.fathers_phone:
-            doc.contact_doc.append(
-                "phone_nos",
-                {
-                    "phone": doc.fathers_phone,
-                    "is_primary_mobile_no": 1,
-                },
+        if len(contacts):
+            self.contact_doc = frappe.get_doc(
+                "Contact", contacts[0], ignore_permissions=True
             )
-    if len(doc.contact_doc.email_ids) == 0:
-        if doc.fathers_email:
-            doc.contact_doc.append(
-                "email_ids",
-                {
-                    "email_id": doc.fathers_email,
-                    "is_primary": 1,
-                },
-            )
+        else:
+            self.contact_doc = self.create_contact()
+        self.custom_contact_link = self.contact_doc.get("name")
+        self.contact_doc.flags.ignore_permissions = True
 
-    doc.contact_doc.save(ignore_permissions=True)
-    if doc.get("fathers_email"):
-        content = enqueue_email(doc)
-        if content:
-            add_email_activity(doc, content)
+    def after_insert(self, method=None):
+        if not self.contact_doc:
+            return
+        self.contact_doc.whatsapp_id = add_indian_country_code(self.fathers_phone)
+        if len(self.contact_doc.phone_nos) == 0:
+            if self.fathers_phone:
+                self.contact_doc.append(
+                    "phone_nos",
+                    {
+                        "phone": self.fathers_phone,
+                        "is_primary_mobile_no": 1,
+                    },
+                )
+        if len(self.contact_doc.email_ids) == 0:
+            if self.fathers_email:
+                self.contact_doc.append(
+                    "email_ids",
+                    {
+                        "email_id": self.fathers_email,
+                        "is_primary": 1,
+                    },
+                )
+        self.link_to_contact()
+        self.contact_doc.save(ignore_permissions=True)
 
+        if self.get("fathers_email"):
+            content = enqueue_email(self)
+            if content:
+                add_email_activity(self, content)
+
+    def link_to_contact(self):
+            # update contact links
+            if self.contact_doc:
+                self.contact_doc.append(
+                    "links", {"link_doctype": "Lead", "link_name": self.name, "link_title": self.lead_name}
+                )
 
 def enqueue_email(doc):
     try:

@@ -216,11 +216,11 @@
   "doctype": "Server Script",
   "doctype_event": "Before Save",
   "event_frequency": "All",
-  "modified": "2024-01-09 10:01:26.100916",
+  "modified": "2024-02-15 20:19:50.284978",
   "module": "Fees",
   "name": "Payment Term",
   "reference_doctype": "Payment Request",
-  "script": "if doc.reference_doctype == \"Fees\":\n    fee = frappe.get_doc(\"Fees\", doc.reference_name)\n    if fee.payment_plan is not None:\n        for ps in fee.payment_schedule:\n            d = ps.due_date\n            today = frappe.utils.getdate(frappe.utils.today())\n            if frappe.utils.date_diff(d, today) < 30:\n                doc.payment_term = ps.payment_term\n                \nif doc.reference_doctype == \"Fee Advance\":\n    fee = frappe.get_doc(\"Fee Advance\", doc.reference_name)\n    doc.payment_term = fee.payment_term",
+  "script": "if doc.reference_doctype == \"Fees\":\n    fee = frappe.get_doc(\"Fees\", doc.reference_name)\n    if fee.payment_plan is not None:\n        for ps in fee.payment_schedule:\n            d = ps.due_date\n            today = frappe.utils.getdate(frappe.utils.today())\n            # if frappe.utils.date_diff(d, today) < 30:\n            #     doc.payment_term = ps.payment_term\n                \nif doc.reference_doctype == \"Fee Advance\":\n    fee = frappe.get_doc(\"Fee Advance\", doc.reference_name)\n    doc.payment_term = fee.payment_term",
   "script_type": "DocType Event"
  },
  {
@@ -280,11 +280,11 @@
   "doctype": "Server Script",
   "doctype_event": "Before Submit",
   "event_frequency": "All",
-  "modified": "2023-08-08 17:12:42.815755",
+  "modified": "2024-02-12 15:45:11.291606",
   "module": "Fees",
   "name": "Create Fees for new Student",
   "reference_doctype": "Program Enrollment",
-  "script": "filters = {\"academic_year\": doc.academic_year, \"program\": doc.program, \"student_category\": doc.student_category}\nif frappe.db.exists(\"Student Group\", filters):\n    sg = frappe.get_doc(\"Student Group\", filters)\n    roll_no = len(sg.students)+1\n    sg.append(\"students\", {\n        \"student\":doc.student,\n        \"student_name\": doc.student_name,\n        \"group_roll_number\": roll_no,\n        \"active\": 1\n    })\n    sg.save()\n    \n    if frappe.db.exists(\"Fee Schedule\", filters):\n        fs = frappe.get_doc(\"Fee Schedule\", filters)\n        for g in fs.student_groups:\n            if g.student_group == sg.name:\n                total_students = int(g.total_students) + 1\n                frappe.db.set_value(\"Fee Schedule Student Group\", g.name, \"total_students\", total_students)",
+  "script": "filters = {\"academic_year\": doc.academic_year, \"program\": doc.program, \"student_category\": doc.student_category}\nif frappe.db.exists(\"Student Group\", doc.student_group):\n    sg = frappe.get_doc(\"Student Group\", doc.student_group)\n    roll_no = len(sg.students)+1\n    sg.append(\"students\", {\n        \"student\":doc.student,\n        \"student_name\": doc.student_name,\n        \"group_roll_number\": roll_no,\n        \"active\": 1\n    })\n    sg.save()\n    \n    if frappe.db.exists(\"Fee Schedule\", filters):\n        fs = frappe.get_doc(\"Fee Schedule\", filters)\n        for g in fs.student_groups:\n            if g.student_group == sg.name:\n                total_students = int(g.total_students) + 1\n                frappe.db.set_value(\"Fee Schedule Student Group\", g.name, \"total_students\", total_students)",
   "script_type": "DocType Event"
  },
  {

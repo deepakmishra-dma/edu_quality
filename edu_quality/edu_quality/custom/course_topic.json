@@ -37,6 +37,7 @@
    "is_virtual": 0,
    "label": "Textbook",
    "length": 0,
+   "link_filters": null,
    "mandatory_depends_on": null,
    "modified": "2023-11-27 20:40:49.245948",
    "modified_by": "Administrator",
