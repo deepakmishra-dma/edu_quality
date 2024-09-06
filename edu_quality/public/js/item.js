@@ -213,6 +213,7 @@ frappe.ui.form.on("Item", {
     // }
 });
 function hidePrintCheckBtn(frm) {
+    if (!frm.doc.item_group) return false
     frappe.call({
         method: "frappe.client.get",
         args: {
@@ -227,13 +228,14 @@ function hidePrintCheckBtn(frm) {
             else {
                 $(frm.fields_dict.custom_print_ready.$wrapper).css("display", "inline-block")
             }
-           
+
 
 
         }
     });
 }
 function getClassSubject(frm) {
+    if (!frm.doc.custom_textbook) return
     frappe.call({
         method: "frappe.client.get",
         args: {
