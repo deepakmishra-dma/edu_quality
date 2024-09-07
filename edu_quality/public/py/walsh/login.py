@@ -60,17 +60,19 @@ def send_otp_to_whatsapp(wa_phone_no, otp):
 
 def get_guardian_from_phone(full_phone_no):
     guardian_number = remove_indian_country_code(full_phone_no)
-    if frappe.db.exists("Guardian", {"mobile_number": guardian_number}):
-        return frappe.get_doc("Guardian", {"mobile_number": guardian_number}, order_by="creation", limit=1)
+    return frappe.get_doc("Guardian", {"mobile_number": guardian_number}, order_by="creation", limit=1)
 
 
 def get_or_create_user(full_phone_no):
-    # print("create or get user", full_phone_no)
-    if frappe.db.exists("User", {"phone": full_phone_no}):
-        return frappe.get_doc("User", {"phone": full_phone_no})
-
     guardian_number = remove_indian_country_code(full_phone_no)
     guardian = get_guardian_from_phone(guardian_number)
+
+    if frappe.db.exists("User", {"phone": full_phone_no}):
+        user = frappe.get_doc("User", {"phone": full_phone_no})
+        if not guardian.user:
+            guardian.user = user.name
+            guardian.save(ignore_permissions=True)
+        return user
 
     # create user with guardian details
     user = frappe.get_doc({
@@ -80,6 +82,9 @@ def get_or_create_user(full_phone_no):
         "phone": full_phone_no
     })
     user.insert(ignore_permissions=True)
+
+    guardian.user = user.name
+    guardian.save(ignore_permissions=True)
     return user
 
 
@@ -165,6 +170,8 @@ def verify_otp(otp, phone_no):
         user = get_or_create_user(phone_with_country_code)
         login_manager = LoginManager()
         login_manager.login_as(user.name)
+        # update guardian
+
         return {
             "success": True,
             "message": "Login Successful",
@@ -174,8 +181,3 @@ def verify_otp(otp, phone_no):
         "error_type": "invalid_otp",
         "error_message": "Invalid OTP"
     }
-
-
-@frappe.whitelist()
-def get_all_notices():
-    return frappe.get_all("School Notice", fields=["type_of_notifications", "subject", "html"])
