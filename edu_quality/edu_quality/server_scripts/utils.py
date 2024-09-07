@@ -276,3 +276,13 @@ def email_recipients(student, case=0):
         recipients.extend(parent_emails)
 
     return recipients
+
+@frappe.whitelist()
+def add_referral(referred_by,referred_student):
+    from edu_quality.edu_quality.server_scripts.student_applicant import (
+    add_referral_discount,
+    )
+    if frappe.db.get_value("Student",referred_student,"referred_by"):
+        return frappe.throw("Student already Referred!")
+    frappe.db.set_value("Student",referred_student,"referred_by",referred_by)
+    add_referral_discount(referred_by)
