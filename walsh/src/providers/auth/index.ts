@@ -10,7 +10,7 @@ export const authProvider: AuthBindings = {
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
 
-    const response = await fetch("/api/method/edu_quality.public.py.walsh.verify_otp", {
+    const response = await fetch("/api/method/edu_quality.public.py.walsh.login.verify_otp", {
       method: 'POST',
       headers: myHeaders,
       body: JSON.stringify({
