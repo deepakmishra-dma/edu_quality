@@ -258,6 +258,12 @@ frappe.ui.form.on('Purchase Order', {
         removeBtnsForPrinters(frm)
         // your code here
 
+    },
+    schedule_date(frm){
+        frm.doc.items.forEach(item => {
+            item.schedule_date = frm.doc.schedule_date
+        })
+        frm.refresh_field('items');
     }
 })
 
