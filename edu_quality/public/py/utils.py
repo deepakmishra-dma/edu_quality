@@ -6,7 +6,8 @@ from io import BytesIO
 import frappe
 import qrcode
 import requests
-
+from typing import Union
+from PIL import Image
 
 def set_property(doctype, fieldname, prop, property_type, value):
     filters = {
@@ -385,7 +386,7 @@ def add_indian_country_code(number, add_plus=False):
         return number
 
 
-def im_2_b64(image):
+def im_2_b64(image: Image) -> str:
     """
     Converts image to base 64 jpeg
     """
@@ -394,10 +395,8 @@ def im_2_b64(image):
     img_str = base64.b64encode(buff.getvalue()).decode("utf-8")
     return f"data:image/jpeg;base64,{img_str}"
 
-
-def gen_qr_code_b64(str):
-    frappe.errprint("hiya")
-    return im_2_b64(qrcode.make(str))
+def gen_qr_code_b64(input_str: Union[str, bytes]) -> str:
+    return im_2_b64(qrcode.make(input_str))
 
 
 def remove_indian_country_code(number):
