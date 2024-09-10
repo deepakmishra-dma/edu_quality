@@ -134,6 +134,7 @@ async function getLinkedSubject(frm) {
 
 frappe.ui.form.on("Item", {
     refresh: function (frm) {
+
         uploadFileButton(frm)
         getLinkedSubject(frm)
         hidePrintCheckBtn(frm)
@@ -166,6 +167,11 @@ frappe.ui.form.on("Item", {
     onload: function (frm) {
         if (frm.doc__islocal) {
             frm.set_value('custom_sheet_number', 0);
+        }
+        if (frm.doc.__islocal) {
+            frm.set_value('custom_product_url', '')
+            frm.set_value('custom_product_folder', '')
+            frm.set_value('custom_class_subject_folder', '')
         }
         if (!frm.doc.custom_is_cmap) {
             NotCmapFilter(frm);

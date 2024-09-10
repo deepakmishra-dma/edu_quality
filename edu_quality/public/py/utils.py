@@ -32,6 +32,7 @@ def set_property(doctype, fieldname, prop, property_type, value):
 
 def migrate():
     from edu_quality.edu_quality.server_scripts.document_links import update_links
+
     update_links()
     set_property("Fees", "due_date", "reqd", "Check", 0)
     set_property("Fees", "fee_schedule", "reqd", "Check", 0)
@@ -64,7 +65,7 @@ def generate_otp(fee, undertaking=0):
         rs.set_value(key, OTP, expires_in_sec=600)
         return send_otp(fee, OTP, undertaking)
     except Exception as e:
-        frappe.logger('otp').exception(e)
+        frappe.logger("otp").exception(e)
 
 
 def get_mobile_number(student):
@@ -108,10 +109,12 @@ def send_otp(fee, otp, undertaking):
 
 def parents_email(student):
     recipients = []
-    parent_emails = frappe.db.get_all("Student Guardian",
-                                      filters={"parent": student},
-                                      fields=["guardian.email_address"],
-                                      as_list=True)
+    parent_emails = frappe.db.get_all(
+        "Student Guardian",
+        filters={"parent": student},
+        fields=["guardian.email_address"],
+        as_list=True,
+    )
     parent_emails = [email[0] for email in parent_emails if email and email[0]]
     recipients.extend(parent_emails)
     return recipients
@@ -122,23 +125,32 @@ def email_otp(email, otp, undertaking, cc_email=None):
         if not undertaking:
             subject = "OTP for Changing Payment Plan"
             message = f"OTP for Changing Payment Plan is {otp}"
-            frappe.sendmail(recipients=email, subject=subject, message=message, delayed=False, now=True)
+            frappe.sendmail(
+                recipients=email,
+                subject=subject,
+                message=message,
+                delayed=False,
+                now=True,
+            )
             return
         template = frappe.get_doc("Email Template", "Walnut - Undertaking OTP")
         context = dict(otp=otp)
-        frappe.sendmail(cc=cc_email, recipients=email,
-                        subject=frappe.render_template(template.subject, context=context),
-                        message=frappe.render_template(template.response, context=context), delayed=False, now=True)
+        frappe.sendmail(
+            cc=cc_email,
+            recipients=email,
+            subject=frappe.render_template(template.subject, context=context),
+            message=frappe.render_template(template.response, context=context),
+            delayed=False,
+            now=True,
+        )
     except Exception as e:
-        frappe.logger('email_otp').exception(e)
+        frappe.logger("email_otp").exception(e)
 
 
 @frappe.whitelist(allow_guest=True)
 def sms_otp(number, otp):
     api_key = "***REMOVED-SMS-KEY***"
-    message = (
-        f"{otp} is OTP for updating child details initiated by you -Team Walnut"
-    )
+    message = f"{otp} is OTP for updating child details initiated by you -Team Walnut"
     template_id = 1007162244812510707
     sender = "WLTSCL"
     encoded_message = requests.utils.quote(message)
@@ -395,8 +407,34 @@ def im_2_b64(image: Image) -> str:
     img_str = base64.b64encode(buff.getvalue()).decode("utf-8")
     return f"data:image/jpeg;base64,{img_str}"
 
+
+def im_2_b64_png(image):
+    """
+    Converts image to base 64 jpeg
+    """
+    buff = BytesIO()
+    image.save(buff, format="PNG")
+    img_str = base64.b64encode(buff.getvalue()).decode("utf-8")
+    return f"data:image/png;base64,{img_str}"
+
+
 def gen_qr_code_b64(input_str: Union[str, bytes]) -> str:
+    
     return im_2_b64(qrcode.make(input_str))
+
+
+def gen_qr_code_b64_transparent(str):
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=0,
+    )
+    qr.add_data(str)
+    qr.make(fit=True)
+
+    qr_img = qr.make_image(fill_color="black", back_color="transparent")
+    return im_2_b64_png(qr_img)
 
 
 def remove_indian_country_code(number):
@@ -435,12 +473,14 @@ def email_recipients(variables, student, case):
             recipients.append(student_email)
 
     if case == 1 or case == 3:
-        parent_emails = frappe.get_all("Student Guardian",
-                                       filters={"parent": student},
-                                       fields=["guardian.email_address"],
-                                       as_list=True)
+        parent_emails = frappe.get_all(
+            "Student Guardian",
+            filters={"parent": student},
+            fields=["guardian.email_address"],
+            as_list=True,
+        )
         parent_emails = [email[0] for email in parent_emails if email and email[0]]
         recipients.extend(parent_emails)
 
     recipients_str = ", ".join(recipients)
-    variables['recipients_str'] = recipients_str
+    variables["recipients_str"] = recipients_str

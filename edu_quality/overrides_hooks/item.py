@@ -1,7 +1,11 @@
 import frappe
 from frappe.utils import strip
 import json
-from edu_quality.public.py.utils import im_2_b64, gen_qr_code_b64
+from edu_quality.public.py.utils import (
+    im_2_b64,
+    gen_qr_code_b64_transparent,
+    gen_qr_code_b64,
+)
 import os
 from weasyprint import CSS, HTML
 from edu_quality.api.google_drive_upload import (
@@ -24,6 +28,7 @@ import re
 # import base64
 
 drive_url_id_re = r"/file/d/([^/]+)"
+dpi = 300
 
 
 @frappe.whitelist()
@@ -60,9 +65,10 @@ def name(self):
 
 
 def autoname(self, method=None):
-    self.item_code = name(self)
-    self.name = self.item_code
-    self.item_name = self.item_code
+    if not frappe.flags.in_import:
+        self.item_code = name(self)
+        self.name = self.item_code
+        self.item_name = self.item_code
 
 
 @frappe.whitelist()
@@ -150,14 +156,26 @@ def generate_worksheet_template(chapter_name, subject_name, qr_code, worksheet_n
 
     doc = fitz.open("pdf", main_doc)
     page = doc.load_page(0)
-    pix = page.get_pixmap(alpha=True)
+    pix = page.get_pixmap(alpha=True, dpi=dpi)
+
     img_byte_array = BytesIO()
     img = Image.frombytes("RGBA", [pix.width, pix.height], pix.samples)
+    width_inch = img.width / dpi
+    height_inch = img.height / dpi
+    metadata = {
+        "dpi": (dpi, dpi),
+        "physical_size": (width_inch, height_inch),
+    }
+    img.info.update(metadata)
     img.save(img_byte_array, format="PNG")
     img_byte_array.seek(0)
 
     image_data = img_byte_array.read()
-
+    frappe.local.response.filename = "Temporary Id Card.pdf".format(
+        name="Worksheet No.pdf".replace(" ", "-").replace("/", "-")
+    )
+    frappe.local.response.filecontent = main_doc
+    frappe.local.response.type = "pdf"
     frappe.local.response.filename = f"Header {worksheet_name}.png"
     frappe.local.response.filecontent = image_data
     frappe.local.response.type = "download"
@@ -250,7 +268,7 @@ def get_worksheet_template(name):
     chapter_doc = frappe.get_doc("Topic", chapter)
     subject_doc = frappe.get_doc("Course", subject)
 
-    qr_code = gen_qr_code_b64(name)
+    qr_code = gen_qr_code_b64_transparent(name)
     return generate_worksheet_template(
         chapter_name=gen_chapter_name(
             chapter_doc, worksheet_doc.get("custom_sheet_number")
@@ -263,7 +281,7 @@ def get_worksheet_template(name):
 
 def gen_chapter_name(chapter_doc, sheet_no):
     chapter_code = str(chapter_doc.get("custom_chapter_number", "")).zfill(2)
-    str_without_name = f"{chapter_code}: TO_REPLACE - {sheet_no}"
+    str_without_name = f"{chapter_code} : TO_REPLACE - {sheet_no}"
     length_left = 48 - len(str_without_name)
     name_chapter = chapter_doc.topic_name
     if len(name_chapter) <= length_left:
@@ -277,7 +295,7 @@ def gen_chapter_name(chapter_doc, sheet_no):
 
 def gen_subject_name(class_id, subject_doc):
     subject = str(subject_doc.get("name", "")).zfill(2)
-    str_without_name = f"{class_id}: TO_REPLACE"
+    str_without_name = f"{class_id} : TO_REPLACE"
 
     length_left = 33 - len(str_without_name)
     if len(subject) <= length_left:
@@ -312,11 +330,11 @@ def create_product_chapter_folder(product_class_folder, chapter_number, chapter_
 
 def create_item_directory(self):
     try:
-
+        textbook = frappe.get_doc("Textbook", self.get("custom_textbook"))
         subject_folder = (
             self.custom_class_subject_folder
             or create_product_class_textbook(
-                self.get("custom_class"), self.get("custom_textbook")
+                self.get("custom_class"), textbook.get("name1")
             )
         )
         self.custom_class_subject_folder = subject_folder
