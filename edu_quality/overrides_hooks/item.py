@@ -65,8 +65,7 @@ def name(self):
 
 
 def autoname(self, method=None):
-    if not frappe.flags.in_import:
-        self.item_code = name(self)
+    self.item_code = name(self)
     self.name = self.item_code
     self.item_name = self.item_code
 
@@ -104,6 +103,8 @@ def calculate_sheet_number(self):
 
 
 def before_insert(self, method=None):
+    if frappe.flags.in_import:
+        self.custom_product_url = ""     
     if not frappe.flags.in_import:
         self.custom_sheet_number = calculate_sheet_number(self)
     create_item_directory(self)
