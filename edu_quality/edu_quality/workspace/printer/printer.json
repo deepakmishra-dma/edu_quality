@@ -1,7 +1,7 @@
 {
  "charts": [],
- "content": "[{\"id\":\"imx0vUcMzv\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Printer</span>\",\"col\":12}},{\"id\":\"QR-fmAGgmX\",\"type\":\"quick_list\",\"data\":{\"quick_list_name\":\"Purchase Order\",\"col\":12}},{\"id\":\"Cnq1SyvY6X\",\"type\":\"custom_block\",\"data\":{\"custom_block_name\":\"Printer Scanner\",\"col\":12}}]",
- "creation": "2024-02-21 13:13:38.859517",
+ "content": "[{\"id\":\"imx0vUcMzv\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Printer</span>\",\"col\":12}},{\"id\":\"QrEHHNkRYw\",\"type\":\"quick_list\",\"data\":{\"quick_list_name\":\"Purchase Order\",\"col\":12}},{\"id\":\"Cnq1SyvY6X\",\"type\":\"custom_block\",\"data\":{\"custom_block_name\":\"Printer Scanner\",\"col\":12}}]",
+ "creation": "2024-02-22 17:26:56.015348",
  "custom_blocks": [
   {
    "custom_block_name": "Printer Scanner",
@@ -14,11 +14,10 @@
  "hide_custom": 0,
  "icon": "printer",
  "idx": 0,
- "indicator_color": "cyan",
  "is_hidden": 0,
  "label": "Printer",
  "links": [],
- "modified": "2024-02-21 16:56:08.572662",
+ "modified": "2024-02-23 10:43:47.416547",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Printer",

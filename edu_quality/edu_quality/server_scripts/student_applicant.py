@@ -41,8 +41,9 @@ def add_referral_discount(referred_by, student_applicant=None):
             student.save()
         
         try:
-            from nextai.funnel.custom_trigger import trigger_event
-            trigger_event(doc=student_applicant, event_name="referral_created")
+            if student_applicant:
+                from nextai.funnel.custom_trigger import trigger_event
+                trigger_event(doc=student_applicant, event_name="referral_created")
         except ImportError:
             print("Chatnext is not installed")
 

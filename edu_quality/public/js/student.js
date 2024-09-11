@@ -6,8 +6,55 @@ frappe.ui.form.on("Student", {
         }
         addFeeDetails(frm);
         addParentDetails(frm);
+        addReferral(frm);
     }
 });
+
+
+function addReferral(frm){
+    frm.add_custom_button(__('Add Referral'), function () {
+        let d = new frappe.ui.Dialog({
+            title: 'Add Referral',
+            fields: [
+                {
+                    label: 'Referred Student',
+                    fieldname: 'referred_student',
+                    fieldtype: 'Link',
+                    options: "Student",
+                    get_query: function () {
+                        return {
+                            doctype: 'Student',
+                            filters: [["Student","referred_by","is","not set"]],
+                        };
+                    }
+                }
+            ],
+            size: 'large',
+            primary_action_label: 'Submit',
+            primary_action(values) {
+                frappe.call({
+                    method: "edu_quality.edu_quality.server_scripts.utils.add_referral",
+                    type: "POST",
+                    args: {
+                        referred_student: values.referred_student,
+                        referred_by: frm.doc.name
+                    },
+                    callback: function (response) {
+                        frappe.show_alert({
+                            message: __(response.message),
+                            indicator: 'green'
+                        });
+                        frm.reload_doc();
+                    }
+                });
+                d.hide();
+            }
+        });
+
+        d.show();
+
+    });
+}
 
 function addFeeDetails(frm) {
     if(!frm.is_new()){

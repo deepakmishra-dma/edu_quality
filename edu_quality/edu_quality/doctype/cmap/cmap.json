@@ -37,8 +37,7 @@
   {
    "fieldname": "plan_date",
    "fieldtype": "Date",
-   "label": "Plan Date",
-   "reqd": 1
+   "label": "Plan Date"
   },
   {
    "fieldname": "period",
@@ -204,7 +203,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-14 07:56:39.325703",
+ "modified": "2024-02-23 02:28:53.667089",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "CMAP",
