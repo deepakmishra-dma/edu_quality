@@ -67,8 +67,8 @@ def name(self):
 def autoname(self, method=None):
     if not frappe.flags.in_import:
         self.item_code = name(self)
-        self.name = self.item_code
-        self.item_name = self.item_code
+    self.name = self.item_code
+    self.item_name = self.item_code
 
 
 @frappe.whitelist()
