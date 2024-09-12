@@ -46,7 +46,7 @@ function uploadFileButton(frm) {
         }
         const input = document.createElement('input');
         input.type = 'file';
-        input.accept = '.pdf,.ppt,.pptx';
+        input.accept = '.pdf,.ppt,.pptx,.ppsx';
         input.onchange = function () {
             const file = input.files[0];
             if (file) {
