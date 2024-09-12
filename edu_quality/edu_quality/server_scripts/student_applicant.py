@@ -167,7 +167,7 @@ def apply_referral_discount(doc, referral_amount):
     """
     try:
         for component in doc.components:
-            if component.fees_category != "Tuition Fee":
+            if component.fees_category != "Tuition Fee" or component.fees_category !='Tuition Fee (KG)':
                 continue
             dis = {
                 "name": "Referral",
