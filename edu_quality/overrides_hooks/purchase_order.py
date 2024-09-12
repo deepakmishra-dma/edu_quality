@@ -301,6 +301,8 @@ def send_test_order_email(self, user):
         if self.get("custom_is_cmap_print"):
             doc = frappe.get_doc("Purchase Order", self.get("name"))
             doc.custom_user_email = user
+            doc.save(ignore_permissions=True)
+            doc.reload()
             trigger_event(doc=doc, event_name="purchase_order")
             frappe.clear_messages()
         return "Success"
