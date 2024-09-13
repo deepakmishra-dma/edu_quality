@@ -10,6 +10,7 @@
   "academic_year",
   "subject",
   "period",
+  "item_code_field",
   "column_break_ohld",
   "class",
   "unit",
@@ -199,11 +200,17 @@
    "print_hide": 1,
    "read_only": 1,
    "search_index": 1
+  },
+  {
+   "fieldname": "item_code_field",
+   "fieldtype": "Data",
+   "label": "Item Code Field",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-23 02:28:53.667089",
+ "modified": "2024-02-23 17:19:48.653448",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "CMAP",
