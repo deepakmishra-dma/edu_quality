@@ -132,9 +132,15 @@ async function getLinkedSubject(frm) {
 
 }
 
+function appendUrl(frm) {
+    $(frm.fields_dict.custom_product_url.$wrapper).find('label').html(`<a target="__blank" href="${frm.doc.custom_product_url}">Product URL</a>`)
+
+
+}
 frappe.ui.form.on("Item", {
     refresh: function (frm) {
-
+        console.log(frm, 'hha')
+        appendUrl(frm)
         uploadFileButton(frm)
         getLinkedSubject(frm)
         hidePrintCheckBtn(frm)
@@ -165,6 +171,7 @@ frappe.ui.form.on("Item", {
         }
     },
     onload: function (frm) {
+        appendUrl(frm)
         if (frm.doc__islocal) {
             frm.set_value('custom_sheet_number', 0);
         }
