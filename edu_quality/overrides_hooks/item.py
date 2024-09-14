@@ -104,7 +104,7 @@ def calculate_sheet_number(self):
 
 def before_insert(self, method=None):
     if frappe.flags.in_import:
-        self.custom_product_url = ""     
+        self.custom_product_url = ""
     if not frappe.flags.in_import:
         self.custom_sheet_number = calculate_sheet_number(self)
     create_item_directory(self)
@@ -121,9 +121,9 @@ def search_file_id(url):
 def after_delete(self, method=None):
     try:
         file_id = search_file_id(self.custom_product_url)
-
         delete_file_from_drive(file_id)
-    except:
+    except Exception as e:
+        frappe.log_error("Error Deleting",str(e))
         pass
 
 
@@ -204,7 +204,12 @@ def upload_to_drive(**doc):
         content = None
 
         file_extension = ""
-
+        frappe.publish_progress(
+            0,
+            title="Uploading File",
+            doctype="Item",
+            docname=docname,
+        )
         try:
             file_extension = mimetypes.guess_extension(files["file"].mimetype)
         except:
@@ -245,10 +250,19 @@ def upload_to_drive(**doc):
                 item_doc.get("custom_product_folder", custom_product_folder),
                 file_name_with_ext,
                 files["file"].mimetype,
+                True,
+                "Item",
+                docname,
             )
         else:
             id = update_file_stream_on_drive(
-                file_binary, file_id, files["file"].mimetype, file_name_with_ext
+                file_binary,
+                file_id,
+                files["file"].mimetype,
+                file_name_with_ext,
+                True,
+                "Item",
+                docname,
             )
 
         item_doc.custom_upload_date_on_drive = datetime.datetime.now()

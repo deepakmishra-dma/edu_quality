@@ -7,7 +7,7 @@ import os
 from urllib.parse import quote
 import tempfile
 
-from apiclient.http import MediaFileUpload
+from googleapiclient.http import MediaFileUpload
 
 
 @frappe.whitelist()
@@ -131,7 +131,15 @@ def upload_file_to_drive(file_url, folder_name, root_folder=None):
     return "Google Drive Backup Successful."
 
 
-def upload_file_stream_to_drive(file_content, root_folder, file_name, mimetype):
+def upload_file_stream_to_drive(
+    file_content,
+    root_folder,
+    file_name,
+    mimetype,
+    publish_progress=None,
+    publish_doctype=None,
+    publish_doc_name=None,
+):
     # Get Google Drive Object
 
     google_drive = get_google_drive_object()
@@ -144,12 +152,30 @@ def upload_file_stream_to_drive(file_content, root_folder, file_name, mimetype):
 
     try:
         media = MediaFileUpload(temp_file.name, mimetype=mimetype, resumable=True)
-        result = (
-            google_drive.files()
-            .create(body=file_metadata, media_body=media, fields="id")
-            .execute()
+        if not publish_progress:
+            result = (
+                google_drive.files()
+                .create(body=file_metadata, media_body=media, fields="id")
+                .execute()
+            )
+            return result
+
+        result = google_drive.files().create(
+            body=file_metadata, media_body=media, fields="id"
         )
-        return result
+        response = None
+        while response is None:
+            status, response = result.next_chunk()
+
+            if status:
+                frappe.publish_progress(
+                    int(status.progress() * 100),
+                    title="Uploading to Drive",
+                    doctype=publish_doctype,
+                    docname=publish_doc_name,
+                )
+
+        return response
 
     except Exception as e:
         frappe.throw(("Google Drive - Could not locate - {0}").format(e))
@@ -165,7 +191,7 @@ def find_file_by_name_and_folder(file_name, root_folder_id):
             return False
         google_drive = get_google_drive_object()
         query = f"name='{file_name}' and '{root_folder_id}' in parents"
-        
+
         results = google_drive.files().list(q=query, fields="files(id, name)").execute()
         files = results.get("files", [])
 
@@ -178,7 +204,15 @@ def find_file_by_name_and_folder(file_name, root_folder_id):
         return False
 
 
-def update_file_stream_on_drive(file_content, file_id, mimetype, new_name=None):
+def update_file_stream_on_drive(
+    file_content,
+    file_id,
+    mimetype,
+    new_name=None,
+    publish_progress=None,
+    publish_doctype=None,
+    publish_doc_name=None,
+):
     # Get Google Drive Object
 
     google_drive = get_google_drive_object()
@@ -190,12 +224,34 @@ def update_file_stream_on_drive(file_content, file_id, mimetype, new_name=None):
         file_metadata = {"name": new_name}
     try:
         media = MediaFileUpload(temp_file.name, mimetype=mimetype, resumable=True)
-        result = (
-            google_drive.files()
-            .update(fileId=file_id, body=file_metadata, media_body=media, fields="id")
-            .execute()
+        if not publish_progress:
+            result = (
+                google_drive.files()
+                .update(
+                    fileId=file_id, body=file_metadata, media_body=media, fields="id"
+                )
+                .execute()
+            )
+            return result
+
+        result = google_drive.files().update(
+            fileId=file_id, body=file_metadata, media_body=media, fields="id"
         )
-        return result
+
+        response = None
+
+        while response is None:
+            status, response = result.next_chunk()
+
+            if status:
+                frappe.publish_progress(
+                    int(status.progress() * 100),
+                    "Updating File on Drive",
+                    publish_doctype,
+                    publish_doc_name,
+                )
+
+        return response
 
     except Exception as e:
         frappe.throw(("Google Drive - Could not locate - {0}").format(e))
@@ -226,3 +282,17 @@ def delete_file_from_drive(file_id):
     except Exception as e:
         frappe.log_error("Error deleting folder ", str([e, "with id ", file_id]))
         frappe.throw(("Google Drive - Could not Delete - {0}").format(e))
+
+
+def progress_callback(request_id, response, exception):
+    if exception:
+        print("Error:", exception)
+    else:
+        print(
+            "Upload Progress:",
+            round(
+                (int(response["bytes_uploaded"]) / int(response["total_bytes"])) * 100,
+                2,
+            ),
+            "%",
+        )

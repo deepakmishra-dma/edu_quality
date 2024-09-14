@@ -316,10 +316,10 @@ def send_test_order_email(self, user):
 @frappe.whitelist()
 def mark_item_as_printed(purchase_ord, item_code, checked):
     purchase_ord_doc = frappe.get_doc("Purchase Order", purchase_ord)
-    frappe.errprint(checked)
+    count = 0
     for i in purchase_ord_doc.items:
         if i.get("item_code") == item_code:
-
+            count += 1
             i.printed = 1 if checked == "true" else 0
             # frappe.db.set_value(
             #     "Purchase Order Item",
@@ -328,6 +328,8 @@ def mark_item_as_printed(purchase_ord, item_code, checked):
             #     1 if checked == "true" else 0,
             # )
             # i["printed"] = checked
+    if count == 0:
+        return frappe.msgprint("Item not found in the current purchase order")
     calculate_print_count(purchase_ord_doc)
     purchase_ord_doc.save(ignore_permissions=True)
     purchase_ord_doc.reload()
