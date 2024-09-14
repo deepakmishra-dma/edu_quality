@@ -123,7 +123,7 @@ def after_delete(self, method=None):
         file_id = search_file_id(self.custom_product_url)
         delete_file_from_drive(file_id)
     except Exception as e:
-        frappe.log_error("Error Deleting",str(e))
+        frappe.log_error("Error Deleting", str(e))
         pass
 
 
@@ -216,7 +216,8 @@ def upload_to_drive(**doc):
             file_extension = ""
 
         item_doc = frappe.get_doc("Item", docname)
-        file_name_with_ext = f"{docname}{file_extension}"
+        chapter_doc = frappe.get_doc("Topic",item_doc.custom_chapter)
+        file_name_with_ext = f"{docname} - {chapter_doc.get('name')}.{file_extension}"
         # search for extension with
 
         drive_existing_folder = get_google_folder_name_with_id(
@@ -339,7 +340,7 @@ def create_product_class_textbook(class_name, textbook):
 def create_product_chapter_folder(product_class_folder, chapter_number, chapter_name):
 
     return check_for_folder_in_google_drive(
-        f"{chapter_number}. {chapter_name}", product_class_folder
+        f"{str(chapter_number).zfill(2)}. {chapter_name}", product_class_folder
     )
 
 
