@@ -133,7 +133,7 @@ async function getLinkedSubject(frm) {
 }
 
 function appendUrl(frm) {
-    $(frm.fields_dict.custom_product_url.$wrapper).find('label').html(`<a target="__blank" href="${frm.doc.custom_product_url}">Product URL</a>`)
+    $(frm.fields_dict.custom_product_url.$wrapper).find('label').html(`<a target="__blank" href="${frm.doc.custom_product_url}">Product URL <i class="fa fa-external-link" aria-hidden="true"></i></a>`)
 
 
 }

@@ -433,6 +433,7 @@ fixtures = [
                     "Website",
                     "Tools",
                     "Integrations",
+                    "Clerk",
                 ],
             ]
         ],
@@ -444,13 +445,21 @@ fixtures = [
     {
         "dt": "Module Profile",
         "filters": [
-            ["name", "in", ["Councellor", "Content Creator", "Printer", "Watchman"]]
+            [
+                "name",
+                "in",
+                ["Councellor", "Content Creator", "Printer", "Watchman", "Clerk"],
+            ]
         ],
     },
     {
         "dt": "Role Profile",
         "filters": [
-            ["name", "in", ["Councellor", "Content Creator", "Printer", "Watchman"]]
+            [
+                "name",
+                "in",
+                ["Councellor", "Content Creator", "Printer", "Watchman", "Clerk"],
+            ]
         ],
     },
 ]

@@ -1,7 +1,7 @@
 {
  "charts": [],
- "content": "[{\"id\":\"imx0vUcMzv\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Printer</span>\",\"col\":12}},{\"id\":\"QrEHHNkRYw\",\"type\":\"quick_list\",\"data\":{\"quick_list_name\":\"Purchase Order\",\"col\":12}},{\"id\":\"Cnq1SyvY6X\",\"type\":\"custom_block\",\"data\":{\"custom_block_name\":\"Printer Scanner\",\"col\":12}}]",
- "creation": "2024-02-22 17:26:56.015348",
+ "content": "[{\"id\":\"imx0vUcMzv\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Printer</span>\",\"col\":12}},{\"id\":\"SJQASQewmE\",\"type\":\"quick_list\",\"data\":{\"quick_list_name\":\"Purchase Orders\",\"col\":4}},{\"id\":\"I17Tbib5rk\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>OR</b></span>\",\"col\":12}},{\"id\":\"Cnq1SyvY6X\",\"type\":\"custom_block\",\"data\":{\"custom_block_name\":\"Printer Scanner\",\"col\":12}}]",
+ "creation": "2024-02-26 14:30:59.279590",
  "custom_blocks": [
   {
    "custom_block_name": "Printer Scanner",
@@ -14,10 +14,11 @@
  "hide_custom": 0,
  "icon": "printer",
  "idx": 0,
+ "indicator_color": "cyan",
  "is_hidden": 0,
  "label": "Printer",
  "links": [],
- "modified": "2024-02-23 10:43:47.416547",
+ "modified": "2024-02-26 15:09:31.274764",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Printer",
@@ -27,7 +28,7 @@
  "quick_lists": [
   {
    "document_type": "Purchase Order",
-   "label": "Purchase Order",
+   "label": "Purchase Orders",
    "quick_list_filter": "[]"
   }
  ],
