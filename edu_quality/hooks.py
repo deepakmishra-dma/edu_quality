@@ -320,23 +320,7 @@ fixtures = [
     {"dt": "Custom Field", "filters": [["module", "=", "Edu Quality"]]},
     {"dt": "Web Page"},
     {"dt": "Accounting Dimension"},
-    {
-        "dt": "Role",
-        "filters": [
-            [
-                "name",
-                "in",
-                [
-                    "Head Administration",
-                    "Councellor",
-                    "Teacher",
-                    "Printer",
-                    "Watchman",
-                    "Clerk",
-                ],
-            ]
-        ],
-    },
+    {"dt": "Role"},
     {"dt": "Custom DocPerm", "filters": [["module", "=", "Edu Quality"]]},
     {"dt": "Program"},
     {"dt": "Lead Sub Status"},
