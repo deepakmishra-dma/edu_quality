@@ -3,6 +3,11 @@ from edu_quality.overrides import make_payment_request
 from edu_quality.public.py.discount import only_deposit
 
 @frappe.whitelist()
+def pr_count(pr):
+    return frappe.db.count("Payment Request",{'reference_name':pr,"docstatus":1})
+
+
+@frappe.whitelist()
 def separate_deposits(fees):
     try:
         fees = frappe.get_doc("Fees",fees)

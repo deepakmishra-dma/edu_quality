@@ -46,7 +46,7 @@ function uploadFileButton(frm) {
         }
         const input = document.createElement('input');
         input.type = 'file';
-        input.accept = '.pdf,.ppt,.pptx';
+        input.accept = '.pdf,.ppt,.pptx,.ppsx';
         input.onchange = function () {
             const file = input.files[0];
             if (file) {
@@ -132,8 +132,15 @@ async function getLinkedSubject(frm) {
 
 }
 
+function appendUrl(frm) {
+    $(frm.fields_dict.custom_product_url.$wrapper).find('label').html(`<a target="__blank" href="${frm.doc.custom_product_url}">Product URL <i class="fa fa-external-link" aria-hidden="true"></i></a>`)
+
+
+}
 frappe.ui.form.on("Item", {
     refresh: function (frm) {
+        console.log(frm, 'hha')
+        appendUrl(frm)
         uploadFileButton(frm)
         getLinkedSubject(frm)
         hidePrintCheckBtn(frm)
@@ -164,8 +171,14 @@ frappe.ui.form.on("Item", {
         }
     },
     onload: function (frm) {
+        appendUrl(frm)
         if (frm.doc__islocal) {
             frm.set_value('custom_sheet_number', 0);
+        }
+        if (frm.doc.__islocal) {
+            frm.set_value('custom_product_url', '')
+            frm.set_value('custom_product_folder', '')
+            frm.set_value('custom_class_subject_folder', '')
         }
         if (!frm.doc.custom_is_cmap) {
             NotCmapFilter(frm);

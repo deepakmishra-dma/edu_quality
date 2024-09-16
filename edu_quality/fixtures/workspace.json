@@ -15155,7 +15155,7 @@
  },
  {
   "charts": [],
-  "content": "[{\"id\":\"imx0vUcMzv\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Printer</span>\",\"col\":12}},{\"id\":\"Cnq1SyvY6X\",\"type\":\"custom_block\",\"data\":{\"custom_block_name\":\"Printer Scanner\",\"col\":12}}]",
+  "content": "[{\"id\":\"imx0vUcMzv\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Printer</span>\",\"col\":12}},{\"id\":\"SJQASQewmE\",\"type\":\"quick_list\",\"data\":{\"quick_list_name\":\"Purchase Orders\",\"col\":4}},{\"id\":\"I17Tbib5rk\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>OR</b></span>\",\"col\":12}},{\"id\":\"Cnq1SyvY6X\",\"type\":\"custom_block\",\"data\":{\"custom_block_name\":\"Printer Scanner\",\"col\":12}}]",
   "custom_blocks": [
    {
     "custom_block_name": "Printer Scanner",
@@ -15174,13 +15174,22 @@
   "is_hidden": 0,
   "label": "Printer",
   "links": [],
-  "modified": "2024-01-30 17:53:14.777253",
+  "modified": "2024-02-26 15:09:31.274764",
   "module": "Edu Quality",
   "name": "Printer",
   "number_cards": [],
   "parent_page": "",
   "public": 1,
-  "quick_lists": [],
+  "quick_lists": [
+   {
+    "document_type": "Purchase Order",
+    "label": "Purchase Orders",
+    "parent": "Printer",
+    "parentfield": "quick_lists",
+    "parenttype": "Workspace",
+    "quick_list_filter": "[]"
+   }
+  ],
   "restrict_to_domain": null,
   "roles": [
    {
@@ -16391,7 +16400,7 @@
  },
  {
   "charts": [],
-  "content": "[{\"id\":\"imx0vUcMzv\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Watchman</span>\",\"col\":12}},{\"id\":\"Cnq1SyvY6X\",\"type\":\"custom_block\",\"data\":{\"custom_block_name\":\"Watchman Scanner\",\"col\":12}}]",
+  "content": "[{\"id\":\"imx0vUcMzv\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Watchman</span>\",\"col\":12}},{\"id\":\"oPxnuFb0Qu\",\"type\":\"quick_list\",\"data\":{\"quick_list_name\":\"Challans\",\"col\":4}},{\"id\":\"1kTECXoeVY\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>OR</b></span>\",\"col\":12}},{\"id\":\"Cnq1SyvY6X\",\"type\":\"custom_block\",\"data\":{\"custom_block_name\":\"Watchman Scanner\",\"col\":12}}]",
   "custom_blocks": [
    {
     "custom_block_name": "Watchman Scanner",
@@ -16410,13 +16419,22 @@
   "is_hidden": 0,
   "label": "Watchman",
   "links": [],
-  "modified": "2024-01-25 02:46:08.907932",
+  "modified": "2024-02-27 10:10:04.952079",
   "module": "",
   "name": "Watchman",
   "number_cards": [],
   "parent_page": "",
   "public": 1,
-  "quick_lists": [],
+  "quick_lists": [
+   {
+    "document_type": "Purchase Receipt",
+    "label": "Challans",
+    "parent": "Watchman",
+    "parentfield": "quick_lists",
+    "parenttype": "Workspace",
+    "quick_list_filter": "[[\"Purchase Receipt\",\"workflow_state\",\"=\",\"Pending\",false]]"
+   }
+  ],
   "restrict_to_domain": null,
   "roles": [
    {
@@ -20989,52 +21007,76 @@
  },
  {
   "charts": [],
-  "content": "[{\"id\":\"BY-tU8IDh-\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">ID Card</span>\",\"col\":12}},{\"id\":\"9x2dOih-ng\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Take Photo For ID Card\",\"col\":3}}]",
-  "custom_blocks": [],
+  "content": "[{\"id\":\"imx0vUcMzv\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Clerk</span>\",\"col\":12}},{\"id\":\"WIK9_fe_bK\",\"type\":\"quick_list\",\"data\":{\"quick_list_name\":\"Challans\",\"col\":4}},{\"id\":\"1kTECXoeVY\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>OR</b></span>\",\"col\":12}},{\"id\":\"Cnq1SyvY6X\",\"type\":\"custom_block\",\"data\":{\"custom_block_name\":\"Watchman Scanner\",\"col\":12}}]",
+  "custom_blocks": [
+   {
+    "custom_block_name": "Watchman Scanner",
+    "label": "Watchman Scanner",
+    "parent": "Clerk",
+    "parentfield": "custom_blocks",
+    "parenttype": "Workspace"
+   }
+  ],
   "docstatus": 0,
   "doctype": "Workspace",
   "for_user": "",
   "hide_custom": 0,
-  "icon": "solid-info",
+  "icon": "clipboard",
   "indicator_color": "green",
   "is_hidden": 0,
-  "label": "ID Card",
+  "label": "Clerk",
   "links": [],
-  "modified": "2024-02-20 16:52:03.419102",
-  "module": null,
-  "name": "ID Card",
+  "modified": "2024-02-27 10:09:56.236078",
+  "module": "",
+  "name": "Clerk",
   "number_cards": [],
   "parent_page": "",
   "public": 1,
-  "quick_lists": [],
+  "quick_lists": [
+   {
+    "document_type": "Purchase Receipt",
+    "label": "Challans",
+    "parent": "Clerk",
+    "parentfield": "quick_lists",
+    "parenttype": "Workspace",
+    "quick_list_filter": "[]"
+   }
+  ],
   "restrict_to_domain": null,
   "roles": [
    {
-    "parent": "ID Card",
+    "parent": "Clerk",
+    "parentfield": "roles",
+    "parenttype": "Workspace",
+    "role": "Administrator"
+   },
+   {
+    "parent": "Clerk",
+    "parentfield": "roles",
+    "parenttype": "Workspace",
+    "role": "System Admin"
+   },
+   {
+    "parent": "Clerk",
+    "parentfield": "roles",
+    "parenttype": "Workspace",
+    "role": "System Manager"
+   },
+   {
+    "parent": "Clerk",
+    "parentfield": "roles",
+    "parenttype": "Workspace",
+    "role": "Walnut Admin"
+   },
+   {
+    "parent": "Clerk",
     "parentfield": "roles",
     "parenttype": "Workspace",
     "role": "Clerk"
    }
   ],
-  "sequence_id": 40.0,
-  "shortcuts": [
-   {
-    "color": "Grey",
-    "doc_view": "List",
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Take Photo For ID Card",
-    "link_to": "id-card-photo",
-    "parent": "ID Card",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "Page",
-    "url": null
-   }
-  ],
-  "title": "ID Card"
+  "sequence_id": 8.2,
+  "shortcuts": [],
+  "title": "Clerk"
  }
 ]

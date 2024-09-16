@@ -65,6 +65,7 @@ function createReceiptButton(frm) {
     if ((frappe.user_roles.includes("Printer") || frappe.user_roles.includes("Administrator") || frappe.user_roles.includes("Walnut Admin") ||
         frappe.user_roles.includes("System_Manager")))
         frm.add_custom_button(__('Create Challans'), async function () {
+
             const checkedItems = getCheckedItems(frm)
             var d = new frappe.ui.Dialog({
                 title: 'New Purchase Challans',
@@ -78,6 +79,7 @@ function createReceiptButton(frm) {
                     }],
                 primary_action_label: 'Create',
                 async primary_action(values) {
+                    findAndToggleFooterButton(d, true, "Pending")
                     if (checkedItems)
                         frappe.call({
                             method: 'edu_quality.overrides_hooks.purchase_order.create_purchase_receipt_for_all_schools',
@@ -95,6 +97,10 @@ function createReceiptButton(frm) {
                                         ),
                                     });
                                 }
+                                findAndToggleFooterButton(d, false, "Create")
+                            },
+                            always: () => {
+                                findAndToggleFooterButton(d, false, "Create")
                             }
                         })
 
@@ -102,6 +108,7 @@ function createReceiptButton(frm) {
 
                 },
             })
+            console.log(d)
             setTimeout(() => {
 
 
@@ -113,7 +120,7 @@ function createReceiptButton(frm) {
                     }, callback: function (r) {
                         if (r.message) {
                             const challan_html = frm.get_field('custom_challan_detail');
-                            console.log(r.message, 'sss')
+
                             var columns = generateColumns(r.message[1])
                             var data = r.message[2]
                             const datatable = new DataTable(d.fields_dict.challan_table.wrapper, { columns, data });
@@ -132,7 +139,7 @@ function createReceiptButton(frm) {
 function removeBtnsForPrinters(frm) {
     if ((frappe.user_roles.includes("Printer") && !frappe.user_roles.includes("Administrator") && !frappe.user_roles.includes("Walnut Admin") &&
         !frappe.user_roles.includes("System Manager"))) {
-        console.log('yo')
+
         const removeButtons = () => {
             frm.remove_custom_button(__("Close"), __("Status"))
             frm.remove_custom_button(__("Purchase Receipt"), __("Create"))
@@ -162,23 +169,80 @@ function removeBtnsForPrinters(frm) {
     }
 
 }
+function findAndToggleFooterButton(d, toggle, label) {
+    const btn = $(d.footer).find('button')
+    btn.html(label)
+    btn.prop('disabled', toggle)
+}
+
+function addScanBtnForPrinter(frm) {
+    if ((frappe.user_roles.includes("Printer") && !frappe.user_roles.includes("Administrator") && !frappe.user_roles.includes("Walnut Admin") &&
+        !frappe.user_roles.includes("System Manager"))) {
+        frm.add_custom_button(__("Scan Item Code"), async function () {
+            const images = await nativeInterface.execute('openWebViewScanner')
+            frappe.call({
+                method: "edu_quality.overrides_hooks.purchase_order.mark_item_as_printed",
+                args: {
+                    purchase_ord: frm.doc.name,
+                    item_code: images?.data,
+                    checked: "true"
+                }, callback: function (r) {
+                    if (r.message) {
+
+                    }
+
+                }
+            })
+        })
+
+    }
+}
 frappe.ui.form.on('Purchase Order', {
     onload(frm) {
+        addScanBtnForPrinter(frm)
         createReceiptButton(frm)
         if (!frm.doc.__islocal) {
             if (!(frappe.user_roles.includes("Printer") && !frappe.user_roles.includes("Administrator") && !frappe.user_roles.includes("Walnut Admin") && !frappe.user_roles.includes("System Manager"))) {
                 frm.add_custom_button(__('Send Test Mail'), () => {
-                    frappe.msgprint(
-                        {
-                            title: __('Notification'),
-                            message: __('Are you sure you want to proceed, with sending the email to content creator group?'),
-                            primary_action: {
-                                'label': 'Proceed',
-                                // either one of the actions can be passed
-                                'server_action': 'edu_quality.overrides_hooks.purchase_order.send_test_order_email',
-                                'args': { self: frm.doc }
-                            }
-                        })
+
+                    const d = new frappe.ui.Dialog({
+                        title: "Select a Recipient",
+                        fields: [
+                            {
+                                "fieldname": "user",
+                                "label": __("User"),
+                                "fieldtype": "MultiSelectList",
+                                "reqd": 1,
+                                get_data: function (txt) {
+                                    return frappe.db.get_link_options('User', txt, {
+                                    });
+                                }
+
+                            },
+
+                        ],
+                        primary_action: async (values) => {
+                            findAndToggleFooterButton(d, true, "Pending")
+                            frappe.call({
+                                method: "edu_quality.overrides_hooks.purchase_order.send_test_order_email",
+                                type: "POST",
+                                args: {
+                                    self: frm.doc,
+                                    user: values.user.join(',')
+                                },
+                                callback: function (r) {
+                                    findAndToggleFooterButton(d, true, "Proceed")
+                                    if (r.message)
+                                        d.hide()
+                                },
+                                always: () => {
+                                    findAndToggleFooterButton(d, true, "Proceed")
+                                }
+                            })
+
+                        }
+                    })
+                    d.show()
                 })
             }
         }
@@ -192,15 +256,12 @@ frappe.ui.form.on('Purchase Order', {
                 if (r.message) {
                     const challan_html = frm.get_field('custom_challan_detail');
                     var columns = generateColumns(r.message[1])
-
                     var data = r.message[2]
-
                     setTimeout(() => {
                         const el = document.createElement('div')
                         el.addEventListener('click', (e) => {
-                            console.log('click', e.target)
                             const dataset = e.target.dataset
-                            console.log(dataset)
+
                             if (dataset.isPrint) {
                                 frappe.call({
                                     method: "edu_quality.overrides_hooks.purchase_order.get_linked_receipts",
@@ -209,13 +270,13 @@ frappe.ui.form.on('Purchase Order', {
                                         item_code: dataset.itemCode
                                     }, callback: function (r) {
                                         if (r.message) {
-                                            console.log(r.message.length)
+
                                             if (r.message.length)
                                                 frappe.msgprint({
                                                     title: __('Linked Receipts'),
                                                     indicator: 'green',
                                                     message: __(r.message?.map((el => {
-                                                        return `<div><a href="/app/purchase-receipt/${el.parent}" data-name="${el.parent}" data-value="${el.parent}" onclick="event.stopPropagation();event.preventDefault();frappe.set_route('/app/purchase-receipt/${el.parent}')">${el.parent}</a></div>`
+                                                        return `<div><a href="/api/method/frappe.utils.print_format.download_pdf?doctype=Purchase Receipt&name=${el.parent}&format=Printer Receipt&no_letterhead=0" data-name="${el.parent}" data-value="${el.parent}">${el.parent}</a></div>`
                                                     })).join(' '))
                                                 })
 
@@ -255,9 +316,16 @@ frappe.ui.form.on('Purchase Order', {
         })
     },
     refresh(frm) {
+        addScanBtnForPrinter(frm)
         removeBtnsForPrinters(frm)
         // your code here
 
+    },
+    schedule_date(frm) {
+        frm.doc.items.forEach(item => {
+            item.schedule_date = frm.doc.schedule_date
+        })
+        frm.refresh_field('items');
     }
 })
 

@@ -36,6 +36,7 @@ class CMAP(Document):
         generate_text_from_unique_notes(
             self, "Material Required", added_material_required
         )
+        self.item_code_field = ', '.join(item.get('item') for item in self.products)
 
     def after_insert(self, method=None):
         insert_cmap_assignees(self)
@@ -167,36 +168,64 @@ def get_cmap_assignees_report(**filters):
     )
     return query.run(as_dict=True)
 
+
 @frappe.whitelist()
 def get_cmap_period_no(self):
     self = json.loads(self) if isinstance(self, str) else self
-    if( not self.get('subject') or not self.get('academic_year') ): return
-    
-    max_period_list = frappe.db.get_list("CMAP",filters={
-        "subject":self.get('subject') ,
-        "academic_year":self.get('academic_year'),
-       
-        "class":self.get('class'),
-      
-    },fields=["MAX(period)"])
+    if not self.get("subject") or not self.get("academic_year"):
+        return
 
-    max_period = max_period_list[0].get("MAX(period)",0)
-    if(not self.get('period') and not max_period):
+    max_period_list = frappe.db.get_list(
+        "CMAP",
+        filters={
+            "subject": self.get("subject"),
+            "academic_year": self.get("academic_year"),
+            "class": self.get("class"),
+        },
+        fields=["MAX(period)"],
+    )
+
+    max_period = max_period_list[0].get("MAX(period)", 0)
+    if not self.get("period") and not max_period:
         return 1
-    elif(str(self.get('period')) == max_period or  not self.get('period')):
-        return int(max_period)+1
+    elif str(self.get("period")) == max_period or not self.get("period"):
+        return int(max_period) + 1
+
 
 @frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs
 def get_unique_material_query(doctype, txt, searchfield, start, page_len, filters):
-    materials = frappe.db.get_list(doctype=doctype,filters=filters,   start=start,
-    page_length=page_len,
-    as_list=True,ignore_permissions=True,fields=['name','description'])
+    materials = frappe.db.get_list(
+        doctype=doctype,
+        filters=filters,
+        start=start,
+        page_length=page_len,
+        as_list=True,
+        ignore_permissions=True,
+        fields=["name", "description"],
+    )
     merged_array = []
     merged_dict = {}
     for key, value in materials:
-        if( value not in merged_dict ):
+        if value not in merged_dict:
             merged_dict[value] = key
-            merged_array.append((key,value))
+            merged_array.append((key, value))
 
     return merged_array
+
+
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def get_current_and_next_year(doctype, txt, searchfield, start, page_len, filters):
+    acad_year_table = frappe.qb.DocType("Academic Year")
+
+    query = (
+        frappe.qb.from_(acad_year_table)
+        .where(
+            (acad_year_table.custom_current_academic_year == 1)
+            | (acad_year_table.custom_next_academic_year == 1)
+        )
+        .select(acad_year_table.name)
+    )
+
+    return query.run()

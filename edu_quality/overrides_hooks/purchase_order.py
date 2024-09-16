@@ -284,17 +284,25 @@ def create_purchase_receipt_for_all_schools(self, selected_items=None):
     return "Receipts Created Successfully"
 
 
+class SelfReturningDict(dict):
+    def as_dict(self):
+        return self
+
+
 @frappe.whitelist()
 # edu_quality.overrides_hooks.purchase_order.send_test_order_email
-def send_test_order_email():
+def send_test_order_email(self, user):
     try:
-        self = frappe.form_dict.args
-        self = json.loads(self).get("self") if isinstance(self, str) else self
+
+        self = json.loads(self) if isinstance(self, str) else self
 
         from nextai.funnel.custom_trigger import trigger_event
 
         if self.get("custom_is_cmap_print"):
             doc = frappe.get_doc("Purchase Order", self.get("name"))
+            doc.custom_user_email = user
+            doc.save(ignore_permissions=True)
+            doc.reload()
             trigger_event(doc=doc, event_name="purchase_order")
             frappe.clear_messages()
         return "Success"
@@ -308,10 +316,10 @@ def send_test_order_email():
 @frappe.whitelist()
 def mark_item_as_printed(purchase_ord, item_code, checked):
     purchase_ord_doc = frappe.get_doc("Purchase Order", purchase_ord)
-    frappe.errprint(checked)
+    count = 0
     for i in purchase_ord_doc.items:
         if i.get("item_code") == item_code:
-
+            count += 1
             i.printed = 1 if checked == "true" else 0
             # frappe.db.set_value(
             #     "Purchase Order Item",
@@ -320,6 +328,8 @@ def mark_item_as_printed(purchase_ord, item_code, checked):
             #     1 if checked == "true" else 0,
             # )
             # i["printed"] = checked
+    if count == 0:
+        return frappe.msgprint("Item not found in the current purchase order")
     calculate_print_count(purchase_ord_doc)
     purchase_ord_doc.save(ignore_permissions=True)
     purchase_ord_doc.reload()

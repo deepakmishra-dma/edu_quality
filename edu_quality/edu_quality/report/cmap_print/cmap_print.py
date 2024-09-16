@@ -209,9 +209,12 @@ def get_data_from_queries(filters=None):
             & (cmap.subject.isin(subject_filter if len(subject_filter) else [None]))
             & (cmap.unit.isin(unit_filter if len(unit_filter) else [None]))
             & (
-                cmap.plan_date[
-                    filters.get("start_plan_date") : filters.get("end_plan_date")
-                ]
+                (
+                    cmap.plan_date[
+                        filters.get("start_plan_date") : filters.get("end_plan_date")
+                    ]
+                )
+                | (cmap.plan_date.isnull())
             )
             & (item.custom_is_cmap == 1)
             & (item.custom_print_ready == 1)

@@ -143,6 +143,14 @@ function texbookQuery(frm) {
 frappe.ui.form.on("CMAP", {
     refresh(frm) {
 
+        frm.set_query("academic_year", function () {
+            return {
+                "query": "edu_quality.edu_quality.doctype.cmap.cmap.get_current_and_next_year",
+
+
+            }
+        })
+
         getNotes(frm)
         cur_frm.fields_dict['products'].grid.get_field('item_group').get_query = function (doc, cdt, dn) {
             let d = locals[cdt][dn];
