@@ -1,12 +1,14 @@
 import {IResourceComponentsProps, useList} from "@refinedev/core";
-import React, {Fragment, useState} from "react";
+import React, {Fragment, useMemo, useState} from "react";
 import {Notice} from "../../providers/data/notices.ts";
-import {Box, Divider, Select, Stack, Text} from "@mantine/core";
+import {Box, Divider, Input, Stack, Text} from "@mantine/core";
 import {useNavigate} from "react-router-dom";
+// @ts-expect-error no types
+import {IconArchive, IconSearch, IconStar} from "@tabler/icons";
 
 export const NoticeList: React.FC<IResourceComponentsProps> = () => {
   const navigate = useNavigate();
-  const [category, setCategory] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const {data: list} = useList<Notice>({
     pagination: {
       current: 1,
@@ -14,27 +16,28 @@ export const NoticeList: React.FC<IResourceComponentsProps> = () => {
       mode: 'server',
     },
   });
+
+  const filteredList = useMemo(() => {
+    if (!list)
+      return [];
+    if (!searchQuery)
+      return list?.data;
+    return list?.data.filter(item => item?.subject?.toLowerCase?.()?.includes(searchQuery.toLowerCase())) || []
+  }, [list, searchQuery]);
+
   return <Box>
     <Box pb={10}>
-      <Select
-        placeholder="Select Category"
-        value={category}
-        onChange={(value) => setCategory(value || "all")}
-        p={10}
-        data={[
-          {value: 'all', label: 'All Notices For Me'},
-          {value: 'school', label: 'Notice For My School'},
-          // {value: 'class', label: 'Notice For My Class'},
-          // {value: 'division', label: 'Notice For My Division'},
-          {value: 'student', label: 'Notices For Individuals'},
-        ]}
+      <Input
+        mx={5}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        value={searchQuery} placeholder="Search..." icon={<IconSearch/>}
       />
     </Box>
     <Box p={2}>
       <Divider/>
       {[...Array(1)].map((_, index) => (
         <Fragment key={index}>
-          {list?.data.map(item => (
+          {filteredList?.map(item => item?.subject?.toLowerCase?.()?.includes(searchQuery.toLowerCase()) && (
             <Box key={item.name}>
               <Box p={5} sx={{
                 cursor: 'pointer',
@@ -42,6 +45,35 @@ export const NoticeList: React.FC<IResourceComponentsProps> = () => {
                   backgroundColor: 'rgba(0,0,0,0.01)'
                 }
               }} onClick={() => navigate(`/notice/${item.name}`)}>
+                <Stack h={35} sx={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  paddingTop: 5,
+                  paddingBottom: 5,
+                  gap: 5
+                }}>
+                  <Stack align="center" justify="center" py={4} px={10} sx={{
+                    display: 'inline-block',
+                    backgroundColor: 'rgba(0,0,0,0.1)',
+                    borderRadius: 5,
+                    whiteSpace: 'nowrap',
+                    fontSize: 12
+                  }}>{item?.student_first_name}</Stack>
+                  <Stack align="center" justify="center" py={4} px={10} sx={{
+                    display: 'inline-block',
+                    marginRight: "auto",
+                    borderRadius: 5,
+                    whiteSpace: 'nowrap',
+                    fontSize: 12
+                  }}>{new Date(item.creation).toLocaleDateString() || '-'}</Stack>
+                  <Stack sx={{
+                    flexDirection: 'row',
+                    gap: 5
+                  }}>
+                    <IconStar fill="white" stroke="black"/>
+                    <IconArchive fill="white" stroke="black"/>
+                  </Stack>
+                </Stack>
                 <Text h={25} weight="bold" size="lg" sx={{
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
@@ -60,24 +92,6 @@ export const NoticeList: React.FC<IResourceComponentsProps> = () => {
                 }}>
                   <div dangerouslySetInnerHTML={{__html: item.notice || ""}}></div>
                 </Box>
-                <Stack h={35} sx={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  paddingTop: 5,
-                  paddingBottom: 5
-                }}>
-                  <Box>
-                    {item?.students?.map((student, index) => (
-                      <Text key={index} py={2} px={5} size="xs" sx={{
-                        display: 'inline-block',
-                        marginRight: 5,
-                        backgroundColor: 'rgba(0,0,0,0.1)',
-                        borderRadius: 5
-                      }}>{student}</Text>
-                    ))}
-                  </Box>
-                  <Text size="xs">{new Date(item.creation).toLocaleDateString() || '-'}</Text>
-                </Stack>
               </Box>
               <Divider/>
             </Box>
