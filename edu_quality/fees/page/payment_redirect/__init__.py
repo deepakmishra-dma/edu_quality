@@ -159,7 +159,10 @@ def get_discounts(fees):
 
 @frappe.whitelist(allow_guest=True)
 def payment_url(payment_request,payment_method="UPI"):
-    return payment_request.get_payment_url(payment_method=payment_method)
+    try:
+        return payment_request.get_payment_url(payment_method=payment_method)
+    except Exception as e:
+        frappe.logger('payment_er').exception(e)
 
 @frappe.whitelist(allow_guest=True)
 def payment_charge(**kwargs):
