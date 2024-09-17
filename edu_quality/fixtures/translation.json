@@ -7,19 +7,6 @@
   "docstatus": 0,
   "doctype": "Translation",
   "language": "en",
-  "modified": "2024-02-23 01:58:55.429447",
-  "name": "4f4f7671f0",
-  "source_text": "Item",
-  "translated_text": "Product"
- },
- {
-  "context": null,
-  "contributed": 0,
-  "contribution_docname": null,
-  "contribution_status": "",
-  "docstatus": 0,
-  "doctype": "Translation",
-  "language": "en",
   "modified": "2023-10-13 17:36:22.405862",
   "name": "6175acc10a",
   "source_text": "Program",
@@ -102,5 +89,31 @@
   "name": "abe3081ea0",
   "source_text": "Fee Category",
   "translated_text": "Fee Head"
+ },
+ {
+  "context": null,
+  "contributed": 0,
+  "contribution_docname": null,
+  "contribution_status": "",
+  "docstatus": 0,
+  "doctype": "Translation",
+  "language": "en",
+  "modified": "2024-02-28 12:23:51.813711",
+  "name": "5d25dbff3c",
+  "source_text": "Payment Entry",
+  "translated_text": "Fees Paid"
+ },
+ {
+  "context": null,
+  "contributed": 0,
+  "contribution_docname": null,
+  "contribution_status": "",
+  "docstatus": 0,
+  "doctype": "Translation",
+  "language": "en",
+  "modified": "2024-02-28 12:24:28.444111",
+  "name": "6e4b670b51",
+  "source_text": "Payment Request",
+  "translated_text": "Payment Link"
  }
 ]
