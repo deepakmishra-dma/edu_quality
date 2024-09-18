@@ -115,5 +115,18 @@
   "name": "6e4b670b51",
   "source_text": "Payment Request",
   "translated_text": "Payment Link"
+ },
+ {
+  "context": null,
+  "contributed": 0,
+  "contribution_docname": null,
+  "contribution_status": "",
+  "docstatus": 0,
+  "doctype": "Translation",
+  "language": "en",
+  "modified": "2024-02-28 14:19:55.329901",
+  "name": "5e8d4bf624",
+  "source_text": "Item",
+  "translated_text": "Product"
  }
 ]
