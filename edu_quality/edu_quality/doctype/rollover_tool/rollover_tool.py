@@ -100,7 +100,7 @@ class RolloverTool(Document):
 				prog_enrollment.academic_year = next_academic_year()
 				prog_enrollment.student_group = stud.next_division
 				prog_enrollment.save()
-				prog_enrollment.submit()
+				# prog_enrollment.submit()
 		frappe.msgprint(_("{0} Students have been enrolled").format(total))
 	
 	def fees_setup_validation(self,programs):
