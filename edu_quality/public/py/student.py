@@ -54,9 +54,17 @@ def before_save(doc, method=None):
                 suspend_google_user(doc.student_email_id)
             else:
                 unsuspend_google_user(doc.student_email_id)
+        comment_on_possible_dropout(doc,prev_doc)
     except Exception as e:
         frappe.logger("google_user").exception(e)
 
+def comment_on_possible_dropout(doc,old_doc):
+    if not old_doc:
+        return 
+    if (not old_doc.possible_dropout) and doc.possible_dropout:
+        doc.add_comment("Comment","Intimation of Possible Dropout!")
+    elif (old_doc.possible_dropout) and (not doc.possible_dropout):
+        doc.add_comment("Comment","Intimation of Possible Dropout Cleared!")
 
 def get_reference(program):
     if not frappe.db.get_value("Academic Year", [["Academic Year", "year_start_date", "<=", today()],
