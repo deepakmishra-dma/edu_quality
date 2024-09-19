@@ -35,8 +35,6 @@ def get_google_folder_name_with_id(folder_id):
         )
         return folder_exist
     except Exception as e:
-        if e.resp.status == 404:
-            return False
         frappe.msgprint("Something Went Wrong")
         return False
 
@@ -76,10 +74,11 @@ def check_for_folder_in_google_drive(folder_name=None, root_folder=None):
     google_drive = get_google_drive_object()
 
     try:
+        encoded_folder_name = generate_name_for_drive(folder_name)
         google_drive_folders = (
             google_drive.files()
             .list(
-                q=f"mimeType='application/vnd.google-apps.folder' and name='{folder_name}' and '{root_folder_id}' in parents"
+                q=f"mimeType='application/vnd.google-apps.folder' and name='{encoded_folder_name}' and '{root_folder_id}' in parents"
             )
             .execute()
         )
@@ -91,6 +90,7 @@ def check_for_folder_in_google_drive(folder_name=None, root_folder=None):
             ).format(e)
         )
     backup_folder_exists = False
+
     for f in google_drive_folders.get("files"):
         if f.get("name") == folder_name:
             backup_folder_exists = True
@@ -190,7 +190,8 @@ def find_file_by_name_and_folder(file_name, root_folder_id):
         if not root_folder_id or not file_name:
             return False
         google_drive = get_google_drive_object()
-        query = f"name='{file_name}' and '{root_folder_id}' in parents"
+        encoded_file_name = generate_name_for_drive(file_name)
+        query = f"name='{encoded_file_name}' and '{root_folder_id}' in parents"
 
         results = google_drive.files().list(q=query, fields="files(id, name)").execute()
         files = results.get("files", [])
@@ -296,3 +297,9 @@ def progress_callback(request_id, response, exception):
             ),
             "%",
         )
+
+
+def generate_name_for_drive(file_name):
+    if not file_name:
+        return ""
+    return file_name.replace("\\", "\\\\").replace("'", r"\'")
