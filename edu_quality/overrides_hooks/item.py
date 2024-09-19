@@ -217,7 +217,7 @@ def upload_to_drive(**doc):
 
         item_doc = frappe.get_doc("Item", docname)
         chapter_doc = frappe.get_doc("Topic",item_doc.custom_chapter)
-        file_name_with_ext = f"{docname} - {chapter_doc.get('name')}.{file_extension}"
+        file_name_with_ext = f"{docname} - {chapter_doc.get('name')}{file_extension}"
         # search for extension with
 
         drive_existing_folder = get_google_folder_name_with_id(
