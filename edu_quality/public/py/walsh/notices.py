@@ -49,13 +49,11 @@ def get_all_notices():
     for notice in notices:
         if notice.is_generic_notice:
             for student in students:
-                print("student", student.name)
                 for enrollment in enrollments:
                     if student.name == enrollment.student and (
                         notice.division == enrollment.student_group or
                         (not notice.division and notice.get('class') == enrollment.program)
                     ):
-                        print(enrollment)
                         final_notices.append({
                             **notice,
                             'notice': render_jinja(notice.notice, student),
