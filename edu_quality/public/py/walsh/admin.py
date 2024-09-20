@@ -102,6 +102,45 @@ def enqueued_specific_notice_emails(__args):
             failure_texts.append(e)
 
 
+def enqueued_generic_notice_emails(__args):
+    pass
+
+
+def enqueued_generic_notice_docs(__args):
+    subject = __args.get("subject")
+    content = __args.get("notice")
+    school = __args.get("school")
+    classes = __args.get("classes")
+    divisions = __args.get("divisions")
+    student_statuses = __args.get("student_statuses")
+
+    for student_status in student_statuses:
+        if len(classes) > 1 or len(divisions) == 0:
+            for class_ in classes:
+                frappe.get_doc({
+                    "doctype": "School Notice",
+                    "class": class_,
+                    "is_generic_notice": 1,
+                    "school": school,
+                    "subject": subject,
+                    "student_status": student_status,
+                    "notice": content
+                }).insert()
+        else:
+            class_ = classes[0]
+            for division in divisions:
+                frappe.get_doc({
+                    "doctype": "School Notice",
+                    "is_generic_notice": 1,
+                    "class": class_,
+                    "school": school,
+                    "division": division,
+                    "subject": subject,
+                    "student_status": student_status,
+                    "notice": content
+                }).insert()
+
+
 @frappe.whitelist()
 def create_notice(**kwargs):
     has_csv = kwargs.get("has_csv")
@@ -110,6 +149,10 @@ def create_notice(**kwargs):
     content = kwargs.get("notice")
     send_emails = kwargs.get("send_emails")
     bcc_email_groups = kwargs.get("bcc_email_groups")
+    school = kwargs.get("school")
+    classes = kwargs.get("classes")
+    divisions = kwargs.get("divisions")
+    student_statuses = kwargs.get("student_statuses")
 
     # verify supplied data
     if has_csv:
@@ -119,6 +162,27 @@ def create_notice(**kwargs):
 
         if not csv_text:
             raise frappe.exceptions.ValidationError("CSV File not found")
+    else:
+        if not school:
+            raise frappe.exceptions.MandatoryError("School is required")
+
+        if not classes:
+            raise frappe.exceptions.MandatoryError("Classes are required")
+        if not isinstance(classes, list):
+            raise frappe.exceptions.ValidationError("Classes must be a list")
+        if not len(classes):
+            raise frappe.exceptions.MandatoryError("At least one Class is required")
+
+        if len(classes) == 1 and divisions:
+            if not isinstance(divisions, list):
+                raise frappe.exceptions.ValidationError("Divisions must be a list")
+
+        if not student_statuses:
+            raise frappe.exceptions.MandatoryError("Student Statuses are required")
+        if not isinstance(student_statuses, list):
+            raise frappe.exceptions.ValidationError("Student Statuses must be a list")
+        if not len(student_statuses):
+            raise frappe.exceptions.MandatoryError("At least one Student Status is required")
 
     if not subject:
         raise frappe.exceptions.MandatoryError("Subject is required")
@@ -134,17 +198,14 @@ def create_notice(**kwargs):
             if not frappe.db.exists("Email Group", bcc_email_group):
                 raise frappe.exceptions.ValidationError(f"BCC Email Group {bcc_email_group} not found")
 
-    frappe.enqueue(
-        enqueued_specific_notice_docs,
-        __args=kwargs
-    )
-
-    if send_emails:
-        frappe.enqueue(
-            enqueued_specific_notice_emails,
-            queue="long",
-            __args=kwargs
-        )
+    if has_csv:
+        frappe.enqueue(enqueued_specific_notice_docs, __args=kwargs)
+        if send_emails:
+            frappe.enqueue(enqueued_specific_notice_emails, queue="long", __args=kwargs)
+    else:
+        frappe.enqueue(enqueued_generic_notice_docs, __args=kwargs)
+        if send_emails:
+            frappe.enqueue(enqueued_generic_notice_emails, queue="long", __args=kwargs)
 
 
 @frappe.whitelist()
