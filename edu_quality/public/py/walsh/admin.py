@@ -327,7 +327,7 @@ def send_test_mail(**kwargs):
     if not test_emails:
         raise frappe.exceptions.MandatoryError("Test Emails are required")
 
-    validate_args(**kwargs, is_test=False)
+    validate_args(**kwargs, is_test=True)
 
     notice_subject = subject
     notice_content = content
