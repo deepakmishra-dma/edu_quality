@@ -1,0 +1,234 @@
+{% set letter_head = frappe.get_doc("Letter Head","Walnut School") %}
+{% set student_data = frappe.get_doc("Student",doc.student) %}
+{% set id_card_data = frappe.get_doc("Student ID Card",doc.custom_id_card) %}
+{% set guardians = [] %}
+{% for guardian in student_data.guardians %}
+{% set temp_guard = frappe.get_doc("Guardian",guardian.guardian,fields=["mobile_number,mobile_number"]).mobile_number %}
+{% if guardians.append(temp_guard) %} {% endif %} {% endfor %}
+{% set division_data = frappe.get_doc("Student Group",doc.student_group) %}
+{% set school = frappe.get_doc("School", doc.school) %}
+
+<style>
+  * {
+    margin: 0;
+  }
+
+  .qr-image-size {
+    width: 3.5em;
+    height: 3.5em;
+    margin-left: 5em;
+    margin-right: 2em;
+  }
+
+  .student-image-size {
+    width: 7em;
+    height: 7em;
+    margin: 0.5em 0 0.5em 1em;
+  }
+
+  .front {
+    width: 220px;
+    height: 350px;
+    margin: 5px;
+    border: 1px solid #ccc;
+    padding-bottom: 1em;
+  }
+
+  .back {
+    width: 220px;
+    height: 350px;
+    margin: 5px;
+    border: 1px solid #ccc;
+    font-size: 10px;
+    font-weight: bold;
+    transform: rotate(180deg);
+  }
+
+  .container {
+    padding: 5px;
+  }
+
+  .detail-container {
+    display: flex;
+    gap: 4px;
+    width: 100%;
+  }
+
+  .academic-details {
+    width: 40%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .academic-details h3 {
+    width: 100%;
+    font-size: 8px;
+    font-weight: bold;
+    line-height: 15px;
+    display: flex;
+  }
+
+  .academic-year {
+    display: flex;
+    gap: 4px;
+    text-align: center;
+  }
+
+  .student-name {
+    width: 60%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-left: 10px;
+  }
+
+  .student-name p {
+    width: max-content;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 30px;
+  }
+
+  .custom-border {
+    border: 1px solid black;
+
+  }
+
+  .reference-container {
+    display: flex;
+  }
+
+  .ref-col-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid pink;
+  }
+
+  .ref-col-container h2 {
+    font-size: 25px;
+    font-weight: 700;
+    color: red;
+    line-height: 50px;
+  }
+
+  .pickup-bus {
+    font-size: 25px;
+    font-weight: 700;
+    color: red;
+    margin: 1em auto;
+  }
+
+  .student-info {
+    width: 200px;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    flex-direction: column;
+    height: max-content;
+  }
+
+  .student-info p {
+    width: 180px;
+    display: flex;
+    gap: 4px;
+    position: relative;
+  }
+
+  .address-info {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .address-info p {
+    margin-left: 4px;
+  }
+
+  .school-data {
+    text-align: center;
+
+  }
+  .id-text{
+    margin-left: 115px;
+    margin-top: -80px;
+    transform: rotate(270deg);
+  }
+</style>
+
+<div class="container">
+  <div class="front">
+    <span class="letter-head-class">
+      {{letter_head.content}}
+    </span>
+    <div class="container">
+      <div class="row">
+        <img src="{{id_card_data.photo_taken}}" class="student-image-size" alt="Student Photo">
+        <h1 class="pickup-bus">{{student_data.pickup_bus}}</h1>
+      </div>
+
+
+      <div class="reference-container">
+        <div class="ref-col-container">
+          <h2>{{student_data.drop_bus}}</h2>
+        </div>
+        <div class="ref-col-container">
+          <h2>
+            {{student_data.custom_reference_number or student_data.reference_number}}
+          </h2>
+        </div>
+      </div>
+
+
+    </div>
+    <div class="detail-container">
+      <div class="student-name">
+        <p>{{student_data.first_name}}</p>
+        <p>{{student_data.last_name}}</p>
+      </div>
+      <div class="academic-details">
+        <div class="academic-year">
+          <h3>A. Y:</h3>
+          <h3>{{doc.academic_year}}</h3>
+        </div>
+        <img src="{{id_card_data.qr_code}}" class="qr-image-size" alt="QR Code">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="back">
+  {{letter_head.content}}
+  <div class="address">
+    <h3>ADDRESS: </h3>
+    <div class="address-info">
+      <p>{{student_data.address_line_1 or ''}}</p>
+      <p>{{student_data.address_line_2 or ''}}</p>
+      <p>{{student_data.city or ''}}</p>
+      <p>{{student_data.pincode or ''}}</p>
+    </div>
+  </div>
+
+  <div class="student-info">
+    <div style="margin: 4px;">
+      <p>ROLL NO: {{doc.roll_no}}</p>
+      <p>ACADEMIC YEAR: {{doc.academic_year}}</p>
+      <p>PHONE: {{student_data.student_mobile_number}}</p>
+    </div>
+    <div style="margin: 0 4px;">
+      <p>BLOOD GROUP: {{student_data.blood_group}}</p>
+      <p>DATE OF BIRTH: {{student_data.date_of_birth}}</p>
+    </div>
+    <div class="id-text">
+      <p>TL 877348 SDFJKHFN</p>
+    </div>
+  </div>
+  <hr style="margin-top: 4px;" />
+  <div class="school-data">
+    <p>{{school.phone_number}}</p>
+    <p>{{school.location}}</p>
+  </div>
+</div>
+</div>
+</div>
