@@ -252,13 +252,14 @@ def validate_args(**kwargs):
     is_test = kwargs.get("is_test")
 
     # verify supplied data
-    if has_csv and not is_test:
-        csv_text = frappe.get_doc("File", {
-            "file_url": csv_file,
-        }, limit=1).get_content()
+    if has_csv:
+        if not is_test:
+            csv_text = frappe.get_doc("File", {
+                "file_url": csv_file,
+            }, limit=1).get_content()
 
-        if not csv_text:
-            raise frappe.exceptions.ValidationError("CSV File not found")
+            if not csv_text:
+                raise frappe.exceptions.ValidationError("CSV File not found")
     else:
         if not school:
             raise frappe.exceptions.MandatoryError("School is required")
@@ -341,38 +342,38 @@ def send_test_mail(**kwargs):
         }
         notice_subject = render_jinja(subject, data)
         notice_content = render_jinja(content, data)
-
-    students = []
-    if len(classes) > 1:
-        students_values = {'classes': classes, 'student_statuses': student_statuses}
-        students = frappe.db.sql('''
-            select *
-            from tabStudent
-            where name in (
-               select student
-               from `tabProgram Enrollment`
-               where program in %(classes)s
-            )
-            and student_status in %(student_statuses)s
-            limit 1
-        ''', values=students_values, as_dict=1)
     else:
-        students_values = {'divisions': divisions, 'student_statuses': student_statuses}
-        students = frappe.db.sql('''
-            select *
-            from tabStudent
-            where name in (
-               select student
-               from `tabProgram Enrollment`
-               where student_group in %(divisions)s
-            )
-            and student_status in %(student_statuses)s
-            limit 1
-        ''', values=students_values, as_dict=1)
+        students = []
+        if len(classes) > 1:
+            students_values = {'classes': classes, 'student_statuses': student_statuses}
+            students = frappe.db.sql('''
+                select *
+                from tabStudent
+                where name in (
+                   select student
+                   from `tabProgram Enrollment`
+                   where program in %(classes)s
+                )
+                and student_status in %(student_statuses)s
+                limit 1
+            ''', values=students_values, as_dict=1)
+        else:
+            students_values = {'divisions': divisions, 'student_statuses': student_statuses}
+            students = frappe.db.sql('''
+                select *
+                from tabStudent
+                where name in (
+                   select student
+                   from `tabProgram Enrollment`
+                   where student_group in %(divisions)s
+                )
+                and student_status in %(student_statuses)s
+                limit 1
+            ''', values=students_values, as_dict=1)
 
-    if len(students):
-        notice_subject = render_jinja(subject, students[0])
-        notice_content = render_jinja(content, students[0])
+        if len(students):
+            notice_subject = render_jinja(subject, students[0])
+            notice_content = render_jinja(content, students[0])
 
     test_emails = [e.strip() for e in str(test_emails).split(",")]
     return create_email(
