@@ -113,7 +113,6 @@ def get_guardian_mail_from_phone(phone_no):
 
 
 def get_user_from_email(email_id):
-    # print("get user from email", email_id)
     if frappe.db.exists("User", {"name": email_id}):
         return frappe.get_doc("User", {"name": email_id})
 

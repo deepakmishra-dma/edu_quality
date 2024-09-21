@@ -3,8 +3,7 @@ import React from "react";
 import {Notice} from "../../providers/data/notices.ts";
 import {Box, Divider, Stack, Text} from "@mantine/core";
 import {useParams} from "react-router-dom";
-// @ts-expect-error no types
-import {IconArchive, IconStar} from "@tabler/icons";
+// import {IconArchive, IconStar} from "@tabler/icons";
 
 export const NoticeDetails: React.FC<IResourceComponentsProps> = () => {
   const params = useParams()
@@ -26,18 +25,18 @@ export const NoticeDetails: React.FC<IResourceComponentsProps> = () => {
       }}>{data?.data?.student_first_name}</Stack>
       <Stack align="center" justify="center" py={4} px={10} sx={{
         display: 'inline-block',
-        marginRight: "auto",
+        marginLeft: "auto",
         borderRadius: 5,
         whiteSpace: 'nowrap',
         fontSize: 12
       }}>{new Date(data?.data?.creation).toLocaleDateString() || '-'}</Stack>
-      <Stack sx={{
-        flexDirection: 'row',
-        gap: 5
-      }}>
-        <IconStar fill="white" stroke="black"/>
-        <IconArchive fill="white" stroke="black"/>
-      </Stack>
+      {/*<Stack sx={{*/}
+      {/*  flexDirection: 'row',*/}
+      {/*  gap: 5*/}
+      {/*}}>*/}
+      {/*  <IconStar fill="white" stroke="black"/>*/}
+      {/*  <IconArchive fill="white" stroke="black"/>*/}
+      {/*</Stack>*/}
     </Stack>
     <Text weight="bold" size="lg" sx={{
       width: '100%',
