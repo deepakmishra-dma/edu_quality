@@ -26,16 +26,9 @@ frappe.query_reports["CMAP Print"] = {
 	"filters": [
 		{
 			"fieldname": "academic_year",
-			"fieldtype": "Link",
-			"options": "Academic Year",
+			"fieldtype": "Select",
+			"options": ["2023-2024","2024-2025"],
 			"label": "Academic Year",
-			get_data: function (year) {
-
-				return frappe.db.get_link_options('Academic Year', year, {
-					custom_current_academic_year: 1,
-					custom_next_academic_year: 1,
-				});
-			},
 		},
 		{
 			"fieldname": "class",
