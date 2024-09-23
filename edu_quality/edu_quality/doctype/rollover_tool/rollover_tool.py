@@ -152,7 +152,7 @@ class RolloverTool(Document):
 								prog_enrollment.student_group = division
 								prog_enrollment.save()
 								if not student.possible_dropout:
-									prog_enrollment.submit()
+									# prog_enrollment.submit()
 									frappe.db.set_value("Student",student.student,"student_status","Current student")
 				i+=1
 				if error_data:
