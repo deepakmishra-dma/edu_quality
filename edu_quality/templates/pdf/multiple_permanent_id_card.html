@@ -1,0 +1,31 @@
+<style>  
+    @page {
+      size: A4 Landscape;
+      margin: 0;
+      padding: 0;
+    }
+  
+    .page {
+      display: flex;
+      flex-wrap: wrap;
+    }
+  
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      width: 100%;
+    }
+    
+  </style>
+  
+  <div class="container-fluid page">
+    {% for enrollment_array in program_enrollments %}
+    <div class="row">
+      {% for enrollment in range(0,(enrollment_array|length)) %}
+      {% set enroll_template =
+      frappe.render_template("edu_quality/templates/pdf/permanent_id_card.html",{'doc':enrollment_array[enrollment]}) %}
+      <div class="col-2">{{enroll_template}}</div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
