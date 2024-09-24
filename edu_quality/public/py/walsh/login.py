@@ -28,7 +28,7 @@ def create_otp(wa_phone_no):
         otp += str(random.randint(0, 9))
     cache = frappe.cache()
     key = "walsh_otp_" + wa_phone_no
-    cache.set_value(key, otp, expires_in_sec=600)
+    cache.set_value(key, otp, expires_in_sec=3600)  # 1 hour
     return otp
 
 
@@ -113,7 +113,6 @@ def get_guardian_mail_from_phone(phone_no):
 
 
 def get_user_from_email(email_id):
-    # print("get user from email", email_id)
     if frappe.db.exists("User", {"name": email_id}):
         return frappe.get_doc("User", {"name": email_id})
 
@@ -131,27 +130,11 @@ def send_otp(phone_no):
     phone_with_country_code = "+" + wa_phone_no
 
     if not check_user_exists(phone_with_country_code):
-        if not check_guardian_exists(phone_with_country_code):
-            return {
-                "error": True,
-                "error_type": "guardian_not_found",
-                "error_message": "Guardian Not Found"
-            }
-
-        guardian_mail = get_guardian_mail_from_phone(phone_with_country_code)
-        if not guardian_mail:
-            return {
-                "error": True,
-                "error_type": "guardian_email_id_missing",
-                "error_message": "Guardian Email Id Not Found"
-            }
-
-        if get_user_from_email(guardian_mail):
-            return {
-                "error": True,
-                "error_type": "duplicate_guardian_mail",
-                "error_message": "Guardian Mail Id Already Used with Another User"
-            }
+        return {
+            "error": True,
+            "error_type": "user_not_found",
+            "error_message": "User Not Found"
+        }
 
     otp = create_otp(wa_phone_no)
     send_otp_to_whatsapp(wa_phone_no, otp)

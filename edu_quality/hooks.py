@@ -149,9 +149,11 @@ doc_events = {
     "Program Enrollment": {
         "on_submit": [
             "edu_quality.public.py.fee.create_fees",
+        ],
+        "after_insert": [
+            "edu_quality.public.py.fee.append_program_enrollment",
             "edu_quality.public.py.fee.create_id_card",
         ],
-        "after_insert": "edu_quality.public.py.fee.append_program_enrollment",
         "on_trash": "edu_quality.public.py.fee.remove_program_enrollment",
     },
     "Contact": {
@@ -191,7 +193,8 @@ doc_events = {
         "after_insert": "edu_quality.overrides_hooks.topic.after_insert",
     },
     "Purchase Order": {
-        "before_validate": "edu_quality.overrides_hooks.purchase_order.before_validate"
+        "before_validate": "edu_quality.overrides_hooks.purchase_order.before_validate",
+        "on_submit": "edu_quality.edu_quality.server_scripts.purchase_order.on_submit",
     },
     # "Instructor": {
     #     "after_insert": "edu_quality.overrides_hooks.instructor.after_insert",

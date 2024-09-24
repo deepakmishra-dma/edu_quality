@@ -285,4 +285,4 @@ def add_referral(referred_by,referred_student):
     if frappe.db.get_value("Student",referred_student,"referred_by"):
         return frappe.throw("Student already Referred!")
     frappe.db.set_value("Student",referred_student,"referred_by",referred_by)
-    add_referral_discount(referred_by)
+    return add_referral_discount(referred_by)
