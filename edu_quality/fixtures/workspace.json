@@ -16400,7 +16400,7 @@
  },
  {
   "charts": [],
-  "content": "[{\"id\":\"imx0vUcMzv\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Watchman</span>\",\"col\":12}},{\"id\":\"oPxnuFb0Qu\",\"type\":\"quick_list\",\"data\":{\"quick_list_name\":\"Challans\",\"col\":4}},{\"id\":\"1kTECXoeVY\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>OR</b></span>\",\"col\":12}},{\"id\":\"Cnq1SyvY6X\",\"type\":\"custom_block\",\"data\":{\"custom_block_name\":\"Watchman Scanner\",\"col\":12}}]",
+  "content": "[{\"id\":\"imx0vUcMzv\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Watchman</span>\",\"col\":12}},{\"id\":\"Cnq1SyvY6X\",\"type\":\"custom_block\",\"data\":{\"custom_block_name\":\"Watchman Scanner\",\"col\":12}}]",
   "custom_blocks": [
    {
     "custom_block_name": "Watchman Scanner",
@@ -16419,22 +16419,13 @@
   "is_hidden": 0,
   "label": "Watchman",
   "links": [],
-  "modified": "2024-02-27 10:10:04.952079",
+  "modified": "2024-03-01 11:15:46.994682",
   "module": "",
   "name": "Watchman",
   "number_cards": [],
   "parent_page": "",
   "public": 1,
-  "quick_lists": [
-   {
-    "document_type": "Purchase Receipt",
-    "label": "Challans",
-    "parent": "Watchman",
-    "parentfield": "quick_lists",
-    "parenttype": "Workspace",
-    "quick_list_filter": "[[\"Purchase Receipt\",\"workflow_state\",\"=\",\"Pending\",false]]"
-   }
-  ],
+  "quick_lists": [],
   "restrict_to_domain": null,
   "roles": [
    {

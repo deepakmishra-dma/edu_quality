@@ -1,6 +1,7 @@
 import frappe
 from frappe.utils import strip
 import json
+
 from edu_quality.public.py.utils import (
     im_2_b64,
     gen_qr_code_b64_transparent,
@@ -15,6 +16,9 @@ from edu_quality.api.google_drive_upload import (
     find_file_by_name_and_folder,
     update_file_stream_on_drive,
     delete_file_from_drive,
+    get_absolute_path,
+    upload_file_to_drive,
+    update_file_on_drive,
 )
 import datetime
 import fitz
@@ -105,6 +109,7 @@ def calculate_sheet_number(self):
 def before_insert(self, method=None):
     if frappe.flags.in_import:
         self.custom_product_url = ""
+        self.custom_is_imported = 1
     if not frappe.flags.in_import:
         self.custom_sheet_number = calculate_sheet_number(self)
     create_item_directory(self)
@@ -216,8 +221,8 @@ def upload_to_drive(**doc):
             file_extension = ""
 
         item_doc = frappe.get_doc("Item", docname)
-        chapter_doc = frappe.get_doc("Topic",item_doc.custom_chapter)
-        file_name_with_ext = f"{docname} - {chapter_doc.get('name')}.{file_extension}"
+        chapter_doc = frappe.get_doc("Topic", item_doc.custom_chapter)
+        file_name_with_ext = f"{docname} - {chapter_doc.get('name')}{file_extension}"
         # search for extension with
 
         drive_existing_folder = get_google_folder_name_with_id(
@@ -361,8 +366,100 @@ def create_item_directory(self):
             chapter.get("custom_chapter_number"),
             chapter.get("topic_name"),
         )
+        if product_folder == None:
+            raise Exception("Error creating product is none")
         self.custom_product_folder = product_folder
         return product_folder
     except Exception as e:
         frappe.errprint(str(e))
         frappe.msgprint("Error creating product directory")
+
+
+# edu_quality.overrides_hooks.item.upload_all_imported_to_drive
+@frappe.whitelist()
+def upload_all_imported_to_drive():
+    pending_items = frappe.db.get_list(
+        "Item",
+        filters={
+            "custom_is_imported": 1,
+            "custom_import_file_synced": 0,
+            "custom_is_cmap": 1,
+        },
+    )
+    if len(pending_items) > 0:
+        for item in pending_items:
+            frappe.enqueue(
+                "edu_quality.overrides_hooks.item.upload_to_drive_from_filesystem",
+                docname=item,
+                queue="long",
+                timeout=1800,
+            )
+
+
+# edu_quality.overrides_hooks.item.upload_to_drive_from_filesystem
+@frappe.whitelist()
+def upload_to_drive_from_filesystem(docname):
+    file_extension = ""
+    item_doc = frappe.get_doc("Item", docname)
+    if (
+        item_doc.get("custom_import_file_synced", 1) == 1
+        or item_doc.get("custom_is_imported", 0) == 0
+        or item_doc.get("custom_is_cmap") == 0
+        or item_doc.get("custom_import_sync_url") == None
+    ):
+        return
+
+    file_extension = frappe.db.get_value(
+        "File",
+        filters={"attached_to_doctype": "Item", "attached_to_name": docname},
+        fieldname="file_type",
+    )
+    chapter_doc = frappe.get_doc("Topic", item_doc.custom_chapter)
+    file_name_with_ext = (
+        f"{docname} - {chapter_doc.get('name')}.{str(file_extension).lower()}"
+    )
+
+    mimetype = mimetypes.guess_type(file_name_with_ext)
+
+    # search for extension with
+
+    drive_existing_folder = get_google_folder_name_with_id(
+        item_doc.custom_product_folder
+    )
+
+    file_id = search_file_id(item_doc.custom_product_folder)
+
+    if drive_existing_folder and drive_existing_folder.get("name") and not file_id:
+        file_doc = find_file_by_name_and_folder(
+            file_name_with_ext,
+            item_doc.get("custom_product_folder"),
+        )
+        if file_doc:
+            file_id = file_doc.get("id")
+
+    custom_product_folder = item_doc.get("custom_product_folder", None)
+
+    if not drive_existing_folder or not custom_product_folder:
+        custom_product_folder = create_item_directory(item_doc)
+    mimetype = "application/octet-stream"
+    if not drive_existing_folder or not file_id:
+        id = upload_file_to_drive(
+            file_url=item_doc.custom_import_sync_url,
+            root_folder=item_doc.get("custom_product_folder", custom_product_folder),
+            file_name=file_name_with_ext,
+            mimetype=mimetype,
+        )
+    else:
+        id = update_file_on_drive(
+            file_url=item_doc.custom_import_sync_url,
+            file_id=file_id,
+            mimetype=mimetype,
+            file_name=file_name_with_ext,
+        )
+
+    item_doc.custom_upload_date_on_drive = datetime.datetime.now()
+    item_doc.custom_import_file_synced = 1
+
+    item_doc.custom_product_url = f"https://drive.google.com/file/d/{id.get('id')}"
+
+    item_doc.save()

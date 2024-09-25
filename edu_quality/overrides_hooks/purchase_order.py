@@ -181,7 +181,7 @@ def get_linked_receipts(name, item_code):
 
 @frappe.whitelist()
 def generate_challan_list(self, selected_items=None):
-
+    
     self = json.loads(self) if isinstance(self, str) else self
     selected_items = (
         json.loads(selected_items)
