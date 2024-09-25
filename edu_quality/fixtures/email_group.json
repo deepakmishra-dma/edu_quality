@@ -10,5 +10,17 @@
   "total_subscribers": 2,
   "welcome_email_template": null,
   "welcome_url": null
+ },
+ {
+  "add_query_parameters": 0,
+  "confirmation_email_template": null,
+  "docstatus": 0,
+  "doctype": "Email Group",
+  "modified": "2024-03-01 12:09:14.071679",
+  "name": "Challan Admin Group",
+  "title": "Challan Admin Group",
+  "total_subscribers": 2,
+  "welcome_email_template": null,
+  "welcome_url": null
  }
 ]
