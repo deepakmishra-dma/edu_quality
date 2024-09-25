@@ -109,22 +109,45 @@ def get_absolute_path(file_url):
 
 
 @frappe.whitelist()
-def upload_file_to_drive(file_url, folder_name, root_folder=None):
+def upload_file_to_drive(
+    file_url, folder_name=None, root_folder=None, file_name=None, mimetype="image/jpeg"
+):
     # Get Google Drive Object
     google_drive = get_google_drive_object()
 
     # Check if folder exists in Google Drive
     id = check_for_folder_in_google_drive(folder_name, root_folder)
 
-    file_metadata = {"name": os.path.basename(file_url), "parents": [id]}
+    file_metadata = {"name": file_name or os.path.basename(file_url), "parents": [id]}
 
     try:
-        media = MediaFileUpload(
-            get_absolute_path(file_url), mimetype="image/jpeg", resumable=True
+        media = MediaFileUpload(get_absolute_path(file_url), mimetype, resumable=True)
+        return (
+            google_drive.files()
+            .create(body=file_metadata, media_body=media, fields="id")
+            .execute()
         )
-        google_drive.files().create(
-            body=file_metadata, media_body=media, fields="id"
-        ).execute()
+    except OSError as e:
+        frappe.throw(("Google Drive - Could not locate - {0}").format(e))
+
+    return "Google Drive Backup Successful."
+
+
+@frappe.whitelist()
+def update_file_on_drive(file_url, file_id, file_name=None, mimetype="image/jpeg"):
+    # Get Google Drive Object
+    google_drive = get_google_drive_object()
+    if file_name:
+        file_metadata = {"name": file_name}
+
+    try:
+        media = MediaFileUpload(get_absolute_path(file_url), mimetype, resumable=True)
+        result = (
+            google_drive.files()
+            .update(fileId=file_id, body=file_metadata, media_body=media, fields="id")
+            .execute()
+        )
+        return result
     except OSError as e:
         frappe.throw(("Google Drive - Could not locate - {0}").format(e))
 

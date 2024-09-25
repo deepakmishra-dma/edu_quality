@@ -4,7 +4,7 @@
  "docstatus": 0,
  "doctype": "Page",
  "idx": 0,
- "modified": "2024-01-25 02:53:20.203281",
+ "modified": "2024-03-01 11:17:48.989680",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "scan-challan",
@@ -28,6 +28,9 @@
   },
   {
    "role": "Walnut Admin"
+  },
+  {
+   "role": "Clerk"
   }
  ],
  "script": null,

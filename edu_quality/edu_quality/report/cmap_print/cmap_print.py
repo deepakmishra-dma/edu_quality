@@ -279,6 +279,7 @@ def get_data_from_queries(filters=None):
                 (student.student_status.isin(["Current student", "Defaulter"]))
                 & (program_enrollment.academic_year == filters.get("academic_year"))
                 & (program_enrollment.program.like(f'{filters.get("class")}-%'))
+                & (program_enrollment.docstatus == 1)
             )
             .groupby(program_enrollment.program)
             .select(count_all, program_enrollment.program)

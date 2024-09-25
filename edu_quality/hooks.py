@@ -13,7 +13,8 @@ app_license = "MIT"
 # include js, css files in header of desk.html
 # app_include_css = "/assets/edu_quality/css/edu_quality.css"
 app_include_js = [
-    "/assets/edu_quality/js/carnivalEvent.js",
+    "/assets/edu_quality/js/exportTool.js" "/assets/edu_quality/js/carnivalEvent.js",
+    # "export_tool.bundle.js",
 ]
 
 # include js, css files in header of web template
@@ -208,7 +209,10 @@ doc_events = {
 # Scheduled Tasks
 # ---------------
 scheduler_events = {
-    "all": ["edu_quality.api.student_application.get_and_schedule_pending_walkouts"],
+    "all": [
+        "edu_quality.api.student_application.get_and_schedule_pending_walkouts",
+        # "edu_quality.overrides_hooks.item.upload_all_imported_to_drive",
+    ],
     "cron": {"0 * * * *": ["edu_quality.tasks.cron"]},
     "daily": [
         "edu_quality.tasks.time_based",

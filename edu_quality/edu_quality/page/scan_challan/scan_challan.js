@@ -25,7 +25,18 @@ frappe.pages['scan-challan'].on_page_load = function (wrapper) {
 							key: images?.data,
 							type: "POST",
 						}, callback: (r) => {
-							if (r.message) {
+							console.log(r.message)
+							if ((frappe.user_roles.includes("Watchman") && !frappe.user_roles.includes("Administrator") && !frappe.user_roles.includes("Walnut Admin") && !frappe.user_roles.includes("System Manager") && r.message)) {
+								d.set_value('qr_code', '')
+								return frappe.msgprint({
+									indicator: "green",
+									title: __("Updated Successfully"),
+									message: __(
+										`Receipt ${images?.data} marked as received`
+									),
+								});
+							}
+							if (r.message && typeof r.message === "string") {
 								frappe.set_route(`/app${r.message}`)
 							}
 						}
@@ -43,7 +54,18 @@ frappe.pages['scan-challan'].on_page_load = function (wrapper) {
 						key: d['fields_dict']['qr_code']['input'].value,
 						type: "POST",
 					}, callback: (r) => {
-						if (r.message) {
+						if ((frappe.user_roles.includes("Watchman") && !frappe.user_roles.includes("Administrator") && !frappe.user_roles.includes("Walnut Admin") && !frappe.user_roles.includes("System Manager") && r.message)) {
+
+							frappe.msgprint({
+								indicator: "green",
+								title: __("Updated Successfully"),
+								message: __(
+									`Receipt ${d['fields_dict']['qr_code']['input'].value} marked as received`
+								),
+							});
+							return d.set_value('qr_code', '')
+						}
+						if (r.message && typeof r.message === "string") {
 							frappe.set_route(`/app${r.message}`)
 						}
 					}
