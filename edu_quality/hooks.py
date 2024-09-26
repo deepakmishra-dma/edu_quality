@@ -142,6 +142,10 @@ override_doctype_class = {
 # Hook on document methods and events
 
 doc_events = {
+    "Guardian": {
+        "before_insert": "edu_quality.edu_quality.server_scripts.guardian.before_insert",
+        "on_update": "edu_quality.edu_quality.server_scripts.guardian.on_update",
+    },
     "Student Applicant": {
         "before_save": "edu_quality.public.py.application.before_save",
         "after_insert": "edu_quality.edu_quality.server_scripts.student_applicant.after_insert",
