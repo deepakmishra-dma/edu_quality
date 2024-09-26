@@ -177,17 +177,15 @@ def create_id_card(doc,method=None):
     qrcode_image = gen_qr_code_b64(
         f"{doc.get('academic_year')}/{doc.get('custom_school')}/{student.get('reference_number')}"
     )
-    doc.custom_id_card = (
-        frappe.get_doc(
-            {
-                "doctype": "Student ID Card",
-                "program_enrolled_in": doc.name,
-                "qr_code": qrcode_image,
-            }
-        )
-        .insert()
-        .get("name")
+    id_card = frappe.get_doc(
+        {
+            "doctype": "Student ID Card",
+            "program_enrolled_in": doc.name,
+            "qr_code": qrcode_image,
+        }
     )
+    id_card.insert()
+    frappe.db.set_value("Program Enrollment", doc.name, "custom_id_card", id_card.name)
 
 def create_fees(doc, method=None):
     try:
