@@ -10,7 +10,7 @@ def on_update(doc,method=None):
 
 def create_user(doc,patch=0):
     if not doc.email_address:
-        frappe.throw(_("Please set Email Address"))
+        frappe.throw("Please set Email Address")
     else:
         guardian_as_user = frappe.get_value("User", dict(email=doc.email_address))
         if guardian_as_user:
