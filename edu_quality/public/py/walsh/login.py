@@ -83,8 +83,9 @@ def get_or_create_user(full_phone_no):
     })
     user.insert(ignore_permissions=True)
 
-    guardian.user = user.name
-    guardian.save(ignore_permissions=True)
+    if not guardian.user:
+        guardian.user = user.name
+        guardian.save(ignore_permissions=True)
     return user
 
 
@@ -117,6 +118,27 @@ def get_user_from_email(email_id):
         return frappe.get_doc("User", {"name": email_id})
 
 
+def save_push_notification_token(token, user_id=None):
+    user_id = user_id or frappe.session.user
+    has_token = frappe.db.exists("Mobile Push Token", {"token": token, "user_id": user_id})
+    if not has_token:
+        frappe.get_doc({
+            "doctype": "Mobile Push Token",
+            "token": token,
+            "user_id": user_id
+        }).insert(ignore_permissions=True)
+
+
+def remove_push_notification_token(token=None):
+    user_id = frappe.session.user
+    has_token = frappe.db.exists("Mobile Push Token", {"token": token, "user_id": user_id}) \
+        if token else frappe.db.exists("Mobile Push Token", {"user_id": user_id})
+    if token and has_token:
+        frappe.db.delete("Mobile Push Token", {"token": token, "user_id": user_id})
+    elif not token and has_token:
+        frappe.db.delete("Mobile Push Token", {"user_id": user_id})
+
+
 @frappe.whitelist(allow_guest=True)
 def send_otp(phone_no):
     wa_phone_no = format_wa_phone_no(phone_no)
@@ -127,7 +149,7 @@ def send_otp(phone_no):
             "error_message": "Invalid Phone Number"
         }
 
-    phone_with_country_code = "+" + wa_phone_no
+    phone_with_country_code = "+" + str(wa_phone_no)
 
     if not check_user_exists(phone_with_country_code):
         return {
@@ -140,12 +162,12 @@ def send_otp(phone_no):
     send_otp_to_whatsapp(wa_phone_no, otp)
     return {
         "success": True,
-        "message": "Otp Sent To +" + wa_phone_no,
+        "message": "Otp Sent To +" + str(wa_phone_no) + " on WhatsApp",
     }
 
 
 @frappe.whitelist(allow_guest=True)
-def verify_otp(otp, phone_no):
+def verify_otp(otp, phone_no, push_token=None):
     wa_phone_no = format_wa_phone_no(phone_no)
     phone_with_country_code = "+" + wa_phone_no
 
@@ -153,7 +175,9 @@ def verify_otp(otp, phone_no):
         user = get_or_create_user(phone_with_country_code)
         login_manager = LoginManager()
         login_manager.login_as(user.name)
-        # update guardian
+
+        if push_token:
+            save_push_notification_token(push_token, user.name)
 
         return {
             "success": True,
@@ -163,4 +187,24 @@ def verify_otp(otp, phone_no):
         "error": True,
         "error_type": "invalid_otp",
         "error_message": "Invalid OTP"
+    }
+
+
+@frappe.whitelist()
+def register_push_notice(**kwargs):
+    print(kwargs)
+    token = kwargs.get("token")
+    if not token:
+        raise frappe.exceptions.MandatoryError("Push Token is required")
+    save_push_notification_token(token)
+
+
+@frappe.whitelist()
+def logout(token=None):
+    remove_push_notification_token(token)
+    login_manager = LoginManager()
+    login_manager.logout()
+    return {
+        "success": True,
+        "message": "Logout Successful",
     }

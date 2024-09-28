@@ -4,7 +4,21 @@ from edu_quality.public.py.walsh.admin import render_jinja
 
 
 @frappe.whitelist()
-def get_all_notices():
+def get_students():
+    user = frappe.session.user
+    guardian = frappe.get_doc("Guardian", {"user": user})
+    students = frappe.get_all("Student", filters={"guardian": guardian.name}, fields=["*"])
+    return students
+
+
+@frappe.whitelist()
+def get_all_notices(page=1, limit=0):
+    if page:
+        page = int(page)
+    if limit:
+        limit = int(limit)
+    if not limit:
+        limit = 1000
     user = frappe.session.user
 
     guardian = frappe.get_doc("Guardian", {"user": user})
@@ -29,7 +43,8 @@ def get_all_notices():
     notices_values = {
         'student_names': student_names,
         'classes': classes,
-        'divisions': divisions
+        'divisions': divisions,
+        "limit": limit
     }
 
     notices = frappe.db.sql('''
@@ -42,9 +57,12 @@ def get_all_notices():
                 or (notice.division is null and notice.class in %(classes)s)
             )
         )
-        order by creation desc ;
+        order by creation desc
+        limit %(limit)s;
     ''', values=notices_values, as_dict=1)
 
+    to_skip = (page - 1) * limit
+    skipped = 0
     final_notices = []
     for notice in notices:
         if notice.is_generic_notice:
@@ -54,6 +72,9 @@ def get_all_notices():
                         notice.division == enrollment.student_group or
                         (not notice.division and notice.get('class') == enrollment.program)
                     ):
+                        if to_skip and skipped < to_skip:
+                            skipped += 1
+                            continue
                         final_notices.append({
                             **notice,
                             'notice': render_jinja(notice.notice, student),
@@ -62,10 +83,17 @@ def get_all_notices():
                             "student": student.name
                         })
         else:
+            if to_skip and skipped < to_skip:
+                skipped += 1
+                continue
+
             final_notices.append({
                 **notice,
                 "student_first_name": student_dict[notice.student].first_name
             })
+
+        if limit and 0 < limit <= len(final_notices):
+            break
 
     return {
         "data": final_notices,

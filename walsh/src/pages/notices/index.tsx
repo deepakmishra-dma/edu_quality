@@ -9,7 +9,10 @@ import {IconSearch} from "@tabler/icons";
 export const NoticeList: React.FC<IResourceComponentsProps> = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-  const {data: list} = useList<Notice>({
+  const {data: list, isLoading} = useList<Notice>({
+    queryOptions: {
+      queryKey: ["list", "notices"],
+    },
     pagination: {
       current: 1,
       pageSize: 10000,
@@ -35,8 +38,9 @@ export const NoticeList: React.FC<IResourceComponentsProps> = () => {
     </Box>
     <Box p={2}>
       <Divider/>
-      {!filteredList?.length &&
-        <Text align="center" color="dimmed" weight="bold" my={30}>No Notice Found</Text>}
+      {!filteredList?.length && <Text align="center" color="dimmed" weight="bold" my={30}>
+        {isLoading ? "Loading..." : "No Notice Found"}
+      </Text>}
       {filteredList?.map(item => item?.subject?.toLowerCase?.()?.includes(searchQuery.toLowerCase()) && (
         <Box key={item.name + String(item.student || "")}>
           <Box p={5} sx={{

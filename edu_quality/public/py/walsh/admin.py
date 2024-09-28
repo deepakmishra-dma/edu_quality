@@ -143,7 +143,7 @@ def enqueued_generic_notice_emails(__args):
         bcc_emails = list(set(bcc_emails))
 
     students = []
-    if len(classes) > 1:
+    if len(classes) > 1 or len(divisions) == 0:
         students_values = {'classes': classes, 'student_statuses': student_statuses}
         students = frappe.db.sql('''
             select *
@@ -344,7 +344,7 @@ def send_test_mail(**kwargs):
         notice_content = render_jinja(content, data)
     else:
         students = []
-        if len(classes) > 1:
+        if len(classes) > 1 or len(divisions) == 0:
             students_values = {'classes': classes, 'student_statuses': student_statuses}
             students = frappe.db.sql('''
                 select *

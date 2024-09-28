@@ -135,8 +135,7 @@ export const Login = () => {
               />
             ) : (
               <Flex justify="center">
-                <OtpInput style={{width: "100%"}}
-                          {...getInputProps("otp")} />
+                <OtpInput style={{width: "100%"}} {...getInputProps("otp")} />
               </Flex>
             )}
             <Text color={"red"} size={"sm"}>{errorMessage}</Text>
@@ -147,7 +146,9 @@ export const Login = () => {
           </Stack>
         </form>
       </Stack>
-      <Box pos="absolute" bottom={0} left={0} right={0}>
+      <Box pos="absolute" bottom={0} left={0} right={0} style={{
+        pointerEvents: "none"
+      }}>
         <Image src={"/assets/edu_quality/walsh/images/walnut-bg-transparent.png"} w={"100%"}/>
       </Box>
     </>

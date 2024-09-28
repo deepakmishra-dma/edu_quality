@@ -2,12 +2,21 @@ import {IResourceComponentsProps, useOne} from "@refinedev/core";
 import React from "react";
 import {Notice} from "../../providers/data/notices.ts";
 import {Box, Divider, Stack, Text} from "@mantine/core";
-import {useParams} from "react-router-dom";
+import {useParams, useSearchParams} from "react-router-dom";
 // import {IconArchive, IconStar} from "@tabler/icons";
 
 export const NoticeDetails: React.FC<IResourceComponentsProps> = () => {
   const params = useParams()
-  const {data} = useOne<Notice>({id: params?.id || ""});
+  const [queries] = useSearchParams()
+  const {data, isLoading} = useOne<Notice>({
+    id: params?.id || "", queryOptions: {
+      queryKey: ["details", "notices", params?.id, queries?.get("student")],
+    }
+  });
+
+  if (isLoading)
+    return <Text align="center" color="dimmed" weight="bold" my={30}>Loading...</Text>
+
   return <Box p={10}>
     <Stack h={35} sx={{
       flexDirection: 'row',
@@ -40,7 +49,7 @@ export const NoticeDetails: React.FC<IResourceComponentsProps> = () => {
     </Stack>
     <Text weight="bold" size="lg" sx={{
       width: '100%',
-      padding: '5px',
+      padding: '5px 0',
       textAlign: 'justify',
     }}>
       {data?.data?.subject || '-'}
