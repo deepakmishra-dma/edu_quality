@@ -27,6 +27,8 @@ def create_user(doc,patch=0):
                 }
             ).insert(ignore_permissions=True)
             doc.user=user.name
+        if patch:
+            doc.save(ignore_permissions=True)
 
 def set_student_permissions(doc,patch=0):
     for student in doc.students:
@@ -43,3 +45,4 @@ def set_student_permissions(doc,patch=0):
                 "allow": "Student",
                 "for_value":student.student
             }).insert(ignore_permissions=True)
+            
