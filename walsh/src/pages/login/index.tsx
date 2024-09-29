@@ -87,7 +87,7 @@ export const Login = () => {
           bottom={0}
         ></Box>
       </Box>
-      <Stack align="center" justify="center" h={"60vh"} bg={"gray.0"} sx={{
+      <Stack align="center" pt={50} mih={400} h={"60vh"} bg={"gray.0"} sx={{
         padding: 10
       }}>
         <form onSubmit={handleSubmit}>

@@ -20,7 +20,7 @@ export const authProvider: AuthBindings = {
     const data = await response.json()
     const message = data?.message
 
-    if (message.success) {
+    if (message?.success) {
       return {
         success: true,
         redirectTo: "/",

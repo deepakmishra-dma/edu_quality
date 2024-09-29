@@ -30,8 +30,8 @@ def enqueued_specific_notice_docs(__args):
     failure_texts = []
     for row in csv_data:
         try:
-            student_ref_id = row["student_ref_id"]
-            student = frappe.get_doc("Student", {"reference_number": student_ref_id})
+            student_id = row.get("ID") or row.get("id") or row.get("name")
+            student = frappe.get_doc("Student", student_id)
             data = {
                 **student.as_dict(),
                 **row
@@ -44,9 +44,9 @@ def enqueued_specific_notice_docs(__args):
                 "subject": notice_subject,
                 "notice": notice_content
             }).insert()
-            success_ref_ids.append(student_ref_id)
+            success_ref_ids.append(student_id)
         except Exception as e:
-            failure_ref_ids.append(row.get("student_ref_id"))
+            failure_ref_ids.append(row.get("ID") or row.get("id") or row.get("name"))
             failure_texts.append(e)
 
     if len(failure_ref_ids):
@@ -88,8 +88,8 @@ def enqueued_specific_notice_emails(__args):
     school_admin_bcc_email = ""
     for row in csv_data:
         try:
-            student_ref_id = row["student_ref_id"]
-            student = frappe.get_doc("Student", {"reference_number": student_ref_id})
+            student_id = row.get("ID") or row.get("id") or row.get("name")
+            student = frappe.get_doc("Student", student_id)
             if not school_admin_bcc_email:
                 school = frappe.get_doc("School", student.school)
                 school_admin_bcc_email = school.bcc_email_address
@@ -109,9 +109,9 @@ def enqueued_specific_notice_emails(__args):
                 read_receipt=True,
             )
             bcc_emails = []
-            success_ref_ids.append(student_ref_id)
+            success_ref_ids.append(student_id)
         except Exception as e:
-            failure_ref_ids.append(row.get("student_ref_id"))
+            failure_ref_ids.append(row.get("ID") or row.get("id") or row.get("name"))
             failure_texts.append(e)
 
     if len(failure_ref_ids):
@@ -168,8 +168,8 @@ def enqueued_generic_notice_emails(__args):
             and student_status in %(student_statuses)s
         ''', values=students_values, as_dict=1)
 
-    success_ref_ids = []
-    failure_ref_ids = []
+    success_student_ids = []
+    failure_student_ids = []
     failure_texts = []
     school_admin_bcc_email = ""
     for student in students:
@@ -189,16 +189,16 @@ def enqueued_generic_notice_emails(__args):
                 read_receipt=True,
             )
             bcc_emails = []
-            success_ref_ids.append(student.student_ref_id)
+            success_student_ids.append(student.name)
         except Exception as e:
-            failure_ref_ids.append(student.get("student_ref_id"))
+            failure_student_ids.append(student.get("name"))
             failure_texts.append(e)
 
-    if len(failure_ref_ids):
+    if len(failure_student_ids):
         frappe.get_doc({
             'doctype': 'School Notice Error',
             'type': 'email',
-            'failure_list': json.dumps(failure_ref_ids, default=str, indent=2),
+            'failure_list': json.dumps(failure_student_ids, default=str, indent=2),
             'failure_messages': json.dumps(failure_texts, default=str, indent=2)
         }).insert(ignore_permissions=True)
 
@@ -334,8 +334,8 @@ def send_test_mail(**kwargs):
     notice_content = content
 
     if has_csv:
-        student_ref_id = student_data["student_ref_id"]
-        student = frappe.get_doc("Student", {"reference_number": student_ref_id})
+        student_id = student_data.get("ID") or student_data.get("id") or student_data.get("name")
+        student = frappe.get_doc("Student", student_id)
         data = {
             **student.as_dict(),
             **student_data

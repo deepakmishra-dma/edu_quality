@@ -58,66 +58,6 @@ def send_otp_to_whatsapp(wa_phone_no, otp):
     send_templated_message(contact.name, "walsh_new_adm_login", json.dumps(template_data))
 
 
-def get_guardian_from_phone(full_phone_no):
-    guardian_number = remove_indian_country_code(full_phone_no)
-    return frappe.get_doc("Guardian", {"mobile_number": guardian_number}, order_by="creation", limit=1)
-
-
-def get_or_create_user(full_phone_no):
-    guardian_number = remove_indian_country_code(full_phone_no)
-    guardian = get_guardian_from_phone(guardian_number)
-
-    if frappe.db.exists("User", {"phone": full_phone_no}):
-        user = frappe.get_doc("User", {"phone": full_phone_no})
-        if not guardian.user:
-            guardian.user = user.name
-            guardian.save(ignore_permissions=True)
-        return user
-
-    # create user with guardian details
-    user = frappe.get_doc({
-        "doctype": "User",
-        "first_name": guardian.guardian_name,
-        "email": guardian.email_address,
-        "phone": full_phone_no
-    })
-    user.insert(ignore_permissions=True)
-
-    if not guardian.user:
-        guardian.user = user.name
-        guardian.save(ignore_permissions=True)
-    return user
-
-
-def check_user_exists(phone_no):
-    # print("check exists", phone_no)
-    if frappe.db.exists("User", {"phone": phone_no}):
-        return True
-    guardian_number = remove_indian_country_code(phone_no)
-    if frappe.db.exists("User", {"phone": guardian_number}):
-        return True
-    return False
-
-
-def check_guardian_exists(full_phone_no):
-    # print("check_guardian_exists", full_phone_no)
-    guardian_number = remove_indian_country_code(full_phone_no)
-    if frappe.db.exists("Guardian", {"mobile_number": guardian_number}):
-        return True
-    return False
-
-
-def get_guardian_mail_from_phone(phone_no):
-    guardian_number = remove_indian_country_code(phone_no)
-    if frappe.db.exists("Guardian", {"mobile_number": guardian_number}):
-        return frappe.get_value("Guardian", {"mobile_number": guardian_number}, "email_address", order_by="creation")
-
-
-def get_user_from_email(email_id):
-    if frappe.db.exists("User", {"name": email_id}):
-        return frappe.get_doc("User", {"name": email_id})
-
-
 def save_push_notification_token(token, user_id=None):
     user_id = user_id or frappe.session.user
     has_token = frappe.db.exists("Mobile Push Token", {"token": token, "user_id": user_id})
@@ -150,8 +90,9 @@ def send_otp(phone_no):
         }
 
     phone_with_country_code = "+" + str(wa_phone_no)
+    guardian_number = remove_indian_country_code(phone_with_country_code)
 
-    if not check_user_exists(phone_with_country_code):
+    if not frappe.db.exists("User", {"phone": guardian_number}):
         return {
             "error": True,
             "error_type": "user_not_found",
@@ -170,9 +111,10 @@ def send_otp(phone_no):
 def verify_otp(otp, phone_no, push_token=None):
     wa_phone_no = format_wa_phone_no(phone_no)
     phone_with_country_code = "+" + wa_phone_no
+    guardian_number = remove_indian_country_code(phone_with_country_code)
 
     if match_otp(wa_phone_no, otp):
-        user = get_or_create_user(phone_with_country_code)
+        user = frappe.get_doc("User", {"phone": guardian_number})
         login_manager = LoginManager()
         login_manager.login_as(user.name)
 
@@ -192,7 +134,6 @@ def verify_otp(otp, phone_no, push_token=None):
 
 @frappe.whitelist()
 def register_push_notice(**kwargs):
-    print(kwargs)
     token = kwargs.get("token")
     if not token:
         raise frappe.exceptions.MandatoryError("Push Token is required")

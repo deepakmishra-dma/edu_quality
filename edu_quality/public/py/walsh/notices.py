@@ -19,12 +19,21 @@ def get_all_notices(page=1, limit=0):
         limit = int(limit)
     if not limit:
         limit = 1000
+    if not page:
+        page = 1
     user = frappe.session.user
 
     guardian = frappe.get_doc("Guardian", {"user": user})
     students = frappe.get_all("Student", filters={"guardian": guardian.name}, fields=["*"])
     student_dict = {s.name: s for s in students}
     student_names = [s.name for s in students]
+
+    if not len(students):
+        return {
+            "error": True,
+            "error_type": "no_students",
+            "error_message": "No Students Found"
+        }
 
     enrollments_values = {
         'student_names': student_names,
@@ -44,7 +53,8 @@ def get_all_notices(page=1, limit=0):
         'student_names': student_names,
         'classes': classes,
         'divisions': divisions,
-        "limit": limit
+        "limit": limit,
+        'offset': (page - 1) * limit
     }
 
     notices = frappe.db.sql('''
@@ -58,11 +68,9 @@ def get_all_notices(page=1, limit=0):
             )
         )
         order by creation desc
-        limit %(limit)s;
+        limit %(limit)s offset %(offset)s
     ''', values=notices_values, as_dict=1)
 
-    to_skip = (page - 1) * limit
-    skipped = 0
     final_notices = []
     for notice in notices:
         if notice.is_generic_notice:
@@ -72,9 +80,6 @@ def get_all_notices(page=1, limit=0):
                         notice.division == enrollment.student_group or
                         (not notice.division and notice.get('class') == enrollment.program)
                     ):
-                        if to_skip and skipped < to_skip:
-                            skipped += 1
-                            continue
                         final_notices.append({
                             **notice,
                             'notice': render_jinja(notice.notice, student),
@@ -83,21 +88,14 @@ def get_all_notices(page=1, limit=0):
                             "student": student.name
                         })
         else:
-            if to_skip and skipped < to_skip:
-                skipped += 1
-                continue
-
             final_notices.append({
                 **notice,
                 "student_first_name": student_dict[notice.student].first_name
             })
 
-        if limit and 0 < limit <= len(final_notices):
-            break
-
     return {
+        "success": True,
         "data": final_notices,
-        "total": len(final_notices),
     }
 
 
