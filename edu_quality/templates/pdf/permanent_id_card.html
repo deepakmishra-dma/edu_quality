@@ -11,6 +11,7 @@
 <style>
   * {
     margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
   }
 
   .qr-image-size {
@@ -24,14 +25,18 @@
     width: 7em;
     height: 7em;
     margin: 0.5em 0 0.5em 1em;
+    position: relative;
+    top: -3px;
+    right: -4px;
   }
 
   .front {
     width: 220px;
     height: 350px;
     margin: 5px;
-    border: 1px solid #ccc;
     padding-bottom: 1em;
+    background-image: url("{{school.id_card_template or ''}}");
+    background-size: cover; /* Add this line */
   }
 
   .back {
@@ -63,9 +68,9 @@
 
   .academic-details h3 {
     width: 100%;
-    font-size: 8px;
+    font-size: 12px;
     font-weight: bold;
-    line-height: 15px;
+    line-height: 10px;
     display: flex;
   }
 
@@ -73,6 +78,9 @@
     display: flex;
     gap: 4px;
     text-align: center;
+    font-size: 16px;
+    right: -10px;
+
   }
 
   .student-name {
@@ -104,18 +112,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid pink;
+    margin: 5px;
   }
 
   .ref-col-container h2 {
-    font-size: 25px;
+    font-size: 18pt;
     font-weight: 700;
     color: red;
     line-height: 50px;
   }
 
   .pickup-bus {
-    font-size: 25px;
+    font-size: 23pt;
     font-weight: 700;
     color: red;
     margin: 1em auto;
@@ -155,20 +163,18 @@
     margin-top: -80px;
     transform: rotate(270deg);
   }
+  .student-image {
+    margin-top: 95px;
+  }
 </style>
 
-<div class="container">
+<div class="container" >
   <div class="front">
-    <span class="letter-head-class">
-      {{letter_head.content}}
-    </span>
     <div class="container">
-      <div class="row">
+      <div class="row student-image">
         <img src="{{id_card_data.photo_taken}}" class="student-image-size" alt="Student Photo">
         <h1 class="pickup-bus">{{student_data.pickup_bus}}</h1>
       </div>
-
-
       <div class="reference-container">
         <div class="ref-col-container">
           <h2>{{student_data.drop_bus}}</h2>
