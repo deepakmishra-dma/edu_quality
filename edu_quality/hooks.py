@@ -117,6 +117,7 @@ jinja = {
 permission_query_conditions = {
     "Contact": "edu_quality.permissions.contacts.contact_query",
     "Purchase Order": "edu_quality.permissions.purchase_orders.purchase_query",
+    "Student": "edu_quality.permissions.students.student_query",
 }
 #
 # has_permission = {

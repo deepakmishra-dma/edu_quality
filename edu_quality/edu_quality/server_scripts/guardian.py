@@ -9,6 +9,7 @@ def on_update(doc,method=None):
     set_student_permissions(doc)
 
 def create_user(doc,patch=0):
+    return
     if not doc.email_address:
         frappe.throw("Please set Email Address")
     else:
@@ -21,28 +22,14 @@ def create_user(doc,patch=0):
                     "doctype": "User",
                     "first_name": doc.guardian_name,
                     "email": doc.email_address,
-                    "user_type": "System User",
+                    "user_type": "Website User",
                     "send_welcome_email": 0,
-                    "roles": [{"role": "Parent"}]
+                    "roles": [{"role": "Guardian"}]
                 }
             ).insert(ignore_permissions=True)
             doc.user=user.name
         if patch:
             doc.save(ignore_permissions=True)
 
-def set_student_permissions(doc,patch=0):
-    for student in doc.students:
-        if frappe.db.exists("User Permission",{
-            "user":doc.user,
-            "allow": "Student",
-            "for_value":student.student
-        }):
-            continue 
-        else:
-            frappe.get_doc({
-                "doctype": "User Permission",
-                "user":doc.user,
-                "allow": "Student",
-                "for_value":student.student
-            }).insert(ignore_permissions=True)
+
             
