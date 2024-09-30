@@ -1,15 +1,12 @@
 import ReactOtpInput from "react-otp-input";
 import {TextInput, useMantineTheme} from "@mantine/core";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const OtpInput = (props: any) => {
   const theme = useMantineTheme();
   return (
     <ReactOtpInput
       numInputs={4}
-      value="1234"
-      onChange={() => {
-        console.log("s");
-      }}
       {...props}
       renderInput={(props) => {
         return (

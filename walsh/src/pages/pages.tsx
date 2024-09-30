@@ -1,4 +1,4 @@
-import {Route, Routes} from "react-router-dom";
+import {Route, Routes, useLocation} from "react-router-dom";
 import {Authenticated, useIsAuthenticated} from "@refinedev/core";
 import {Login} from "./login";
 import {Header} from "../components";
@@ -6,9 +6,14 @@ import {NoticeList} from "./notices";
 import {NoticeDetails} from "./notices/details.tsx";
 import {ErrorComponent} from "@refinedev/mantine";
 import {AppShell} from "@mantine/core";
+import Navbar from "../components/organisms/navbar";
+import React from "react";
 
 const Pages = () => {
+  const location = useLocation()
   const isAuthenticated = useIsAuthenticated()
+  const [isNavBarOpen, setIsNavBarOpen] = React.useState(false)
+  const navBarIsOpen = isNavBarOpen && location.pathname == '/'
   return (
     <AppShell sx={{
       "display": "flex",
@@ -37,7 +42,8 @@ const Pages = () => {
             fallback={<Login/>}
             v3LegacyAuthProviderCompatible
           >
-            <Header/>
+            <Header setNavbarOpen={setIsNavBarOpen} navbarOpen={isNavBarOpen}/>
+            <Navbar isOpen={navBarIsOpen} setIsOpen={setIsNavBarOpen}/>
             <Routes>
               <Route path="/" element={<NoticeList/>}/>
               <Route path="/notice/:id" element={<NoticeDetails/>}/>
