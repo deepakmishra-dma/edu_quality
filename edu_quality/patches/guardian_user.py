@@ -9,7 +9,7 @@ def execute():
         doc = frappe.get_doc("Guardian", guardian.name)
         try:
             create_user(doc)
-            set_student_permissions(doc)
+            # set_student_permissions(doc)
         except Exception as e:
             print(e)
     frappe.flags.in_import = False
