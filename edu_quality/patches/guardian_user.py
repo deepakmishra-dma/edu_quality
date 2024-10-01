@@ -1,6 +1,5 @@
 import frappe
-from edu_quality.edu_quality.server_scripts.guardian import create_user, set_student_permissions
-
+from edu_quality.edu_quality.server_scripts.guardian import create_user
 
 def execute():
     guardians = frappe.get_all("Guardian",limit=100)
