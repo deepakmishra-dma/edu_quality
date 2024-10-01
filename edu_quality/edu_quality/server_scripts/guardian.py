@@ -21,9 +21,10 @@ def create_user(doc,patch=0):
                     "doctype": "User",
                     "first_name": doc.guardian_name,
                     "email": doc.email_address,
+                    "roles": [{"role": "Guardian"}],
                     "user_type": "Website User",
-                    "send_welcome_email": 0,
-                    "roles": [{"role": "Guardian"}]
+                    "send_welcome_email": 0
+                    
                 }
             ).insert(ignore_permissions=True)
             doc.user=user.name
