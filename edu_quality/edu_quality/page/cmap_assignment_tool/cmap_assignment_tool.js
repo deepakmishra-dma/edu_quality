@@ -1,6 +1,6 @@
 let globalTableRef = null
 let filtersRef = null
-
+let cmapData = []
 frappe.pages['cmap-assignment-tool'].on_page_load = function (wrapper) {
 	var page = frappe.ui.make_app_page({
 		parent: wrapper,
@@ -57,7 +57,7 @@ frappe.pages['cmap-assignment-tool'].on_page_load = function (wrapper) {
 }
 function editMode() {
 	const container = document.getElementById('report-edit-container')
-	make_fieldgroup(container, [
+	const d = make_fieldgroup(container, [
 		{
 			label: 'Division',
 			fieldname: 'division',
@@ -70,9 +70,31 @@ function editMode() {
 			fieldtype: 'Link',
 			options: "Instructor"
 		},
-		{ label: 'Button', fieldtype: "Button", click: getDivisions }
+		{ label: 'Apply', fieldtype: "Button", click: () => changeCmapDataBulk(d) }
 
 	])
+}
+
+function changeCmapDataBulk(fieldGroup) {
+	const division = fieldGroup.fields_dict["division"]
+	const teacher = fieldGroup.fields_dict["teacher"]
+	Object.keys(cmapData).forEach(key => cmapData[key].forEach((values, index) => {
+		if (values.division_name == division) {
+			cmapData[key][index] = teacher
+		}
+	}))
+	setupDataTable(cmapData)
+}
+
+function changeTeacherOnSelect(e) {
+	const dataset = e.target.dataset
+	console.log(dataset)
+	if (dataset.index && dataset.key && cmapData) {
+		cmapData[dataset.key][dataset.index] = e.target.value
+		console.log(cmapData)
+		// setupDataTable(cmapData)
+	}
+
 }
 function getFilters() {
 	const filters = {}
@@ -96,20 +118,27 @@ async function getDivisions() {
 }
 async function getCmap() {
 	const filters = getFilters()
-	const cmapData = await frappe.call({
+	tempData = await frappe.call({
 		method: 'edu_quality.edu_quality.page.cmap_assignment_tool.cmap_assignment_tool.get_cmap',
 		args: filters
 	})
-	setupDataTable(cmapData?.message || {})
+	cmapData = tempData?.message || {}
+	setupDataTable()
 }
 
-function setupDataTable(cmapData) {
+async function setupDataTable() {
 	const container = document.getElementById('report-table-container')
 	console.log(container)
 	container.innerHTML = ""
-	container.appendChild(createTable(cmapData))
+	const filters = getFilters()
+	const teachersData = await frappe.call({
+		method: 'edu_quality.edu_quality.page.cmap_assignment_tool.cmap_assignment_tool.get_teachers',
+		args: filters
+	})
+	container.appendChild(createTable(cmapData, teachersData.message))
 
 }
+
 
 function make_fieldgroup(parent, ddf_list) {
 	fg = new frappe.ui.FieldGroup({
@@ -122,7 +151,7 @@ function make_fieldgroup(parent, ddf_list) {
 
 }
 
-function createTable(data) {
+function createTable(data, teachersData) {
 	const table = document.createElement('table');
 
 	const thead = document.createElement('thead')
@@ -157,11 +186,11 @@ function createTable(data) {
 	if (data)
 		Object.keys(data).forEach(val => {
 			data[val].forEach((row, index) => {
-				const row_html = createRow(val, '231', row.division_name, row.teacher, row.plan_date, 'adad', index === 0, data[val].length)
+				const row_html = createRow(val, '231', row.division_name, row.teacher, row.plan_date, 'adad', index === 0, data[val].length, teachersData, index)
 				tbody.innerHTML += (row_html)
 			})
 		})
-	console.log(headerRow)
+	tbody.addEventListener('click', changeTeacherOnSelect)
 	thead.appendChild(headerRow)
 	table.appendChild(thead);
 
@@ -169,14 +198,14 @@ function createTable(data) {
 	return table
 }
 
-function createRow(period_no, chapter_name, division, teacher, plan_date, note, first_row, rowSpan) {
+function createRow(period_no, chapter_name, division, teacher, plan_date, note, first_row, rowSpan, teachersData, index) {
 	console.log(rowSpan)
 	if (first_row)
 		return `<tr>
 	<td rowspan="${rowSpan}">${period_no}</td>
 	<td rowspan="${rowSpan}">${chapter_name}</td>
 	<td>${division}</td>
-	<td class="teacher-cell"><select value="${teacher}"><option>test</option></select></td>
+	<td class="teacher-cell">${createSelect(teachersData, teacher, index, period_no)}</td>
 	<td>${plan_date}</td>
 	<td>${note}</td>
   </tr>
@@ -184,7 +213,7 @@ function createRow(period_no, chapter_name, division, teacher, plan_date, note, 
 	return `<tr>
 
   <td>${division}</td>
-  <td class="teacher-cell"><select value="${teacher}"><option>test</option></select></td>
+  <td class="teacher-cell">${createSelect(teachersData, teacher, index, period_no)}</td>
   <td>${plan_date}</td>
   <td>${note}</td>
 </tr>
@@ -192,6 +221,9 @@ function createRow(period_no, chapter_name, division, teacher, plan_date, note, 
 `
 }
 
-function createSelect(selectData) {
+function createSelect(selectData, value, index, key) {
 
+	return `<select data-index="${index}" data-key=${key} value="${value}"><option></option>${selectData.map((el) => (
+		`<option>${el.name}</option>`
+	))}</select>`
 }
