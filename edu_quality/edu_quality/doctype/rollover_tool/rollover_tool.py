@@ -121,15 +121,21 @@ class RolloverTool(Document):
 			total = len(programs)
 			self.fees_setup_validation(programs)
 			for program in programs:
+				next_program = None
 				error_data = []
 				frappe.publish_realtime(
 							"program_enrollment_tool", dict(progress=[i + 1, total]), user=frappe.session.user
 								)
 				#skip senior kg and last class in school
-				if i== len(programs)-1 or "Senior KG" in program.name:
-					continue
+				if "Senior KG" in program.name:
+					continue #manual case
+				elif i==len(programs)-1:
+					if not frappe.db.exists("Program",{'school':self.school,"sequence":program.sequence+1}):
+						continue #last class
+					else:
+						next_program = frappe.db.get_value("Program",{'school':self.school,"sequence":program.sequence+1},["name","sequence","school"],as_dict=True)
 				else:
-					next_program = programs[i+1]
+					next_program = next_program or programs[i+1]
 					next_yr =  next_academic_year(self.academic_year)
 					students = self.get_students(program.name)
 					for j,student in enumerate(students):
