@@ -15,6 +15,9 @@ const noticesDataProvider: Partial<IDataContextProvider> = {
       url += `?page=${params.pagination?.current}&limit=${params.pagination?.pageSize}`;
     const response = await fetch(url);
     const data = await response.json();
+    if (!data?.message?.success) {
+      throw Error("Failed to get list: " + (data?.message?.error_message || data.exception));
+    }
     return data.message;
   },
   getOne: async (params) => {

@@ -25,27 +25,43 @@ class CustomLead(Lead):
     def after_insert(self, method=None):
         if not self.contact_doc:
             return
-        self.contact_doc.whatsapp_id = add_indian_country_code(self.fathers_phone)
-        if len(self.contact_doc.phone_nos) == 0:
-            if self.fathers_phone:
-                self.contact_doc.append(
-                    "phone_nos",
-                    {
-                        "phone": self.fathers_phone,
-                        "is_primary_mobile_no": 1,
-                    },
-                )
-        if len(self.contact_doc.email_ids) == 0:
-            if self.fathers_email:
-                self.contact_doc.append(
-                    "email_ids",
-                    {
-                        "email_id": self.fathers_email,
-                        "is_primary": 1,
-                    },
-                )
+        if not self.contact_doc.whatsapp_id:
+            frappe.db.set_value(
+                "Contact",
+                self.contact_doc.name,
+                "whatsapp_id",
+                add_indian_country_code(self.fathers_phone),
+            )
+
+        is_primary_phone = 1 if len(self.contact_doc.phone_nos) == 0 else 0
+
+        if self.fathers_phone and len(self.contact_doc.phone_nos) == 0:
+            frappe.get_doc(
+                {
+                    "doctype": "Contact Phone",
+                    "parenttype": "Contact",
+                    "parentfield": "phone_nos",
+                    "parent": self.contact_doc.name,
+                    "phone": self.fathers_phone,
+                    "is_primary_mobile_no": is_primary_phone,
+                }
+            ).insert(ignore_permissions=True)
+
+        is_primary_email = 1 if len(self.contact_doc.email_ids) == 0 else 0
+
+        if self.fathers_email and len(self.contact_doc.email_ids) == 0:
+            frappe.get_doc(
+                {
+                    "doctype": "Contact Email",
+                    "parenttype": "Contact",
+                    "parentfield": "email_ids",
+                    "parent": self.contact_doc.name,
+                    "email_id": self.fathers_email,
+                    "is_primary": is_primary_email,
+                }
+            ).insert(ignore_permissions=True)
+
         self.link_to_contact()
-        self.contact_doc.save(ignore_permissions=True)
 
         if self.get("fathers_email"):
             content = enqueue_email(self)
@@ -53,11 +69,20 @@ class CustomLead(Lead):
                 add_email_activity(self, content)
 
     def link_to_contact(self):
-            # update contact links
-            if self.contact_doc:
-                self.contact_doc.append(
-                    "links", {"link_doctype": "Lead", "link_name": self.name, "link_title": self.lead_name}
-                )
+        # update contact links
+        if self.contact_doc:
+            frappe.get_doc(
+                {
+                    "doctype": "Dynamic Link",
+                    "parenttype": "Contact",
+                    "parentfield": "links",
+                    "parent": self.contact_doc.name,
+                    "link_doctype": "Lead",
+                    "link_name": self.name,
+                    "link_title": self.lead_name,
+                }
+            ).insert(ignore_permissions=True)
+
 
 def enqueue_email(doc):
     try:

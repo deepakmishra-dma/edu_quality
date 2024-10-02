@@ -45,8 +45,10 @@ def get_cmap(**filters):
         )
         .select("*")
     )
-
+    # find program by combination of school and class
     program = get_program(filters.get("school"), filters.get("class"))
+
+    #  find all divisions which are created for that class for that academic year
     division_query = (
         frappe.qb.from_(division_table)
         .where(
@@ -57,7 +59,7 @@ def get_cmap(**filters):
             division_table.student_group_name, division_table.name.as_("division_name")
         )
     )
-
+    # calculate cartesian product between cmaps and divisions
     cross_cmap_div_query = (
         frappe.qb.from_(filtered_cmap_query)
         .cross_join(division_query)
@@ -73,8 +75,9 @@ def get_cmap(**filters):
             division_query.student_group_name,
         )
     )
-    cross_cmap_div_query.run(as_dict=True)
-
+    data = cross_cmap_div_query.run(as_dict=True)
+    # return data
+    frappe.errprint(str(data))
     final_query = (
         frappe.qb.from_(cross_cmap_div_query)
         .left_join(cmap_assignment_table)
@@ -114,6 +117,10 @@ def construct_map(data):
     return hash_map
 
 
-def get_data(**filters):
-    cmaps = get_cmap(filters)
-    frappe.qb.DocType("CMAP Assignment")
+@frappe.whitelist()
+def get_teachers(**filters):
+    return frappe.db.get_list(
+        "Instructor",
+        filters={"custom_school": filters.get("school")},
+        ignore_permissions=True,
+    )

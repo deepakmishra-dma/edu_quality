@@ -3,6 +3,7 @@ import frappe
 import json
 from frappe.model.mapper import get_mapped_doc
 from erpnext.buying.doctype.purchase_order.purchase_order import make_purchase_receipt
+from datetime import datetime, date
 
 
 def get_warehouse_to_school_map(items):
@@ -181,7 +182,7 @@ def get_linked_receipts(name, item_code):
 
 @frappe.whitelist()
 def generate_challan_list(self, selected_items=None):
-    
+
     self = json.loads(self) if isinstance(self, str) else self
     selected_items = (
         json.loads(selected_items)
@@ -340,3 +341,17 @@ def calculate_print_count(self):
         return 0
     self.custom_total_items = len(self.items)
     self.custom_printed_count = len([i for i in self.items if i.get("printed")])
+
+
+@frappe.whitelist()
+def convertyearMonthDate(date_input):
+
+    if isinstance(date_input, date):
+        date_str = date_input.strftime("%Y-%m-%d")
+    else:
+        date_str = date_input
+
+    date_object = datetime.strptime(date_str, "%Y-%m-%d")
+
+    formatted_date = date_object.strftime("%d-%m-%Y")
+    return formatted_date

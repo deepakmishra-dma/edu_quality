@@ -4,13 +4,36 @@ from edu_quality.public.py.walsh.admin import render_jinja
 
 
 @frappe.whitelist()
-def get_all_notices():
+def get_students():
+    user = frappe.session.user
+    guardian = frappe.get_doc("Guardian", {"user": user})
+    students = frappe.get_all("Student", filters={"guardian": guardian.name}, fields=["*"])
+    return students
+
+
+@frappe.whitelist()
+def get_all_notices(page=1, limit=0):
+    if page:
+        page = int(page)
+    if limit:
+        limit = int(limit)
+    if not limit:
+        limit = 1000
+    if not page:
+        page = 1
     user = frappe.session.user
 
     guardian = frappe.get_doc("Guardian", {"user": user})
     students = frappe.get_all("Student", filters={"guardian": guardian.name}, fields=["*"])
     student_dict = {s.name: s for s in students}
     student_names = [s.name for s in students]
+
+    if not len(students):
+        return {
+            "error": True,
+            "error_type": "no_students",
+            "error_message": "No Students Found"
+        }
 
     enrollments_values = {
         'student_names': student_names,
@@ -29,7 +52,9 @@ def get_all_notices():
     notices_values = {
         'student_names': student_names,
         'classes': classes,
-        'divisions': divisions
+        'divisions': divisions,
+        "limit": limit,
+        'offset': (page - 1) * limit
     }
 
     notices = frappe.db.sql('''
@@ -42,7 +67,8 @@ def get_all_notices():
                 or (notice.division is null and notice.class in %(classes)s)
             )
         )
-        order by creation desc ;
+        order by creation desc
+        limit %(limit)s offset %(offset)s
     ''', values=notices_values, as_dict=1)
 
     final_notices = []
@@ -68,8 +94,8 @@ def get_all_notices():
             })
 
     return {
+        "success": True,
         "data": final_notices,
-        "total": len(final_notices),
     }
 
 
