@@ -23,7 +23,7 @@
   <div class="row">
     {% for enrollment in range(0,(enrollment_array|length)) %}
     {% set enroll_template =
-    frappe.render_template("edu_quality/templates/pdf/permanent_id_card.html",{'doc':enrollment_array[enrollment]}) %}
+    frappe.render_template("edu_quality/templates/pdf/permanent_id_card.html",{'doc':enrollment_array[enrollment], 'bg_image': background_images[enrollment_array[enrollment].name]}) %}
     <div class="col-2">{{enroll_template}}</div>
     {% endfor %}
   </div>
