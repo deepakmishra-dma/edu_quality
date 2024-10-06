@@ -7,6 +7,7 @@
 {% if guardians.append(temp_guard) %} {% endif %} {% endfor %}
 {% set division_data = frappe.get_doc("Student Group",doc.student_group) %}
 {% set school = frappe.get_doc("School", doc.school) %}
+{% set house = frappe.get_doc("School House", student_data.school_house) %}
 
 <style>
   * {
@@ -36,7 +37,7 @@
     margin: 5px;
     padding-bottom: 1em;
     background-image: url("{{bg_image}}");
-    background-size: cover; /* Add this line */
+    background-size: cover;
   }
 
   .back {
@@ -158,37 +159,53 @@
     text-align: center;
 
   }
-  .id-text{
+
+  .id-text {
     margin-left: 115px;
     margin-top: -80px;
     transform: rotate(270deg);
   }
+
   .student-image {
     margin-top: 95px;
   }
+  .student-details{
+    margin-left: 30px;
+  }
+  
+  #house {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    background-color: {{house.house_color}};
+    border-radius: 50%; /* this makes it a circle */
+  }
 </style>
 
-<div class="container" >
+<div class="container">
   <div class="front">
     <div class="container">
-    <div class="row student-image">
-      <img src="{{doc.image}}" class="student-image-size" alt="Student Photo">
-      {% if doc.transport_service_required %}
-      <h1 class="pickup-bus" style="color: white">{{doc.drop_bus}}</h1>
-      {% else %}
-      <h1 class="pickup-bus">{{doc.drop_bus}}</h1>
-      {% endif %}
-    </div>
-    <div class="reference-container">
-      <div class="ref-col-container">
-        <h2 {% if doc.transport_service_required %}style="color: white"{% endif %}>{{div_name}}</h2>
+      <div class="row student-image">
+        <img src="{{doc.image}}" class="student-image-size" alt="Student Photo">
+        <div class="student-details">
+          {% if doc.transport_service_required %}
+          <h1 class="pickup-bus" style="color: white">{{doc.drop_bus}}</h1>
+          {% else %}
+          <h1 class="pickup-bus">M1</h1>
+          {% endif %}
+          <span id="house"></span>
+        </div>
       </div>
-      <div class="ref-col-container">
-        <h2 {% if doc.transport_service_required %}style="color: white"{% endif %}>
-          {{student_data.custom_reference_number or student_data.reference_number}}
-        </h2>
+      <div class="reference-container">
+        <div class="ref-col-container">
+          <h2 {% if doc.transport_service_required %}style="color: white" {% endif %}>{{div_name}}</h2>
+        </div>
+        <div class="ref-col-container">
+          <h2 {% if doc.transport_service_required %}style="color: white" {% endif %}>
+            {{student_data.custom_reference_number or student_data.reference_number}}
+          </h2>
+        </div>
       </div>
-    </div>
 
     </div>
     <div class="detail-container">
