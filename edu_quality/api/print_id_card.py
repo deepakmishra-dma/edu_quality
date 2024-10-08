@@ -62,6 +62,15 @@ def get_division_name(program_enrollment):
     return div_dict
 
 
+def house_color(program_enrollment):
+    house_dict = {}
+    for pe in program_enrollment:
+        house = frappe.get_value("Student", pe.student, 'school_house')
+        house_color = frappe.get_value("School House", house, 'house_color')
+        house_dict[pe.name] = house_color or ''
+    return house_dict
+
+
 @frappe.whitelist()
 def generate(**kwargs):
     print(kwargs)
@@ -103,12 +112,15 @@ def generate_permanent_id_cards(**kwargs):
     enrollment_in_chunks = divide_into_subarrays(program_enrollment, 4)
     background_images = background_image(program_enrollment)
     divisions = get_division_name(program_enrollment)
+    house_colors = house_color(program_enrollment)
+
     template = frappe.render_template(
         "edu_quality/templates/pdf/multiple_permanent_id_card.html",
         {
             "program_enrollments": enrollment_in_chunks,
             "background_images": background_images,
             "divisions": divisions,
+            "house_colors": house_colors,
         },
     )
     html = HTML(string=template, base_url=base_url)

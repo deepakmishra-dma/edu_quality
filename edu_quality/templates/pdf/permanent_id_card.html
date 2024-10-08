@@ -7,7 +7,6 @@
 {% if guardians.append(temp_guard) %} {% endif %} {% endfor %}
 {% set division_data = frappe.get_doc("Student Group",doc.student_group) %}
 {% set school = frappe.get_doc("School", doc.school) %}
-{% set house = frappe.get_doc("School House", student_data.school_house) %}
 
 <style>
   * {
@@ -177,7 +176,7 @@
     display: inline-block;
     width: 30px;
     height: 30px;
-    background-color: {{house.house_color}};
+    background-color: {{house}};
     border-radius: 50%; /* this makes it a circle */
   }
 </style>
