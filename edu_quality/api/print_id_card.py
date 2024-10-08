@@ -14,6 +14,8 @@ def divide_into_subarrays(arr, max_size):
 
 
 def hex_to_rgb(hex_color):
+    if not hex_color:
+        return (85,62,43)
     if hex_color[0] == "#":
         hex_color = hex_color[1:]
     return tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
