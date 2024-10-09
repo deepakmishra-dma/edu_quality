@@ -299,6 +299,16 @@ def upload_file(file_url, folder_name, root_folder=None):
     return "Queued Successfully"
 
 
+def schedule_delete_file_from_drive(file_id):
+    frappe.enqueue(
+        "edu_quality.edu_quality.api.google_drive_upload.delete_file_from_drive",
+        queue="long",
+        timeout=1800,
+        file_id=file_id,
+    )
+
+
+@frappe.whitelist()
 def delete_file_from_drive(file_id):
     try:
         google_drive = get_google_drive_object()
