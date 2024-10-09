@@ -424,7 +424,7 @@ def remove_file_extension(extensions, product_items):
 
 
 # edu_quality.overrides_hooks.item.upload_all_imported_to_drive
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist()
 def upload_all_imported_to_drive():
     #  get all the pending imported items which are not synced
     pending_items = get_pending_items()
