@@ -1,4 +1,4 @@
-import {Burger, Header as MantineHeader, Stack} from "@mantine/core";
+import {Box, Burger, Header as MantineHeader, Stack} from "@mantine/core";
 import React from "react";
 import {useLocation, useNavigate} from "react-router-dom";
 // @ts-expect-error no types
@@ -19,28 +19,46 @@ export const Header: React.FC<HeaderProps> = ({setNavbarOpen, navbarOpen}) => {
       boxShadow: "0 0 5px rgba(0, 0, 0, 0.1)",
     }}>
       <Stack align="center" justify="center" sx={{height: "100%"}}>
+        {location.pathname !== '/' && <Stack
+            onClick={() => navigate(-1)}
+            justify="center"
+            align="center"
+            p={10}
+            w={50}
+            sx={{
+              position: "absolute",
+              left: 0,
+              top: 0,
+              bottom: 0,
+              cursor: "pointer",
+            }}>
+            <IconArrowLeft size={30} stroke={1.5}/>
+        </Stack>}
         <Stack
-          onClick={() => location.pathname !== '/' ? navigate(-1) : setNavbarOpen(o => !o)}
+          onClick={() => setNavbarOpen(o => !o)}
           justify="center"
           align="center"
           p={10}
           w={50}
           sx={{
             position: "absolute",
-            left: 0,
+            right: 0,
             top: 0,
             bottom: 0,
             cursor: "pointer",
           }}>
-
-          {location.pathname === '/' ? <Burger opened={navbarOpen}/> : <IconArrowLeft size={30} stroke={1.5}/>}
+          <Burger opened={navbarOpen}/>
         </Stack>
-        WalSH
+        <Box sx={{
+          fontSize: 20,
+          fontWeight: "bold",
+        }}>
+          {location.pathname === '/' ? "Notices" :
+           /^\/notice\/([0-9a-f]+)$/.test(location.pathname) ? "" :
+           /^\/curriculum-updates$/.test(location.pathname) ? "Curriculum Updates" :
+           ""}
+        </Box>
       </Stack>
-      {/*<Group h="100%" px="md">*/}
-      {/*  <Burger opened={sidebarOpened} onClick={() => setSidebarOpened(!sidebarOpened)}*/}
-      {/*          hidden={sidebarOpened} size="sm"/>*/}
-      {/*</Group>*/}
     </MantineHeader>
   );
 };

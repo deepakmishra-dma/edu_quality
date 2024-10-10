@@ -1,7 +1,7 @@
 import {Box, Navbar as MantineNavbar, NavLink} from '@mantine/core';
 import React from "react";
 // @ts-expect-error no types
-import {IconLogout, IconMoodSad, IconStack2, IconUser} from "@tabler/icons";
+import {IconLogout, IconMoodSad, IconReload, IconStack2, IconUser} from "@tabler/icons";
 import {useLogout} from "@refinedev/core";
 import {useNavigate} from "react-router-dom";
 
@@ -54,6 +54,12 @@ const Navbar: React.FC<NavbarProps> = ({setIsOpen, isOpen}) => {
           sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%'}}
           label="Student Profile"
           icon={<IconUser size={25} stroke={1.5}/>}
+        />
+        <NavLink
+          onClick={() => window.location.reload()}
+          sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%'}}
+          label="Reload"
+          icon={<IconReload size={25} stroke={1.5}/>}
         />
         <NavLink
           label="Logout"
