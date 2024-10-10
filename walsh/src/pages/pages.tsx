@@ -1,4 +1,4 @@
-import {Route, Routes, useLocation} from "react-router-dom";
+import {Route, Routes} from "react-router-dom";
 import {Authenticated, useIsAuthenticated} from "@refinedev/core";
 import {Login} from "./login";
 import {Header} from "../components";
@@ -10,10 +10,10 @@ import Navbar from "../components/organisms/navbar";
 import React from "react";
 
 const Pages = () => {
-  const location = useLocation()
+  // const location = useLocation()
   const isAuthenticated = useIsAuthenticated()
   const [isNavBarOpen, setIsNavBarOpen] = React.useState(false)
-  const navBarIsOpen = isNavBarOpen && location.pathname == '/'
+  // const navBarIsOpen = isNavBarOpen && location.pathname == '/'
   return (
     <AppShell sx={{
       "display": "flex",
@@ -26,10 +26,10 @@ const Pages = () => {
         "box-shadow": "0 0 10px 10px rgba(0, 0, 0, 0.1)",
         "padding": isAuthenticated.data?.authenticated ? "0" : "0",
         ".mantine-AppShell-main": {
-          "padding-left": isAuthenticated.data?.authenticated ? "5px" : "0",
-          "padding-right": isAuthenticated.data?.authenticated ? "5px" : "0",
+          "padding-left": isAuthenticated.data?.authenticated ? "0px" : "0",
+          "padding-right": isAuthenticated.data?.authenticated ? "0px" : "0",
           "padding-bottom": isAuthenticated.data?.authenticated ? "5px" : "0",
-          "padding-top": isAuthenticated.data?.authenticated ? undefined : "0",
+          "padding-top": isAuthenticated.data?.authenticated ? "60px" : "0",
           "position": "relative",
           "width": '100%'
         }
@@ -43,7 +43,7 @@ const Pages = () => {
             v3LegacyAuthProviderCompatible
           >
             <Header setNavbarOpen={setIsNavBarOpen} navbarOpen={isNavBarOpen}/>
-            <Navbar isOpen={navBarIsOpen} setIsOpen={setIsNavBarOpen}/>
+            <Navbar isOpen={isNavBarOpen} setIsOpen={setIsNavBarOpen}/>
             <Routes>
               <Route path="/" element={<NoticeList/>}/>
               <Route path="/notice/:id" element={<NoticeDetails/>}/>
