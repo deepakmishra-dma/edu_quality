@@ -46,7 +46,6 @@
     border: 1px solid #ccc;
     font-size: 10px;
     font-weight: bold;
-    transform: rotate(180deg);
   }
 
   .container {
@@ -136,6 +135,8 @@
     align-items: flex-start;
     flex-direction: column;
     height: max-content;
+    margin-top: 20px;
+    margin-left: 10px;
   }
 
   .student-info p {
@@ -150,8 +151,16 @@
     flex-wrap: wrap;
   }
 
+  .address {
+    margin-left: 10px;
+    margin-top: 10px;
+    font-size: 10pt;
+  }
+
   .address-info p {
+    font-size: 9pt;
     margin-left: 4px;
+    font-weight: 500;
   }
 
   .school-data {
@@ -160,7 +169,7 @@
   }
 
   .id-text {
-    margin-left: 115px;
+    margin-left: 110px;
     margin-top: -80px;
     transform: rotate(270deg);
   }
@@ -168,16 +177,25 @@
   .student-image {
     margin-top: 95px;
   }
-  .student-details{
+
+  .student-details {
     margin-left: 30px;
   }
-  
+
   #house {
     display: inline-block;
     width: 30px;
     height: 30px;
-    background-color: {{house}};
-    border-radius: 50%; /* this makes it a circle */
+
+    background-color: {
+        {
+        house
+      }
+    }
+
+    ;
+    border-radius: 50%;
+    /* this makes it a circle */
   }
 </style>
 
@@ -225,6 +243,7 @@
 
 <div class="back">
   {{letter_head.content}}
+  <hr style="margin-top: 4px;" />
   <div class="address">
     <h3>ADDRESS: </h3>
     <div class="address-info">
@@ -237,11 +256,11 @@
 
   <div class="student-info">
     <div style="margin: 4px;">
-      <p>ROLL NO: {{doc.roll_no}}</p>
+      <p>ROLL No: {{doc.roll_no}}</p>
       <p>ACADEMIC YEAR: {{doc.academic_year}}</p>
       <p>PHONE: {{student_data.student_mobile_number}}</p>
     </div>
-    <div style="margin: 0 4px;">
+    <div style="margin: 10px 4px 0 4px;">
       <p>BLOOD GROUP: {{student_data.blood_group}}</p>
       <p>DATE OF BIRTH: {{student_data.date_of_birth}}</p>
     </div>
