@@ -50,7 +50,7 @@ def background_image(program_enrollment):
         school = frappe.get_doc("School", pe.custom_school)
         division = frappe.get_doc("Student Group", pe.student_group)
         batch = frappe.get_doc("Student Batch Name", division.batch)
-        image_path = change_image_bg(school.id_card_front, batch.batch_color)
+        image_path = change_image_bg(school.id_card_template, batch.batch_color)
         bg_dict[pe.name] = image_path
     return bg_dict
 
