@@ -124,3 +124,34 @@ def get_teachers(**filters):
         filters={"custom_school": filters.get("school")},
         ignore_permissions=True,
     )
+
+
+@frappe.whitelist()
+def update_assignment(filters, cmap_data):
+    filters = json.loads(filters) if isinstance(filters, str) else filters
+    cmap_data = json.loads(cmap_data) if isinstance(cmap_data, str) else cmap_data
+    program = get_program(filters.get("school"), filters.get("class"))
+    # instructor_table = frappe.qb.DocType("Instructor")
+    # instructor_log_table = frappe.qb.DocType("Instructor Log")
+    # frappe.qb.from_(instructor_table).inner_join(instructor_log_table).on(
+    #     instructor_log_table.parent == instructor_table.name
+    # ).select("*")
+
+    cmap_table = frappe.qb.DocType("CMAP")
+    cmap_assignees = frappe.qb.DocType("CMAP Assignment")
+
+    for period in cmap_data:
+        for assignments in cmap_data[period]:
+            query = (
+                frappe.qb.from_(cmap_table)
+                .inner_join(cmap_assignees)
+                .on(cmap_table.name == cmap_assignees.parent)
+                .where(
+                    (cmap_table.period == period)
+                    & (cmap_table.academic_year == filters.get("academic_year"))
+                    & (cmap_table["class"] == filters.get("class"))
+                )
+                .select("*")
+            )
+            data = query.run(as_dict=True)
+            return data
