@@ -5,4 +5,4 @@ edu_quality.patches.school #07-11-2023
 edu_quality.patches.payment_term #08-11-2023
 edu_quality.patches.academic_year #28-11-2023
 edu_quality.patches.guardian_user #01-03-2024 6
-edu_quality.patches.parent_email #05-03-2024
+edu_quality.patches.parent_email #05-03-2024 1
