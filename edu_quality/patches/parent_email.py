@@ -1,7 +1,6 @@
 import frappe
 
 def execute():
-    return
     replace_emails()
 
 def replace_emails():
