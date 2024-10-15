@@ -6,7 +6,7 @@ def execute():
 def replace_emails():
     data = frappe.db.get_all("Guardian", fields=["name","email_address"])
     for guardian in data:
-        if email:
+        if guardian.email_address:
             new_email = guardian.email_address.split("@")[0] + "@yopmail.com"
             frappe.db.set_value("Guardian",guardian.name,{"email_address":new_email,"mobile_number":""})
         else:
