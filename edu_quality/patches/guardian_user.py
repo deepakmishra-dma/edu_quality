@@ -9,6 +9,7 @@ def execute():
             doc = frappe.get_doc("Guardian", guardian.name)
             try:
                 create_user(doc,patch=1)
+                print("Created User for Guardian: {}".format(guardian.name))
                 # set_student_permissions(doc)
             except Exception as e:
                 print(e)
