@@ -24,9 +24,10 @@ def create_user(doc,patch=0):
                 user.user_type = "Website User"
                 user.send_welcome_email = 0
                 user.insert(ignore_permissions=True)
+                print("Created User for Guardian: {}".format(doc.name))
                 doc.user=user.name
                 doc.save(ignore_permissions=True)
-                # frappe.db.commit()
+                frappe.db.commit()
             else:
                 user = frappe.get_doc(
                     {
