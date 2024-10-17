@@ -136,6 +136,7 @@ def update_assignment(filters, cmap_data):
     # frappe.qb.from_(instructor_table).inner_join(instructor_log_table).on(
     #     instructor_log_table.parent == instructor_table.name
     # ).select("*")
+    add_data_to_cmap_assignees(filters, cmap_data)
 
     cmap_table = frappe.qb.DocType("CMAP")
     cmap_assignees = frappe.qb.DocType("CMAP Assignment")
@@ -155,3 +156,26 @@ def update_assignment(filters, cmap_data):
             )
             data = query.run(as_dict=True)
             return data
+
+
+def add_data_to_cmap_assignees(filters, cmap_data):
+    for period in cmap_data:
+        for assignments in cmap_data[period]:
+            cmap = frappe.get_doc('CMAP', assignments.get('name'))
+            exists = False
+            for item in cmap.table_vwbr:
+                if item.school == filters.get("school") and item.division == assignments.get("division_name"):
+                    # Update existing teacher
+                    item.teacher = assignments.get("teacher")
+                    exists = True
+                    break
+            
+            # If teacher does not exist, append new entry
+            if not exists:
+                cmap.append("table_vwbr", {
+                    "school": filters.get("school"),
+                    "division": assignments.get("division_name"),
+                    "teacher": assignments.get("teacher"),
+                })
+            
+            cmap.save()
