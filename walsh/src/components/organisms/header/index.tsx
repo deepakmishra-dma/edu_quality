@@ -9,7 +9,7 @@ interface HeaderProps {
   navbarOpen: boolean
 }
 
-export const Header: React.FC<HeaderProps> = ({setNavbarOpen, navbarOpen}) => {
+export const Header: React.FC<HeaderProps> = ({setNavbarOpen}) => {
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -47,7 +47,7 @@ export const Header: React.FC<HeaderProps> = ({setNavbarOpen, navbarOpen}) => {
             bottom: 0,
             cursor: "pointer",
           }}>
-          <Burger opened={navbarOpen}/>
+          <Burger opened={false}/>
         </Stack>
         <Box sx={{
           fontSize: 20,

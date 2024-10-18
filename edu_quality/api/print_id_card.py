@@ -85,7 +85,7 @@ def generate(**kwargs):
         for enrollment in kwargs.get("enrollments")
     ]
 
-    enrollment_in_chunks = divide_into_subarrays(program_enrollment, 8)
+    enrollment_in_chunks = divide_into_subarrays(program_enrollment, 5)
 
     template = frappe.render_template(
         "edu_quality/templates/pdf/multiple_temporary_id_card.html",

@@ -70,41 +70,47 @@ function editMode() {
 			fieldtype: 'Link',
 			options: "Instructor"
 		},
-		{ label: 'Apply', fieldtype: "Button", click: () => changeCmapDataBulk(d) }
+		{ label: 'Apply', fieldtype: "Button", click: () => changeCmapDataBulk(d) },
+		{ label: 'Save', fieldtype: "Button", click: () => saveAssignment() }
 
 	])
 }
 
 function changeCmapDataBulk(fieldGroup) {
-	const division = fieldGroup.fields_dict["division"]
-	const teacher = fieldGroup.fields_dict["teacher"]
+	const division = fieldGroup.fields_dict["division"].value
+	const teacher = fieldGroup.fields_dict["teacher"].value
+	console.log(division)
 	Object.keys(cmapData).forEach(key => cmapData[key].forEach((values, index) => {
+
 		if (values.division_name == division) {
-			cmapData[key][index] = teacher
+			cmapData[key][index] = { ...cmapData[key][index], teacher }
+			
 		}
+
 	}))
-	setupDataTable(cmapData)
+	console.log(cmapData)
+	setupDataTable()
 }
 
 function changeTeacherOnSelect(e) {
 	const dataset = e.target.dataset
-	console.log(dataset)
+
 	if (dataset.index && dataset.key && cmapData) {
 		cmapData[dataset.key][dataset.index] = e.target.value
-		console.log(cmapData)
+
 		// setupDataTable(cmapData)
 	}
 
 }
 function getFilters() {
 	const filters = {}
-	console.log(filtersRef.fields_dict, 'sadada')
+
 	if (filtersRef && filtersRef.fields_dict)
 		Object.keys(filtersRef.fields_dict).forEach(key => {
-			console.log(key, filtersRef.fields_dict[key])
+
 			filters[key] = filtersRef.fields_dict[key].value
 		})
-	console.log(filters, 'yyoo')
+
 	return filters
 }
 
@@ -114,7 +120,7 @@ async function getDivisions() {
 		method: 'edu_quality.edu_quality.page.cmap_assignment_tool.cmap_assignment_tool.get_divisions',
 		args: filters
 	})
-	console.log(divisionsData, 'ho')
+
 }
 async function getCmap() {
 	const filters = getFilters()
@@ -128,7 +134,6 @@ async function getCmap() {
 
 async function setupDataTable() {
 	const container = document.getElementById('report-table-container')
-	console.log(container)
 	container.innerHTML = ""
 	const filters = getFilters()
 	const teachersData = await frappe.call({
@@ -146,7 +151,7 @@ function make_fieldgroup(parent, ddf_list) {
 		"parent": parent
 	});
 	fg.make();
-	console.log(fg)
+
 	return fg
 
 }
@@ -182,7 +187,6 @@ function createTable(data, teachersData) {
 	const headerCell6 = document.createElement('th');
 	headerCell6.textContent = 'Note';
 	headerRow.appendChild(headerCell6);
-	console.log(data, 'asade')
 	if (data)
 		Object.keys(data).forEach(val => {
 			data[val].forEach((row, index) => {
@@ -199,7 +203,7 @@ function createTable(data, teachersData) {
 }
 
 function createRow(period_no, chapter_name, division, teacher, plan_date, note, first_row, rowSpan, teachersData, index) {
-	console.log(rowSpan)
+
 	if (first_row)
 		return `<tr>
 	<td rowspan="${rowSpan}">${period_no}</td>
@@ -226,4 +230,15 @@ function createSelect(selectData, value, index, key) {
 	return `<select data-index="${index}" data-key=${key} value="${value}"><option></option>${selectData.map((el) => (
 		`<option>${el.name}</option>`
 	))}</select>`
+}
+
+async function saveAssignment() {
+	const filters = getFilters()
+	await frappe.call({
+		method: 'edu_quality.edu_quality.page.cmap_assignment_tool.cmap_assignment_tool.update_assignment',
+		args: {
+			filters: filters,
+			cmap_data: cmapData
+		}
+	})
 }
