@@ -90,7 +90,7 @@ export const NoticeList: React.FC<IResourceComponentsProps> = () => {
             }}
             onClick={() => navigate(`/notice/${item.name}?student=${encodeURIComponent(item.student)}`)}
           >
-            <Text h={20} weight="bold" size="lg" sx={{
+            <Text mih={20} weight="bold" size="lg" sx={{
               whiteSpace: 'nowrap',
               overflow: 'hidden',
               textOverflow: 'ellipsis',

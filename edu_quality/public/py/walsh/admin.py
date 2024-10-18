@@ -447,6 +447,7 @@ def send_test_mail(**kwargs):
     classes = kwargs.get("classes")
     divisions = kwargs.get("divisions")
     student_statuses = kwargs.get("student_statuses")
+
     if not test_emails:
         raise frappe.exceptions.MandatoryError("Test Emails are required")
 
@@ -505,3 +506,42 @@ def send_test_mail(**kwargs):
         send_email=True,
         read_receipt=True,
     )
+
+
+@frappe.whitelist()
+def get_student_count(**kwargs):
+    classes = kwargs.get("classes")
+    divisions = kwargs.get("divisions")
+    student_statuses = kwargs.get("student_statuses")
+    classes = json.loads(classes)
+    divisions = json.loads(divisions)
+    student_statuses = json.loads(student_statuses)
+
+    if not len(classes) and not len(divisions):
+        return 0
+
+    if len(classes) > 1 or len(divisions) == 0:
+        students_values = {'classes': classes, 'student_statuses': student_statuses}
+        students = frappe.db.sql('''
+                    select count(*) as count
+                    from tabStudent
+                    where name in (
+                       select student
+                       from `tabProgram Enrollment`
+                       where program in %(classes)s
+                    )
+                    and student_status in %(student_statuses)s
+                ''', values=students_values, as_dict=1)
+    else:
+        students_values = {'divisions': divisions, 'student_statuses': student_statuses}
+        students = frappe.db.sql('''
+                    select count(*) as count
+                    from tabStudent
+                    where name in (
+                       select student
+                       from `tabProgram Enrollment`
+                       where student_group in %(divisions)s
+                    )
+                    and student_status in %(student_statuses)s
+                ''', values=students_values, as_dict=1)
+    return students[0].get("count")

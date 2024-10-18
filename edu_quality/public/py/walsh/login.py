@@ -2,6 +2,7 @@ import json
 import random
 
 import frappe
+import requests
 from frappe.auth import LoginManager
 from nextai.whatsapp_business_api_integration.doctype.whatsapp_message.whatsapp_message import send_templated_message
 
@@ -58,6 +59,20 @@ def send_otp_to_whatsapp(wa_phone_no, otp):
     send_templated_message(contact.name, "walsh_new_adm_login", json.dumps(template_data))
 
 
+def send_otp_to_sms(full_phone_no, otp):
+    api_key = "***REMOVED-SMS-KEY***"
+    message = (f"OTP is {otp} for logging into Walnut School's Wal-Sh app. " +
+               "Valid till 10 min.\nDo not share OTP for security reasons.")
+    template_id = 1007162194737763683
+    sender = "WLTSCL"
+    encoded_message = requests.utils.quote(message)
+    url = f"http://smssolution.net.in/api/v4/?api_key={api_key}&method=sms&message={encoded_message}\
+    &to={full_phone_no}&sender={sender}&template_id={template_id}"
+    response = requests.post(url)
+    response = response.json()
+    return response
+
+
 def save_push_notification_token(token, user_id=None):
     user_id = user_id or frappe.session.user
     has_token = frappe.db.exists("Mobile Push Token", {"token": token, "user_id": user_id})
@@ -93,14 +108,16 @@ def send_otp(phone_no):
     guardian_number = remove_indian_country_code(phone_with_country_code)
 
     if not frappe.db.exists("User", {"phone": guardian_number}):
-        return {
-            "error": True,
-            "error_type": "user_not_found",
-            "error_message": "User Not Found"
-        }
+        if not frappe.db.exists("User", {"phone": phone_with_country_code}):
+            return {
+                "error": True,
+                "error_type": "user_not_found",
+                "error_message": "User Not Found"
+            }
 
     otp = create_otp(wa_phone_no)
     send_otp_to_whatsapp(wa_phone_no, otp)
+    send_otp_to_sms(phone_with_country_code, otp)
     return {
         "success": True,
         "message": "Otp Sent To +" + str(wa_phone_no) + " on WhatsApp",
@@ -114,7 +131,9 @@ def verify_otp(otp, phone_no, push_token=None):
     guardian_number = remove_indian_country_code(phone_with_country_code)
 
     if match_otp(wa_phone_no, otp):
-        user = frappe.get_doc("User", {"phone": guardian_number})
+        user = frappe.get_doc("User", {"phone": guardian_number}) if \
+            frappe.db.exists("User", {"phone": guardian_number}) else \
+            frappe.get_doc("User", {"phone": phone_with_country_code})
         login_manager = LoginManager()
         login_manager.login_as(user.name)
 

@@ -1,9 +1,9 @@
-import {Box, Navbar as MantineNavbar, NavLink} from '@mantine/core';
-import React from "react";
+import {Box, Burger, Navbar as MantineNavbar, NavLink, Stack} from '@mantine/core';
+import React, {useEffect} from "react";
 // @ts-expect-error no types
 import {IconLogout, IconMoodSad, IconReload, IconStack2, IconUser} from "@tabler/icons";
 import {useLogout} from "@refinedev/core";
-import {useNavigate} from "react-router-dom";
+import {useLocation, useNavigate} from "react-router-dom";
 
 interface NavbarProps {
   isOpen: boolean;
@@ -14,12 +14,21 @@ interface NavbarProps {
 const Navbar: React.FC<NavbarProps> = ({setIsOpen, isOpen}) => {
   const {mutate: logout} = useLogout()
   const navigate = useNavigate()
+  const location = useLocation()
+
+  useEffect(() => {
+    setIsOpen(false)
+  }, [location?.pathname])
+
   if (!isOpen) return null;
   return (
     <MantineNavbar
       hidden={!isOpen}
       style={{
         backgroundColor: 'transparent',
+        position: 'fixed',
+        inset: 0,
+        height: '100dvh',
       }}>
       <Box
         sx={{
@@ -32,43 +41,76 @@ const Navbar: React.FC<NavbarProps> = ({setIsOpen, isOpen}) => {
       <Box sx={{
         position: 'absolute',
         inset: 0,
-        right: '20%',
+        // right: '20%',
         backgroundColor: 'white',
-        paddingTop: 10,
-        overflow: 'auto',
+        // paddingTop: 10,
+        overflowX: 'hidden',
+        overflowY: 'auto',
       }}>
+        <Stack sx={{
+          height: 60,
+          borderBottom: '1px solid rgba(0,0,0,0.1)',
+          flexDirection: 'row',
+        }}>
+          <Box sx={{
+            height: 59,
+            width: 60,
+            padding: '10px 10px',
+          }}>
+            <Box sx={{
+              backgroundImage: 'url(images/walnut-logo-blue.png)',
+              height: 36,
+              width: 40,
+              backgroundSize: 'cover',
+            }}/>
+          </Box>
+          <Stack
+            onClick={() => setIsOpen(o => !o)}
+            justify="center"
+            align="center"
+            p={10}
+            w={50}
+            sx={{
+              right: 0,
+              top: 0,
+              bottom: 0,
+              cursor: "pointer",
+              marginLeft: 'auto'
+            }}>
+            <Burger opened={isOpen}/>
+          </Stack>
+        </Stack>
         <NavLink
           onClick={() => navigate('/curriculum-updates')}
-          sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%'}}
+          sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%', borderBottom: '1px solid rgba(0,0,0,0.1)'}}
           label="Curriculum Updates"
-          icon={<IconStack2 size={25} stroke={1.5}/>}
+          icon={<IconStack2 size={35} stroke={1.5} color='#00b8ff'/>}
         />
         <NavLink
           onClick={() => navigate('/absent-note')}
-          sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%'}}
+          sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%', borderBottom: '1px solid rgba(0,0,0,0.1)'}}
           label="Absent/Sick Note"
-          icon={<IconMoodSad size={25} stroke={1.5}/>}
+          icon={<IconMoodSad size={35} stroke={1.5} color='#00b8ff'/>}
         />
         <NavLink
           onClick={() => navigate('/student-profile')}
-          sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%'}}
+          sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%', borderBottom: '1px solid rgba(0,0,0,0.1)'}}
           label="Student Profile"
-          icon={<IconUser size={25} stroke={1.5}/>}
+          icon={<IconUser size={35} stroke={1.5} color='#00b8ff'/>}
         />
         <NavLink
           onClick={() => window.location.reload()}
-          sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%'}}
+          sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%', borderBottom: '1px solid rgba(0,0,0,0.1)'}}
           label="Reload"
-          icon={<IconReload size={25} stroke={1.5}/>}
+          icon={<IconReload size={35} stroke={1.5} color='#00b8ff'/>}
         />
         <NavLink
           label="Logout"
-          icon={<IconLogout size={25} stroke={1.5}/>}
+          icon={<IconLogout size={35} stroke={1.5} color='#00b8ff'/>}
           onClick={() => logout()}
           sx={{
-            position: 'sticky',
-            bottom: 0,
-            margin: 5, boxSizing: 'border-box', maxWidth: '100%'
+            position: 'sticky', borderBottom: '1px solid rgba(0,0,0,0.1)',
+            margin: 5, boxSizing: 'border-box', maxWidth: '100%', bottom: 0,
           }}
         />
       </Box>
