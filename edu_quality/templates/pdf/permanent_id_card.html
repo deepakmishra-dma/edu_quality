@@ -217,8 +217,6 @@ school = frappe.get_doc("School", doc.custom_school) %}
       display: inline-block;
       width: 20px;
       height: 20px;
-
-      background-color: {{house}};
       border-radius: 50%;
     }
     .parent-container{
@@ -244,7 +242,7 @@ school = frappe.get_doc("School", doc.custom_school) %}
           <h1 class="pickup-bus">M1</h1>
           {% endif %}
           <div class="house-container">
-            <span id="house"></span>
+            <span id="house" style="background-color: {{house}};"></span>
           </div>
         </div>
       </div>
