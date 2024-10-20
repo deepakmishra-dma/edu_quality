@@ -88,7 +88,10 @@ doctype_list_js = {
 
 # add methods and filters to jinja environment
 jinja = {
-    "methods": ["edu_quality.overrides_hooks.purchase_order"],
+    "methods": [
+        "edu_quality.overrides_hooks.purchase_order",
+        "edu_quality.public.py.utils",
+    ],
     # "filters": "edu_quality.utils.jinja_filters"
 }
 
