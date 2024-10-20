@@ -313,7 +313,9 @@ school = frappe.get_doc("School", doc.custom_school) %}
       </div>
       <div style="margin: 10px 4px 0 0">
         <p>BLOOD GROUP: {{student_data.blood_group}}</p>
-        <p>DATE OF BIRTH: {{student_data.date_of_birth}}</p>
+        <p>
+          DATE OF BIRTH: {{convertyearMonthDate(student_data.date_of_birth)}}
+        </p>
       </div>
       <div class="tiffin-text">
         <p>{{doc.tiffin_rack_no}}</p>
