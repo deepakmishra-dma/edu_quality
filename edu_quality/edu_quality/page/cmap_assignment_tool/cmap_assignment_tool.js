@@ -96,7 +96,7 @@ function changeTeacherOnSelect(e) {
 	const dataset = e.target.dataset
 
 	if (dataset.index && dataset.key && cmapData) {
-		cmapData[dataset.key][dataset.index] = e.target.value
+		cmapData[dataset.key][dataset.index].teacher = e.target.value
 
 		// setupDataTable(cmapData)
 	}
