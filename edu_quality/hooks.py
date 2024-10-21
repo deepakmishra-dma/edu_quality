@@ -13,7 +13,8 @@ app_license = "MIT"
 # include js, css files in header of desk.html
 # app_include_css = "/assets/edu_quality/css/edu_quality.css"
 app_include_js = [
-    "/assets/edu_quality/js/carnivalEvent.js",
+    "/assets/edu_quality/js/exportTool.js" "/assets/edu_quality/js/carnivalEvent.js",
+    # "export_tool.bundle.js",
 ]
 
 # include js, css files in header of web template
@@ -87,7 +88,10 @@ doctype_list_js = {
 
 # add methods and filters to jinja environment
 jinja = {
-    "methods": ["edu_quality.overrides_hooks.purchase_order"],
+    "methods": [
+        "edu_quality.overrides_hooks.purchase_order",
+        "edu_quality.public.py.utils",
+    ],
     # "filters": "edu_quality.utils.jinja_filters"
 }
 
@@ -116,6 +120,7 @@ jinja = {
 permission_query_conditions = {
     "Contact": "edu_quality.permissions.contacts.contact_query",
     "Purchase Order": "edu_quality.permissions.purchase_orders.purchase_query",
+    "Student": "edu_quality.permissions.students.student_query",
 }
 #
 # has_permission = {
@@ -141,6 +146,10 @@ override_doctype_class = {
 # Hook on document methods and events
 
 doc_events = {
+    "Guardian": {
+        "before_insert": "edu_quality.edu_quality.server_scripts.guardian.before_insert",
+        "on_update": "edu_quality.edu_quality.server_scripts.guardian.on_update",
+    },
     "Student Applicant": {
         "before_save": "edu_quality.public.py.application.before_save",
         "after_insert": "edu_quality.edu_quality.server_scripts.student_applicant.after_insert",
@@ -149,9 +158,11 @@ doc_events = {
     "Program Enrollment": {
         "on_submit": [
             "edu_quality.public.py.fee.create_fees",
+        ],
+        "after_insert": [
+            "edu_quality.public.py.fee.append_program_enrollment",
             "edu_quality.public.py.fee.create_id_card",
         ],
-        "after_insert": "edu_quality.public.py.fee.append_program_enrollment",
         "on_trash": "edu_quality.public.py.fee.remove_program_enrollment",
     },
     "Contact": {
@@ -191,7 +202,8 @@ doc_events = {
         "after_insert": "edu_quality.overrides_hooks.topic.after_insert",
     },
     "Purchase Order": {
-        "before_validate": "edu_quality.overrides_hooks.purchase_order.before_validate"
+        "before_validate": "edu_quality.overrides_hooks.purchase_order.before_validate",
+        "on_submit": "edu_quality.edu_quality.server_scripts.purchase_order.on_submit",
     },
     # "Instructor": {
     #     "after_insert": "edu_quality.overrides_hooks.instructor.after_insert",
@@ -205,7 +217,10 @@ doc_events = {
 # Scheduled Tasks
 # ---------------
 scheduler_events = {
-    "all": ["edu_quality.api.student_application.get_and_schedule_pending_walkouts"],
+    "all": [
+        "edu_quality.api.student_application.get_and_schedule_pending_walkouts",
+        "edu_quality.overrides_hooks.item.upload_all_imported_to_drive",
+    ],
     "cron": {"0 * * * *": ["edu_quality.tasks.cron"]},
     "daily": [
         "edu_quality.tasks.time_based",

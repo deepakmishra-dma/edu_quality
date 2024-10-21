@@ -164,7 +164,11 @@ def transform_data(program_enrollments, CMAPS, class_filter):
             i[school.get("fieldname")] = (
                 converted_dict.get(f'{i.get("class")}-{school.get("label")}', 0) or 0
             )
-            i[f"extra_{school.get('fieldname')}"] = frappe.db.get_value("School",school.get('label'),'custom_extra_print_qty')
+
+            i[f"extra_{school.get('fieldname')}"] = frappe.db.get_value(
+                "School", school.get("label"), "custom_extra_print_qty"
+            )
+
 
         i["total_quantity"] = get_school_fields_sum(i)
 
@@ -249,41 +253,18 @@ def get_data_from_queries(filters=None):
     )
     qty_needed_for_schools_query = ""
 
-    if academic_year_doc.custom_next_academic_year:
-        qty_needed_for_schools = []
-        schools = frappe.db.get_list("School")
-        schools = [school.get("name") for school in schools]
-
-        for school in schools:
-            try:
-                projected_strength = calculate_strength_previous(
-                    f"{class_filter}-{school}", filters.get("academic_year")
-                )
-            except Exception as e:
-                frappe.errprint(str(e))
-                projected_strength = 0
-
-            qty_needed_for_schools.append(
-                {
-                    "count": projected_strength,
-                    "program": f"{class_filter}-{school}",
-                }
-            )
-
-    else:
-        qty_needed_for_schools_query = (
-            frappe.qb.from_(student)
-            .inner_join(program_enrollment)
-            .on(student.name == program_enrollment.student)
-            .where(
-                (student.student_status.isin(["Current student", "Defaulter"]))
-                & (program_enrollment.academic_year == filters.get("academic_year"))
-                & (program_enrollment.program.like(f'{filters.get("class")}-%'))
-            )
-            .groupby(program_enrollment.program)
-            .select(count_all, program_enrollment.program)
+    qty_needed_for_schools_query = (
+        frappe.qb.from_(student)
+        .inner_join(program_enrollment)
+        .on(student.name == program_enrollment.student)
+        .where(
+            (program_enrollment.academic_year == filters.get("academic_year"))
+            & (program_enrollment.program.like(f'{filters.get("class")}-%'))
         )
-        qty_needed_for_schools = qty_needed_for_schools_query.run(as_dict=True)
+        .groupby(program_enrollment.program)
+        .select(count_all, program_enrollment.program)
+    )
+    qty_needed_for_schools = qty_needed_for_schools_query.run(as_dict=True)
 
     frappe.errprint(qty_needed_for_schools)
     return transform_data(qty_needed_for_schools, cmap_data, class_filter)

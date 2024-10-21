@@ -1,0 +1,71 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-02-28 21:41:18.310846",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "type",
+  "list_preview",
+  "message_preview",
+  "failure_list",
+  "failure_messages"
+ ],
+ "fields": [
+  {
+   "fieldname": "type",
+   "fieldtype": "Select",
+   "label": "Type",
+   "options": "email\nnotice\nnotification",
+   "read_only": 1
+  },
+  {
+   "fieldname": "failure_list",
+   "fieldtype": "JSON",
+   "hidden": 1,
+   "label": "Failure List"
+  },
+  {
+   "fieldname": "failure_messages",
+   "fieldtype": "JSON",
+   "hidden": 1,
+   "label": "Failure Messages"
+  },
+  {
+   "fieldname": "list_preview",
+   "fieldtype": "HTML",
+   "label": "List Preview",
+   "options": "<div class=\"form-group\"><div class=\"clearfix\"><label class=\"control-label\" style=\"padding-right: 0px;\">Student Reference Numbers</label><span class=\"help\"></span></div><div class=\"control-input-wrapper\"><div class=\"control-input\" style=\"display: none;\"></div><div class=\"control-value like-disabled-input\" style=\"\"><pre>{{ doc.failure_list }}</pre></div></div></div>\n\n"
+  },
+  {
+   "fieldname": "message_preview",
+   "fieldtype": "HTML",
+   "label": "Message Preview",
+   "options": "<div class=\"form-group\"><div class=\"clearfix\"><label class=\"control-label\" style=\"padding-right: 0px;\">Error Details</label><span class=\"help\"></span></div><div class=\"control-input-wrapper\"><div class=\"control-input\" style=\"display: none;\"></div><div class=\"control-value like-disabled-input\" style=\"\"><pre>{{ doc.failure_messages }}</pre></div></div></div>\n\n"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-03-04 17:39:44.992041",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "School Notice Error",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

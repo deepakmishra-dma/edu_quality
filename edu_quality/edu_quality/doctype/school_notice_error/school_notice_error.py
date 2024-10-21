@@ -5,5 +5,5 @@
 from frappe.model.document import Document
 
 
-class SchoolSelect(Document):
+class SchoolNoticeError(Document):
 	pass

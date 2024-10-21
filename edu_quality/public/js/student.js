@@ -40,11 +40,20 @@ function addReferral(frm){
                         referred_by: frm.doc.name
                     },
                     callback: function (response) {
+                        if(response.message==1){
                         frappe.show_alert({
-                            message: __(response.message),
+                            message: __("Referral Added"),
                             indicator: 'green'
                         });
                         frm.reload_doc();
+                    }
+                    else{
+                        frappe.show_alert({
+                            message: __("Something Went Wrong!"),
+                            indicator: 'red'
+                        });
+                    }
+                        
                     }
                 });
                 d.hide();

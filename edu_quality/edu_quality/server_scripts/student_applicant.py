@@ -46,9 +46,12 @@ def add_referral_discount(referred_by, student_applicant=None):
                 trigger_event(doc=student_applicant, event_name="referral_created")
         except ImportError:
             print("Chatnext is not installed")
+            return 0
+        return 1
 
     except Exception as e:
         frappe.logger('referral').exception(e)
+        return 0
 
 
 def increase_referral_count(student):

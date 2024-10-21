@@ -10,11 +10,12 @@
   "academic_year",
   "subject",
   "period",
-  "item_code_field",
+  "reserved_for_portion_circular",
   "column_break_ohld",
   "class",
   "unit",
   "plan_date",
+  "last_period_of_the_unit",
   "section_break_hvmh",
   "products",
   "table_vwbr",
@@ -38,7 +39,8 @@
   {
    "fieldname": "plan_date",
    "fieldtype": "Date",
-   "label": "Plan Date"
+   "label": "Plan Date",
+   "reqd": 1
   },
   {
    "fieldname": "period",
@@ -202,15 +204,21 @@
    "search_index": 1
   },
   {
-   "fieldname": "item_code_field",
-   "fieldtype": "Data",
-   "label": "Item Code Field",
-   "read_only": 1
+   "default": "0",
+   "fieldname": "reserved_for_portion_circular",
+   "fieldtype": "Check",
+   "label": "Reserved For Portion Circular"
+  },
+  {
+   "default": "0",
+   "fieldname": "last_period_of_the_unit",
+   "fieldtype": "Check",
+   "label": "Last Period of the Unit"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-23 17:19:48.653448",
+ "modified": "2024-02-28 14:24:17.233904",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "CMAP",
