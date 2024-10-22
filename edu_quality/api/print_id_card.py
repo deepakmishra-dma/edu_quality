@@ -67,8 +67,7 @@ def get_division_name(program_enrollment):
 def house_color(program_enrollment):
     house_dict = {}
     for pe in program_enrollment:
-        house = frappe.get_value("Student", pe.student, "school_house")
-        house_color = frappe.get_value("School House", house, "house_color")
+        house_color = frappe.get_value("School House", pe.school_house, "house_color")
         house_dict[pe.name] = house_color or ""
     return house_dict
 
