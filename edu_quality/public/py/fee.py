@@ -804,3 +804,33 @@ def component_wise(
     component_wise_split["breakup"] = breakup
     component_wise_split["is_deposit"] = combination
     return component_wise_split
+
+
+def update_program_enrollment(doc, method):
+    frappe.db.sql(
+        """
+        UPDATE `tabStudent` 
+        SET roll_no=%s,
+            tiffin_rack_no=%s,
+            bus_service_required=%s,
+            school_house=%s,
+            custom_division=%s,
+            pickup_bus=%s,
+            drop_bus=%s,
+            pickup_address=%s,
+            drop_address=%s
+        WHERE name=%s
+        """, 
+        (
+            doc.roll_no, 
+            doc.tiffin_rack_no, 
+            doc.transport_service_required, 
+            doc.school_house, 
+            doc.student_group, 
+            doc.pickup_bus, 
+            doc.drop_bus, 
+            doc.pickup_address, 
+            doc.drop_address, 
+            doc.student
+        )
+    )
