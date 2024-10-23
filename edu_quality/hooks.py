@@ -164,6 +164,8 @@ doc_events = {
             "edu_quality.public.py.fee.create_id_card",
         ],
         "on_trash": "edu_quality.public.py.fee.remove_program_enrollment",
+        "on_update": "edu_quality.public.py.fee.update_program_enrollment",
+        "on_update_after_submit": "edu_quality.public.py.fee.update_program_enrollment",
     },
     "Contact": {
         "before_validate": "edu_quality.overrides_hooks.contact.before_validate"
