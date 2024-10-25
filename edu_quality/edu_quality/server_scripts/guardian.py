@@ -16,20 +16,31 @@ def create_user(doc,patch=0):
         if guardian_as_user:
             doc.user = guardian_as_user
         else:
-            user = frappe.get_doc(
-                {
-                    "doctype": "User",
-                    "first_name": doc.guardian_name,
-                    "email": doc.email_address,
-                    "roles": [{"role": "Guardian"}],
-                    "user_type": "Website User",
-                    "send_welcome_email": 0
-                    
-                }
-            ).insert(ignore_permissions=True)
-            doc.user=user.name
-        if patch:
-            doc.save(ignore_permissions=True)
+            if patch:
+                user = frappe.new_doc("User")
+                user.first_name = doc.guardian_name
+                user.email = doc.email_address
+                user.append("roles", {"role": "Guardian"})
+                user.user_type = "Website User"
+                user.send_welcome_email = 0
+                user.insert(ignore_permissions=True)
+                print("Created User for Guardian: {}".format(doc.name))
+                doc.user=user.name
+                doc.save(ignore_permissions=True)
+                frappe.db.commit()
+            else:
+                user = frappe.get_doc(
+                    {
+                        "doctype": "User",
+                        "first_name": doc.guardian_name,
+                        "email": doc.email_address,
+                        "roles": [{"role": "Guardian"}],
+                        "user_type": "Website User",
+                        "send_welcome_email": 0
+                        
+                    }
+                ).insert(ignore_permissions=True)
+                doc.user=user.name
 
 def set_student_permissions(doc,patch=0):
     return
