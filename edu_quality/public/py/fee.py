@@ -818,7 +818,8 @@ def update_program_enrollment(doc, method):
             pickup_bus=%s,
             drop_bus=%s,
             pickup_address=%s,
-            drop_address=%s
+            drop_address=%s,
+            image=%s
         WHERE name=%s
         """, 
         (
@@ -831,6 +832,7 @@ def update_program_enrollment(doc, method):
             doc.drop_bus, 
             doc.pickup_address, 
             doc.drop_address, 
+            doc.image,
             doc.student
         )
     )
