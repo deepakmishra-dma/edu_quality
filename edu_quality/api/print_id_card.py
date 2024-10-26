@@ -15,7 +15,7 @@ def divide_into_subarrays(arr, max_size):
 
 def hex_to_rgb(hex_color):
     if not hex_color:
-        return (85,62,43)
+        return (85, 62, 43)
     if hex_color[0] == "#":
         hex_color = hex_color[1:]
     return tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
@@ -57,19 +57,28 @@ def background_image(program_enrollment):
 
 def get_division_name(program_enrollment):
     div_dict = {}
+    class_short_codes = {
+        "Senior KG": "SR",
+        "Junior KG": "JR",
+        "Nursery": "NR"
+    }
+    
     for pe in program_enrollment:
-        div = frappe.get_doc("Student Group", pe.student_group).name
-        name = div.split('-')[1] + div.split('-')[0]
-        div_dict[pe.name] = name
+        div = frappe.get_value("Student Group", pe.student_group, "student_group_name")
+        class_name = frappe.get_value("Program", pe.program, "program_name")
+        
+        class_short_code = class_short_codes.get(class_name, class_name)
+        
+        div_dict[pe.name] = class_short_code + div
+        
     return div_dict
 
 
 def house_color(program_enrollment):
     house_dict = {}
     for pe in program_enrollment:
-        house = frappe.get_value("Student", pe.student, 'school_house')
-        house_color = frappe.get_value("School House", house, 'house_color')
-        house_dict[pe.name] = house_color or ''
+        house_color = frappe.get_value("School House", pe.school_house, "house_color")
+        house_dict[pe.name] = house_color or ""
     return house_dict
 
 
@@ -85,7 +94,7 @@ def generate(**kwargs):
         for enrollment in kwargs.get("enrollments")
     ]
 
-    enrollment_in_chunks = divide_into_subarrays(program_enrollment, 5)
+    enrollment_in_chunks = divide_into_subarrays(program_enrollment, 4)
 
     template = frappe.render_template(
         "edu_quality/templates/pdf/multiple_temporary_id_card.html",
@@ -111,7 +120,7 @@ def generate_permanent_id_cards(**kwargs):
         for enrollment in kwargs.get("enrollments")
     ]
 
-    enrollment_in_chunks = divide_into_subarrays(program_enrollment, 4)
+    enrollment_in_chunks = divide_into_subarrays(program_enrollment, 5)
     background_images = background_image(program_enrollment)
     divisions = get_division_name(program_enrollment)
     house_colors = house_color(program_enrollment)

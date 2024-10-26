@@ -36,7 +36,9 @@ class CMAP(Document):
         generate_text_from_unique_notes(
             self, "Material Required", added_material_required
         )
+
         self.item_code_field = ", ".join(item.get("item", "") for item in self.products)
+
 
     def after_insert(self, method=None):
         insert_cmap_assignees(self)

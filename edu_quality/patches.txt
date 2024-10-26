@@ -6,3 +6,4 @@ edu_quality.patches.payment_term #08-11-2023
 edu_quality.patches.academic_year #28-11-2023
 edu_quality.patches.guardian_user #01-03-2024 6
 edu_quality.patches.image #06-03-2024
+edu_quality.patches.id_card #06-03-2024 2

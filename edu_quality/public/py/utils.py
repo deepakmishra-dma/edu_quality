@@ -9,6 +9,7 @@ import requests
 from typing import Union
 from PIL import Image
 
+
 def set_property(doctype, fieldname, prop, property_type, value):
     filters = {
         "doctype_or_field": "DocField",
@@ -419,7 +420,7 @@ def im_2_b64_png(image):
 
 
 def gen_qr_code_b64(input_str: Union[str, bytes]) -> str:
-    
+
     return im_2_b64(qrcode.make(input_str))
 
 
@@ -484,3 +485,16 @@ def email_recipients(variables, student, case):
 
     recipients_str = ", ".join(recipients)
     variables["recipients_str"] = recipients_str
+
+
+def reduce_font_size_steps(initial_size, step, txt, initial_char_length, lowest):
+    if len(txt) <= initial_char_length:
+        return initial_size
+    rem = len(txt) % int(initial_char_length)
+    res = int(initial_size) - int(rem) * float(step)
+    if res < lowest:
+        return str(lowest)
+    frappe.log_error(
+        "statat", str([lowest, res, initial_size, txt, initial_char_length])
+    )
+    return str(int(res))

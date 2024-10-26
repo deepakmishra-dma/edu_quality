@@ -37,7 +37,6 @@ school = frappe.get_doc("School", doc.custom_school) %}
       margin: 5px;
       background-repeat: no-repeat;
       padding-bottom: 1em;
-      background-image: url("{{bg_image}}");
       background-size: contain;
     }
 
@@ -99,6 +98,7 @@ school = frappe.get_doc("School", doc.custom_school) %}
     }
     .student-name {
       width: 75%;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
       gap: 16px;
@@ -106,9 +106,10 @@ school = frappe.get_doc("School", doc.custom_school) %}
     }
 
     .student-name p {
-      width: max-content;
+      width: 100%;
+      overflow: hidden;
       text-transform: uppercase;
-      font-size: 18px;
+      font-size: {{reduce_font_size_steps(18,1.5,student_data.first_name,10,5)}}px;
       font-weight: 600;
       line-height: 30px;
     }
@@ -215,8 +216,6 @@ school = frappe.get_doc("School", doc.custom_school) %}
       display: inline-block;
       width: 20px;
       height: 20px;
-
-      background-color: {{house}};
       border-radius: 50%;
     }
     .parent-container{
@@ -227,7 +226,7 @@ school = frappe.get_doc("School", doc.custom_school) %}
     }
 </style>
 <div class="parent-container">
-  <div class="front">
+  <div class="front" style="background-image: url('{{bg_image}}');">
     <div class="container">
       <div class="row student-image">
         <img
@@ -242,7 +241,7 @@ school = frappe.get_doc("School", doc.custom_school) %}
           <h1 class="pickup-bus">M1</h1>
           {% endif %}
           <div class="house-container">
-            <span id="house"></span>
+            <span id="house" style="background-color: {{house}};"></span>
           </div>
         </div>
       </div>
@@ -313,7 +312,9 @@ school = frappe.get_doc("School", doc.custom_school) %}
       </div>
       <div style="margin: 10px 4px 0 0">
         <p>BLOOD GROUP: {{student_data.blood_group}}</p>
-        <p>DATE OF BIRTH: {{student_data.date_of_birth}}</p>
+        <p>
+          DATE OF BIRTH: {{convertyearMonthDate(student_data.date_of_birth)}}
+        </p>
       </div>
       <div class="tiffin-text">
         <p>{{doc.tiffin_rack_no}}</p>
