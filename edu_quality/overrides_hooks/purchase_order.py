@@ -349,7 +349,8 @@ def calculate_print_count(self):
 
 @frappe.whitelist()
 def convertyearMonthDate(date_input):
-
+    if date_input == None:
+        return ""
     if isinstance(date_input, date):
         date_str = date_input.strftime("%Y-%m-%d")
     else:
