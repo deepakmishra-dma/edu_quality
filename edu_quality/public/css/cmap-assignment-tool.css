@@ -1,0 +1,48 @@
+.cmap-assignment-tool.page-body form {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.cmap-assignment-tool.page-body * {
+  box-sizing: border-box;
+}
+.cmap-assignment-tool.page-body button[data-fieldname="fetch"] {
+  margin-top: 26px;
+  width: 150px;
+}
+
+.cmap-assignment-tool.page-body select[data-fieldname="unit"] {
+  width: 200px;
+}
+.cmap-assignment-tool.page-body table {
+  table-layout: fixed;
+}
+.cmap-assignment-tool.page-body th,
+td {
+  padding: 4px 32px;
+  border: 1px solid var(--gray-200);
+}
+
+.cmap-assignment-tool.page-body th {
+  background-color: var(--subtle-fg);
+}
+.cmap-assignment-tool.page-body .teacher-cell select {
+  border: 1px solid var(--gray-500);
+  height: var(--input-height);
+  font-size: var(--text-base);
+  font-weight: var(--weight-regular);
+  letter-spacing: 0.02em;
+  border-radius: var(--border-radius-sm);
+  padding: var(--input-padding);
+  position: relative;
+  width: 200px;
+  padding-block: 0;
+}
+
+.cmap-assignment-tool.page-body .no-content {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+}
