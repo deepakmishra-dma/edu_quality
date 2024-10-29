@@ -158,13 +158,13 @@ doc_events = {
     "Program Enrollment": {
         "on_submit": [
             "edu_quality.public.py.fee.create_fees",
+            "edu_quality.public.py.fee.update_program_enrollment"
         ],
         "after_insert": [
             "edu_quality.public.py.fee.append_program_enrollment",
             "edu_quality.public.py.fee.create_id_card",
         ],
         "on_trash": "edu_quality.public.py.fee.remove_program_enrollment",
-        "on_update": "edu_quality.public.py.fee.update_program_enrollment",
         "on_update_after_submit": "edu_quality.public.py.fee.update_program_enrollment",
     },
     "Contact": {
