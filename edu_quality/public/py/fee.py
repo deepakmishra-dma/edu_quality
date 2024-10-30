@@ -237,11 +237,14 @@ def create_fees(doc, method=None):
         fee_schedule = frappe.get_value(
             "Fee Schedule", {"fee_structure": fee_structure}, "name"
         )
-        stude_appli_class = frappe.get_value(
-            "Student Applicant",
-            {"student_email_id": student.student_email_id, "program": doc.program},
-            "name",
-        )
+        if student.student_applicant:
+            stude_appli_class = student.student_applicant
+        else:
+            stude_appli_class = frappe.get_value(
+                "Student Applicant",
+                {"student_email_id": student.student_email_id, "program": doc.program},
+                "name",
+            )
         if not stude_appli_class:
             fee_data = {
                 "doctype": "Fees",
