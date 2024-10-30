@@ -21,9 +21,18 @@ def hex_to_rgb(hex_color):
     return tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
 
 
+def get_image_path(image_path):
+    image_path = str(image_path)
+    site_path = frappe.get_site_path()
+    if "private" in image_path:
+        return Path(site_path + image_path)
+    else:
+        return Path(site_path + "/public" + image_path)
+
+
 def change_image_bg(image_path, bg_color):
     fill_color = hex_to_rgb(bg_color)
-    image_path = Path(frappe.get_site_path() + str(image_path))
+    image_path = get_image_path(image_path)
     im = Image.open(image_path)
     original_mode = im.mode
     if original_mode in ("RGBA", "LA"):
