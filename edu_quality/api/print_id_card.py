@@ -57,19 +57,10 @@ def background_image(program_enrollment):
 
 def get_division_name(program_enrollment):
     div_dict = {}
-    class_short_codes = {
-        "Senior KG": "SR",
-        "Junior KG": "JR",
-        "Nursery": "NR"
-    }
-    
     for pe in program_enrollment:
         div = frappe.get_value("Student Group", pe.student_group, "student_group_name")
-        class_name = frappe.get_value("Program", pe.program, "program_name")
-        
-        class_short_code = class_short_codes.get(class_name, class_name)
-        
-        div_dict[pe.name] = class_short_code + div
+        class_name = frappe.get_value("Program", pe.program, "short_code")
+        div_dict[pe.name] = class_name + div
         
     return div_dict
 
