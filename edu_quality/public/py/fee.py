@@ -280,8 +280,7 @@ def create_fees(doc, method=None):
             update_student_group(doc.name, fee_structure=fee_structure.name)
         else:
             student_applicant = frappe.get_doc(
-                "Student Applicant", {"student_email_id": student.student_email_id}
-            )
+                "Student Applicant", stude_appli_class)
             fees = frappe.get_doc(
                 {
                     "doctype": "Fees",
