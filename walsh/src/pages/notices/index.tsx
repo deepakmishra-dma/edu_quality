@@ -5,17 +5,13 @@ import {Box, Input, Stack, Text} from "@mantine/core";
 import {useNavigate} from "react-router-dom";
 // @ts-expect-error no types
 import {IconCalendar, IconSearch} from "@tabler/icons";
-
-const noticeColors = [
-  '#d21eff',
-  '#fe7f00',
-  "#00a8ff",
-  "#019837",
-]
+import {getStudentProfileColor} from "../../components/hooks/useStudentProfileColor.ts";
+import useStudentList from "../../components/queries/useStudentList.ts";
 
 export const NoticeList: React.FC<IResourceComponentsProps> = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
+  const {data} = useStudentList()
   const {data: list, isLoading} = useList<Notice>({
     queryOptions: {
       queryKey: ["list", "notices"],
@@ -50,7 +46,7 @@ export const NoticeList: React.FC<IResourceComponentsProps> = () => {
       {!filteredList?.length && <Text align="center" color="dimmed" weight="bold" my={30}>
         {isLoading ? "Loading..." : "No Notice Found"}
       </Text>}
-      {filteredList?.map((item, i) => item?.subject?.toLowerCase?.()?.includes(searchQuery.toLowerCase()) && (
+      {filteredList?.map((item) => item?.subject?.toLowerCase?.()?.includes(searchQuery.toLowerCase()) && (
         <Stack
           key={item.name + String(item.student || "")}
           sx={{
@@ -70,7 +66,7 @@ export const NoticeList: React.FC<IResourceComponentsProps> = () => {
             alignItems: 'center',
             justifyContent: 'center',
             borderRadius: '100%',
-            backgroundColor: noticeColors[i % noticeColors.length],
+            backgroundColor: getStudentProfileColor(item.student, data?.data?.message || []),
             color: 'white',
             flexGrow: 0,
             flexShrink: 0,

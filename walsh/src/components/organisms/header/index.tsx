@@ -18,7 +18,7 @@ export const Header: React.FC<HeaderProps> = ({setNavbarOpen}) => {
     <MantineHeader height={60} sx={{
       boxShadow: "0 0 5px rgba(0, 0, 0, 0.1)",
     }}>
-      <Stack align="center" justify="center" sx={{height: "100%"}}>
+      <Stack justify="center" pl={50} sx={{height: "100%"}}>
         {location.pathname !== '/' && <Stack
             onClick={() => navigate(-1)}
             justify="center"
@@ -36,8 +36,8 @@ export const Header: React.FC<HeaderProps> = ({setNavbarOpen}) => {
         </Stack>}
         <Stack
           onClick={() => setNavbarOpen(o => !o)}
-          justify="center"
-          align="center"
+          // justify="center"
+          // align="center"
           p={10}
           w={50}
           sx={{
@@ -55,7 +55,8 @@ export const Header: React.FC<HeaderProps> = ({setNavbarOpen}) => {
         }}>
           {location.pathname === '/' ? "Notices" :
            /^\/notice\/([0-9a-f]+)$/.test(location.pathname) ? "" :
-           /^\/curriculum-updates$/.test(location.pathname) ? "Curriculum Updates" :
+           /^\/cmap$/.test(location.pathname) ? "Curriculum Updates" :
+           /^\/cmap\/list$/.test(location.pathname) ? "Curriculum Updates" :
            ""}
         </Box>
       </Stack>

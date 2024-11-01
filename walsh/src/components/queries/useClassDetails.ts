@@ -1,0 +1,35 @@
+import {useCustom} from "@refinedev/core";
+
+export interface ClassDetails {
+  "division": {
+    student_group_name: string
+    name: string
+  }
+  "program": {
+    program_name: string
+  }
+  "class": {
+    subject: [{
+      subject: string
+    }]
+  }
+}
+
+const useClassDetails = (student: string) => {
+  return useCustom<{ message: ClassDetails }>({
+    config: {
+      query: {
+        student
+      }
+    },
+    errorNotification: undefined,
+    method: "get",
+    queryOptions: {
+      queryKey: ["student", 'list', student],
+    },
+    successNotification: undefined,
+    url: '/api/method/edu_quality.public.py.walsh.cmap.get_student_class_details',
+  })
+}
+
+export default useClassDetails

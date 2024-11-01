@@ -8,6 +8,8 @@ import {ErrorComponent} from "@refinedev/mantine";
 import {AppShell} from "@mantine/core";
 import Navbar from "../components/organisms/navbar";
 import React from "react";
+import Cmap from "./cmap";
+import CmapList from "./cmap/list.tsx";
 
 const Pages = () => {
   // const location = useLocation()
@@ -47,6 +49,8 @@ const Pages = () => {
             <Routes>
               <Route path="/" element={<NoticeList/>}/>
               <Route path="/notice/:id" element={<NoticeDetails/>}/>
+              <Route path="/cmap" element={<Cmap/>}/>
+              <Route path="/cmap/list" element={<CmapList/>}/>
               <Route path="*" element={<ErrorComponent/>}/>
             </Routes>
           </Authenticated>
