@@ -142,25 +142,18 @@ def generate_permanent_id_cards_async(**kwargs):
     main_doc = html.render()
     main_pdf = main_doc.write_pdf()
 
-    frappe.local.response.filename = "Permanent Id Card.pdf".format(
-        name="Permanent Id Card.pdf".replace(" ", "-").replace("/", "-")
-    )
-    frappe.local.response.filecontent = main_pdf
-    frappe.local.response.type = "pdf"
-    temp_dir = Path(frappe.get_site_path() + "/public/files/converted/")
+    public_path = Path(frappe.get_site_path(), "public")
+
+    os.makedirs(public_path, exist_ok=True)
     
     current_datetime = datetime.now().strftime("%Y%m%d%H%M%S")
-    filename = f"Permanent_Id_Card_{current_datetime}.pdf".replace(" ", "-").replace("/", "-")
-    from tempfile import TemporaryDirectory
-    import shutil
-    temp_file_path = os.path.join(temp_dir, filename)
-    from tempfile import TemporaryDirectory
-    with TemporaryDirectory(dir=temp_dir) as tempdir:
-        with open(tempdir+"/"+filename, "wb") as file:
-            file.write(main_pdf)
-        new_pdf_path = "/files/converted/"
-        shutil.move(tempdir+"/"+filename, temp_dir)
-        doc = frappe.new_doc("Permanent Id Card")
-        doc.file = str(temp_dir/filename)   
-        doc.save(ignore_permissions=True)
- 
+    filename = f"Permanent_Id_Card_{current_datetime}.pdf"
+    filename = public_path / "files" / "converted" / filename
+
+    with open(filename, "wb") as f:
+        f.write(main_pdf)
+    doc = frappe.new_doc("Permanent Id Card")
+    file_path = str(filename).replace(str(public_path), "")
+
+    doc.file = file_path   
+    doc.save(ignore_permissions=True)
