@@ -156,7 +156,7 @@ const CmapList = () => {
                   width: '100%',
                   // fontSize: 15,
                 }}>
-                  Social Studies
+                  {subjectTitle}
                 </Text>
                 <Box h={isOpen ? undefined : '4em'} sx={{
                   overflow: 'hidden',
