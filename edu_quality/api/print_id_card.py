@@ -6,6 +6,7 @@ from weasyprint import CSS, HTML
 import json
 from PIL import Image
 from pathlib import Path
+from datetime import datetime
 
 
 def divide_into_subarrays(arr, max_size):
@@ -113,6 +114,9 @@ def generate(**kwargs):
 
 @frappe.whitelist()
 def generate_permanent_id_cards(**kwargs):
+    frappe.enqueue(generate_permanent_id_cards_async, **kwargs, queue="long")
+
+def generate_permanent_id_cards_async(**kwargs):
     base_url = frappe.utils.get_url()
 
     program_enrollment = [
@@ -138,8 +142,18 @@ def generate_permanent_id_cards(**kwargs):
     main_doc = html.render()
     main_pdf = main_doc.write_pdf()
 
-    frappe.local.response.filename = "Permanent Id Card.pdf".format(
-        name="Permanent Id Card.pdf".replace(" ", "-").replace("/", "-")
-    )
-    frappe.local.response.filecontent = main_pdf
-    frappe.local.response.type = "pdf"
+    public_path = Path(frappe.get_site_path(), "public")
+
+    os.makedirs(public_path, exist_ok=True)
+    
+    current_datetime = datetime.now().strftime("%Y%m%d%H%M%S")
+    filename = f"Permanent_Id_Card_{current_datetime}.pdf"
+    filename = public_path / "files" / "converted" / filename
+
+    with open(filename, "wb") as f:
+        f.write(main_pdf)
+    doc = frappe.new_doc("Permanent Id Card")
+    file_path = str(filename).replace(str(public_path), "")
+
+    doc.file = file_path   
+    doc.save(ignore_permissions=True)
