@@ -23,15 +23,15 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Notice Subject",
-   "read_only": 1,
-   "reqd": 1
+   "reqd": 1,
+   "set_only_once": 1
   },
   {
    "fieldname": "notice",
    "fieldtype": "Text Editor",
    "label": "Notice Content",
-   "read_only": 1,
-   "reqd": 1
+   "reqd": 1,
+   "set_only_once": 1
   },
   {
    "fieldname": "student",
@@ -39,7 +39,7 @@
    "in_standard_filter": 1,
    "label": "Student",
    "options": "Student",
-   "read_only": 1
+   "set_only_once": 1
   },
   {
    "fieldname": "school",
@@ -97,7 +97,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-28 12:54:58.322643",
+ "modified": "2024-03-07 23:49:48.061544",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "School Notice",

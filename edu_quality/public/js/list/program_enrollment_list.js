@@ -17,7 +17,8 @@ frappe.listview_settings['Program Enrollment'] = {
                 })
                 const file = await generated.blob()
                 pdfUrl = URL.createObjectURL(file);
-                window.open(pdfUrl, '_blank');
+                frappe.msgprint("Queued Successfully <a href='permanent-id-card'>click here</a>");
+                // window.open(pdfUrl, '_blank');
             }
 
             catch (e) {
