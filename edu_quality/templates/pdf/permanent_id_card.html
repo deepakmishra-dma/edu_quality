@@ -49,7 +49,6 @@ school = frappe.get_doc("School", doc.custom_school) %}
       border: 1px solid #fff;
       font-size: 10px;
       font-weight: bold;
-      background-image: url("{{ school.id_card_template_back}}");
       background-size: cover;
       background-repeat: no-repeat;
       transform: rotate(180deg);
@@ -94,7 +93,7 @@ school = frappe.get_doc("School", doc.custom_school) %}
 
     }
     .academic-year h3{
-      font-size: 10px;
+      font-size: 8px;
     }
     .student-name {
       width: 75%;
@@ -226,11 +225,11 @@ school = frappe.get_doc("School", doc.custom_school) %}
     }
 </style>
 <div class="parent-container">
-  <div class="front" style="background-image: url('{{bg_image}}');">
+  <div class="front" style="background-image: url('{{site_url}}{{bg_image}}');">
     <div class="container">
       <div class="row student-image">
         <img
-          src="{{doc.image}}"
+          src="{{site_url}}{{doc.image}}"
           class="student-image-size"
           alt="Student Photo"
         />
@@ -293,7 +292,7 @@ school = frappe.get_doc("School", doc.custom_school) %}
     </div>
   </div>
 
-  <div class="back">
+  <div class="back" style="background-image: url('{{site_url}}{{ school.id_card_template_back}}');">
     <div class="address">
       <h3 class="address heading">ADDRESS:</h3>
       <div class="address-info">

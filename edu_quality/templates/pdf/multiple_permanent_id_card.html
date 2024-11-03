@@ -51,7 +51,7 @@
     {% set enroll_template =
     frappe.render_template("edu_quality/templates/pdf/permanent_id_card.html",{'doc':enrollment_array[enrollment],
     'bg_image': background_images[enrollment_array[enrollment].name], 'div_name': divisions[enrollment_array[enrollment].name],
-    'house': house_colors[enrollment_array[enrollment].name]}) %}
+    'house': house_colors[enrollment_array[enrollment].name], 'site_url': site_url}) %}
  {{enroll_template}}
     {% endfor %}
   </div>
