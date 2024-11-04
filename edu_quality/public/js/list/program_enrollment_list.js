@@ -17,7 +17,16 @@ frappe.listview_settings['Program Enrollment'] = {
                 })
                 const file = await generated.blob()
                 pdfUrl = URL.createObjectURL(file);
-                window.open(pdfUrl, '_blank');
+                frappe.msgprint({
+                    title: __("ID Card Generation"),
+                    message: __('Permanent ID Cards Generation Scheduled Successfully. <a href="/app/permanent-id-card" target="_blank">Click Here</a>'),
+                    primary_action: {
+                        label: __("OK"),
+                        action: function() {
+                            frappe.hide_msgprint();
+                        }
+                    }
+                });
             }
 
             catch (e) {
