@@ -70,7 +70,7 @@ def get_division_name(program_enrollment):
     for pe in program_enrollment:
         div = frappe.get_value("Student Group", pe.student_group, "student_group_name")
         class_name = frappe.get_value("Program", pe.program, "short_code")
-        div_dict[pe.name] = class_name + div
+        div_dict[pe.name] = (class_name or '') + div
         
     return div_dict
 
@@ -139,7 +139,7 @@ def generate_permanent_id_cards_async(**kwargs):
                 "background_images": background_images,
                 "divisions": divisions,
                 "house_colors": house_colors,
-                "site_url": site_url,
+                "site_url": site_url or "",
             },
         )
         html = HTML(string=template, base_url=base_url)
