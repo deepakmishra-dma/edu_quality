@@ -9,231 +9,291 @@ school = frappe.get_doc("School", doc.custom_school) %}
 
 <style>
 
-    * {
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif !important;
-    }
+      * {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif !important;
+      }
 
-    .qr-image-size {
-      width: 2.8rem;
-      height: 2.8rem;
-
-
-    }
-
-    .student-image-size {
-      width: 6.5rem;
-      height: 6.5rem;
-      margin: 0.5rem 0 0.5rem 1rem;
-      position: relative;
-      top: -8px;
-
-      border-radius: 2px;
-    }
-
-    .front {
-      width: 100%;
-      height: 361.73px;
-      margin: 5px;
-      background-repeat: no-repeat;
-      padding-bottom: 1em;
-      background-size: contain;
-    }
-
-    .back {
-      height: 361.73px;
-      width:100%;
+      .qr-image-size {
+        width: 2.8rem;
+        height: 2.8rem;
 
 
-      margin: 5px;
-      border: 1px solid #fff;
-      font-size: 10px;
-      font-weight: bold;
-      background-image: url("{{ school.id_card_template_back}}");
-      background-size: cover;
-      background-repeat: no-repeat;
-      transform: rotate(180deg);
-    }
+      }
 
-    .container {
-      padding: 5px;
-    }
+      .student-image-size {
+        display: inline-block;
+        width: 6.5rem;
+        height: 6.5rem;
+        margin: 0.5rem 0 0.5rem 1rem;
+        position: relative;
+        background-color: red;
+        top: -8px;
+        overflow: hidden;
+        border-radius: 2px;
+      }
+      .student-image-size>img{
+        width: 6.5rem;
+        height: 6.5rem;
+      }
+      .front {
+        width: 100%;
+        height: 361.73px;
+        margin: 5px;
+        background-repeat: no-repeat;
+        padding-bottom: 1em;
+        background-size: contain;
+      }
 
-    .detail-container {
-      margin:-8px;
-      display: flex;
-      justify-content: space-between;
-      gap: 4px;
-      position: relative;
-      width: 100%;
-    }
-
-    .academic-details {
-      width: 25%;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-
-
-    }
-
-    .academic-details h3 {
-      font-size: 12px;
-      font-weight: bold;
-      line-height: 10px;
-      display: flex;
-    }
-
-    .academic-year {
-      display: flex;
-      gap: 4px;
-      text-align: center;
-      white-space: nowrap;
+      .back {
+        height: 361.73px;
+        width:100%;
 
 
-    }
-    .academic-year h3{
-      font-size: 10px;
-    }
-    .student-name {
-      width: 75%;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      padding-left: 10px;
-    }
+        margin: 5px;
+        border: 1px solid #fff;
+        font-size: 10px;
+        font-weight: bold;
+        background-image: url("{{site_url}}{{ school.id_card_template_back}}");
+        background-size: cover;
+        background-repeat: no-repeat;
+        transform: rotate(180deg);
+      }
 
-    .student-name p {
-      width: 100%;
-      overflow: hidden;
-      text-transform: uppercase;
-      font-size: {{reduce_font_size_steps(18,1.5,student_data.first_name,10,5)}}px;
-      font-weight: 600;
-      line-height: 30px;
-    }
+      .container {
+        padding: 5px;
+        position: relative;
+        overflow: hidden;
+      }
+      .allergies-container{
+        position: absolute;
 
-    .custom-border {
-      border: 1px solid black;
+        right:-25%;
+        transform: rotate(135deg);
+        top:17.5%;
+      }
+      .allergies-logo{
+        border: solid 40px;
+      border-color: transparent #FFEA63 transparent  transparent;
+        color: black;
+        font-size: 12px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+  .asterisk-container{
+    position: absolute;
+    display: inline-block;
+    color: black;
+    top:50%;
+    left:75%;
 
-    }
 
-    .reference-container {
-      display: flex;
-      margin-top:-0.8rem;
-    }
-
-    .ref-col-container {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 5px;
-    }
-
-    .ref-col-container h2 {
-      font-size: 18pt;
-      font-weight: 700;
-      color: red;
-      line-height: 50px;
-    }
-
-    .pickup-bus {
-      font-size: 30px;
-      font-weight: 900;
-      color: red;
-      margin: 1rem auto;
-      margin-bottom: 2.25rem;
-    }
-
-    .student-info {
-
-      display: flex;
-      gap: 20px;
-      align-items: flex-start;
-      flex-direction: column;
-      height: max-content;
-      margin-top: 20px;
-      margin-left: 10px;
-    }
-
-    .student-info p {
-      width: 180px;
-      display: flex;
-      gap: 4px;
-      position: relative;
-    }
-
-    .address-info {
-      display: flex;
-      flex-wrap: wrap;
-    }
-
-    .address {
-      margin-top: 100px;
-      margin-left: 10px;
-      font-size: 10px;
-    }
-  .address.heading{
-    font-size: 10px !important;
   }
-    .address-info p {
-      text-transform:uppercase;
-      font-size: 10px;
-      margin-left: 4px;
-      font-weight: 500;
-    }
+  .asterisk-container i {
 
-    .school-data {
-      text-align: center;
+    color: black;
+    font-size: 16px;
 
-    }
+  }
+      .detail-container {
+        margin:-8px;
+        display: flex;
+        justify-content: space-between;
+        gap: 4px;
+        position: relative;
+        width: 100%;
+      }
 
-    .tiffin-text {
-      margin-left: 110px;
-      margin-top: -115px;
-      transform: rotate(270deg);
-    }
-    .tiffin-text p{
-      font-size: 8pt;
-      font-weight: 600;
-    }
+      .academic-details {
+        width: 25%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
 
-    .student-image {
-      margin-top: 95px;
-    }
 
-    .student-details {
-      margin-left: 24px;
-    }
-    .house-container{
-      display: flex;
-      width: 100%;
-      justify-content: center;
-    }
-    #house {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-    }
-    .parent-container{
-      width: 215px;
+      }
 
-      margin-left: 2px;
-      margin-right: 2px;
+      .academic-details h3 {
+        font-size: 12px;
+        font-weight: bold;
+        line-height: 10px;
+        display: flex;
+      }
+
+      .academic-year {
+        display: flex;
+        gap: 4px;
+        text-align: center;
+        white-space: nowrap;
+
+
+      }
+      .academic-year h3{
+        font-size: 10px;
+      }
+      .student-name {
+        width: 75%;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        padding-left: 10px;
+      }
+
+      .student-name p {
+        width: 100%;
+        overflow: hidden;
+        text-transform: uppercase;
+        font-size: {{reduce_font_size_steps(18,1.5,student_data.first_name,10,5)}}px;
+        font-weight: 600;
+        line-height: 30px;
+      }
+
+      .custom-border {
+        border: 1px solid black;
+
+      }
+
+      .reference-container {
+        display: flex;
+        margin-top:-0.8rem;
+      }
+
+      .ref-col-container {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 5px;
+      }
+
+      .ref-col-container h2 {
+        font-size: 18pt;
+        font-weight: 700;
+        color: red;
+        line-height: 50px;
+      }
+
+      .pickup-bus {
+        font-size: 30px;
+        font-weight: 900;
+        color: red;
+        margin: 1rem auto;
+        margin-bottom: 2.25rem;
+      }
+
+      .student-info {
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+        flex-direction: column;
+        height: max-content;
+        margin-top: 20px;
+        margin-left: 10px;
+        position: relative;
+        padding-left: 12px;
+      }
+
+      .student-info p {
+        width: 180px;
+        display: flex;
+        gap: 4px;
+        position: relative;
+      }
+
+      .address-info {
+        display: flex;
+        flex-wrap: wrap;
+      }
+
+      .address {
+        margin-top: 100px;
+        margin-left: 10px;
+        font-size: 10px;
+      }
+    .address.heading{
+      font-size: 10px !important;
     }
+      .address-info p {
+        text-transform:uppercase;
+        font-size: 10px;
+        margin-left: 4px;
+        font-weight: 500;
+      }
+
+      .school-data {
+        text-align: center;
+
+
+      }
+      .info-container{
+        position: relative;
+
+      }
+      .allergies-text{
+
+        transform: rotate(270deg);
+        position: absolute;
+
+        left:-12px;
+
+        bottom:28px;
+        /* transform: rotate(270deg); */
+        font-size: 8pt;
+        font-weight: 600;
+      }
+      .tiffin-text {
+        margin-left: 110px;
+        margin-top: -115px;
+        transform: rotate(270deg);
+      }
+      .tiffin-text p{
+        font-size: 8pt;
+        font-weight: 600;
+      }
+
+      .student-image {
+        margin-top: 95px;
+      }
+
+      .student-details {
+        margin-left: 24px;
+      }
+      .house-container{
+        display: flex;
+        width: 100%;
+        justify-content: center;
+      }
+      #house {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+      }
+      .parent-container{
+        width: 215px;
+
+        margin-left: 2px;
+        margin-right: 2px;
+      }
 </style>
 <div class="parent-container">
-  <div class="front" style="background-image: url('{{bg_image}}');">
+  <div class="front" style="background-image: url('{{site_url}}{{bg_image}}');">
     <div class="container">
+      {% if student_data.has_allergies %}
+      <div class="allergies-container">
+        <div class="allergies-logo"></div>
+        <div class="asterisk-container">
+          <i class="fa fa-asterisk" aria-hidden="true"></i>
+        </div>
+      </div>
+      {% endif %}
       <div class="row student-image">
-        <img
-          src="{{doc.image}}"
-          class="student-image-size"
-          alt="Student Photo"
-        />
+        <div class="student-image-size">
+          <img src="{{doc.image}}" alt="Student Photo" />
+        </div>
         <div class="student-details">
           {% if doc.transport_service_required %}
           <h1 class="pickup-bus" style="color: white">{{doc.drop_bus}}</h1>
@@ -293,7 +353,7 @@ school = frappe.get_doc("School", doc.custom_school) %}
     </div>
   </div>
 
-  <div class="back">
+  <div class="back" style="background-image: url('{{site_url}}{{ school.id_card_template_back}}');">
     <div class="address">
       <h3 class="address heading">ADDRESS:</h3>
       <div class="address-info">
@@ -303,22 +363,26 @@ school = frappe.get_doc("School", doc.custom_school) %}
         <p>{{student_data.pincode or ''}}</p>
       </div>
     </div>
-
-    <div class="student-info">
-      <div style="margin: 0 4px 0 0">
-        <p>ROLL No: {{doc.roll_no}}</p>
-        <p>ACADEMIC YEAR: {{doc.academic_year}}</p>
-        <p>PHONE: {{student_data.student_mobile_number}}</p>
+    <div class="info-container">
+      <div class="student-info">
+        <div style="margin: 0 4px 0 0">
+          <p>ROLL No: {{doc.roll_no}}</p>
+          <p>ACADEMIC YEAR: {{doc.academic_year}}</p>
+          <p>PHONE: {{student_data.student_mobile_number}}</p>
+        </div>
+        <div style="margin: 10px 4px 0 0">
+          <p>BLOOD GROUP: {{student_data.blood_group}}</p>
+          <p>
+            DATE OF BIRTH: {{convertyearMonthDate(student_data.date_of_birth)}}
+          </p>
+        </div>
+        <div class="tiffin-text">
+          <p>{{doc.tiffin_rack_no}}</p>
+        </div>
       </div>
-      <div style="margin: 10px 4px 0 0">
-        <p>BLOOD GROUP: {{student_data.blood_group}}</p>
-        <p>
-          DATE OF BIRTH: {{convertyearMonthDate(student_data.date_of_birth)}}
-        </p>
-      </div>
-      <div class="tiffin-text">
-        <p>{{doc.tiffin_rack_no}}</p>
-      </div>
+      {% if student_data.has_allergies %}
+      <div class="allergies-text"><p>Allergies</p></div>
+      {% endif %}
     </div>
   </div>
 </div>

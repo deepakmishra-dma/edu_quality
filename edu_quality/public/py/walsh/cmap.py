@@ -45,9 +45,10 @@ def get_all_cmaps(subject, unit, division):
         where subject = %(subject)s
         and unit = %(unit)s
         and name in (
-            select parent from `tabCMAP Assignment` where real_date <= CURDATE()
+            select parent from `tabCMAP Assignment` ta2 where real_date <= CURDATE() and
+            division = %(division)s and ta2.parent = c.name
         )
-        order by real_date desc 
+        order by real_date desc
         ''', as_dict=1, values=values)
     cmap_names = [cmap.name for cmap in cmaps]
     all_products = frappe.get_all("Item Detail", filters={"parent": ["in", cmap_names]}, fields=["*"])
@@ -57,8 +58,6 @@ def get_all_cmaps(subject, unit, division):
     homework_names = [product.home_work for product in all_products if product.home_work]
     cmap_material_names = broadcast_names + homework_names
     cmap_materials = frappe.get_all("Item CMAP Material", fields=["*"], filters={"name": ["in", cmap_material_names]})
-
-    print(cmap_materials)
 
     for product in all_products:
         for item in all_items:
