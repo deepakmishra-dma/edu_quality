@@ -213,7 +213,7 @@ const CmapList = () => {
                 }}>
                   <IconCalendar size={13}/>
                   <span style={{paddingTop: 1}}>
-                  {new Date().toLocaleDateString()?.replace(/\//g, '-') || '-'}
+                  {new Date(cmap.real_date).toLocaleDateString()?.replace(/\//g, '-') || '-'}
                 </span>
                 </Stack>
               </Box>

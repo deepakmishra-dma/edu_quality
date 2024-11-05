@@ -4,6 +4,7 @@ export interface Cmap {
   class: string
   unit: string
   period: string
+  real_date: string
   products: [{
     chapter: string
     item_group: string
