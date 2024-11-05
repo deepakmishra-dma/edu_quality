@@ -197,55 +197,61 @@ function addScanBtnForPrinter(frm) {
 
     }
 }
+
+
+function mailFunction(frm){
+    if (!frm.doc.__islocal) {
+        if (!(frappe.user_roles.includes("Printer") && !frappe.user_roles.includes("Administrator") && !frappe.user_roles.includes("Walnut Admin") && !frappe.user_roles.includes("System Manager"))) {
+            frm.add_custom_button(__('Send Test Mail'), () => {
+
+                const d = new frappe.ui.Dialog({
+                    title: "Select a Recipient",
+                    fields: [
+                        {
+                            "fieldname": "user",
+                            "label": __("User"),
+                            "fieldtype": "MultiSelectList",
+                            "reqd": 1,
+                            get_data: function (txt) {
+                                return frappe.db.get_link_options('User', txt, {
+                                });
+                            }
+
+                        },
+
+                    ],
+                    primary_action: async (values) => {
+                        findAndToggleFooterButton(d, true, "Pending")
+                        frappe.call({
+                            method: "edu_quality.overrides_hooks.purchase_order.send_test_order_email",
+                            type: "POST",
+                            args: {
+                                self: frm.doc,
+                                user: values.user.join(',')
+                            },
+                            callback: function (r) {
+                                findAndToggleFooterButton(d, true, "Proceed")
+                                if (r.message)
+                                    d.hide()
+                            },
+                            always: () => {
+                                findAndToggleFooterButton(d, true, "Proceed")
+                            }
+                        })
+
+                    }
+                })
+                d.show()
+            })
+        }
+    }
+}
+
 frappe.ui.form.on('Purchase Order', {
     onload(frm) {
         addScanBtnForPrinter(frm)
         createReceiptButton(frm)
-        if (!frm.doc.__islocal) {
-            if (!(frappe.user_roles.includes("Printer") && !frappe.user_roles.includes("Administrator") && !frappe.user_roles.includes("Walnut Admin") && !frappe.user_roles.includes("System Manager"))) {
-                frm.add_custom_button(__('Send Test Mail'), () => {
-
-                    const d = new frappe.ui.Dialog({
-                        title: "Select a Recipient",
-                        fields: [
-                            {
-                                "fieldname": "user",
-                                "label": __("User"),
-                                "fieldtype": "MultiSelectList",
-                                "reqd": 1,
-                                get_data: function (txt) {
-                                    return frappe.db.get_link_options('User', txt, {
-                                    });
-                                }
-
-                            },
-
-                        ],
-                        primary_action: async (values) => {
-                            findAndToggleFooterButton(d, true, "Pending")
-                            frappe.call({
-                                method: "edu_quality.overrides_hooks.purchase_order.send_test_order_email",
-                                type: "POST",
-                                args: {
-                                    self: frm.doc,
-                                    user: values.user.join(',')
-                                },
-                                callback: function (r) {
-                                    findAndToggleFooterButton(d, true, "Proceed")
-                                    if (r.message)
-                                        d.hide()
-                                },
-                                always: () => {
-                                    findAndToggleFooterButton(d, true, "Proceed")
-                                }
-                            })
-
-                        }
-                    })
-                    d.show()
-                })
-            }
-        }
+        mailFunction(frm)
 
         frappe.call({
             method: "edu_quality.overrides_hooks.purchase_order.generate_challan_list",
@@ -318,8 +324,7 @@ frappe.ui.form.on('Purchase Order', {
     refresh(frm) {
         addScanBtnForPrinter(frm)
         removeBtnsForPrinters(frm)
-        // your code here
-
+        mailFunction(frm)
     },
     schedule_date(frm) {
         frm.doc.items.forEach(item => {
