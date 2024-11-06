@@ -176,7 +176,7 @@ school = frappe.get_doc("School", doc.custom_school) %}
       }
 
       .pickup-bus {
-        font-size: 30px;
+        font-size: 28px;
         font-weight: 900;
         color: red;
         margin: 1rem auto;
@@ -244,7 +244,7 @@ school = frappe.get_doc("School", doc.custom_school) %}
         font-weight: 600;
       }
       .tiffin-text {
-        margin-left: 110px;
+        margin-left: 90px;
         margin-top: -115px;
         transform: rotate(270deg);
       }
@@ -291,7 +291,7 @@ school = frappe.get_doc("School", doc.custom_school) %}
       {% endif %}
       <div class="row student-image">
         <div class="student-image-size">
-          <img src="{{doc.image}}" alt="Student Photo" />
+          <img src="{{site_url}}{{doc.image}}" />
         </div>
         <div class="student-details">
           {% if doc.transport_service_required %}
@@ -352,7 +352,10 @@ school = frappe.get_doc("School", doc.custom_school) %}
     </div>
   </div>
 
-  <div class="back" style="background-image: url('{{site_url}}{{ school.id_card_template_back}}');">
+  <div
+    class="back"
+    style="background-image: url('{{site_url}}{{ school.id_card_template_back}}');"
+  >
     <div class="address">
       <h3 class="address heading">ADDRESS:</h3>
       <div class="address-info">
