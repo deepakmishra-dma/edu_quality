@@ -193,6 +193,7 @@ school = frappe.get_doc("School", doc.custom_school) %}
         margin-left: 10px;
         position: relative;
         padding-left: 12px;
+        padding-right:12px;
       }
 
       .student-info p {
@@ -244,9 +245,15 @@ school = frappe.get_doc("School", doc.custom_school) %}
         font-weight: 600;
       }
       .tiffin-text {
-        margin-left: 90px;
-        margin-top: -115px;
         transform: rotate(270deg);
+        position: absolute;
+
+        right:-6px;
+
+        bottom:28px;
+        /* transform: rotate(270deg); */
+        font-size: 8pt;
+        font-weight: 600;
       }
       .tiffin-text p{
         font-size: 8pt;
@@ -378,9 +385,9 @@ school = frappe.get_doc("School", doc.custom_school) %}
             DATE OF BIRTH: {{convertyearMonthDate(student_data.date_of_birth)}}
           </p>
         </div>
-        <div class="tiffin-text">
-          <p>{{doc.tiffin_rack_no}}</p>
-        </div>
+      </div>
+      <div class="tiffin-text">
+        <p>{{doc.tiffin_rack_no}}</p>
       </div>
       {% if student_data.has_allergies %}
       <div class="allergies-text"><p>Allergies</p></div>
