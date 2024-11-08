@@ -359,16 +359,16 @@ fixtures = [
             ]
         ],
     },
-    {
-        "dt": "Print Format",
-        "filters": [
-            [
-                "name",
-                "in",
-                ["Printer Receipt", "Printer"],
-            ]
-        ],
-    },
+    # {
+    #     "dt": "Print Format",
+    #     "filters": [
+    #         [
+    #             "name",
+    #             "in",
+    #             ["Printer Receipt", "Printer"],
+    #         ]
+    #     ],
+    # },
     {"dt": "Workspace"},
     {"dt": "Number Card"},
     # {"dt": "Funnel"},
