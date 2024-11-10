@@ -2,6 +2,7 @@ import frappe
 from edu_quality.edu_quality.server_scripts.guardian import create_user
 
 def execute():
+    return
     guardians = frappe.get_all("Guardian", fields=["name","email_address"])
     frappe.flags.in_import = True
     for guardian in guardians:
