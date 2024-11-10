@@ -1,5 +1,5 @@
 import ReactOtpInput from "react-otp-input";
-import {TextInput, useMantineTheme} from "@mantine/core";
+import {Input, useMantineTheme} from "@mantine/core";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const OtpInput = (props: any) => {
@@ -10,24 +10,30 @@ const OtpInput = (props: any) => {
       {...props}
       renderInput={(props) => {
         return (
-          <TextInput
+          <Input
             {...props}
-            variant="unstyled"
-            size="md"
-            styles={{
-              input: {
-                textAlign: "center",
-              },
-            }}
             style={{
               flexShrink: 0,
               borderBottom: `2px solid ${theme.colors.gray[6]}`,
               color: theme.colors.gray[6],
-              // textAlign: "center",
+              width: 40,
+              border: 'none',
+              margin: '0 5px',
+              // textAlign: 'center',
+              fontSize: '1em'
             }}
-            w={36}
-            h={36}
-            mx={8}
+            sx={{
+              '.mantine-Input-input': {
+                letterSpacing: 2,
+                fontSize: 20,
+                textAlign: "center",
+                "::placeholder": {
+                  letterSpacing: 0,
+                  textAlign: "center",
+                }
+              }
+            }}
+            type="number"
           />
         );
       }}

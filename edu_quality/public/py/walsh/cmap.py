@@ -50,6 +50,7 @@ def get_all_cmaps(subject, unit, division):
         )
         order by real_date desc
         ''', as_dict=1, values=values)
+
     cmap_names = [cmap.name for cmap in cmaps]
     all_products = frappe.get_all("Item Detail", filters={"parent": ["in", cmap_names]}, fields=["*"])
     item_names = [p.item for p in all_products]
