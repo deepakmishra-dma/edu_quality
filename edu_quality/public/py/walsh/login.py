@@ -107,6 +107,7 @@ def send_otp(phone_no):
     phone_with_country_code = "+" + str(wa_phone_no)
     guardian_number = remove_indian_country_code(phone_with_country_code)
 
+    # TODO: check in guardian table
     if not frappe.db.exists("User", {"phone": guardian_number}):
         if not frappe.db.exists("User", {"phone": phone_with_country_code}):
             return {
@@ -120,7 +121,7 @@ def send_otp(phone_no):
     send_otp_to_sms(phone_with_country_code, otp)
     return {
         "success": True,
-        "message": "Otp Sent To +" + str(wa_phone_no) + " on WhatsApp",
+        "message": "Otp Sent To +" + str(wa_phone_no) + " on WhatsApp and SMS",
     }
 
 
@@ -131,6 +132,7 @@ def verify_otp(otp, phone_no, push_token=None):
     guardian_number = remove_indian_country_code(phone_with_country_code)
 
     if match_otp(wa_phone_no, otp):
+        # TODO: get user from guardian table
         user = frappe.get_doc("User", {"phone": guardian_number}) if \
             frappe.db.exists("User", {"phone": guardian_number}) else \
             frappe.get_doc("User", {"phone": phone_with_country_code})

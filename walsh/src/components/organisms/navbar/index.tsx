@@ -1,7 +1,7 @@
 import {Box, Burger, Navbar as MantineNavbar, NavLink, Stack} from '@mantine/core';
 import React, {useEffect} from "react";
 // @ts-expect-error no types
-import {IconLogout, IconMoodSad, IconReload, IconStack2, IconUser} from "@tabler/icons";
+import {IconLogout, IconMessage, IconReload, IconStack2} from "@tabler/icons";
 import {useLogout} from "@refinedev/core";
 import {useLocation, useNavigate} from "react-router-dom";
 
@@ -9,7 +9,6 @@ interface NavbarProps {
   isOpen: boolean;
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>
 }
-
 
 const Navbar: React.FC<NavbarProps> = ({setIsOpen, isOpen}) => {
   const {mutate: logout} = useLogout()
@@ -58,7 +57,7 @@ const Navbar: React.FC<NavbarProps> = ({setIsOpen, isOpen}) => {
             padding: '10px 10px',
           }}>
             <Box sx={{
-              backgroundImage: 'url(images/walnut-logo-blue.png)',
+              backgroundImage: 'url(/assets/edu_quality/walsh/images/walnut-logo-blue.png)',
               height: 36,
               width: 40,
               backgroundSize: 'cover',
@@ -81,23 +80,29 @@ const Navbar: React.FC<NavbarProps> = ({setIsOpen, isOpen}) => {
           </Stack>
         </Stack>
         <NavLink
-          onClick={() => navigate('/curriculum-updates')}
+          onClick={() => navigate('/')}
+          sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%', borderBottom: '1px solid rgba(0,0,0,0.1)'}}
+          label="Messages"
+          icon={<IconMessage size={35} stroke={1.5} color='#00b8ff'/>}
+        />
+        <NavLink
+          onClick={() => navigate('/cmap')}
           sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%', borderBottom: '1px solid rgba(0,0,0,0.1)'}}
           label="Curriculum Updates"
           icon={<IconStack2 size={35} stroke={1.5} color='#00b8ff'/>}
         />
-        <NavLink
-          onClick={() => navigate('/absent-note')}
-          sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%', borderBottom: '1px solid rgba(0,0,0,0.1)'}}
-          label="Absent/Sick Note"
-          icon={<IconMoodSad size={35} stroke={1.5} color='#00b8ff'/>}
-        />
-        <NavLink
-          onClick={() => navigate('/student-profile')}
-          sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%', borderBottom: '1px solid rgba(0,0,0,0.1)'}}
-          label="Student Profile"
-          icon={<IconUser size={35} stroke={1.5} color='#00b8ff'/>}
-        />
+        {/*<NavLink*/}
+        {/*  onClick={() => navigate('/absent-note')}*/}
+        {/*  sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%', borderBottom: '1px solid rgba(0,0,0,0.1)'}}*/}
+        {/*  label="Absent/Sick Note"*/}
+        {/*  icon={<IconMoodSad size={35} stroke={1.5} color='#00b8ff'/>}*/}
+        {/*/>*/}
+        {/*<NavLink*/}
+        {/*  onClick={() => navigate('/student-profile')}*/}
+        {/*  sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%', borderBottom: '1px solid rgba(0,0,0,0.1)'}}*/}
+        {/*  label="Student Profile"*/}
+        {/*  icon={<IconUser size={35} stroke={1.5} color='#00b8ff'/>}*/}
+        {/*/>*/}
         <NavLink
           onClick={() => window.location.reload()}
           sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%', borderBottom: '1px solid rgba(0,0,0,0.1)'}}

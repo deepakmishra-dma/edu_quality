@@ -494,7 +494,5 @@ def reduce_font_size_steps(initial_size, step, txt, initial_char_length, lowest)
     res = int(initial_size) - int(rem) * float(step)
     if res < lowest:
         return str(lowest)
-    frappe.log_error(
-        "statat", str([lowest, res, initial_size, txt, initial_char_length])
-    )
+
     return str(int(res))

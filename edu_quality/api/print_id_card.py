@@ -6,6 +6,7 @@ from weasyprint import CSS, HTML
 import json
 from PIL import Image
 from pathlib import Path
+from datetime import datetime
 
 
 def divide_into_subarrays(arr, max_size):
@@ -21,9 +22,18 @@ def hex_to_rgb(hex_color):
     return tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
 
 
+def get_image_path(image_path):
+    image_path = str(image_path)
+    site_path = frappe.get_site_path()
+    if "private" in image_path:
+        return Path(site_path + image_path)
+    else:
+        return Path(site_path + "/public" + image_path)
+
+
 def change_image_bg(image_path, bg_color):
     fill_color = hex_to_rgb(bg_color)
-    image_path = Path(frappe.get_site_path() + str(image_path))
+    image_path = get_image_path(image_path)
     im = Image.open(image_path)
     original_mode = im.mode
     if original_mode in ("RGBA", "LA"):
@@ -60,7 +70,7 @@ def get_division_name(program_enrollment):
     for pe in program_enrollment:
         div = frappe.get_value("Student Group", pe.student_group, "student_group_name")
         class_name = frappe.get_value("Program", pe.program, "short_code")
-        div_dict[pe.name] = class_name + div
+        div_dict[pe.name] = (class_name or '') + div
         
     return div_dict
 
@@ -104,33 +114,53 @@ def generate(**kwargs):
 
 @frappe.whitelist()
 def generate_permanent_id_cards(**kwargs):
-    base_url = frappe.utils.get_url()
+    frappe.enqueue(generate_permanent_id_cards_async, **kwargs, queue="long")
 
-    program_enrollment = [
-        frappe.get_doc("Program Enrollment", enrollment)
-        for enrollment in kwargs.get("enrollments")
-    ]
+def generate_permanent_id_cards_async(**kwargs):
+    try:
+        base_url = frappe.utils.get_url()
+        config = frappe.get_site_config()
+        site_url = config.get("site_url")
 
-    enrollment_in_chunks = divide_into_subarrays(program_enrollment, 5)
-    background_images = background_image(program_enrollment)
-    divisions = get_division_name(program_enrollment)
-    house_colors = house_color(program_enrollment)
+        program_enrollment = [
+            frappe.get_doc("Program Enrollment", enrollment)
+            for enrollment in kwargs.get("enrollments")
+        ]
 
-    template = frappe.render_template(
-        "edu_quality/templates/pdf/multiple_permanent_id_card.html",
-        {
-            "program_enrollments": enrollment_in_chunks,
-            "background_images": background_images,
-            "divisions": divisions,
-            "house_colors": house_colors,
-        },
-    )
-    html = HTML(string=template, base_url=base_url)
-    main_doc = html.render()
-    main_pdf = main_doc.write_pdf()
+        enrollment_in_chunks = divide_into_subarrays(program_enrollment, 5)
+        background_images = background_image(program_enrollment)
+        divisions = get_division_name(program_enrollment)
+        house_colors = house_color(program_enrollment)
 
-    frappe.local.response.filename = "Permanent Id Card.pdf".format(
-        name="Permanent Id Card.pdf".replace(" ", "-").replace("/", "-")
-    )
-    frappe.local.response.filecontent = main_pdf
-    frappe.local.response.type = "pdf"
+        template = frappe.render_template(
+            "edu_quality/templates/pdf/multiple_permanent_id_card.html",
+            {
+                "program_enrollments": enrollment_in_chunks,
+                "background_images": background_images,
+                "divisions": divisions,
+                "house_colors": house_colors,
+                "site_url": site_url or "",
+            },
+        )
+        html = HTML(string=template, base_url=base_url)
+        main_doc = html.render()
+        main_pdf = main_doc.write_pdf()
+
+        public_path = Path(frappe.get_site_path(), "public")
+
+        os.makedirs(public_path, exist_ok=True)
+        
+        current_datetime = datetime.now().strftime("%Y%m%d%H%M%S")
+        filename = f"Permanent_Id_Card_{current_datetime}.pdf"
+        filename = public_path / "files" / "converted" / filename
+
+        with open(filename, "wb") as f:
+            f.write(main_pdf)
+        doc = frappe.new_doc("Permanent Id Card")
+        file_path = str(filename).replace(str(public_path), "")
+
+        doc.file = file_path   
+        doc.save(ignore_permissions=True)
+    except Exception as e:
+        frappe.logger('permanent_id_card').exception(e)
+        frappe.log_error("Permanent Id Card Generation Failed", str(frappe.traceback()))
