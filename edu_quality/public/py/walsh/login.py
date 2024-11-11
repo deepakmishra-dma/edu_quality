@@ -133,14 +133,12 @@ def send_otp(phone_no):
         
 def get_student_form(doc):
     student_forms = []
-    for student in doc.students:
-        link = frappe.db.get_value("Student",student.student,'student_applicant') 
-        link = frappe.utils.get_url() + "/walnut-school-student-application/" + link 
-        student_forms.append({"student":student.student,"link":link})
-    if len(student_forms) == 1:
+    applicants = frappe.db.get_all("Student Guardian",{'guardian':doc.name,'parenttype':"Student Applicant"},"parent")
+    link = frappe.utils.get_url() + "/walnut-school-student-application/"
+    for applicant in applicants:
+        student_forms.append({"student":student.student,"link":link+applicant.parent})
+    if len(student_forms) > 0:
         return student_forms[0]
-    else:
-        return student_forms
 
 
 @frappe.whitelist(allow_guest=True)
