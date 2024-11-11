@@ -122,15 +122,15 @@ def send_otp(phone_no):
             "error_message": "User Not Found"
         }
 
+    otp = create_otp(wa_phone_no)
+    send_otp_to_whatsapp(wa_phone_no, otp)
+    send_otp_to_sms(phone_with_country_code, otp)
+
     return {
         "success": True,
         "message": "Otp Sent To +" + str(wa_phone_no) + " on WhatsApp and SMS",
     }
-
-    otp = create_otp(wa_phone_no)
-    send_otp_to_whatsapp(wa_phone_no, otp)
-    send_otp_to_sms(phone_with_country_code, otp)
-    
+        
 def get_student_form(doc):
     student_forms = []
     for student in doc.students:
@@ -145,11 +145,7 @@ def get_student_form(doc):
 
 @frappe.whitelist(allow_guest=True)
 def verify_otp(otp, phone_no, push_token=None,form_link=None):
-    return {
-            "success": True,
-            "message": "Login Successful",
-            "form_link": form_link
-        }
+    
     wa_phone_no = format_wa_phone_no(phone_no)
     phone_with_country_code = "+" + wa_phone_no
     guardian_number = remove_indian_country_code(phone_with_country_code)
