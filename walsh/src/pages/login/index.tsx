@@ -113,13 +113,24 @@ export const Login = () => {
                 If you are already a parent of Walnut School, log in below
               </Text>
             ) : (
-              <Text size={"sm"}>Phone No: {values.mobile_number}</Text>
-            )}
+               <Text size={"sm"}>Phone No: {values.mobile_number}</Text>
+             )}
           </Stack>
           <Stack spacing={12}>
             {mode !== "otp" ? (
               <TextInput
                 variant="filled"
+                sx={{
+                  '.mantine-Input-input': {
+                    letterSpacing: 2,
+                    fontSize: 20,
+                    // fontWeight: 'bold',
+                    "::placeholder": {
+                      letterSpacing: 0,
+                      textAlign: "center",
+                    }
+                  }
+                }}
                 placeholder="Registered Mobile Number"
                 {...getInputProps("mobile_number")}
                 onChange={(event) => {
@@ -134,10 +145,10 @@ export const Login = () => {
                 }}
               />
             ) : (
-              <Flex justify="center">
-                <OtpInput style={{width: "100%"}} {...getInputProps("otp")} />
-              </Flex>
-            )}
+               <Flex justify="center">
+                 <OtpInput style={{width: "100%"}} {...getInputProps("otp")} />
+               </Flex>
+             )}
             <Text color={"red"} size={"sm"}>{errorMessage}</Text>
             <Text color={"green"} size={"sm"}>{otpMessage}</Text>
             <Button type="submit">

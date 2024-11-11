@@ -107,14 +107,20 @@ def send_otp(phone_no):
     phone_with_country_code = "+" + str(wa_phone_no)
     guardian_number = remove_indian_country_code(phone_with_country_code)
 
-    # TODO: check in guardian table
-    if not frappe.db.exists("User", {"phone": guardian_number}):
-        if not frappe.db.exists("User", {"phone": phone_with_country_code}):
-            return {
-                "error": True,
-                "error_type": "user_not_found",
-                "error_message": "User Not Found"
-            }
+    if not frappe.db.exists("Guardian", {"mobile_number": guardian_number}):
+        return {
+            "error": True,
+            "error_type": "guardian_not_found",
+            "error_message": "Guardian Not Found"
+        }
+
+    guardian = frappe.get_doc("Guardian", {"mobile_number": guardian_number})
+    if not frappe.db.exists("User", guardian.user):
+        return {
+            "error": True,
+            "error_type": "user_not_found",
+            "error_message": "User Not Found"
+        }
 
     otp = create_otp(wa_phone_no)
     send_otp_to_whatsapp(wa_phone_no, otp)
@@ -132,10 +138,8 @@ def verify_otp(otp, phone_no, push_token=None):
     guardian_number = remove_indian_country_code(phone_with_country_code)
 
     if match_otp(wa_phone_no, otp):
-        # TODO: get user from guardian table
-        user = frappe.get_doc("User", {"phone": guardian_number}) if \
-            frappe.db.exists("User", {"phone": guardian_number}) else \
-            frappe.get_doc("User", {"phone": phone_with_country_code})
+        guardian = frappe.get_doc("Guardian", {"mobile_number": guardian_number})
+        user = frappe.get_doc("User", guardian.user)
         login_manager = LoginManager()
         login_manager.login_as(user.name)
 
