@@ -2,7 +2,7 @@ import frappe
 
 @frappe.whitelist()
 def enqueue_gardian_user_creation():
-    frappe.enqueue(create_users, queue='long', timeout=600000)
+    frappe.enqueue(create_users, queue='long')
     return True
 
 def create_users():
