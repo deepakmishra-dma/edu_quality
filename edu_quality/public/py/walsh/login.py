@@ -136,7 +136,8 @@ def get_student_form(doc):
     applicants = frappe.db.get_all("Student Guardian",{'guardian':doc.name,'parenttype':"Student Applicant"},"parent")
     link = frappe.utils.get_url() + "/walnut-school-student-application/"
     for applicant in applicants:
-        student_forms.append({"student":student.student,"link":link+applicant.parent})
+        student = frappe.db.get_value("Student",{'student_applicant':applicant.parent}) or applicant.parent
+        student_forms.append({"student":student,"link":link+applicant.parent})
     if len(student_forms) > 0:
         return student_forms[0]
 
