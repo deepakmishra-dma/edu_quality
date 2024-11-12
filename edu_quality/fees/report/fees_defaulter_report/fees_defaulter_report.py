@@ -164,6 +164,7 @@ def get_data(filters):
             AND pr.status != 'Paid'
             AND COALESCE(f1.docstatus, f2.docstatus) = 1
             AND COALESCE(ps.due_date,  f2.due_date) < CURDATE()
+            AND student.student_status != 'Cancelled'
         """
     values = []
     if from_date:
