@@ -2,12 +2,19 @@ import frappe
 
 @frappe.whitelist()
 def enqueue_gardian_user_creation():
-    frappe.enqueue(create_users, queue='long')
+    guardians = frappe.get_all("Guardian", filters=[["Guardian","user","is","not set"]],fields=["name","email_address"])
+    i=0;
+    while i < len(guardians):
+        end = i+501 if i+501 < len(guardians) else -1
+        g_list = guardians[i:end]
+        frappe.enqueue(create_users,guardians=g_list, queue='long')
+        if end == -1:
+            break 
+        i = i+501
     return True
 
-def create_users():
+def create_users(guardians):
     try:
-        guardians = frappe.get_all("Guardian", filters=[["Guardian","user","is","not set"]],fields=["name","email_address"],limit=100)
         frappe.flags.in_import = True
         for guardian in guardians:
             if guardian.email_address:
