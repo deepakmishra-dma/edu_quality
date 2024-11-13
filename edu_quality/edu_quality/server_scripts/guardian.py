@@ -7,7 +7,7 @@ def enqueue_gardian_user_creation():
 
 def create_users():
     try:
-        guardians = frappe.get_all("Guardian", filters=[["Guardian","user","is","not set"]],fields=["name","email_address"])
+        guardians = frappe.get_all("Guardian", filters=[["Guardian","user","is","not set"]],fields=["name","email_address"],limit=100)
         frappe.flags.in_import = True
         for guardian in guardians:
             if guardian.email_address:
