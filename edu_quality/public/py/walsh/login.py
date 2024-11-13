@@ -125,14 +125,26 @@ def send_otp(phone_no):
     otp = create_otp(wa_phone_no)
     send_otp_to_whatsapp(wa_phone_no, otp)
     send_otp_to_sms(phone_with_country_code, otp)
+
     return {
         "success": True,
         "message": "Otp Sent To +" + str(wa_phone_no) + " on WhatsApp and SMS",
     }
+        
+def get_student_form(doc):
+    student_forms = []
+    applicants = frappe.db.get_all("Student Guardian",{'guardian':doc.name,'parenttype':"Student Applicant"},"parent")
+    link = frappe.utils.get_url() + "/walnut-school-student-application/"
+    for applicant in applicants:
+        student = frappe.db.get_value("Student",{'student_applicant':applicant.parent}) or applicant.parent
+        student_forms.append({"student":student,"link":link+applicant.parent})
+    if len(student_forms) > 0:
+        return student_forms[0]
 
 
 @frappe.whitelist(allow_guest=True)
-def verify_otp(otp, phone_no, push_token=None):
+def verify_otp(otp, phone_no, push_token=None,form_link=None):
+    
     wa_phone_no = format_wa_phone_no(phone_no)
     phone_with_country_code = "+" + wa_phone_no
     guardian_number = remove_indian_country_code(phone_with_country_code)
@@ -143,13 +155,18 @@ def verify_otp(otp, phone_no, push_token=None):
         login_manager = LoginManager()
         login_manager.login_as(user.name)
 
+        if form_link:
+            form_link = get_student_form(guardian)
+
         if push_token:
             save_push_notification_token(push_token, user.name)
 
         return {
             "success": True,
             "message": "Login Successful",
+            "form_link": form_link
         }
+
     return {
         "error": True,
         "error_type": "invalid_otp",
