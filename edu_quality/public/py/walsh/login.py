@@ -26,10 +26,11 @@ def format_wa_phone_no(phone_no):
 def create_otp(wa_phone_no):
     otp = ""
     for _ in range(4):
-        otp += str(random.randint(0, 9))
+        otp += str(random.randint(1, 9))
     cache = frappe.cache()
     key = "walsh_otp_" + wa_phone_no
-    cache.set_value(key, otp, expires_in_sec=3600)  # 1 hour
+    frappe.cache.delete_value(key)
+    cache.set_value(key, otp, expires_in_sec=600)  # 1 hour
     return otp
 
 
@@ -138,8 +139,7 @@ def get_student_form(doc):
     for applicant in applicants:
         student = frappe.db.get_value("Student",{'student_applicant':applicant.parent}) or applicant.parent
         student_forms.append({"student":student,"link":link+applicant.parent})
-    if len(student_forms) > 0:
-        return student_forms[0]
+    return student_forms
 
 
 @frappe.whitelist(allow_guest=True)
@@ -160,6 +160,9 @@ def verify_otp(otp, phone_no, push_token=None,form_link=None):
 
         if push_token:
             save_push_notification_token(push_token, user.name)
+            
+        key = "walsh_otp_" + wa_phone_no
+        frappe.cache.delete_value(key)
 
         return {
             "success": True,

@@ -67,7 +67,7 @@ def create_user(doc, patch=0):
             user_doc = frappe.new_doc("User")
             user_doc.first_name = doc.guardian_name
             user_doc.email = email
-            user_doc.user_type = "System User"
+            user_doc.user_type = "Website User"
             user_doc.append("roles", {"role": "Guardian"})
             user_doc.send_welcome_email = 0
             user_doc.insert(ignore_permissions=True)
