@@ -144,37 +144,44 @@ def get_student_form(doc):
 
 @frappe.whitelist(allow_guest=True)
 def verify_otp(otp, phone_no, push_token=None,form_link=None):
+    try:
     
-    wa_phone_no = format_wa_phone_no(phone_no)
-    phone_with_country_code = "+" + wa_phone_no
-    guardian_number = remove_indian_country_code(phone_with_country_code)
+        wa_phone_no = format_wa_phone_no(phone_no)
+        phone_with_country_code = "+" + wa_phone_no
+        guardian_number = remove_indian_country_code(phone_with_country_code)
 
-    if match_otp(wa_phone_no, otp):
-        guardian = frappe.get_doc("Guardian", {"mobile_number": guardian_number})
-        user = frappe.get_doc("User", guardian.user)
-        login_manager = LoginManager()
-        login_manager.login_as(user.name)
+        if match_otp(wa_phone_no, otp):
+            guardian = frappe.get_doc("Guardian", {"mobile_number": guardian_number})
+            user = frappe.get_doc("User", guardian.user)
+            login_manager = LoginManager()
+            login_manager.login_as(user.name)
 
-        if form_link:
-            form_link = get_student_form(guardian)
+            if form_link:
+                form_link = get_student_form(guardian)
 
-        if push_token:
-            save_push_notification_token(push_token, user.name)
-            
-        key = "walsh_otp_" + wa_phone_no
-        frappe.cache.delete_value(key)
+            if push_token:
+                save_push_notification_token(push_token, user.name)
+
+            key = "walsh_otp_" + wa_phone_no
+            frappe.cache.delete_value(key)
+
+            return {
+                "success": True,
+                "message": "Login Successful",
+                "form_link": form_link
+            }
 
         return {
-            "success": True,
-            "message": "Login Successful",
-            "form_link": form_link
+            "error": True,
+            "error_type": "invalid_otp",
+            "error_message": "Invalid OTP"
         }
-
-    return {
-        "error": True,
-        "error_type": "invalid_otp",
-        "error_message": "Invalid OTP"
-    }
+    except Exception as e:
+        return {
+            "error": True,
+            "error_type": "server_error",
+            "error_message": str(e)
+        }
 
 
 @frappe.whitelist()
