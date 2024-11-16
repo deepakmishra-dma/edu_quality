@@ -29,7 +29,7 @@ def create_otp(wa_phone_no):
         otp += str(random.randint(1, 9))
     cache = frappe.cache()
     key = "walsh_otp_" + wa_phone_no
-    frappe.cache.delete_value(key)
+    # frappe.cache.delete_value(key)
     frappe.logger("otp").exception("generate-" + key)
     frappe.logger("otp").exception(otp)
     
@@ -169,7 +169,7 @@ def verify_otp(otp, phone_no, push_token=None,form_link=None):
                 save_push_notification_token(push_token, user.name)
 
             key = "walsh_otp_" + wa_phone_no
-            frappe.cache.delete_value(key)
+            # frappe.cache.delete_value(key)
 
             return {
                 "success": True,
