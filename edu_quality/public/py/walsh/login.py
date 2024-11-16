@@ -30,6 +30,9 @@ def create_otp(wa_phone_no):
     cache = frappe.cache()
     key = "walsh_otp_" + wa_phone_no
     frappe.cache.delete_value(key)
+    frappe.logger("otp").exception("generate-" + key)
+    frappe.logger("otp").exception(otp)
+    
     cache.set_value(key, otp, expires_in_sec=600)  # 1 hour
     return otp
 
@@ -38,6 +41,9 @@ def match_otp(wa_phone_no, otp):
     cache = frappe.cache()
     key = "walsh_otp_" + wa_phone_no
     cache_otp = cache.get_value(key)
+    frappe.logger("otp").exception("verify-" + key)
+    frappe.logger("otp").exception(cache_otp)
+    
     # print(wa_phone_no, "otp", otp, "cache_otp", cache_otp)
     return otp == cache_otp
 
