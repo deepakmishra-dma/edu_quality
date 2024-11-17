@@ -32,7 +32,7 @@ def create_otp(wa_phone_no):
     # frappe.cache.delete_value(key)
     frappe.logger("otp").exception("generate-" + key)
     frappe.logger("otp").exception(otp)
-    cache.set_value(key, otp, expires_in_sec=600)  
+    cache.set_value(key, otp)  
     val = cache.get_value(key)
     frappe.logger("otp").exception("get-" + val)
     return otp
