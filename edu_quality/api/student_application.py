@@ -112,9 +112,10 @@ def create_student_application(**args):
         created_mgr_lead = upload_to_mgr(student_application)
         student_application.lms_id = created_mgr_lead.get("ID")
         # lead_application.lead_status = "Enrolled"
-        lead_application.status = "Enrolled"
-        lead_application.flags.ignore_mandatory = True
-        lead_application.save()
+        frappe.db.set_value("Lead", lead_application.name, "status", "Enrolled")
+        # lead_application.status = "Enrolled"
+        # lead_application.flags.ignore_mandatory = True
+        # lead_application.save()
         student_application.insert()
         frappe.msgprint(("Upload to MGR successful"))
         return student_application
@@ -506,45 +507,10 @@ def serialize_lead_to_application(doc: dict):
         "name",
     )
     fathers_name = separate_name(doc.get("fathers_name"))
-    father = frappe.get_doc(
-        {
-            "doctype": "Guardian",
-            "guardian_name": doc.get("fathers_name"),
-            "first_name": fathers_name.get("first_name") or " ",
-            "middle_name": fathers_name.get("middle_name"),
-            "last_name": fathers_name.get("last_name"),
-            "mobile_number": doc.get("fathers_phone"),
-            "email_address": doc.get("fathers_email"),
-        }
-    ).insert(ignore_permissions=True)
-    guardians = [
-        {
-            "guardian": father.get("name"),
-            "relation": "Father",
-            "guardian_name": father.get("guardian_name"),
-        }
-    ]
 
-    if doc.get("mothers_name") and doc.get("mothers_name").strip():
-        mothers_name = separate_name(doc.get("mothers_name"))
-        mother = frappe.get_doc(
-            {
-                "doctype": "Guardian",
-                "guardian_name": doc.get("mothers_name") or " ",
-                "first_name": mothers_name.get("first_name") or " ",
-                "middle_name": mothers_name.get("middle_name"),
-                "last_name": mothers_name.get("last_name"),
-                "mobile_number": doc.get("mothers_phone") or " ",
-                "email_address": doc.get("mothers_email"),
-            }
-        ).insert(ignore_permissions=True)
-        guardians.append(
-            {
-                "guardian": mother.get("name"),
-                "relation": "Mother",
-                "guardian_name": mother.get("guardian_name"),
-            }
-        )
+    guardians = []
+    append_father_guardian(doc, guardians, fathers_name)
+    append_mother_guardian(doc, guardians)
 
     siblings = []
     if doc.get("is_sibling_already_at_walnut"):
@@ -589,6 +555,69 @@ def serialize_lead_to_application(doc: dict):
         "seeking_admission_in_class": doc.get("class"),
         "if_yes_reference_number_of_child": doc.get("if_yes_reference_number_of_child"),
     }
+
+
+def append_mother_guardian(doc, guardians):
+
+    if doc.get("mothers_name") and doc.get("mothers_name").strip():
+        existing_mother = frappe.db.get_value(
+            "Guardian",
+            filters={"mobile_number": doc.get("mothers_phone")},
+            fieldname="name",
+        )
+        mothers_name = separate_name(doc.get("mothers_name"))
+        if not existing_mother:
+            mother = frappe.get_doc(
+                {
+                    "doctype": "Guardian",
+                    "guardian_name": doc.get("mothers_name") or " ",
+                    "first_name": mothers_name.get("first_name") or " ",
+                    "middle_name": mothers_name.get("middle_name"),
+                    "last_name": mothers_name.get("last_name"),
+                    "mobile_number": doc.get("mothers_phone") or " ",
+                    "email_address": doc.get("mothers_email"),
+                }
+            ).insert(ignore_permissions=True)
+        else:
+            mother = frappe.get_doc("Guardian", existing_mother)
+        guardians.append(
+            {
+                "guardian": mother.get("name"),
+                "relation": "Mother",
+                "guardian_name": mother.get("guardian_name"),
+            }
+        )
+
+
+def append_father_guardian(doc, guardians, fathers_name):
+    existing_father = frappe.db.get_value(
+        "Guardian",
+        filters={"mobile_number": doc.get("fathers_phone")},
+        fieldname="name",
+    )
+    if not existing_father:
+        father = frappe.get_doc(
+            {
+                "doctype": "Guardian",
+                "guardian_name": doc.get("fathers_name"),
+                "first_name": fathers_name.get("first_name") or " ",
+                "middle_name": fathers_name.get("middle_name"),
+                "last_name": fathers_name.get("last_name"),
+                "mobile_number": doc.get("fathers_phone"),
+                "email_address": doc.get("fathers_email"),
+            }
+        ).insert(ignore_permissions=True)
+
+    else:
+        father = frappe.get_doc("Guardian", existing_father)
+
+    guardians.append(
+        {
+            "guardian": father.get("name"),
+            "relation": "Father",
+            "guardian_name": father.get("guardian_name"),
+        }
+    )
 
 
 # 46 Fursungi
