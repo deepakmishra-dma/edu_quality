@@ -16852,7 +16852,7 @@
  },
  {
   "charts": [],
-  "content": "[{\"id\":\"QH5USGYX8Z\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Teacher</span>\",\"col\":12}},{\"id\":\"Jphk-BVgrs\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Help Desk\",\"col\":4}},{\"id\":\"aKKtahwvZy\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Forms\",\"col\":4}},{\"id\":\"4KRRBGdDVY\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"CMAP Tracker\",\"col\":4}},{\"id\":\"bLWuYHvsZH\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"CMAP Tracker\",\"col\":4}},{\"id\":\"WBFnNQv2ma\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Forms\",\"col\":4}}]",
+  "content": "[{\"id\":\"QH5USGYX8Z\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Teacher</span>\",\"col\":12}},{\"id\":\"Jphk-BVgrs\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Help Desk\",\"col\":4}},{\"id\":\"k7sDCJ26uW\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"CMAP Tracker\",\"col\":3}}]",
   "custom_blocks": [],
   "docstatus": 0,
   "doctype": "Workspace",
@@ -16863,25 +16863,10 @@
   "is_hidden": 0,
   "label": "Teacher",
   "links": [],
-  "modified": "2024-01-31 08:53:06.800714",
+  "modified": "2024-03-11 14:59:30.123257",
   "module": null,
   "name": "Teacher",
-  "number_cards": [
-   {
-    "label": "CMAP Tracker",
-    "number_card_name": "CMAP",
-    "parent": "Teacher",
-    "parentfield": "number_cards",
-    "parenttype": "Workspace"
-   },
-   {
-    "label": "Forms",
-    "number_card_name": "Form",
-    "parent": "Teacher",
-    "parentfield": "number_cards",
-    "parenttype": "Workspace"
-   }
-  ],
+  "number_cards": [],
   "parent_page": null,
   "public": 1,
   "quick_lists": [],
@@ -16903,12 +16888,6 @@
     "parent": "Teacher",
     "parentfield": "roles",
     "parenttype": "Workspace",
-    "role": "System Admin"
-   },
-   {
-    "parent": "Teacher",
-    "parentfield": "roles",
-    "parenttype": "Workspace",
     "role": "System Manager"
    },
    {
@@ -16921,19 +16900,19 @@
   "sequence_id": 34.0,
   "shortcuts": [
    {
-    "color": "Cyan",
+    "color": "Grey",
     "doc_view": "List",
     "format": null,
     "icon": null,
     "kanban_board": null,
     "label": "CMAP Tracker",
-    "link_to": "CMAP",
+    "link_to": "cmap-tracker",
     "parent": "Teacher",
     "parentfield": "shortcuts",
     "parenttype": "Workspace",
     "restrict_to_domain": null,
-    "stats_filter": "[]",
-    "type": "DocType",
+    "stats_filter": null,
+    "type": "Page",
     "url": null
    },
    {
@@ -16944,22 +16923,6 @@
     "kanban_board": null,
     "label": "Help Desk",
     "link_to": "Issue",
-    "parent": "Teacher",
-    "parentfield": "shortcuts",
-    "parenttype": "Workspace",
-    "restrict_to_domain": null,
-    "stats_filter": "[]",
-    "type": "DocType",
-    "url": null
-   },
-   {
-    "color": "Green",
-    "doc_view": "List",
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
-    "label": "Forms",
-    "link_to": "Web Form",
     "parent": "Teacher",
     "parentfield": "shortcuts",
     "parenttype": "Workspace",

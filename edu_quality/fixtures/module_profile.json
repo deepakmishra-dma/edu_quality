@@ -1074,5 +1074,13 @@
   "modified": "2024-02-20 16:45:52.388057",
   "module_profile_name": "Clerk",
   "name": "Clerk"
+ },
+ {
+  "block_modules": [],
+  "docstatus": 0,
+  "doctype": "Module Profile",
+  "modified": "2024-03-11 17:20:01.608214",
+  "module_profile_name": "Teacher",
+  "name": "Teacher"
  }
 ]

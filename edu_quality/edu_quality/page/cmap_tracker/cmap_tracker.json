@@ -4,13 +4,29 @@
  "docstatus": 0,
  "doctype": "Page",
  "idx": 0,
- "modified": "2024-03-07 12:04:54.344372",
+ "modified": "2024-03-11 16:03:14.485522",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "cmap-tracker",
  "owner": "Administrator",
  "page_name": "cmap-tracker",
- "roles": [],
+ "roles": [
+  {
+   "role": "Teacher"
+  },
+  {
+   "role": "Administrator"
+  },
+  {
+   "role": "Walnut Admin"
+  },
+  {
+   "role": "Instructor"
+  },
+  {
+   "role": "System Manager"
+  }
+ ],
  "script": null,
  "standard": "Yes",
  "style": null,

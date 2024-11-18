@@ -6,7 +6,7 @@ let cmapData = []
 let globalPage = null
 let saveButtonAdded = false
 
-frappe.pages['cmap-tracker'].on_page_load = function (wrapper) {
+frappe.pages['cmap-tracker'].on_page_load = async function (wrapper) {
 	var page = frappe.ui.make_app_page({
 		parent: wrapper,
 		title: 'CMAP Tracker',
@@ -16,6 +16,26 @@ frappe.pages['cmap-tracker'].on_page_load = function (wrapper) {
 	frappe.require(["/assets/edu_quality/css/cmap-tracker.css"])
 	const el = document.querySelector('.container.page-body')
 	el.classList.add("cmap-tracker")
+	const teachersData = await getTeachers()
+	const teacherFilter = !teachersData ? [{
+		label: 'Teacher',
+		fieldname: 'teacher',
+		fieldtype: 'Link',
+		options: "Instructor",
+		readonly: teachersData,
+
+		get_query: () => {
+			return {
+				"filters": {
+
+					"custom_school": filtersRef.get_value('school'),
+
+				}
+
+			}
+		},
+		change: () => filterOnChange(filtersRef.fields_dict.school)
+	}] : [];
 
 	filtersRef = make_fieldgroup(el, [
 		{
@@ -64,23 +84,7 @@ frappe.pages['cmap-tracker'].on_page_load = function (wrapper) {
 			options: "Course",
 			change: () => filterOnChange(filtersRef.fields_dict.subject)
 		},
-		{
-			label: 'Teacher',
-			fieldname: 'teacher',
-			fieldtype: 'Link',
-			options: "Instructor",
-			get_query: () => {
-				return {
-					"filters": {
-
-						"custom_school": filtersRef.get_value('school'),
-
-					}
-
-				}
-			},
-			change: () => filterOnChange(filtersRef.fields_dict.school)
-		},
+		...teacherFilter,
 		{
 			label: 'Unit',
 			fieldname: 'unit',
@@ -93,7 +97,7 @@ frappe.pages['cmap-tracker'].on_page_load = function (wrapper) {
 
 	// page.add_inner_button('Fetch', () => {
 
-	// 	getDivisions()
+
 	// 	getCmap()
 
 	// })
@@ -121,9 +125,9 @@ async function filterOnChange(field) {
 		// removeSaveButton()
 		await setupDataTable()
 	}
-	console.log(filtersRef.get_value('academic_year'), filtersRef.get_value('class'), filtersRef.get_value('school'), filtersRef.get_value('unit'), filtersRef.get_value('subject'))
+	console.log(filtersRef.get_value('academic_year') && filtersRef.get_value('class') && filtersRef.get_value('school') && filtersRef.get_value('unit') && filtersRef.get_value('subject'))
 	if (filtersRef.get_value('academic_year') && filtersRef.get_value('class') && filtersRef.get_value('school') && filtersRef.get_value('unit') && filtersRef.get_value('subject')) {
-		await getDivisions()
+
 		await getCmap()
 		await setupDataTable()
 	}
@@ -156,13 +160,12 @@ function getFilters() {
 	return filters
 }
 
-async function getDivisions() {
-	const filters = getFilters()
-	const divisionsData = await frappe.call({
-		method: 'edu_quality.edu_quality.page.cmap_assignment_tool.cmap_assignment_tool.get_divisions',
-		args: filters
+async function getTeachers() {
+	const teacherData = await frappe.call({
+		method: 'edu_quality.edu_quality.page.cmap_tracker.cmap_tracker.calculate_teacher_value',
+		args: { value_for_admin: "" }
 	})
-
+	return teacherData?.message
 }
 async function getCmap() {
 	const filters = getFilters()

@@ -8,7 +8,7 @@ import json
 @frappe.whitelist()
 def get_divisions(**filters):
     program = get_program(filters.get("school"), filters.get("class"))
-    print(program, filters)
+
     divisions = frappe.db.get_list(
         "Student Group",
         filters={"program": program, "academic_year": filters.get("academic_year")},
