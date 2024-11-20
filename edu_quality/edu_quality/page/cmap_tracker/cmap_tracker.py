@@ -2,6 +2,7 @@ import frappe
 import json
 from edu_quality.public.py.utils import check_admin_roles, check_roles
 from frappe.query_builder import Order
+from frappe.query_builder.functions import Cast
 
 
 # edu_quality.edu_quality.page.cmap_tracker.cmap_tracker.get_cmap
@@ -10,6 +11,7 @@ def get_cmap(**filters):
     cmap_table = frappe.qb.DocType("CMAP")
     cmap_assign_table = frappe.qb.DocType("CMAP Assignment")
     products_table = frappe.qb.DocType("Item Detail")
+    item_table = frappe.qb.DocType("Item")
     teacher = calculate_teacher_value(filters.get("teacher"))
 
     filtered_cmap_query = (
@@ -32,6 +34,8 @@ def get_cmap(**filters):
         frappe.qb.from_(filtered_cmap_query)
         .inner_join(products_table)
         .on(filtered_cmap_query.name == products_table.parent)
+        .inner_join(item_table)
+        .on(products_table.item == item_table.name)
         .select(
             filtered_cmap_query.name,
             products_table.broadcast,
@@ -40,6 +44,7 @@ def get_cmap(**filters):
             products_table.home_work,
             products_table.textbook,
             products_table.chapter,
+            item_table.custom_product_url,
         )
     )
 
@@ -53,7 +58,7 @@ def get_cmap(**filters):
             (cmap_assign_table.teacher == teacher)
             & (cmap_assign_table.division == filters.get("division"))
         )
-        .orderby(filtered_cmap_query.period, Order.asc)
+        .orderby(Cast(filtered_cmap_query.period, "UNSIGNED"), Order.asc)
         .select(
             filtered_cmap_query.star,
             cmap_assign_table.teacher,
@@ -75,11 +80,17 @@ def cocatenate_cmap(data, products_data):
             product_hash[cmap_name] = [product]
         else:
             product_hash[cmap_name].append(product)
-    frappe.errprint(product_hash)
+
     for cmap in data:
         cmap_name = cmap.get("name")
         if cmap_name in product_hash:
-            cmap["products"] = [i.get("item_code") for i in product_hash[cmap_name]]
+            cmap["products"] = [
+                {
+                    "item_code": i.get("item_code"),
+                    "custom_product_url": i.get("custom_product_url"),
+                }
+                for i in product_hash[cmap_name]
+            ]
 
             cmap["chapter_name"] = ",".join(
                 set([i.get("chapter") for i in product_hash[cmap_name]])
@@ -103,13 +114,18 @@ def update(filters, cmap_data):
                 and item.teacher == teacher
             ):
                 # Update existing teacher
-                if str(item.real_date) != assignments.get("real_date"):
+
+                if assignments.get("real_date") and (
+                    str(item.real_date) != assignments.get("real_date")
+                ):
                     item.real_date = assignments.get("real_date")
                     modified = True
+
         if modified:
             cmap.save(ignore_permissions=True)
 
     return
+
 
 # edu_quality.edu_quality.page.cmap_tracker.cmap_tracker.calculate_teacher_value
 @frappe.whitelist()
