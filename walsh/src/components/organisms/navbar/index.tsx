@@ -19,6 +19,12 @@ const Navbar: React.FC<NavbarProps> = ({setIsOpen, isOpen}) => {
     setIsOpen(false)
   }, [location?.pathname])
 
+  const changeLocation: typeof navigate = (...args) => {
+    // @ts-expect-error it works
+    navigate(...args)
+    setIsOpen(false)
+  }
+
   if (!isOpen) return null;
   return (
     <MantineNavbar
@@ -80,25 +86,25 @@ const Navbar: React.FC<NavbarProps> = ({setIsOpen, isOpen}) => {
           </Stack>
         </Stack>
         <NavLink
-          onClick={() => navigate('/')}
+          onClick={() => changeLocation('/')}
           sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%', borderBottom: '1px solid rgba(0,0,0,0.1)'}}
           label="Messages"
           icon={<IconMessage size={35} stroke={1.5} color='#00b8ff'/>}
         />
         <NavLink
-          onClick={() => navigate('/cmap')}
+          onClick={() => changeLocation('/cmap')}
           sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%', borderBottom: '1px solid rgba(0,0,0,0.1)'}}
           label="Curriculum Updates"
           icon={<IconStack2 size={35} stroke={1.5} color='#00b8ff'/>}
         />
         {/*<NavLink*/}
-        {/*  onClick={() => navigate('/absent-note')}*/}
+        {/*  onClick={() => changeLocation('/absent-note')}*/}
         {/*  sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%', borderBottom: '1px solid rgba(0,0,0,0.1)'}}*/}
         {/*  label="Absent/Sick Note"*/}
         {/*  icon={<IconMoodSad size={35} stroke={1.5} color='#00b8ff'/>}*/}
         {/*/>*/}
         {/*<NavLink*/}
-        {/*  onClick={() => navigate('/student-profile')}*/}
+        {/*  onClick={() => changeLocation('/student-profile')}*/}
         {/*  sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%', borderBottom: '1px solid rgba(0,0,0,0.1)'}}*/}
         {/*  label="Student Profile"*/}
         {/*  icon={<IconUser size={35} stroke={1.5} color='#00b8ff'/>}*/}
