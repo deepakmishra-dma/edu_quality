@@ -11,6 +11,7 @@
   "class",
   "division",
   "column_break_tydn",
+  "academic_year",
   "student_status",
   "is_generic_notice",
   "section_break_goux",
@@ -93,11 +94,18 @@
    "in_standard_filter": 1,
    "label": "Is Generic Notice",
    "read_only": 1
+  },
+  {
+   "fieldname": "academic_year",
+   "fieldtype": "Link",
+   "label": "Academic Year",
+   "options": "Academic Year",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-07 23:49:48.061544",
+ "modified": "2024-03-11 12:40:47.271796",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "School Notice",
