@@ -48,6 +48,7 @@ doctype_js = {
 }
 doctype_list_js = {
     "Student Applicant": "public/js/list/student_applicant_list.js",
+    "Guardian": "public/js/list/guardian_list.js",
     "Lead": "public/js/list/lead_list.js",
     "Program Enrollment": "public/js/list/program_enrollment_list.js",
     "Student": "public/js/list/student_list.js",
@@ -158,7 +159,7 @@ doc_events = {
     "Program Enrollment": {
         "on_submit": [
             "edu_quality.public.py.fee.create_fees",
-            "edu_quality.public.py.fee.update_program_enrollment"
+            "edu_quality.public.py.fee.update_program_enrollment",
         ],
         "after_insert": [
             "edu_quality.public.py.fee.append_program_enrollment",
@@ -449,7 +450,15 @@ fixtures = [
             [
                 "name",
                 "in",
-                ["Councellor", "Content Creator", "Printer", "Watchman", "Clerk"],
+                [
+                    "Councellor",
+                    "Content Creator",
+                    "Printer",
+                    "Watchman",
+                    "Clerk",
+                    "Teacher",
+                    "Instructor",
+                ],
             ]
         ],
     },
@@ -459,7 +468,15 @@ fixtures = [
             [
                 "name",
                 "in",
-                ["Councellor", "Content Creator", "Printer", "Watchman", "Clerk"],
+                [
+                    "Councellor",
+                    "Content Creator",
+                    "Printer",
+                    "Watchman",
+                    "Clerk",
+                    "Teacher",
+                    "Instructor",
+                ],
             ]
         ],
     },

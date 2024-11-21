@@ -91,5 +91,32 @@
     "role": "Clerk"
    }
   ]
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Role Profile",
+  "modified": "2024-03-11 17:19:40.210753",
+  "name": "Teacher",
+  "role_profile": "Teacher",
+  "roles": [
+   {
+    "parent": "Teacher",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Teacher"
+   },
+   {
+    "parent": "Teacher",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Instructor"
+   },
+   {
+    "parent": "Teacher",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Employee"
+   }
+  ]
  }
 ]
