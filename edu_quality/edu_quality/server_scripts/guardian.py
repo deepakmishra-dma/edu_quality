@@ -3,14 +3,17 @@ import frappe
 @frappe.whitelist()
 def enqueue_gardian_user_creation():
     guardians = frappe.get_all("Guardian", filters=[["Guardian","user","is","not set"]],fields=["name","email_address"])
-    i=0;
-    while i < len(guardians):
-        end = i+501 if i+501 < len(guardians) else -1
-        g_list = guardians[i:end]
-        frappe.enqueue(create_users,guardians=g_list, queue='long')
-        if end == -1:
-            break 
-        i = i+501
+    if len(guardians) > 500:
+        i=0;
+        while i < len(guardians):
+            end = i+501 if i+501 < len(guardians) else -1
+            g_list = guardians[i:end]
+            frappe.enqueue(create_users,guardians=g_list, queue='long')
+            if end == -1:
+                break 
+            i = i+501
+    else:
+        frappe.enqueue(create_users,guardians=guardians, queue='long')
     return True
 
 def create_users(guardians):
@@ -64,7 +67,7 @@ def create_user(doc, patch=0):
             user_doc = frappe.new_doc("User")
             user_doc.first_name = doc.guardian_name
             user_doc.email = email
-            user_doc.user_type = "System User"
+            user_doc.user_type = "Website User"
             user_doc.append("roles", {"role": "Guardian"})
             user_doc.send_welcome_email = 0
             user_doc.insert(ignore_permissions=True)
@@ -77,18 +80,13 @@ def create_user(doc, patch=0):
 
 def set_student_permissions(doc,patch=0):
     #student permissions
-    for student in doc.students:
-        if frappe.db.exists("User Permission",{
-            "user":doc.user,
-            "allow": "Student",
-            "for_value":student.student
-        }):
-            continue 
-        else:
+    students = frappe.db.get_all("Student Guardian",{'guardian':doc.name,'parenttype':"Student"},"parent")
+    for student in students:
+        if not frappe.db.exists("User Permission",{"user":doc.user,"allow":"Student","for_value":student.parent}):
             perm = frappe.new_doc("User Permission")
             perm.user = doc.user
             perm.allow = "Student"
-            perm.for_value = student.student
+            perm.for_value = student.parent
             perm.insert(ignore_permissions=True)
     #applicant permissions
     applicants = frappe.db.get_all("Student Guardian",{'guardian':doc.name,'parenttype':"Student Applicant"},"parent")

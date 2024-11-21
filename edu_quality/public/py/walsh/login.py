@@ -26,17 +26,25 @@ def format_wa_phone_no(phone_no):
 def create_otp(wa_phone_no):
     otp = ""
     for _ in range(4):
-        otp += str(random.randint(0, 9))
+        otp += str(random.randint(1, 9))
     cache = frappe.cache()
-    key = "walsh_otp_" + wa_phone_no
-    cache.set_value(key, otp, expires_in_sec=3600)  # 1 hour
+    key = "wo" + wa_phone_no
+    # frappe.cache.delete_value(key)
+    frappe.logger("otp").exception("generate-" + key)
+    frappe.logger("otp").exception(otp)
+    cache.set_value(key, otp)
+    val = cache.get_value(key)
+    frappe.logger("otp").exception("get-" + val)
     return otp
 
 
 def match_otp(wa_phone_no, otp):
     cache = frappe.cache()
-    key = "walsh_otp_" + wa_phone_no
+    key = "wo" + wa_phone_no
     cache_otp = cache.get_value(key)
+    frappe.logger("otp").exception("verify-" + key)
+    frappe.logger("otp").exception(cache_otp)
+
     # print(wa_phone_no, "otp", otp, "cache_otp", cache_otp)
     return otp == cache_otp
 
@@ -154,39 +162,48 @@ def get_student_form(doc):
     for applicant in applicants:
         student = frappe.db.get_value("Student", {'student_applicant': applicant.parent}) or applicant.parent
         student_forms.append({"student": student, "link": link + applicant.parent})
-    if len(student_forms) > 0:
-        return student_forms[0]
+    return student_forms
 
 
 @frappe.whitelist(allow_guest=True)
 def verify_otp(otp, phone_no, push_token=None, form_link=None):
-    wa_phone_no = format_wa_phone_no(phone_no)
-    phone_with_country_code = "+" + wa_phone_no
-    guardian_number = remove_indian_country_code(phone_with_country_code)
+    try:
+        wa_phone_no = format_wa_phone_no(phone_no)
+        phone_with_country_code = "+" + wa_phone_no
+        guardian_number = remove_indian_country_code(phone_with_country_code)
 
-    if match_otp(wa_phone_no, otp):
-        guardian = frappe.get_doc("Guardian", {"mobile_number": guardian_number})
-        user = frappe.get_doc("User", guardian.user)
-        login_manager = LoginManager()
-        login_manager.login_as(user.name)
+        if match_otp(wa_phone_no, otp):
+            guardian = frappe.get_doc("Guardian", {"mobile_number": guardian_number})
+            user = frappe.get_doc("User", guardian.user)
+            login_manager = LoginManager()
+            login_manager.login_as(user.name)
 
-        if form_link:
-            form_link = get_student_form(guardian)
+            if form_link:
+                form_link = get_student_form(guardian)
 
-        if push_token:
-            save_push_notification_token(push_token, user.name)
+            if push_token:
+                save_push_notification_token(push_token, user.name)
+
+            key = "walsh_otp" + wa_phone_no
+            # frappe.cache.delete_value(key)
+
+            return {
+                "success": True,
+                "message": "Login Successful",
+                "form_link": form_link
+            }
 
         return {
-            "success": True,
-            "message": "Login Successful",
-            "form_link": form_link
+            "error": True,
+            "error_type": "invalid_otp",
+            "error_message": "Invalid OTP"
         }
-
-    return {
-        "error": True,
-        "error_type": "invalid_otp",
-        "error_message": "Invalid OTP"
-    }
+    except Exception as e:
+        return {
+            "error": True,
+            "error_type": "server_error",
+            "error_message": str(e)
+        }
 
 
 @frappe.whitelist()
