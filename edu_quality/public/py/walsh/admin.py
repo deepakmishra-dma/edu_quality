@@ -14,6 +14,31 @@ def render_jinja(text, object):
     return frappe.render_template(text, object)
 
 
+def send_notification(student_id, subject):
+    student_guardians = frappe.get_all(
+        "Student Guardian",
+        filters={'parent': student_id, 'parenttype': 'Student'},
+        fields=["guardian"]
+    )
+    guardians = [frappe.get_doc("Guardian", g.get("guardian")) for g in student_guardians]
+    for guardian in guardians:
+        user = guardian.get("user")
+        if user:
+            push_tokens = frappe.get_all(
+                "Mobile Push Token",
+                filters={"user_id": user},
+                fields=["token"]
+            )
+            for push_token in push_tokens:
+                requests.post(
+                    url="https://exp.host/--/api/v2/push/send",
+                    data={
+                        "to": push_token.get("token"),
+                        "title": subject + " - " + student_id,
+                    },
+                )
+
+
 def enqueued_specific_notice_docs(__args):
     csv_file = __args.get("csv_file")
     subject = __args.get("subject")
@@ -222,6 +247,8 @@ def enqueued_generic_notice_docs(__args):
     classes = __args.get("classes")
     divisions = __args.get("divisions")
     student_statuses = __args.get("student_statuses")
+    academic_year = (__args.get("academic_year") or
+                     frappe.get_value('Academic Year', {'custom_current_academic_year': 1}, 'name'))
 
     for student_status in student_statuses:
         if len(classes) > 1 or len(divisions) == 0:
@@ -234,6 +261,7 @@ def enqueued_generic_notice_docs(__args):
                     "subject": subject,
                     "student_status": student_status,
                     "notice": content,
+                    'academic_year': academic_year
                 }).insert()
         else:
             class_ = classes[0]
@@ -246,33 +274,9 @@ def enqueued_generic_notice_docs(__args):
                     "division": division,
                     "subject": subject,
                     "student_status": student_status,
-                    "notice": content
+                    "notice": content,
+                    'academic_year': academic_year
                 }).insert()
-
-
-def send_notification(student_id, subject):
-    student_guardians = frappe.get_all(
-        "Student Guardian",
-        filters={'parent': student_id, 'parenttype': 'Student'},
-        fields=["guardian"]
-    )
-    guardians = [frappe.get_doc("Guardian", g.get("guardian")) for g in student_guardians]
-    for guardian in guardians:
-        user = guardian.get("user")
-        if user:
-            push_tokens = frappe.get_all(
-                "Mobile Push Token",
-                filters={"user_id": user},
-                fields=["token"]
-            )
-            for push_token in push_tokens:
-                requests.post(
-                    url="https://exp.host/--/api/v2/push/send",
-                    data={
-                        "to": push_token.get("token"),
-                        "title": subject + " - " + student_id,
-                    },
-                )
 
 
 def enqueue_specific_notifications(__args):
