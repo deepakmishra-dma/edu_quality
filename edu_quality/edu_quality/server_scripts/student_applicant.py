@@ -280,7 +280,7 @@ def referal_discount(doc, method=None):
                 "grand_total": grand_total,
                 "grand_total_in_words": grand_total_in_words,
                 "outstanding_amount": doc.outstanding_amount - discount,
-                "total_discount": doc.total_discount + discount
+                "total_discount": (doc.total_discount or 0) + discount
             }
 
             frappe.db.set_value("Fees", doc.name, doc_updates)
