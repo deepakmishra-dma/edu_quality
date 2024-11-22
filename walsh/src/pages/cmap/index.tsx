@@ -24,7 +24,7 @@ const Cmap = () => {
   useEffect(() => {
     if (selectedStudent) {
       searchParams.set('student', selectedStudent || '')
-      setSearchParams(searchParams)
+      setSearchParams(searchParams, {replace: true})
     }
   }, [selectedStudent])
 

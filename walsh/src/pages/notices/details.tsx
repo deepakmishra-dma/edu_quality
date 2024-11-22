@@ -71,7 +71,7 @@ export const NoticeDetails: React.FC<IResourceComponentsProps> = () => {
       width: '100%',
       padding: 10
     }}>
-      <div dangerouslySetInnerHTML={{__html: data?.data?.notice || ""}}></div>
+      <div className="ql-editor" dangerouslySetInnerHTML={{__html: data?.data?.notice || ""}}></div>
     </Box>
   </Box>
 };

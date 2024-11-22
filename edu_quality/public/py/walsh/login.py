@@ -32,7 +32,7 @@ def create_otp(wa_phone_no):
     # frappe.cache.delete_value(key)
     frappe.logger("otp").exception("generate-" + key)
     frappe.logger("otp").exception(otp)
-    cache.set_value(key, otp)  
+    cache.set_value(key, otp)
     val = cache.get_value(key)
     frappe.logger("otp").exception("get-" + val)
     return otp
@@ -44,7 +44,7 @@ def match_otp(wa_phone_no, otp):
     cache_otp = cache.get_value(key)
     frappe.logger("otp").exception("verify-" + key)
     frappe.logger("otp").exception(cache_otp)
-    
+
     # print(wa_phone_no, "otp", otp, "cache_otp", cache_otp)
     return otp == cache_otp
 
@@ -102,6 +102,14 @@ def remove_push_notification_token(token=None):
         frappe.db.delete("Mobile Push Token", {"user_id": user_id})
 
 
+def is_defaulter(guardian_name):
+    students = frappe.get_all("Student", filters={
+        "guardian": guardian_name,
+        "student_status": "Defaulter"
+    }, fields=["*"])
+    return len(students) > 0
+
+
 @frappe.whitelist(allow_guest=True)
 def send_otp(phone_no):
     wa_phone_no = format_wa_phone_no(phone_no)
@@ -123,6 +131,12 @@ def send_otp(phone_no):
         }
 
     guardian = frappe.get_doc("Guardian", {"mobile_number": guardian_number})
+    if is_defaulter(guardian.name):
+        return {
+            "error": True,
+            "error_type": "defaulter",
+            "error_message": "Your login is disabled"
+        }
     if not frappe.db.exists("User", guardian.user):
         return {
             "error": True,
@@ -138,21 +152,22 @@ def send_otp(phone_no):
         "success": True,
         "message": "Otp Sent To +" + str(wa_phone_no) + " on WhatsApp and SMS",
     }
-        
+
+
 def get_student_form(doc):
     student_forms = []
-    applicants = frappe.db.get_all("Student Guardian",{'guardian':doc.name,'parenttype':"Student Applicant"},"parent")
+    applicants = frappe.db.get_all("Student Guardian", {'guardian': doc.name, 'parenttype': "Student Applicant"},
+                                   "parent")
     link = frappe.utils.get_url() + "/walnut-school-student-application/"
     for applicant in applicants:
-        student = frappe.db.get_value("Student",{'student_applicant':applicant.parent}) or applicant.parent
-        student_forms.append({"student":student,"link":link+applicant.parent})
+        student = frappe.db.get_value("Student", {'student_applicant': applicant.parent}) or applicant.parent
+        student_forms.append({"student": student, "link": link + applicant.parent})
     return student_forms
 
 
 @frappe.whitelist(allow_guest=True)
-def verify_otp(otp, phone_no, push_token=None,form_link=None):
+def verify_otp(otp, phone_no, push_token=None, form_link=None):
     try:
-    
         wa_phone_no = format_wa_phone_no(phone_no)
         phone_with_country_code = "+" + wa_phone_no
         guardian_number = remove_indian_country_code(phone_with_country_code)

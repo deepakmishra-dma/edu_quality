@@ -1,4 +1,4 @@
-import {Route, Routes} from "react-router-dom";
+import {Route, Routes, useNavigate} from "react-router-dom";
 import {Authenticated, useIsAuthenticated} from "@refinedev/core";
 import {Login} from "./login";
 import {Header} from "../components";
@@ -7,7 +7,7 @@ import {NoticeDetails} from "./notices/details.tsx";
 import {ErrorComponent} from "@refinedev/mantine";
 import {AppShell} from "@mantine/core";
 import Navbar from "../components/organisms/navbar";
-import React from "react";
+import React, {useEffect} from "react";
 import Cmap from "./cmap";
 import CmapList from "./cmap/list.tsx";
 
@@ -15,7 +15,11 @@ const Pages = () => {
   // const location = useLocation()
   const isAuthenticated = useIsAuthenticated()
   const [isNavBarOpen, setIsNavBarOpen] = React.useState(false)
-  // const navBarIsOpen = isNavBarOpen && location.pathname == '/'
+  const navigate = useNavigate()
+  useEffect(() => {
+    // @ts-expect-error new assignment
+    window.updateLocation = navigate
+  }, [navigate]);
   return (
     <AppShell sx={{
       "display": "flex",

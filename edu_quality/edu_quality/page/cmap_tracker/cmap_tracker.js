@@ -250,7 +250,7 @@ function createTable(data) {
 	if (data)
 
 		data.forEach((row, index) => {
-			const row_html = createRow(row.period, row.chapter_name, row.products && row.products.map(el => `<a href="/app/item/${el}">${el}</a>`).join(','), row.division, row.teacher, row.plan_date, row.real_date, index === 0, 0, index)
+			const row_html = createRow(row.period, row.chapter_name, row.products && row.products.map(el => `<a target="__blank" href="${el.custom_product_url}">${el.item_code}</a>`).join(','), row.division, row.teacher, row.plan_date, row.real_date, index === 0, 0, index)
 			tbody.innerHTML += (row_html)
 		})
 
