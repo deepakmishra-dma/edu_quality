@@ -70,8 +70,8 @@ def get_division_name(program_enrollment):
     for pe in program_enrollment:
         div = frappe.get_value("Student Group", pe.student_group, "student_group_name")
         class_name = frappe.get_value("Program", pe.program, "short_code")
-        div_dict[pe.name] = (class_name or '') + div
-        
+        div_dict[pe.name] = (class_name or "") + div
+
     return div_dict
 
 
@@ -116,6 +116,7 @@ def generate(**kwargs):
 def generate_permanent_id_cards(**kwargs):
     frappe.enqueue(generate_permanent_id_cards_async, **kwargs, queue="long")
 
+
 def generate_permanent_id_cards_async(**kwargs):
     try:
         base_url = frappe.utils.get_url()
@@ -149,7 +150,7 @@ def generate_permanent_id_cards_async(**kwargs):
         public_path = Path(frappe.get_site_path(), "public")
 
         os.makedirs(public_path, exist_ok=True)
-        
+
         current_datetime = datetime.now().strftime("%Y%m%d%H%M%S")
         filename = f"Permanent_Id_Card_{current_datetime}.pdf"
         filename = public_path / "files" / "converted" / filename
@@ -159,8 +160,10 @@ def generate_permanent_id_cards_async(**kwargs):
         doc = frappe.new_doc("Permanent Id Card")
         file_path = str(filename).replace(str(public_path), "")
 
-        doc.file = file_path   
+        doc.file = file_path
         doc.save(ignore_permissions=True)
     except Exception as e:
-        frappe.logger('permanent_id_card').exception(e)
-        frappe.log_error("Permanent Id Card Generation Failed", str(frappe.traceback()))
+        frappe.logger("permanent_id_card").exception(e)
+        frappe.log_error(
+            "Permanent Id Card Generation Failed", str(frappe.get_traceback())
+        )

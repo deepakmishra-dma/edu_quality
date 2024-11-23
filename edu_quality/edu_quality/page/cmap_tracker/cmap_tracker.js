@@ -140,7 +140,7 @@ function cmapDataPresent() {
 
 function changeRealDateOnSelect(e) {
 	const dataset = e.target.dataset
-	console.log(dataset.index, 'haha')
+
 	if (dataset.index && cmapData) {
 		cmapData[dataset.index].real_date = e.target.value
 
@@ -212,13 +212,20 @@ function make_fieldgroup(parent, ddf_list) {
 
 }
 const headers = [
-	{ textContent: 'Period No.', colSpan: 1 },
+	{ textContent: 'Period No.', className: "period-no-header", colSpan: 1 },
 	{ textContent: 'Chapter Name', colSpan: 2 },
 	{ textContent: 'Products', colSpan: 1 },
-	{ textContent: 'Division' },
+	{ textContent: 'Broadcast', colSpan: 1 },
+	{ textContent: 'Parent Note', colSpan: 1 },
+	{ textContent: 'Classwork', colSpan: 1 },
+	{ textContent: 'Homework', colSpan: 1 },
+	{ textContent: 'Material Required', colSpan: 1 },
+
+
 	{ textContent: 'Plan Date' },
 	{ textContent: 'Real Date' },
-	{ textContent: 'Teacher' },
+
+	{ textContent: 'Remarks' },
 
 ];
 
@@ -250,12 +257,13 @@ function createTable(data) {
 	if (data)
 
 		data.forEach((row, index) => {
-			const row_html = createRow(row.period, row.chapter_name, row.products && row.products.map(el => `<a target="__blank" href="${el.custom_product_url}">${el.item_code}</a>`).join(','), row.division, row.teacher, row.plan_date, row.real_date, index === 0, 0, index)
+			const row_html = createRow(row.period, row.chapter_name, row.products && row.products.map(el => `<a target="__blank" href="${el.custom_product_url}">${el.item_code}</a>`).join(','), row.broadcast, row.parent_note, row.class_work, row.home_work, row.material_required, row.division, row.teacher, row.plan_date, row.real_date, row.remarks, index === 0, 0, index)
 			tbody.innerHTML += (row_html)
 		})
 
 
 	tbody.addEventListener('change', changeRealDateOnSelect)
+	tbody.addEventListener('click', editRemarks)
 	thead.appendChild(headerRow)
 	table.appendChild(thead);
 
@@ -263,17 +271,54 @@ function createTable(data) {
 	return table
 }
 
-function createRow(period_no, chapter_name, products, division, teacher, plan_date, real_date, first_row, rowSpan, index) {
+function editRemarks(e) {
+	const dataset = e.target.dataset
+	console.log(dataset)
+	if (dataset.editDialog && cmapData) {
+		const d = new frappe.ui.Dialog({
+			title: 'Edit Remark',
+			fields: [{
+				label: 'Remarks',
+				fieldname: 'remarks',
+				fieldtype: 'Text',
+				default: cmapData[dataset.index].remarks,
+
+			}],
+			size: "small",
+			primary_action_label: "Change",
+
+			primary_action: () => {
+
+				cmapData[dataset.index].remarks = d.get_value('remarks');
+				addSaveButton();
+				setupDataTable();
+				d.hide();
+
+
+			}
+		})
+		d.show()
+	}
+
+
+}
+function createRow(period_no, chapter_name, products, broadcast, parent_note, class_work, home_work, material_required, division, teacher, plan_date, real_date, remarks, first_row, rowSpan, index) {
 
 
 	return `<tr>
 	<td >${period_no}</td>
 	<td colspan="2">${chapter_name}</td>
 	<td>${products}</td>
-	<td>${division}</td>
+	<td>${broadcast}</td>
+	<td>${parent_note}</td>
+	<td>${class_work}</td>
+	<td>${home_work}</td>
+<td>${material_required}</td>
+
 	<td>${plan_date || "No Date"}</td>
 	<td class="real-date-cell">${createDatePicker(real_date, index)}</td>
-	<td>${teacher}</td>
+
+	<td>${remarks || "No Remarks"} <button data-edit-dialog="true" data-index=${index}><i data-edit-dialog="true" data-index=${index} class="fas fa-edit"></i></button></td>
   </tr>
   `
 

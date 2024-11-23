@@ -1,49 +1,58 @@
 .cmap-tracker.page-body form {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    align-items: center;
-  }
-  
-  .cmap-tracker.page-body * {
-    box-sizing: border-box;
-  }
-  .cmap-tracker.page-body button[data-fieldname="fetch"] {
-    margin-top: 26px;
-    width: 150px;
-  }
-  
-  .cmap-tracker.page-body select[data-fieldname="unit"] {
-    width: 200px;
-  }
-  .cmap-tracker.page-body table {
-    table-layout: fixed;
-  }
-  .cmap-tracker.page-body th,
-  td {
-    padding: 4px 32px;
-    border: 1px solid var(--gray-200);
-  }
-  
-  .cmap-tracker.page-body th {
-    background-color: var(--subtle-fg);
-  }
-  .cmap-tracker.page-body .teacher-cell select {
-    border: 1px solid var(--gray-500);
-    height: var(--input-height);
-    font-size: var(--text-base);
-    font-weight: var(--weight-regular);
-    letter-spacing: 0.02em;
-    border-radius: var(--border-radius-sm);
-    padding: var(--input-padding);
-    position: relative;
-    width: 200px;
-    padding-block: 0;
-  }
-  
-  .cmap-tracker.page-body .no-content {
-    display: flex;
-    justify-content: center;
-    margin-top: 32px;
-  }
-  
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.cmap-tracker.page-body * {
+  box-sizing: border-box;
+}
+.cmap-tracker.page-body {
+  overflow: hidden;
+}
+.cmap-tracker.page-body button[data-fieldname="fetch"] {
+  margin-top: 26px;
+  width: 150px;
+}
+
+.cmap-tracker.page-body select[data-fieldname="unit"] {
+  width: 200px;
+}
+.cmap-tracker.page-body table {
+  table-layout: fixed;
+}
+.cmap-tracker #report-table-container {
+  overflow-x: auto;
+}
+.cmap-tracker.page-body th,
+td {
+  padding: 4px 32px;
+  border: 1px solid var(--gray-200);
+}
+
+.cmap-tracker.page-body th {
+  background-color: var(--subtle-fg);
+}
+.cmap-tracker.page-body .teacher-cell select {
+  border: 1px solid var(--gray-500);
+  height: var(--input-height);
+  font-size: var(--text-base);
+  font-weight: var(--weight-regular);
+  letter-spacing: 0.02em;
+  border-radius: var(--border-radius-sm);
+  padding: var(--input-padding);
+  position: relative;
+  width: 200px;
+  padding-block: 0;
+}
+
+.cmap-tracker.page-body .no-content {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+}
+
+.cmap-tracker .period-no-header {
+  padding: 4px 12px;
+}

@@ -392,10 +392,7 @@ def get_pending_items():
 
 
 def get_product_files(extensions, pending_items):
-    frappe.log_error(
-        "print filters",
-        [item + extension for item in pending_items for extension in extensions],
-    )
+
     return frappe.db.get_list(
         "File",
         filters=[
