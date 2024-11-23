@@ -169,13 +169,14 @@ def enqueued_generic_notice_emails(__args):
         bcc_emails = list(set(bcc_emails))
 
     current_academic_year = frappe.get_value('Academic Year', {'custom_current_academic_year': 1}, 'name')
+    students_values = {
+        'classes': classes,
+        'divisions': divisions,
+        'student_statuses': student_statuses,
+        'current_academic_year': current_academic_year
+    }
     students = []
     if len(classes) > 1 or len(divisions) == 0:
-        students_values = {
-            'classes': classes,
-            'student_statuses': student_statuses,
-            'current_academic_year': current_academic_year
-        }
         students = frappe.db.sql('''
             select *
             from tabStudent
@@ -188,11 +189,6 @@ def enqueued_generic_notice_emails(__args):
             and student_status in %(student_statuses)s
         ''', values=students_values, as_dict=1)
     else:
-        students_values = {
-            'classes': classes,
-            'student_statuses': student_statuses,
-            'current_academic_year': current_academic_year
-        }
         students = frappe.db.sql('''
             select *
             from tabStudent
@@ -326,12 +322,13 @@ def enqueue_generic_notifications(__args):
     student_statuses = __args.get("student_statuses")
 
     current_academic_year = frappe.get_value('Academic Year', {'custom_current_academic_year': 1}, 'name')
+    students_values = {
+        'classes': classes,
+        'divisions': divisions,
+        'student_statuses': student_statuses,
+        'current_academic_year': current_academic_year
+    }
     if len(classes) > 1 or len(divisions) == 0:
-        students_values = {
-            'classes': classes,
-            'student_statuses': student_statuses,
-            'current_academic_year': current_academic_year
-        }
         students = frappe.db.sql('''
                 select *
                 from tabStudent
@@ -344,11 +341,6 @@ def enqueue_generic_notifications(__args):
                 and student_status in %(student_statuses)s
             ''', values=students_values, as_dict=1)
     else:
-        students_values = {
-            'classes': classes,
-            'student_statuses': student_statuses,
-            'current_academic_year': current_academic_year
-        }
         students = frappe.db.sql('''
                 select *
                 from tabStudent
@@ -493,12 +485,13 @@ def send_test_mail(**kwargs):
     else:
         students = []
         current_academic_year = frappe.get_value('Academic Year', {'custom_current_academic_year': 1}, 'name')
+        students_values = {
+            'classes': classes,
+            'divisions': divisions,
+            'student_statuses': student_statuses,
+            'current_academic_year': current_academic_year
+        }
         if len(classes) > 1 or len(divisions) == 0:
-            students_values = {
-                'classes': classes,
-                'student_statuses': student_statuses,
-                'current_academic_year': current_academic_year
-            }
             students = frappe.db.sql('''
                 select *
                 from tabStudent
@@ -512,11 +505,6 @@ def send_test_mail(**kwargs):
                 limit 1
             ''', values=students_values, as_dict=1)
         else:
-            students_values = {
-                'classes': classes,
-                'student_statuses': student_statuses,
-                'current_academic_year': current_academic_year
-            }
             students = frappe.db.sql('''
                 select *
                 from tabStudent
@@ -544,6 +532,7 @@ def send_test_mail(**kwargs):
     )
 
 
+# /api/method/edu_quality.public.py.walsh.admin.get_student_count
 @frappe.whitelist()
 def get_student_count(**kwargs):
     classes = kwargs.get("classes")
@@ -557,12 +546,13 @@ def get_student_count(**kwargs):
         return 0
 
     current_academic_year = frappe.get_value('Academic Year', {'custom_current_academic_year': 1}, 'name')
+    students_values = {
+        'classes': classes,
+        'divisions': divisions,
+        'student_statuses': student_statuses,
+        'current_academic_year': current_academic_year
+    }
     if len(classes) > 1 or len(divisions) == 0:
-        students_values = {
-            'classes': classes,
-            'student_statuses': student_statuses,
-            'current_academic_year': current_academic_year
-        }
         students = frappe.db.sql('''
                     select count(*) as count
                     from tabStudent
@@ -575,11 +565,6 @@ def get_student_count(**kwargs):
                     and student_status in %(student_statuses)s
                 ''', values=students_values, as_dict=1)
     else:
-        students_values = {
-            'classes': classes,
-            'student_statuses': student_statuses,
-            'current_academic_year': current_academic_year
-        }
         students = frappe.db.sql('''
                     select count(*) as count
                     from tabStudent
