@@ -9,7 +9,8 @@
   "school",
   "division",
   "teacher",
-  "real_date"
+  "real_date",
+  "remarks"
  ],
  "fields": [
   {
@@ -38,12 +39,18 @@
    "fieldtype": "Date",
    "in_list_view": 1,
    "label": "Real Date"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Text",
+   "in_list_view": 1,
+   "label": "Remarks"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-03-11 16:38:42.517503",
+ "modified": "2024-03-12 17:39:33.999320",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "CMAP Assignment",
