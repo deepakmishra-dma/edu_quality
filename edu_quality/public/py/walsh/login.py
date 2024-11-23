@@ -102,12 +102,18 @@ def remove_push_notification_token(token=None):
         frappe.db.delete("Mobile Push Token", {"user_id": user_id})
 
 
-def is_defaulter(guardian_name):
+def is_defaulter(guardian_name, logout_if_defaulter=False):
     students = frappe.get_all("Student", filters={
         "guardian": guardian_name,
         "student_status": "Defaulter"
     }, fields=["*"])
-    return len(students) > 0
+    if len(students) > 0:
+        if logout_if_defaulter:
+            remove_push_notification_token()
+            login_manager = LoginManager()
+            login_manager.logout()
+        return True
+    return False
 
 
 @frappe.whitelist(allow_guest=True)

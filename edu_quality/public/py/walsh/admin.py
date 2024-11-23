@@ -14,7 +14,7 @@ def render_jinja(text, object):
     return frappe.render_template(text, object)
 
 
-def send_notification(student_id, subject):
+def send_notification(student_id, subject, notice_id):
     student_guardians = frappe.get_all(
         "Student Guardian",
         filters={'parent': student_id, 'parenttype': 'Student'},
@@ -35,6 +35,7 @@ def send_notification(student_id, subject):
                     data={
                         "to": push_token.get("token"),
                         "title": subject + " - " + student_id,
+                        "data": {"url_path": f"/notice/{notice_id}?student={student_id}"}
                     },
                 )
 
@@ -54,6 +55,7 @@ def enqueued_specific_notice_docs(__args):
     success_ref_ids = []
     failure_ref_ids = []
     failure_texts = []
+    notice_ids = []
     for row in csv_data:
         try:
             student_id = row.get("ID") or row.get("id") or row.get("name")
@@ -64,16 +66,20 @@ def enqueued_specific_notice_docs(__args):
             }
             notice_subject = render_jinja(subject, data)
             notice_content = render_jinja(content, data)
-            frappe.get_doc({
+            notice = frappe.get_doc({
                 "doctype": "School Notice",
                 "student": student.name,
                 "subject": notice_subject,
                 "notice": notice_content
             }).insert()
+            notice.reload()
+            notice_ids.append(notice.name)
             success_ref_ids.append(student_id)
         except Exception as e:
             failure_ref_ids.append(row.get("ID") or row.get("id") or row.get("name"))
             failure_texts.append(e)
+
+    frappe.enqueue(enqueued_specific_notifications, queue="long", notice_ids=notice_ids)
 
     if len(failure_ref_ids):
         frappe.get_doc({
@@ -243,13 +249,12 @@ def enqueued_generic_notice_docs(__args):
     classes = __args.get("classes")
     divisions = __args.get("divisions")
     student_statuses = __args.get("student_statuses")
-    academic_year = (__args.get("academic_year") or
-                     frappe.get_value('Academic Year', {'custom_current_academic_year': 1}, 'name'))
-
+    current_academic_year = frappe.get_value('Academic Year', {'custom_current_academic_year': 1}, 'name')
+    notice_ids = []
     for student_status in student_statuses:
         if len(classes) > 1 or len(divisions) == 0:
             for class_ in classes:
-                frappe.get_doc({
+                notice = frappe.get_doc({
                     "doctype": "School Notice",
                     "class": class_,
                     "is_generic_notice": 1,
@@ -257,12 +262,14 @@ def enqueued_generic_notice_docs(__args):
                     "subject": subject,
                     "student_status": student_status,
                     "notice": content,
-                    'academic_year': academic_year
+                    'academic_year': current_academic_year
                 }).insert()
+                notice.reload()
+                notice_ids.append(notice.name)
         else:
             class_ = classes[0]
             for division in divisions:
-                frappe.get_doc({
+                notice = frappe.get_doc({
                     "doctype": "School Notice",
                     "is_generic_notice": 1,
                     "class": class_,
@@ -271,39 +278,27 @@ def enqueued_generic_notice_docs(__args):
                     "subject": subject,
                     "student_status": student_status,
                     "notice": content,
-                    'academic_year': academic_year
+                    'academic_year': current_academic_year
                 }).insert()
+                notice.reload()
+                notice_ids.append(notice.name)
+
+    frappe.enqueue(enqueued_generic_notifications, queue="long", notice_ids=notice_ids)
 
 
-def enqueue_specific_notifications(__args):
-    csv_file = __args.get("csv_file")
-    subject = __args.get("subject")
-    # content = __args.get("notice")
-
-    csv_text = frappe.get_doc("File", {
-        "file_url": csv_file,
-    }, limit=1).get_content()
-
-    csv_data = csv.DictReader(csv_text.splitlines())
-    csv_data = list(csv_data)
-
+def enqueued_specific_notifications(notice_ids):
     success_ref_ids = []
     failure_ref_ids = []
     failure_texts = []
-    for row in csv_data:
+    for notice_id in notice_ids:
         try:
-            student_id = row.get("ID") or row.get("id") or row.get("name")
-            student = frappe.get_doc("Student", student_id)
-            data = {
-                **student.as_dict(),
-                **row
-            }
-            notice_subject = render_jinja(subject, data)
-            # notice_content = render_jinja(content, data)
-            send_notification(student_id, notice_subject)
+            notice = frappe.get_doc("School Notice", notice_id).as_dict()
+            subject = notice.subject
+            student_id = notice.student
+            send_notification(student_id, subject, notice_id)
             success_ref_ids.append(student_id)
         except Exception as e:
-            failure_ref_ids.append(row.get("ID") or row.get("id") or row.get("name"))
+            failure_ref_ids.append(notice_id)
             failure_texts.append(e)
 
     if len(failure_ref_ids):
@@ -315,62 +310,63 @@ def enqueue_specific_notifications(__args):
         }).insert(ignore_permissions=True)
 
 
-def enqueue_generic_notifications(__args):
-    subject = __args.get("subject")
-    classes = __args.get("classes")
-    divisions = __args.get("divisions")
-    student_statuses = __args.get("student_statuses")
-
-    current_academic_year = frappe.get_value('Academic Year', {'custom_current_academic_year': 1}, 'name')
-    students_values = {
-        'classes': classes,
-        'divisions': divisions,
-        'student_statuses': student_statuses,
-        'current_academic_year': current_academic_year
-    }
-    if len(classes) > 1 or len(divisions) == 0:
-        students = frappe.db.sql('''
-                select *
-                from tabStudent
-                where name in (
-                   select student
-                   from `tabProgram Enrollment`
-                   where program in %(classes)s
-                   and academic_year = %(current_academic_year)s
-                )
-                and student_status in %(student_statuses)s
-            ''', values=students_values, as_dict=1)
-    else:
-        students = frappe.db.sql('''
-                select *
-                from tabStudent
-                where name in (
-                   select student
-                   from `tabProgram Enrollment`
-                   where student_group in %(divisions)s
-                   and academic_year = %(current_academic_year)s
-                )
-                and student_status in %(student_statuses)s
-            ''', values=students_values, as_dict=1)
-
+def enqueued_generic_notifications(notice_ids):
     success_student_ids = []
-    failure_student_ids = []
+    failure_ids = []
     failure_texts = []
-    for student in students:
+    for notice_id in notice_ids:
         try:
-            notice_subject = render_jinja(subject, student)
-            # notice_content = render_jinja(content, student)
-            send_notification(student.name, notice_subject)
-            success_student_ids.append(student.name)
+            notice = frappe.get_doc("School Notice", notice_id)
+            subject = notice.subject
+            students_values = {
+                'class': notice.get("class"),
+                'division': notice.get("division"),
+                'student_status': notice.get("student_status"),
+                'academic_year': notice.get("academic_year"),
+            }
+            if notice.get("division"):
+                students = frappe.db.sql('''
+                        select *
+                        from tabStudent
+                        where name in (
+                           select student
+                           from `tabProgram Enrollment`
+                           where student_group = %(division)s
+                           and academic_year = %(current_academic_year)s
+                        )
+                        and student_status in %(student_statuses)s
+                    ''', values=students_values, as_dict=1)
+            else:
+                students = frappe.db.sql('''
+                        select *
+                        from tabStudent
+                        where name in (
+                           select student
+                           from `tabProgram Enrollment`
+                           where program = %(class)s
+                           and academic_year = %(academic_year)s
+                        )
+                        and student_status in %(student_statuses)s
+                    ''', values=students_values, as_dict=1)
+
+            for student in students:
+                try:
+                    notice_subject = render_jinja(subject, student)
+                    send_notification(student.name, notice_subject, notice_id)
+                    success_student_ids.append(student.name)
+                    raise Exception("done")
+                except Exception as e:
+                    failure_ids.append(student.get("name"))
+                    failure_texts.append(e)
         except Exception as e:
-            failure_student_ids.append(student.get("name"))
+            failure_ids.append(f"notice:{notice_id}")
             failure_texts.append(e)
 
-    if len(failure_student_ids):
+    if len(failure_ids):
         frappe.get_doc({
             'doctype': 'School Notice Error',
             'type': 'notification',
-            'failure_list': json.dumps(failure_student_ids, default=str, indent=2),
+            'failure_list': json.dumps(failure_ids, default=str, indent=2),
             'failure_messages': json.dumps(failure_texts, default=str, indent=2)
         }).insert(ignore_permissions=True)
 
@@ -443,13 +439,11 @@ def create_notice(**kwargs):
     validate_args(**kwargs)
 
     if has_csv:
-        frappe.enqueue(enqueued_specific_notice_docs, __args=kwargs)
-        frappe.enqueue(enqueue_specific_notifications, __args=kwargs)
+        frappe.enqueue(enqueued_specific_notice_docs, queue="long", __args=kwargs)
         if send_emails:
             frappe.enqueue(enqueued_specific_notice_emails, queue="long", __args=kwargs)
     else:
-        frappe.enqueue(enqueued_generic_notice_docs, __args=kwargs)
-        frappe.enqueue(enqueue_generic_notifications, __args=kwargs)
+        frappe.enqueue(enqueued_generic_notifications, queue="long", __args=kwargs)
         if send_emails:
             frappe.enqueue(enqueued_generic_notice_emails, queue="long", __args=kwargs)
 

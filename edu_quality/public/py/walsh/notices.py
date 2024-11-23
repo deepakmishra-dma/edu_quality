@@ -25,7 +25,7 @@ def get_all_notices(page=1, limit=0):
     user = frappe.session.user
 
     guardian = frappe.get_doc("Guardian", {"user": user})
-    if is_defaulter(guardian.name):
+    if is_defaulter(guardian.name, True):
         return {
             "success": False,
             "data": [],
@@ -109,7 +109,7 @@ def get_all_notices(page=1, limit=0):
 def get_notice_by_id(id, student=None):
     user = frappe.session.user
     guardian = frappe.get_doc("Guardian", {"user": user})
-    if is_defaulter(guardian.name):
+    if is_defaulter(guardian.name, True):
         return {
             "success": False,
             "data": [],
