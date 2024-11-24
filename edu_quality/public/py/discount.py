@@ -297,6 +297,16 @@ def payment_plan(doc, method=None):
         doc.payment_plan = pe.payment_plan
     else:
         doc.payment_plan = frappe.db.get_value("Fee Schedule",doc.fee_schedule,'payment_plan')
+    filters = {
+        "student": doc.student,
+        "next_program": doc.program,
+        "academic_year": doc.academic_year,
+        "docstatus": 1,
+    }
+    if frappe.db.exists("Fee Advance", filters):
+        fee_advance = frappe.get_doc("Fee Advance", filters)
+        doc.payment_plan = fee_advance.payment_plan
+        
     if doc.payment_plan:
         pp = frappe.get_doc("Payment Plan",doc.payment_plan)
         doc.payment_schedule = []
