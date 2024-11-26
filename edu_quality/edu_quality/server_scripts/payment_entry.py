@@ -15,4 +15,4 @@ def validate(doc, method=None):
     if frappe.db.exists("Student",filters):
         stud_doc = frappe.get_doc("Student", filters)
         stud_doc.student_status = "Current student"
-        doc.save(ignore_permissions=True)
+        stud_doc.save(ignore_permissions=True)
