@@ -9,8 +9,8 @@ def validate(doc, method=None):
         letter_head = frappe.get_value("Company", doc.company, 'default_letter_head')
     doc.letter_head = letter_head 
     filters = {
-        "student": doc.party,
-        "student_status": "Defaulter",
+        "name": doc.party,
+        "student_status": "Defaulter"
     }
     if frappe.db.exists("Student",filters):
         stud_doc = frappe.get_doc("Student", filters)
