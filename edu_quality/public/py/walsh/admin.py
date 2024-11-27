@@ -187,6 +187,7 @@ def enqueued_generic_notice_emails(__args):
     classes = __args.get("classes")
     divisions = __args.get("divisions")
     student_statuses = __args.get("student_statuses")
+    academic_year = __args.get("academic_year")
 
     bcc_emails = []
     if bcc_email_groups:
@@ -199,12 +200,11 @@ def enqueued_generic_notice_emails(__args):
         # remove duplicates from bcc_emails
         bcc_emails = list(set(bcc_emails))
 
-    current_academic_year = frappe.get_value('Academic Year', {'custom_current_academic_year': 1}, 'name')
     students_values = {
         'classes': classes,
         'divisions': divisions,
         'student_statuses': student_statuses,
-        'current_academic_year': current_academic_year
+        'academic_year': academic_year
     }
     students = []
     if len(classes) > 1 or len(divisions) == 0:
@@ -215,7 +215,7 @@ def enqueued_generic_notice_emails(__args):
                select student
                from `tabProgram Enrollment`
                where program in %(classes)s
-               and academic_year = %(current_academic_year)s
+               and academic_year = %(academic_year)s
             )
             and student_status in %(student_statuses)s
         ''', values=students_values, as_dict=1)
@@ -227,7 +227,7 @@ def enqueued_generic_notice_emails(__args):
                select student
                from `tabProgram Enrollment`
                where student_group in %(divisions)s
-               and academic_year = %(current_academic_year)s
+               and academic_year = %(academic_year)s
             )
             and student_status in %(student_statuses)s
         ''', values=students_values, as_dict=1)
@@ -289,7 +289,7 @@ def enqueued_generic_notifications(notice_ids):
                            select student
                            from `tabProgram Enrollment`
                            where student_group = %(division)s
-                           and academic_year = %(current_academic_year)s
+                           and academic_year = %(academic_year)s
                         )
                         and student_status = %(student_status)s
                     ''', values=students_values, as_dict=1)
@@ -333,7 +333,7 @@ def enqueued_generic_notice_docs(__args):
     classes = __args.get("classes")
     divisions = __args.get("divisions")
     student_statuses = __args.get("student_statuses")
-    current_academic_year = frappe.get_value('Academic Year', {'custom_current_academic_year': 1}, 'name')
+    academic_year = __args.get("academic_year")
     notice_ids = []
     for student_status in student_statuses:
         if len(classes) > 1 or len(divisions) == 0:
@@ -346,7 +346,7 @@ def enqueued_generic_notice_docs(__args):
                     "subject": subject,
                     "student_status": student_status,
                     "notice": content,
-                    'academic_year': current_academic_year
+                    'academic_year': academic_year
                 }).insert()
                 notice.reload()
                 notice_ids.append(notice.name)
@@ -362,12 +362,12 @@ def enqueued_generic_notice_docs(__args):
                     "subject": subject,
                     "student_status": student_status,
                     "notice": content,
-                    'academic_year': current_academic_year
+                    'academic_year': academic_year
                 }).insert()
                 notice.reload()
                 notice_ids.append(notice.name)
-    # frappe.enqueue(enqueued_generic_notifications, queue="long", notice_ids=notice_ids)
-    enqueued_generic_notifications(notice_ids)
+    frappe.enqueue(enqueued_generic_notifications, queue="long", notice_ids=notice_ids)
+    # enqueued_generic_notifications(notice_ids)
 
 
 def validate_args(**kwargs):
@@ -382,6 +382,7 @@ def validate_args(**kwargs):
     divisions = kwargs.get("divisions")
     student_statuses = kwargs.get("student_statuses")
     is_test = kwargs.get("is_test")
+    academic_year = kwargs.get("academic_year")
 
     # verify supplied data
     if has_csv:
@@ -420,6 +421,9 @@ def validate_args(**kwargs):
     if not content:
         raise frappe.exceptions.MandatoryError("Content is required")
 
+    if not academic_year:
+        raise frappe.exceptions.MandatoryError("Academic Year is required")
+
     if send_emails:
         if not bcc_email_groups:
             raise frappe.exceptions.MandatoryError("BCC Email Groups are required")
@@ -438,13 +442,13 @@ def create_notice(**kwargs):
     validate_args(**kwargs)
 
     if has_csv:
-        # frappe.enqueue(enqueued_specific_notice_docs, __args=kwargs)
-        enqueued_specific_notice_docs(kwargs)
+        frappe.enqueue(enqueued_specific_notice_docs, __args=kwargs)
+        # enqueued_specific_notice_docs(kwargs)
         if send_emails:
             frappe.enqueue(enqueued_specific_notice_emails, queue="long", __args=kwargs)
     else:
-        # frappe.enqueue(enqueued_generic_notice_docs, __args=kwargs)
-        enqueued_generic_notice_docs(kwargs)
+        frappe.enqueue(enqueued_generic_notice_docs, __args=kwargs)
+        # enqueued_generic_notice_docs(kwargs)
         if send_emails:
             frappe.enqueue(enqueued_generic_notice_emails, queue="long", __args=kwargs)
 
@@ -459,6 +463,7 @@ def send_test_mail(**kwargs):
     classes = kwargs.get("classes")
     divisions = kwargs.get("divisions")
     student_statuses = kwargs.get("student_statuses")
+    academic_year = kwargs.get("academic_year")
 
     if not test_emails:
         raise frappe.exceptions.MandatoryError("Test Emails are required")
@@ -479,12 +484,11 @@ def send_test_mail(**kwargs):
         notice_content = render_jinja(content, data)
     else:
         students = []
-        current_academic_year = frappe.get_value('Academic Year', {'custom_current_academic_year': 1}, 'name')
         students_values = {
             'classes': classes,
             'divisions': divisions,
             'student_statuses': student_statuses,
-            'current_academic_year': current_academic_year
+            'academic_year': academic_year
         }
         if len(classes) > 1 or len(divisions) == 0:
             students = frappe.db.sql('''
@@ -494,7 +498,7 @@ def send_test_mail(**kwargs):
                    select student
                    from `tabProgram Enrollment`
                    where program in %(classes)s
-                   and academic_year = %(current_academic_year)s
+                   and academic_year = %(academic_year)s
                 )
                 and student_status in %(student_statuses)s
                 limit 1
@@ -507,7 +511,7 @@ def send_test_mail(**kwargs):
                    select student
                    from `tabProgram Enrollment`
                    where student_group in %(divisions)s
-                   and academic_year = %(current_academic_year)s
+                   and academic_year = %(academic_year)s
                 )
                 and student_status in %(student_statuses)s
                 limit 1
@@ -533,6 +537,7 @@ def get_student_count(**kwargs):
     classes = kwargs.get("classes")
     divisions = kwargs.get("divisions")
     student_statuses = kwargs.get("student_statuses")
+    academic_year = kwargs.get("academic_year")
     classes = json.loads(classes)
     divisions = json.loads(divisions)
     student_statuses = json.loads(student_statuses)
@@ -540,12 +545,11 @@ def get_student_count(**kwargs):
     if not len(classes) and not len(divisions):
         return 0
 
-    current_academic_year = frappe.get_value('Academic Year', {'custom_current_academic_year': 1}, 'name')
     students_values = {
         'classes': classes,
         'divisions': divisions,
         'student_statuses': student_statuses,
-        'current_academic_year': current_academic_year
+        'academic_year': academic_year
     }
     if len(classes) > 1 or len(divisions) == 0:
         students = frappe.db.sql('''
@@ -555,7 +559,7 @@ def get_student_count(**kwargs):
                        select student
                        from `tabProgram Enrollment`
                        where program in %(classes)s
-                       and academic_year = %(current_academic_year)s
+                       and academic_year = %(academic_year)s
                     )
                     and student_status in %(student_statuses)s
                 ''', values=students_values, as_dict=1)
@@ -567,7 +571,7 @@ def get_student_count(**kwargs):
                        select student
                        from `tabProgram Enrollment`
                        where student_group in %(divisions)s
-                       and academic_year = %(current_academic_year)s
+                       and academic_year = %(academic_year)s
                     )
                     and student_status in %(student_statuses)s
                 ''', values=students_values, as_dict=1)

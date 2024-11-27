@@ -113,23 +113,6 @@ const CmapList = () => {
               // alignItems: 'center',
               gap: 10,
             }}>
-            <Box sx={{
-              height: 40,
-              width: 40,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: '100%',
-              backgroundColor: studentProfileColor,
-              color: 'white',
-              flexGrow: 0,
-              flexShrink: 0,
-              fontSize: 25,
-              fontWeight: 'bold',
-              marginTop: 5
-            }}>
-              {studentName?.[0]?.toUpperCase()}
-            </Box>
             <Box
               sx={{
                 width: 'calc(100% - 50px)',
