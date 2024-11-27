@@ -85,7 +85,9 @@ def get_all_notices(page=1, limit=0):
                     if student.name == enrollment.student and (
                         notice.division == enrollment.student_group or
                         (not notice.division and notice.get('class') == enrollment.program)
-                    ) and notice.academic_year == enrollment.academic_year:
+                    ) and notice.academic_year == enrollment.academic_year and (
+                        notice.student_status == student.get("student_status")
+                    ):
                         final_notices.append({
                             **notice,
                             'notice': render_jinja(notice.notice, student),
