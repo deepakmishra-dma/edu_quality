@@ -810,6 +810,7 @@ def component_wise(
 
 
 def update_program_enrollment(doc, method):
+    division = frappe.get_value("Student Group", doc.student_group, "student_group_name")
     frappe.db.sql(
         """
         UPDATE `tabStudent` 
@@ -822,7 +823,9 @@ def update_program_enrollment(doc, method):
             drop_bus=%s,
             pickup_address=%s,
             drop_address=%s,
-            image=%s
+            image=%s,
+            program=%s,
+            custom_division=%s
         WHERE name=%s
         """, 
         (
@@ -836,6 +839,8 @@ def update_program_enrollment(doc, method):
             doc.pickup_address, 
             doc.drop_address, 
             doc.image,
+            doc.program,
+            division,
             doc.student
         )
     )
