@@ -414,15 +414,14 @@ def validate_args(**kwargs):
             raise frappe.exceptions.ValidationError("Student Statuses must be a list")
         if not len(student_statuses):
             raise frappe.exceptions.MandatoryError("At least one Student Status is required")
+        if not academic_year:
+            raise frappe.exceptions.MandatoryError("Academic Year is required")
 
     if not subject:
         raise frappe.exceptions.MandatoryError("Subject is required")
 
     if not content:
         raise frappe.exceptions.MandatoryError("Content is required")
-
-    if not academic_year:
-        raise frappe.exceptions.MandatoryError("Academic Year is required")
 
     if send_emails:
         if not bcc_email_groups:
