@@ -60,7 +60,7 @@ export const NoticeList: React.FC<IResourceComponentsProps> = () => {
             p={5}
             sx={{
               cursor: 'pointer',
-              width: 'calc(100% - 50px)',
+              width: '100%',
               ":hover": {
                 backgroundColor: 'rgba(0,0,0,0.02)'
               }

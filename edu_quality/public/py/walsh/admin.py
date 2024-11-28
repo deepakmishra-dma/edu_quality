@@ -47,9 +47,8 @@ def enqueued_specific_notice_emails(__args):
     content = __args.get("notice")
     bcc_email_groups = __args.get("bcc_email_groups")
 
-    csv_text = frappe.get_doc("File", {
-        "file_url": csv_file,
-    }, limit=1).get_content()
+    csv_file_path = frappe.get_site_path() + csv_file
+    csv_text = open(csv_file_path, mode="r", encoding="utf-8-sig").read()
 
     bcc_emails = []
     if bcc_email_groups:
@@ -135,9 +134,8 @@ def enqueued_specific_notice_docs(__args):
     subject = __args.get("subject")
     content = __args.get("notice")
 
-    csv_text = frappe.get_doc("File", {
-        "file_url": csv_file,
-    }, limit=1).get_content()
+    csv_file_path = frappe.get_site_path() + csv_file
+    csv_text = open(csv_file_path, mode="r", encoding="utf-8-sig").read()
 
     csv_data = csv.DictReader(csv_text.splitlines())
     csv_data = list(csv_data)
@@ -387,12 +385,11 @@ def validate_args(**kwargs):
     # verify supplied data
     if has_csv:
         if not is_test:
-            csv_text = frappe.get_doc("File", {
-                "file_url": csv_file,
-            }, limit=1).get_content()
+            csv_file_path = frappe.get_site_path() + csv_file
+            csv_text = open(csv_file_path, mode="r", encoding="utf-8-sig").read()
 
             if not csv_text:
-                raise frappe.exceptions.ValidationError("CSV File not found")
+                raise frappe.exceptions.ValidationError("CSV File Error: Empty File")
     else:
         if not school:
             raise frappe.exceptions.MandatoryError("School is required")

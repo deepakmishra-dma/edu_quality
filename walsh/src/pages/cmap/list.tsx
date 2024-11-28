@@ -100,6 +100,7 @@ const CmapList = () => {
           const broadCasts = Array.from(new Set(cmap?.products?.map(product => product?.broadcast_description))).filter(Boolean)
           const homeWorks = Array.from(new Set(cmap?.products?.map(product => product?.homework_description))).filter(Boolean)
           const products = cmap?.products?.filter(product => product?.item_data?.custom_product_url)
+          const cmapTitle = Array.from(new Set(cmap?.products?.map(product => product?.chapter))).filter(Boolean).join(',')
           return <Stack
             key={i}
             onClick={openOrClose}
@@ -115,7 +116,7 @@ const CmapList = () => {
             }}>
             <Box
               sx={{
-                width: 'calc(100% - 50px)',
+                width: '100%',
               }}
             >
               <Box sx={{
@@ -133,13 +134,13 @@ const CmapList = () => {
                   fontWeight: 'bold'
                 }}>Period {cmap?.period}</Text>
                 <Text mih={20} weight="bold" size="lg" sx={{
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
+                  whiteSpace: isOpen ? undefined : 'nowrap',
+                  overflow: isOpen ? undefined : 'hidden',
                   textOverflow: 'ellipsis',
                   width: '100%',
                   // fontSize: 15,
                 }}>
-                  {subjectTitle}
+                  {cmapTitle}
                 </Text>
                 <Box h={isOpen ? undefined : '4em'} sx={{
                   overflow: 'hidden',
