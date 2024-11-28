@@ -6,7 +6,7 @@ let cmapData = []
 let globalPage = null
 let saveButtonAdded = false
 
-frappe.pages['cmap-tracker'].on_page_load = function (wrapper) {
+frappe.pages['cmap-tracker'].on_page_load = async function (wrapper) {
 	var page = frappe.ui.make_app_page({
 		parent: wrapper,
 		title: 'CMAP Tracker',
@@ -16,6 +16,26 @@ frappe.pages['cmap-tracker'].on_page_load = function (wrapper) {
 	frappe.require(["/assets/edu_quality/css/cmap-tracker.css"])
 	const el = document.querySelector('.container.page-body')
 	el.classList.add("cmap-tracker")
+	const teachersData = await getTeachers()
+	const teacherFilter = !teachersData ? [{
+		label: 'Teacher',
+		fieldname: 'teacher',
+		fieldtype: 'Link',
+		options: "Instructor",
+		readonly: teachersData,
+
+		get_query: () => {
+			return {
+				"filters": {
+
+					"custom_school": filtersRef.get_value('school'),
+
+				}
+
+			}
+		},
+		change: () => filterOnChange(filtersRef.fields_dict.school)
+	}] : [];
 
 	filtersRef = make_fieldgroup(el, [
 		{
@@ -64,23 +84,7 @@ frappe.pages['cmap-tracker'].on_page_load = function (wrapper) {
 			options: "Course",
 			change: () => filterOnChange(filtersRef.fields_dict.subject)
 		},
-		{
-			label: 'Teacher',
-			fieldname: 'teacher',
-			fieldtype: 'Link',
-			options: "Instructor",
-			get_query: () => {
-				return {
-					"filters": {
-
-						"custom_school": filtersRef.get_value('school'),
-
-					}
-
-				}
-			},
-			change: () => filterOnChange(filtersRef.fields_dict.school)
-		},
+		...teacherFilter,
 		{
 			label: 'Unit',
 			fieldname: 'unit',
@@ -93,7 +97,7 @@ frappe.pages['cmap-tracker'].on_page_load = function (wrapper) {
 
 	// page.add_inner_button('Fetch', () => {
 
-	// 	getDivisions()
+
 	// 	getCmap()
 
 	// })
@@ -121,9 +125,9 @@ async function filterOnChange(field) {
 		// removeSaveButton()
 		await setupDataTable()
 	}
-	console.log(filtersRef.get_value('academic_year'), filtersRef.get_value('class'), filtersRef.get_value('school'), filtersRef.get_value('unit'), filtersRef.get_value('subject'))
+	console.log(filtersRef.get_value('academic_year') && filtersRef.get_value('class') && filtersRef.get_value('school') && filtersRef.get_value('unit') && filtersRef.get_value('subject'))
 	if (filtersRef.get_value('academic_year') && filtersRef.get_value('class') && filtersRef.get_value('school') && filtersRef.get_value('unit') && filtersRef.get_value('subject')) {
-		await getDivisions()
+
 		await getCmap()
 		await setupDataTable()
 	}
@@ -136,7 +140,7 @@ function cmapDataPresent() {
 
 function changeRealDateOnSelect(e) {
 	const dataset = e.target.dataset
-	console.log(dataset.index, 'haha')
+
 	if (dataset.index && cmapData) {
 		cmapData[dataset.index].real_date = e.target.value
 
@@ -156,13 +160,12 @@ function getFilters() {
 	return filters
 }
 
-async function getDivisions() {
-	const filters = getFilters()
-	const divisionsData = await frappe.call({
-		method: 'edu_quality.edu_quality.page.cmap_assignment_tool.cmap_assignment_tool.get_divisions',
-		args: filters
+async function getTeachers() {
+	const teacherData = await frappe.call({
+		method: 'edu_quality.edu_quality.page.cmap_tracker.cmap_tracker.calculate_teacher_value',
+		args: { value_for_admin: "" }
 	})
-
+	return teacherData?.message
 }
 async function getCmap() {
 	const filters = getFilters()
@@ -209,13 +212,20 @@ function make_fieldgroup(parent, ddf_list) {
 
 }
 const headers = [
-	{ textContent: 'Period No.', colSpan: 1 },
+	{ textContent: 'Period No.', className: "period-no-header", colSpan: 1 },
 	{ textContent: 'Chapter Name', colSpan: 2 },
 	{ textContent: 'Products', colSpan: 1 },
-	{ textContent: 'Division' },
+	{ textContent: 'Broadcast', colSpan: 1 },
+	{ textContent: 'Parent Note', colSpan: 1 },
+	{ textContent: 'Classwork', colSpan: 1 },
+	{ textContent: 'Homework', colSpan: 1 },
+	{ textContent: 'Material Required', colSpan: 1 },
+
+
 	{ textContent: 'Plan Date' },
 	{ textContent: 'Real Date' },
-	{ textContent: 'Teacher' },
+
+	{ textContent: 'Remarks' },
 
 ];
 
@@ -247,12 +257,13 @@ function createTable(data) {
 	if (data)
 
 		data.forEach((row, index) => {
-			const row_html = createRow(row.period, row.chapter_name, row.products && row.products.map(el => `<a href="/app/item/${el}">${el}</a>`).join(','), row.division, row.teacher, row.plan_date, row.real_date, index === 0, 0, index)
+			const row_html = createRow(row.period, row.chapter_name, row.products && row.products.map(el => `<a target="__blank" href="${el.custom_product_url}">${el.item_code}</a>`).join(','), row.broadcast, row.parent_note, row.class_work, row.home_work, row.material_required, row.division, row.teacher, row.plan_date, row.real_date, row.remarks, index === 0, 0, index)
 			tbody.innerHTML += (row_html)
 		})
 
 
 	tbody.addEventListener('change', changeRealDateOnSelect)
+	tbody.addEventListener('click', editRemarks)
 	thead.appendChild(headerRow)
 	table.appendChild(thead);
 
@@ -260,17 +271,54 @@ function createTable(data) {
 	return table
 }
 
-function createRow(period_no, chapter_name, products, division, teacher, plan_date, real_date, first_row, rowSpan, index) {
+function editRemarks(e) {
+	const dataset = e.target.dataset
+	console.log(dataset)
+	if (dataset.editDialog && cmapData) {
+		const d = new frappe.ui.Dialog({
+			title: 'Edit Remark',
+			fields: [{
+				label: 'Remarks',
+				fieldname: 'remarks',
+				fieldtype: 'Text',
+				default: cmapData[dataset.index].remarks,
+
+			}],
+			size: "small",
+			primary_action_label: "Change",
+
+			primary_action: () => {
+
+				cmapData[dataset.index].remarks = d.get_value('remarks');
+				addSaveButton();
+				setupDataTable();
+				d.hide();
+
+
+			}
+		})
+		d.show()
+	}
+
+
+}
+function createRow(period_no, chapter_name, products, broadcast, parent_note, class_work, home_work, material_required, division, teacher, plan_date, real_date, remarks, first_row, rowSpan, index) {
 
 
 	return `<tr>
 	<td >${period_no}</td>
 	<td colspan="2">${chapter_name}</td>
 	<td>${products}</td>
-	<td>${division}</td>
+	<td>${broadcast}</td>
+	<td>${parent_note}</td>
+	<td>${class_work}</td>
+	<td>${home_work}</td>
+<td>${material_required}</td>
+
 	<td>${plan_date || "No Date"}</td>
 	<td class="real-date-cell">${createDatePicker(real_date, index)}</td>
-	<td>${teacher}</td>
+
+	<td>${remarks || "No Remarks"} <button data-edit-dialog="true" data-index=${index}><i data-edit-dialog="true" data-index=${index} class="fas fa-edit"></i></button></td>
   </tr>
   `
 

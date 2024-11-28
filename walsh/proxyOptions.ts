@@ -6,7 +6,7 @@ export default {
   '^/(app|api|assets|files|private)': {
     target: `http://127.0.0.1:${webserver_port}`,
     // target: `https://testerp.walnutedu.in`,
-    ws: true,
+    // ws: true,
     // changeOrigin: true,
     router: function (req: any) {
       const site_name = req.headers.host.split(':')[0];

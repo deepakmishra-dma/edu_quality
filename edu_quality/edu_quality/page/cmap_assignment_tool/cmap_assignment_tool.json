@@ -5,13 +5,23 @@
  "doctype": "Page",
  "icon": "",
  "idx": 0,
- "modified": "2024-01-29 02:04:36.268749",
+ "modified": "2024-03-11 18:15:38.458050",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "cmap-assignment-tool",
  "owner": "Administrator",
  "page_name": "cmap-assignment-tool",
- "roles": [],
+ "roles": [
+  {
+   "role": "Administrator"
+  },
+  {
+   "role": "Walnut Admin"
+  },
+  {
+   "role": "System Manager"
+  }
+ ],
  "script": null,
  "standard": "Yes",
  "style": null,

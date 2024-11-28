@@ -159,7 +159,7 @@ doc_events = {
     "Program Enrollment": {
         "on_submit": [
             "edu_quality.public.py.fee.create_fees",
-            "edu_quality.public.py.fee.update_program_enrollment"
+            "edu_quality.public.py.fee.update_program_enrollment",
         ],
         "after_insert": [
             "edu_quality.public.py.fee.append_program_enrollment",
@@ -450,7 +450,15 @@ fixtures = [
             [
                 "name",
                 "in",
-                ["Councellor", "Content Creator", "Printer", "Watchman", "Clerk"],
+                [
+                    "Councellor",
+                    "Content Creator",
+                    "Printer",
+                    "Watchman",
+                    "Clerk",
+                    "Teacher",
+                    "Instructor",
+                ],
             ]
         ],
     },
@@ -460,7 +468,15 @@ fixtures = [
             [
                 "name",
                 "in",
-                ["Councellor", "Content Creator", "Printer", "Watchman", "Clerk"],
+                [
+                    "Councellor",
+                    "Content Creator",
+                    "Printer",
+                    "Watchman",
+                    "Clerk",
+                    "Teacher",
+                    "Instructor",
+                ],
             ]
         ],
     },

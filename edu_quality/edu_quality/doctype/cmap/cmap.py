@@ -29,16 +29,26 @@ class CMAP(Document):
             product.get("material_required") for product in self.products
         ]
         added_class_works = [product.get("class_work") for product in self.products]
-        generate_text_from_unique_notes(self, "Broadcast", added_broadcasts)
-        generate_text_from_unique_notes(self, "Parent Note", added_parent_notes)
-        generate_text_from_unique_notes(self, "Home Work", added_home_works)
-        generate_text_from_unique_notes(self, "Class Work", added_class_works)
         generate_text_from_unique_notes(
-            self, "Material Required", added_material_required
+            self, "Broadcast", added_broadcasts, field="broadcast_text"
+        )
+        generate_text_from_unique_notes(
+            self, "Parent Note", added_parent_notes, field="parent_notes"
+        )
+        generate_text_from_unique_notes(
+            self, "Home Work", added_home_works, field="home_work"
+        )
+        generate_text_from_unique_notes(
+            self, "Class Work", added_class_works, field="class_work"
+        )
+        generate_text_from_unique_notes(
+            self,
+            "Material Required",
+            added_material_required,
+            field="material_required",
         )
 
         self.item_code_field = ", ".join(item.get("item", "") for item in self.products)
-
 
     def after_insert(self, method=None):
         insert_cmap_assignees(self)
@@ -77,7 +87,7 @@ def insert_cmap_assignees(self):
     self.table_vwbr = get_unique_cmap_assignees(self.table_vwbr)
 
 
-def generate_text_from_unique_notes(self, type, added_broadcasts):
+def generate_text_from_unique_notes(self, type, added_broadcasts, field):
     if check_if_note_added_unique(type, added_broadcasts):
         frappe.errprint(added_broadcasts)
         descriptions = frappe.db.get_list(
@@ -86,8 +96,10 @@ def generate_text_from_unique_notes(self, type, added_broadcasts):
             fields=["description", "description"],
             ignore_permissions=True,
         )
-        self.broadcast_text = "\\n".join(
-            [item.get("description") for item in descriptions]
+        setattr(
+            self,
+            field,
+            "\\n".join([item.get("description", "") or "" for item in descriptions]),
         )
 
 

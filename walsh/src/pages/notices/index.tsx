@@ -5,13 +5,10 @@ import {Box, Input, Stack, Text} from "@mantine/core";
 import {useNavigate} from "react-router-dom";
 // @ts-expect-error no types
 import {IconCalendar, IconSearch} from "@tabler/icons";
-import {getStudentProfileColor} from "../../components/hooks/useStudentProfileColor.ts";
-import useStudentList from "../../components/queries/useStudentList.ts";
 
 export const NoticeList: React.FC<IResourceComponentsProps> = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-  const {data} = useStudentList()
   const {data: list, isLoading} = useList<Notice>({
     queryOptions: {
       queryKey: ["list", "notices"],
@@ -59,27 +56,11 @@ export const NoticeList: React.FC<IResourceComponentsProps> = () => {
             alignItems: 'center',
             gap: 5
           }}>
-          <Box sx={{
-            height: 40,
-            width: 40,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: '100%',
-            backgroundColor: getStudentProfileColor(item.student, data?.data?.message || []),
-            color: 'white',
-            flexGrow: 0,
-            flexShrink: 0,
-            fontSize: 25,
-            fontWeight: 'bold',
-          }}>
-            {item?.student_first_name?.[0]?.toUpperCase()}
-          </Box>
           <Box
             p={5}
             sx={{
               cursor: 'pointer',
-              width: 'calc(100% - 50px)',
+              width: '100%',
               ":hover": {
                 backgroundColor: 'rgba(0,0,0,0.02)'
               }

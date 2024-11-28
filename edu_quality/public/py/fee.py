@@ -70,6 +70,7 @@ def on_submit(doc, method=None):
     if frappe.db.exists("Fee Advance", filters):
         payment_amount = doc.payment_schedule[0].payment_amount
         fee_advance = frappe.get_doc("Fee Advance", filters)
+        doc.payment_plan = fee_advance.payment_plan
         # cancel_liability_entries(fee_advance)
         discount_applied = get_one_time_discounts(fee_advance)
         for discount in discount_applied.keys():
@@ -237,11 +238,14 @@ def create_fees(doc, method=None):
         fee_schedule = frappe.get_value(
             "Fee Schedule", {"fee_structure": fee_structure}, "name"
         )
-        stude_appli_class = frappe.get_value(
-            "Student Applicant",
-            {"student_email_id": student.student_email_id, "program": doc.program},
-            "name",
-        )
+        if student.student_applicant:
+            stude_appli_class = student.student_applicant
+        else:
+            stude_appli_class = frappe.get_value(
+                "Student Applicant",
+                {"student_email_id": student.student_email_id, "program": doc.program},
+                "name",
+            )
         if not stude_appli_class:
             fee_data = {
                 "doctype": "Fees",
@@ -277,8 +281,7 @@ def create_fees(doc, method=None):
             update_student_group(doc.name, fee_structure=fee_structure.name)
         else:
             student_applicant = frappe.get_doc(
-                "Student Applicant", {"student_email_id": student.student_email_id}
-            )
+                "Student Applicant", stude_appli_class)
             fees = frappe.get_doc(
                 {
                     "doctype": "Fees",
@@ -807,6 +810,7 @@ def component_wise(
 
 
 def update_program_enrollment(doc, method):
+    division = frappe.get_value("Student Group", doc.student_group, "student_group_name")
     frappe.db.sql(
         """
         UPDATE `tabStudent` 
@@ -819,7 +823,9 @@ def update_program_enrollment(doc, method):
             drop_bus=%s,
             pickup_address=%s,
             drop_address=%s,
-            image=%s
+            image=%s,
+            program=%s,
+            custom_division=%s
         WHERE name=%s
         """, 
         (
@@ -833,6 +839,8 @@ def update_program_enrollment(doc, method):
             doc.pickup_address, 
             doc.drop_address, 
             doc.image,
+            doc.program,
+            division,
             doc.student
         )
     )

@@ -1,6 +1,7 @@
 import frappe
 
 from edu_quality.public.py.walsh.admin import render_jinja
+from edu_quality.public.py.walsh.login import is_defaulter
 
 
 @frappe.whitelist()
@@ -24,6 +25,11 @@ def get_all_notices(page=1, limit=0):
     user = frappe.session.user
 
     guardian = frappe.get_doc("Guardian", {"user": user})
+    if is_defaulter(guardian.name, True):
+        return {
+            "success": False,
+            "data": [],
+        }
     students = frappe.get_all("Student", filters={"guardian": guardian.name}, fields=["*"])
     student_dict = {s.name: s for s in students}
     student_names = [s.name for s in students]
@@ -79,6 +85,8 @@ def get_all_notices(page=1, limit=0):
                     if student.name == enrollment.student and (
                         notice.division == enrollment.student_group or
                         (not notice.division and notice.get('class') == enrollment.program)
+                    ) and notice.academic_year == enrollment.academic_year and (
+                        notice.student_status == student.get("student_status")
                     ):
                         final_notices.append({
                             **notice,
@@ -101,6 +109,13 @@ def get_all_notices(page=1, limit=0):
 
 @frappe.whitelist()
 def get_notice_by_id(id, student=None):
+    user = frappe.session.user
+    guardian = frappe.get_doc("Guardian", {"user": user})
+    if is_defaulter(guardian.name, True):
+        return {
+            "success": False,
+            "data": [],
+        }
     school_notice_doc = frappe.get_doc("School Notice", id)
     school_notice = school_notice_doc.as_dict()
     if student and school_notice.is_generic_notice:
