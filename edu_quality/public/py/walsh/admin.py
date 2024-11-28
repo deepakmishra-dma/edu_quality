@@ -35,7 +35,7 @@ def send_notification(student_id, subject, notice_id):
                     "to": push_token.get("token"),
                     "title": subject + " - " + student_id,
                     "data": {"url_path": f"/notice/{notice_id}?student={student_id}"},
-                    "body": json.dumps({"url_path": f"/notice/{notice_id}?student={student_id}"})
+                    # "body": json.dumps({"url_path": f"/notice/{notice_id}?student={student_id}"})
                 })
                 headers = {"Content-Type": "application/json"}
                 requests.request("POST", url, headers=headers, data=payload)
