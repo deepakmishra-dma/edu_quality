@@ -7,3 +7,4 @@ edu_quality.patches.academic_year #28-11-2023
 edu_quality.patches.image #06-03-2024 10
 edu_quality.patches.id_card #06-03-2024 2
 edu_quality.patches.payment_link #11-03-2024 3
+edu_quality.patches.student_rename #13-03-2024
