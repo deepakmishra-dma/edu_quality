@@ -204,8 +204,12 @@ class CustomFees(Fees):
                                 ))
             entries = []
             for i in student_entries.values():
+                if int(i.get("debit")) == 0 and int(i.get("credit")) == 0:
+                    continue
                 entries.append(i)
             for j in fee_entries.values():
+                if int(i.get("debit")) == 0 and int(i.get("credit")) == 0:
+                    continue
                 entries.append(j)
             entries.extend(fee_advance_entries if fee_advance_entries else [])
             frappe.logger('fee_entry').exception(entries)
