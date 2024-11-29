@@ -212,7 +212,6 @@ class CustomFees(Fees):
                     continue
                 entries.append(j)
             entries.extend(fee_advance_entries if fee_advance_entries else [])
-            frappe.logger('fee_entry').exception(entries)
             return entries
         except Exception as e:
             frappe.logger('fee').exception(e)
