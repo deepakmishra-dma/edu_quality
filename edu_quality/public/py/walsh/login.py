@@ -156,7 +156,7 @@ def send_otp(phone_no):
 
     return {
         "success": True,
-        "message": "Otp Sent To +" + str(wa_phone_no) + " on WhatsApp and SMS",
+        "message": "Otp Sent To +" + str(wa_phone_no),
     }
 
 
@@ -221,7 +221,7 @@ def register_push_notice(**kwargs):
 
 
 @frappe.whitelist()
-def logout(token=None):
+def logout(token="__"):
     remove_push_notification_token(token)
     login_manager = LoginManager()
     login_manager.logout()

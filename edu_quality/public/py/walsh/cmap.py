@@ -73,7 +73,7 @@ def get_all_cmaps(subject, unit, division):
                 product['homework_description'] = homework.description
         for parentnote in cmap_materials:
             if parentnote.name == product.parent_note:
-                product['parent_note_description'] = parentnote.description
+                product['parentnote_description'] = parentnote.description
 
     for cmap in cmaps:
         cmap.products = []
