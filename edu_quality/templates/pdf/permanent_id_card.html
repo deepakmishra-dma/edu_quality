@@ -303,7 +303,7 @@
             {% if doc.transport_service_required %}
             <h1 class="pickup-bus" style="color: white">{{doc.drop_bus}}</h1>
             {% else %}
-            <h1 class="pickup-bus">M1</h1>
+            <h1 class="pickup-bus">M{{batch_num}}</h1>
             {% endif %}
             <div class="house-container">
               <span id="house" style="background-color: {{house}};"></span>
@@ -364,8 +364,8 @@
       <div class="address">
         <h3 class="address heading">ADDRESS:</h3>
         <div class="address-info">
-          <p>{{student_data.address_line_1 or ''}}</p>
-          <p>{{student_data.address_line_2 or ''}}</p>
+          <p>{{student_data.address_line_1[:60] if student_data.address_line_1 else ''}}</p>
+          <p>{{student_data.address_line_2[:50] if student_data.address_line_2 else ''}}</p>
           <p>{{student_data.city or ''}}</p>
           <p>{{student_data.pincode or ''}}</p>
         </div>
