@@ -10,6 +10,7 @@ export interface Cmap {
     item_group: string
     broadcast_description: string
     homework_description: string
+    parentnote_description: string
     home_work: string
     item: string
     item_data: {
