@@ -245,14 +245,14 @@ def mark_student_as_defaulter(data):
     try:
         for row in data:
             stud_doc = frappe.get_doc("Student",{"reference_number": row.get("refno"), "school": row.get("school")})
-            stud_doc.student_status = "Defaulter"
-            stud_doc.save()
-            # frappe.db.set_value(
-            #     "Student",
-            #     {"reference_number": row.get("refno"), "school": row.get("school")},
-            #     "student_status",
-            #     "Defaulter",
-            # )
+            # stud_doc.student_status = "Defaulter"
+            # stud_doc.save()
+            frappe.db.set_value(
+                "Student",
+                {"reference_number": row.get("refno"), "school": row.get("school")},
+                "student_status",
+                "Defaulter",
+            )
     except Exception as e:
         frappe.logger("mark_student_as_defaulter").exception(e)
 
