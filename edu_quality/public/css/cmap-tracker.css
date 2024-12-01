@@ -27,7 +27,7 @@
 }
 .cmap-tracker.page-body th,
 td {
-  padding: 4px 32px;
+  padding: 4px 16px;
   border: 1px solid var(--gray-200);
 }
 
@@ -53,6 +53,16 @@ td {
   margin-top: 32px;
 }
 
-.cmap-tracker .period-no-header {
+.cmap-tracker th.period-no-header {
   padding: 4px 12px;
+}
+
+.cmap-tracker td[data-toggle="tooltip"] {
+  text-align: center;
+}
+
+.cmap-tracker .products-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
