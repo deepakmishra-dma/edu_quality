@@ -12,6 +12,8 @@ code_map = {
 def execute():
     students = frappe.db.get_all("Student",fields=['name','school','reference_number'])
     for student in students:
+        if student.name == "BFOA01":
+            continue
         rf = code_map[student.school] + student.reference_number
         if student.name != rf:
             frappe.rename_doc("Student",student.name,rf)
