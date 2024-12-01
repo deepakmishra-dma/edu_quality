@@ -3,6 +3,7 @@
 let globalTableRef = null
 let filtersRef = null
 let cmapData = []
+let cmapUpdate = {}
 let globalPage = null
 let saveButtonAdded = false
 
@@ -111,7 +112,14 @@ frappe.pages['cmap-tracker'].on_page_load = async function (wrapper) {
 	setupDataTable()
 
 }
-
+async function reInitCMAP() {
+	if (cmapDataPresent()) {
+		cmapData = []
+		cmapUpdate = {}
+		// removeSaveButton()
+		await setupDataTable()
+	}
+}
 async function filterOnChange(field) {
 
 	// if (!cmapDataPresent()) return
@@ -119,13 +127,9 @@ async function filterOnChange(field) {
 	// frappe.msgprint({
 	// 	title: "Warning", message: "Changing filter, will remove all the existing data"
 	// })
-	if (cmapDataPresent()) {
-		cmapData = []
+	await reInitCMAP()
 
-		// removeSaveButton()
-		await setupDataTable()
-	}
-	console.log(filtersRef.get_value('academic_year') && filtersRef.get_value('class') && filtersRef.get_value('school') && filtersRef.get_value('unit') && filtersRef.get_value('subject'))
+
 	if (filtersRef.get_value('academic_year') && filtersRef.get_value('class') && filtersRef.get_value('school') && filtersRef.get_value('unit') && filtersRef.get_value('subject')) {
 
 		await getCmap()
@@ -137,13 +141,22 @@ function cmapDataPresent() {
 	return cmapData.length !== 0
 }
 
-
+function updateCmap(cmapName, key, value) {
+	const cmap = cmapUpdate[cmapName]
+	if (cmap) {
+		cmap[key] = value
+	}
+	else {
+		cmapUpdate[cmapName] = { [key]: value }
+	}
+}
 function changeRealDateOnSelect(e) {
 	const dataset = e.target.dataset
 
 	if (dataset.index && cmapData) {
+		const cmap = cmapData[dataset.index].name
 		cmapData[dataset.index].real_date = e.target.value
-
+		updateCmap(cmap, "real_date", e.target.value)
 
 	}
 	addSaveButton()
@@ -182,7 +195,7 @@ async function getCmap() {
 function addSaveButton() {
 	if (!cmapDataPresent() || saveButtonAdded) return
 	saveButtonAdded = 1
-	globalPage.set_primary_action('Save', saveAssignment)
+	globalPage.set_primary_action('Save', saveTracker)
 }
 
 function removeSaveButton() {
@@ -194,9 +207,11 @@ async function setupDataTable() {
 	const container = document.getElementById('report-table-container')
 	container.innerHTML = ""
 
-
-
 	container.appendChild(createTable(cmapData))
+	$(function () {
+		$('[data-toggle="tooltip"]').tooltip({ trigger: 'hover focus click manual' })
+
+	})
 
 }
 
@@ -225,7 +240,7 @@ const headers = [
 	{ textContent: 'Plan Date' },
 	{ textContent: 'Real Date' },
 
-	{ textContent: 'Remarks' },
+
 
 ];
 
@@ -257,13 +272,13 @@ function createTable(data) {
 	if (data)
 
 		data.forEach((row, index) => {
-			const row_html = createRow(row.period, row.chapter_name, row.products && row.products.map(el => `<a target="__blank" href="${el.custom_product_url}">${el.item_code}</a>`).join(','), row.broadcast, row.parent_note, row.class_work, row.home_work, row.material_required, row.division, row.teacher, row.plan_date, row.real_date, row.remarks, index === 0, 0, index)
+			const row_html = createRow(row.period, row.chapter_name, generateProductList(row.products), row.broadcast, row.parent_note, row.class_work, row.home_work, row.material_required, row.division, row.teacher, row.plan_date, row.real_date, index === 0, 0, index)
 			tbody.innerHTML += (row_html)
 		})
 
 
 	tbody.addEventListener('change', changeRealDateOnSelect)
-	tbody.addEventListener('click', editRemarks)
+
 	thead.appendChild(headerRow)
 	table.appendChild(thead);
 
@@ -271,72 +286,56 @@ function createTable(data) {
 	return table
 }
 
-function editRemarks(e) {
-	const dataset = e.target.dataset
-	console.log(dataset)
-	if (dataset.editDialog && cmapData) {
-		const d = new frappe.ui.Dialog({
-			title: 'Edit Remark',
-			fields: [{
-				label: 'Remarks',
-				fieldname: 'remarks',
-				fieldtype: 'Text',
-				default: cmapData[dataset.index].remarks,
-
-			}],
-			size: "small",
-			primary_action_label: "Change",
-
-			primary_action: () => {
-
-				cmapData[dataset.index].remarks = d.get_value('remarks');
-				addSaveButton();
-				setupDataTable();
-				d.hide();
-
-
-			}
-		})
-		d.show()
-	}
-
-
+function generateProductList(products) {
+	const generatedProducts = products && products.map(el => `<div style="display:flex;gap:4px;"><a target="__blank" href="${el.custom_product_url}">${el.item_code} </a><a target="__blank" href="/app/item/${el.item_code}"><i class="fa fa-comment" aria-hidden="true"></i></a></div>`).join('')
+	return `<div class="products-list">${generatedProducts}</div>`
 }
-function createRow(period_no, chapter_name, products, broadcast, parent_note, class_work, home_work, material_required, division, teacher, plan_date, real_date, remarks, first_row, rowSpan, index) {
+function createRow(period_no, chapter_name, products, broadcast, parent_note, class_work, home_work, material_required, division, teacher, plan_date, real_date, first_row, rowSpan, index) {
 
 
 	return `<tr>
 	<td >${period_no}</td>
 	<td colspan="2">${chapter_name}</td>
 	<td>${products}</td>
-	<td>${broadcast}</td>
-	<td>${parent_note}</td>
-	<td>${class_work}</td>
-	<td>${home_work}</td>
-<td>${material_required}</td>
+	<td  data-toggle="tooltip" data-placement="top" title="${broadcast}"><i class="fa fa-file" aria-hidden="true"></i></td>
+	<td data-toggle="tooltip" data-placement="top" title="${parent_note}"><i class="fa fa-file" aria-hidden="true"></i></td>
+	<td  data-toggle="tooltip" data-placement="top" title="${class_work}"><i class="fa fa-file" aria-hidden="true"></i></td>
+	<td  data-toggle="tooltip" data-placement="top" title="${home_work}"><i class="fa fa-file" aria-hidden="true"></i></td>
+<td data-toggle="tooltip" data-placement="top" title="${material_required}"><i class="fa fa-file" aria-hidden="true"></i></td>
 
 	<td>${plan_date || "No Date"}</td>
 	<td class="real-date-cell">${createDatePicker(real_date, index)}</td>
-
-	<td>${remarks || "No Remarks"} <button data-edit-dialog="true" data-index=${index}><i data-edit-dialog="true" data-index=${index} class="fas fa-edit"></i></button></td>
   </tr>
-  `
+		`
 
 
 }
 
 function createDatePicker(value, index) {
 
-	return `<input type="date" value=${value} data-index="${index}"/>`
+	return `<input type="date" value=${value} data-index="${index}" max="${getMaxDate()}" />`
 }
 
-async function saveAssignment() {
+async function saveTracker() {
 	const filters = getFilters()
 	await frappe.call({
 		method: 'edu_quality.edu_quality.page.cmap_tracker.cmap_tracker.update',
 		args: {
 			filters: filters,
-			cmap_data: cmapData
+			cmap_data: cmapUpdate
 		}
 	})
+	frappe.show_alert({
+		message: __('Saved'),
+		indicator: 'green'
+	}, 5);
+	cmapUpdate = {}
+}
+
+function getMaxDate() {
+	const today = new Date();
+	const day = today.getDate();
+	const month = today.getMonth() + 1; // Months are zero-based
+	const year = today.getFullYear();
+	return `${year}-${month.toString().padStart(2, '0')}-${day}`
 }

@@ -72,7 +72,6 @@ def get_cmap(**filters):
             cmap_assign_table.school,
             cmap_assign_table.division,
             cmap_assign_table.real_date,
-            cmap_assign_table.remarks,
         )
     )
 
@@ -123,24 +122,29 @@ def update(filters, cmap_data):
     filters = json.loads(filters) if isinstance(filters, str) else filters
     cmap_data = json.loads(cmap_data) if isinstance(cmap_data, str) else cmap_data
     teacher = calculate_teacher_value(filters.get("teacher"))
-    for assignments in cmap_data:
-        cmap = frappe.get_doc("CMAP", assignments.get("name"))
+    user_roles = frappe.get_roles(frappe.session.user)
+    is_admin = check_admin_roles(user_roles, ["Principal", "Vice Principal", "HoD"])
+
+    for cmap_name in cmap_data:
+        cmap = frappe.get_doc("CMAP", cmap_name)
         modified = False
+
+        updated_data = cmap_data.get(cmap_name)
+        division = filters.get("division")
+        real_date = updated_data.get("real_date")
+        allow_edit = is_admin or (not item.real_date)
+
         for item in cmap.table_vwbr:
+
             if (
                 item.school == filters.get("school")
-                and item.division == assignments.get("division")
+                and item.division == division
                 and item.teacher == teacher
             ):
                 # Update existing teacher
 
-                if (
-                    assignments.get("real_date")
-                    and (str(item.real_date) != assignments.get("real_date"))
-                    or (item.remarks != assignments.get("remarks"))
-                ):
-                    item.real_date = assignments.get("real_date")
-                    item.remarks = assignments.get("remarks")
+                if real_date and allow_edit:
+                    item.real_date = real_date
                     modified = True
 
         if modified:
@@ -180,7 +184,9 @@ def calculate_teacher_value(value_for_admin):
     data = query.run(as_dict=True)
     if len(data):
         return data[0].get("name")
-    return frappe.msgprint("Teacher couldnt be found", "Error")
+
+    frappe.msgprint("Teacher couldn't be found, Please Contact Admin", "Error")
+    return frappe.redirect("/app")
 
 
 def find_first_non_empty_key(objects_list, key):

@@ -337,4 +337,8 @@ async function saveAssignment() {
 			cmap_data: cmapData
 		}
 	})
+	frappe.show_alert({
+		message: __('Saved'),
+		indicator: 'green'
+	}, 5);
 }
