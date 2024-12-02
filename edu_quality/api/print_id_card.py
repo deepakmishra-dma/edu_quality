@@ -78,7 +78,7 @@ def get_division_name(program_enrollment):
 def get_batch_number(program_enrollment):
     div_dict = {}
     for pe in program_enrollment:
-        div = frappe.get_value("Student Group", pe.student_batch_name, "batch_number")
+        div = frappe.get_doc("Student Group", pe.student_group)
         batch_number = frappe.get_value("Student Batch Name", div.batch, "custom_batch_number")
         div_dict[pe.name] = batch_number
 
