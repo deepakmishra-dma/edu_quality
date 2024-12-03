@@ -51,7 +51,8 @@ def before_save(doc, method=None):
         prev_doc = doc.get_doc_before_save()
         if prev_doc and prev_doc.student_status != doc.student_status:
             if doc.student_status == "Defaulter":
-                suspend_google_user(doc.student_email_id)
+                pass
+                # suspend_google_user(doc.student_email_id)
             else:
                 unsuspend_google_user(doc.student_email_id)
         comment_on_possible_dropout(doc,prev_doc)
