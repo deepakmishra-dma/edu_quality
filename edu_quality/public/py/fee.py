@@ -74,8 +74,9 @@ def on_submit(doc, method=None):
         # cancel_liability_entries(fee_advance)
         discount_applied = get_one_time_discounts(fee_advance)
         for discount in discount_applied.keys():
-            add_discount(doc.name, discount)
-            total_discount += discount_applied.get(discount)
+            if "payplan" not in discount.lower():
+                add_discount(doc.name, discount)
+                total_discount += discount_applied.get(discount)
 
         if doc.payment_schedule:
             frappe.db.set_value(
