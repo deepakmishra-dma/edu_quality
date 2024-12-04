@@ -10,6 +10,7 @@ from edu_quality.public.py.discount import (
     time_based_discount,
     update_payment_schedule,
     get_label,
+    calculate_discount
 )
 
 from edu_quality.edu_quality.server_scripts.student_applicant import referal_discount
@@ -78,6 +79,7 @@ def on_submit(doc, method=None):
                 add_discount(doc.name, discount)
                 total_discount += discount_applied.get(discount)
 
+        total_discount += update_referral_discount(doc, fee_advance)
         if doc.payment_schedule:
             frappe.db.set_value(
                 "Payment Schedule", doc.payment_schedule[0].name, "outstanding", 0
@@ -94,7 +96,30 @@ def on_submit(doc, method=None):
         frappe.db.set_value(
             "Fees", doc.name, "outstanding_amount", fee_outstanding_amount
         )
+        if doc.total_discount:
+            total_discount += doc.total_discount
+        frappe.db.set_value("Fees", doc.name, "total_discount", total_discount)
+
         doc.reload()
+
+
+def update_referral_discount(doc, fee_advance):
+    if fee_advance.referral_amount:
+        for component in doc.components:
+            if component.fees_category == "Tuition Fee":
+                fee_comp = frappe.get_value(
+                    "Fee Component", component.name, ["amount","custom_discount_amount", "custom_amount_after_discount"], as_dict=True
+                )
+                discount_amount = fee_comp.custom_discount_amount + fee_advance.referral_amount
+                updates = {
+                    "custom_discount_amount": fee_comp.custom_discount_amount + fee_advance.referral_amount,
+                    "custom_amount_after_discount": fee_comp.custom_amount_after_discount - fee_advance.referral_amount,
+                    "custom_discount_percentage": calculate_discount(fee_comp.amount, discount_amount),
+                }
+                frappe.db.set_value("Fee Component", component.name, updates)
+                doc.add_discount_entry(component.custom_company, fee_advance.referral_amount)
+        return fee_advance.referral_amount 
+    return 0
 
 
 def verify_invoice_portion(payment_schedule):
