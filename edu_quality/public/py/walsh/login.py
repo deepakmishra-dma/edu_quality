@@ -136,7 +136,7 @@ def send_otp(phone_no):
             "error_message": "Guardian Not Found"
         }
 
-    guardian = frappe.get_doc("Guardian", {"mobile_number": guardian_number})
+    guardian = frappe.get_cached_doc("Guardian", {"mobile_number": guardian_number})
     if is_defaulter(guardian.name):
         return {
             "error": True,
@@ -179,8 +179,8 @@ def verify_otp(otp, phone_no, push_token=None, form_link=None):
         guardian_number = remove_indian_country_code(phone_with_country_code)
 
         if match_otp(wa_phone_no, otp):
-            guardian = frappe.get_doc("Guardian", {"mobile_number": guardian_number})
-            user = frappe.get_doc("User", guardian.user)
+            guardian = frappe.get_cached_doc("Guardian", {"mobile_number": guardian_number})
+            user = frappe.get_cached_doc("User", guardian.user)
             login_manager = LoginManager()
             login_manager.login_as(user.name)
 
@@ -190,7 +190,7 @@ def verify_otp(otp, phone_no, push_token=None, form_link=None):
             if push_token:
                 save_push_notification_token(push_token, user.name)
 
-            key = "walsh_otp" + wa_phone_no
+            # key = "walsh_otp" + wa_phone_no
             # frappe.cache.delete_value(key)
 
             return {

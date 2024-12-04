@@ -20,7 +20,7 @@ def send_notification(student_id, subject, notice_id):
         filters={'parent': student_id, 'parenttype': 'Student'},
         fields=["guardian"]
     )
-    guardians = [frappe.get_doc("Guardian", g.get("guardian")) for g in student_guardians]
+    guardians = [frappe.get_cached_doc("Guardian", g.get("guardian")) for g in student_guardians]
     for guardian in guardians:
         user = guardian.get("user")
         if user:
@@ -71,9 +71,9 @@ def enqueued_specific_notice_emails(__args):
     for row in csv_data:
         try:
             student_id = row.get("ID") or row.get("id") or row.get("name")
-            student = frappe.get_doc("Student", student_id)
+            student = frappe.get_cached_doc("Student", student_id)
             if not school_admin_bcc_email:
-                school = frappe.get_doc("School", student.school)
+                school = frappe.get_cached_doc("School", student.school)
                 school_admin_bcc_email = school.bcc_email_address
             data = {
                 **student.as_dict(),
@@ -111,7 +111,7 @@ def enqueued_specific_notifications(notice_ids):
     failure_texts = []
     for notice_id in notice_ids:
         try:
-            notice = frappe.get_doc("School Notice", notice_id).as_dict()
+            notice = frappe.get_cached_doc("School Notice", notice_id).as_dict()
             subject = notice.subject
             student_id = notice.student
             send_notification(student_id, subject, notice_id)
@@ -147,7 +147,7 @@ def enqueued_specific_notice_docs(__args):
     for row in csv_data:
         try:
             student_id = row.get("ID") or row.get("id") or row.get("name")
-            student = frappe.get_doc("Student", student_id)
+            student = frappe.get_cached_doc("Student", student_id)
             data = {
                 **student.as_dict(),
                 **row
@@ -240,7 +240,7 @@ def enqueued_generic_notice_emails(__args):
             notice_content = render_jinja(content, student)
             student_email = student.student_email_id
             if not school_admin_bcc_email:
-                school = frappe.get_doc("School", student.school)
+                school = frappe.get_cached_doc("School", student.school)
                 school_admin_bcc_email = school.bcc_email_address
             create_email(
                 recipients=[student_email],
@@ -271,7 +271,7 @@ def enqueued_generic_notifications(notice_ids):
     failure_texts = []
     for notice_id in notice_ids:
         try:
-            notice = frappe.get_doc("School Notice", notice_id)
+            notice = frappe.get_cached_doc("School Notice", notice_id)
             subject = notice.subject
             students_values = {
                 'class': notice.get("class"),
@@ -381,15 +381,47 @@ def validate_args(**kwargs):
     student_statuses = kwargs.get("student_statuses")
     is_test = kwargs.get("is_test")
     academic_year = kwargs.get("academic_year")
+    student_data = kwargs.get("student_data")
 
     # verify supplied data
     if has_csv:
-        if not is_test:
+        if is_test:
+            student_id = student_data.get("ID") or student_data.get("id") or student_data.get("name")
+            student = frappe.get_cached_doc("Student", student_id)
+            if not student_data.get("school"):
+                raise frappe.exceptions.MandatoryError("School (school) is required in CSV")
+            if student.get("school") != student_data.get("school"):
+                raise frappe.exceptions.ValidationError(
+                    f"School Mismatch: {student_id} [{student.get('school')}, {student_data.get('school')}]")
+        else:
             csv_file_path = frappe.get_site_path() + csv_file
             csv_text = open(csv_file_path, mode="r", encoding="utf-8-sig").read()
 
             if not csv_text:
                 raise frappe.exceptions.ValidationError("CSV File Error: Empty File")
+
+            csv_data = csv.DictReader(csv_text.splitlines())
+            csv_data = list(csv_data)
+
+            un_matches = []
+            student_ids = [row.get("ID") or row.get("id") or row.get("name") for row in csv_data]
+            student_schools = frappe.get_all("Student", fields=["name", "school"],
+                                             filters={"name": ["in", student_ids]})
+
+            for row in csv_data:
+                for student in student_schools:
+                    student_id = row.get("ID") or row.get("id") or row.get("name")
+                    print(student_id, student.name)
+                    if student_id == student.name:
+                        print("matched")
+                        if student.get("school") != row.get("school"):
+                            un_matches.append([student_id, row.get("school")])
+                        break
+
+            if len(un_matches):
+                error_string = "<br/>".join([f"{row[0]} [{row[1]}]" for row in un_matches])
+                print(error_string)
+                raise frappe.exceptions.ValidationError(f"School Mismatch: <br/> {error_string}")
     else:
         if not school:
             raise frappe.exceptions.MandatoryError("School is required")
@@ -471,7 +503,7 @@ def send_test_mail(**kwargs):
 
     if has_csv:
         student_id = student_data.get("ID") or student_data.get("id") or student_data.get("name")
-        student = frappe.get_doc("Student", student_id)
+        student = frappe.get_cached_doc("Student", student_id)
         data = {
             **student.as_dict(),
             **student_data

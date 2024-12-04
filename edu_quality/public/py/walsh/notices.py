@@ -7,7 +7,7 @@ from edu_quality.public.py.walsh.login import is_defaulter
 @frappe.whitelist()
 def get_students():
     user = frappe.session.user
-    guardian = frappe.get_doc("Guardian", {"user": user})
+    guardian = frappe.get_cached_doc("Guardian", {"user": user})
     students = frappe.get_all("Student", filters={"guardian": guardian.name}, fields=["*"])
     return students
 
@@ -24,7 +24,7 @@ def get_all_notices(page=1, limit=0):
         page = 1
     user = frappe.session.user
 
-    guardian = frappe.get_doc("Guardian", {"user": user})
+    guardian = frappe.get_cached_doc("Guardian", {"user": user})
     if is_defaulter(guardian.name, True):
         return {
             "success": False,
@@ -110,16 +110,16 @@ def get_all_notices(page=1, limit=0):
 @frappe.whitelist()
 def get_notice_by_id(id, student=None):
     user = frappe.session.user
-    guardian = frappe.get_doc("Guardian", {"user": user})
+    guardian = frappe.get_cached_doc("Guardian", {"user": user})
     if is_defaulter(guardian.name, True):
         return {
             "success": False,
             "data": [],
         }
-    school_notice_doc = frappe.get_doc("School Notice", id)
+    school_notice_doc = frappe.get_cached_doc("School Notice", id)
     school_notice = school_notice_doc.as_dict()
     if student and school_notice.is_generic_notice:
-        student_doc = frappe.get_doc("Student", student)
+        student_doc = frappe.get_cached_doc("Student", student)
         student_data = student_doc.as_dict()
         school_notice = {
             **school_notice,
@@ -130,6 +130,32 @@ def get_notice_by_id(id, student=None):
         }
     elif school_notice_doc.student:
         school_notice["student_first_name"] = frappe.db.get_value("Student", school_notice.student, "first_name")
+
+    try:
+        if frappe.db.exists("School Notice Status", {
+            "notice": id,
+            "user": user,
+            "student": student
+        }):
+            notice_status = frappe.get_doc("School Notice Status", {
+                "notice": id,
+                "user": user,
+                "student": student
+            })
+            if not notice_status.is_read:
+                notice_status.is_read = True
+                notice_status.save()
+                frappe.db.commit()
+        else:
+            notice_status = frappe.new_doc("School Notice Status")
+            notice_status.is_read = True
+            notice_status.notice = id
+            notice_status.student = student
+            notice_status.user = user
+            notice_status.insert(ignore_permissions=True)
+            frappe.db.commit()
+    except:
+        pass
 
     return {
         "data": school_notice,
