@@ -395,6 +395,7 @@ def validate_args(**kwargs):
                     f"School Mismatch: {student_id} [{student.get('school')}, {student_data.get('school')}]")
         else:
             csv_file_path = frappe.get_site_path() + csv_file
+            csv_file_path = frappe.get_site_path() + csv_file
             csv_text = open(csv_file_path, mode="r", encoding="utf-8-sig").read()
 
             if not csv_text:
@@ -411,16 +412,13 @@ def validate_args(**kwargs):
             for row in csv_data:
                 for student in student_schools:
                     student_id = row.get("ID") or row.get("id") or row.get("name")
-                    print(student_id, student.name)
                     if student_id == student.name:
-                        print("matched")
                         if student.get("school") != row.get("school"):
                             un_matches.append([student_id, row.get("school")])
                         break
 
             if len(un_matches):
                 error_string = "<br/>".join([f"{row[0]} [{row[1]}]" for row in un_matches])
-                print(error_string)
                 raise frappe.exceptions.ValidationError(f"School Mismatch: <br/> {error_string}")
     else:
         if not school:

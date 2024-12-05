@@ -82,11 +82,13 @@ def get_all_notices(page=1, limit=0):
         if notice.is_generic_notice:
             for student in students:
                 for enrollment in enrollments:
-                    if student.name == enrollment.student and (
+                    if (
                         notice.division == enrollment.student_group or
                         (not notice.division and notice.get('class') == enrollment.program)
-                    ) and notice.academic_year == enrollment.academic_year and (
-                        notice.student_status == student.get("student_status")
+                    ) and (
+                        student.name == enrollment.student and
+                        notice.student_status == student.get("student_status") and
+                        notice.academic_year == enrollment.academic_year
                     ):
                         final_notices.append({
                             **notice,
