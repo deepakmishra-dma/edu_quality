@@ -5,8 +5,8 @@ import {Box, Input, Stack, Text} from "@mantine/core";
 import {useNavigate} from "react-router-dom";
 // @ts-expect-error no types
 import {IconCalendar, IconSearch} from "@tabler/icons";
-import {getStudentProfileColor} from "../../components/hooks/useStudentProfileColor.ts";
 import useStudentList from "../../components/queries/useStudentList.ts";
+import {getStudentProfileColor} from "../../components/hooks/useStudentProfileColor.ts";
 
 export const NoticeList: React.FC<IResourceComponentsProps> = () => {
   const navigate = useNavigate();
@@ -59,27 +59,11 @@ export const NoticeList: React.FC<IResourceComponentsProps> = () => {
             alignItems: 'center',
             gap: 5
           }}>
-          <Box sx={{
-            height: 40,
-            width: 40,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: '100%',
-            backgroundColor: getStudentProfileColor(item.student, data?.data?.message || []),
-            color: 'white',
-            flexGrow: 0,
-            flexShrink: 0,
-            fontSize: 25,
-            fontWeight: 'bold',
-          }}>
-            {item?.student_first_name?.[0]?.toUpperCase()}
-          </Box>
           <Box
             p={5}
             sx={{
               cursor: 'pointer',
-              width: 'calc(100% - 50px)',
+              width: '100%',
               ":hover": {
                 backgroundColor: 'rgba(0,0,0,0.02)'
               }
@@ -95,12 +79,13 @@ export const NoticeList: React.FC<IResourceComponentsProps> = () => {
             }}>
               {item.subject || '-'}
             </Text>
-            <Box h={55} my={5} sx={{
+            <Box my={5} sx={{
               overflow: 'hidden',
               textOverflow: 'none',
               whiteSpace: 'nowrap',
               width: '100%',
-              fontSize: 12,
+              fontSize: 14,
+              height: "5em",
               // borderRadius: '5px',
               // color: '#888',
             }}>
@@ -116,11 +101,14 @@ export const NoticeList: React.FC<IResourceComponentsProps> = () => {
               gap: 10,
               color: '#666',
             }}>
-              <Stack align="center" justify="center" pt={4} pr={10} sx={{
+              <Stack align="center" justify="center" mt={4} px={10} sx={{
                 display: 'inline-block',
                 whiteSpace: 'nowrap',
                 fontSize: 13,
-                borderRight: '1px solid #eee'
+                backgroundColor: getStudentProfileColor(item.student, data?.data?.message || []),
+                color: 'white',
+                fontWeight: 'bold',
+                borderRadius: 3,
               }}>{item?.student_first_name}</Stack>
               <Stack align="center" justify="center" py={4} sx={{
                 display: 'inline-flex',

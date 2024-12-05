@@ -99,7 +99,9 @@ const CmapList = () => {
           const openOrClose = () => isOpen ? setOpenedCmap("") : setOpenedCmap(i.toString())
           const broadCasts = Array.from(new Set(cmap?.products?.map(product => product?.broadcast_description))).filter(Boolean)
           const homeWorks = Array.from(new Set(cmap?.products?.map(product => product?.homework_description))).filter(Boolean)
+          const parentNotes = Array.from(new Set(cmap?.products?.map(product => product?.parentnote_description))).filter(Boolean)
           const products = cmap?.products?.filter(product => product?.item_data?.custom_product_url)
+          const cmapTitle = Array.from(new Set(cmap?.products?.map(product => product?.chapter))).filter(Boolean).join(', ')
           return <Stack
             key={i}
             onClick={openOrClose}
@@ -113,50 +115,53 @@ const CmapList = () => {
               // alignItems: 'center',
               gap: 10,
             }}>
-            <Box sx={{
-              height: 40,
-              width: 40,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: '100%',
-              backgroundColor: studentProfileColor,
-              color: 'white',
-              flexGrow: 0,
-              flexShrink: 0,
-              fontSize: 25,
-              fontWeight: 'bold',
-              marginTop: 5
-            }}>
-              {studentName?.[0]?.toUpperCase()}
-            </Box>
             <Box
               sx={{
-                width: 'calc(100% - 50px)',
+                width: '100%',
               }}
             >
               <Box sx={{
                 cursor: 'pointer',
               }}>
-                <Text sx={{
-                  borderRadius: 50,
-                  backgroundColor: studentProfileColor,
-                  padding: "1px 7px",
-                  fontSize: 10,
-                  display: 'inline-block',
-                  height: '1.4em',
-                  lineHeight: 1.4,
-                  color: 'white',
-                  fontWeight: 'bold'
-                }}>Period {cmap?.period}</Text>
-                <Text mih={20} weight="bold" size="lg" sx={{
+
+                <Stack align="center" justify="center" py={4} sx={{
+                  display: 'inline-flex',
+                  // justifyContent: 'center',
+                  flexDirection: 'row',
+                  // alignItems: 'center',
+                  // borderRadius: 5,
                   whiteSpace: 'nowrap',
-                  overflow: 'hidden',
+                  fontSize: 13,
+                  gap: 5,
+                  color: '#333',
+                }}>
+                  <Text sx={{
+                    borderRadius: 50,
+                    backgroundColor: studentProfileColor,
+                    padding: "2px 7px 1px 7px",
+                    fontSize: 11,
+                    display: 'inline-block',
+                    color: 'white',
+                    fontWeight: 'bold'
+                  }}>Period {cmap?.period}</Text>
+                  <Box sx={{
+                    height: "10px",
+                    width: 1,
+                    backgroundColor: 'rgba(0,0,0,0.3)'
+                  }}> </Box>
+                  <IconCalendar size={13}/>
+                  <span style={{paddingTop: 1}}>
+                    {new Date(cmap.real_date).toLocaleDateString()?.replace(/\//g, '-') || '-'}
+                  </span>
+                </Stack>
+                <Text mih={20} weight="bold" size="lg" sx={{
+                  whiteSpace: isOpen ? undefined : 'nowrap',
+                  overflow: isOpen ? undefined : 'hidden',
                   textOverflow: 'ellipsis',
                   width: '100%',
                   // fontSize: 15,
                 }}>
-                  {subjectTitle}
+                  {cmapTitle}
                 </Text>
                 <Box h={isOpen ? undefined : '4em'} sx={{
                   overflow: 'hidden',
@@ -167,7 +172,7 @@ const CmapList = () => {
                       overflow: 'hidden',
                       textOverflow: 'none',
                       width: '100%',
-                      fontSize: 14,
+                      fontSize: 15,
                       // borderRadius: '5px',
                       color: '#777',
                       textAlign: 'justify',
@@ -176,19 +181,42 @@ const CmapList = () => {
                       {broadcast}
                     </Box>
                   })}
+                  {isOpen && parentNotes.length > 0 && (
+                    <>
+                      <Text sx={{
+                        fontSize: 15,
+                        fontWeight: 'bold',
+                        marginTop: 10
+                      }}>Parent Note:</Text>
+                      {parentNotes?.map((parentNote, i) => {
+                        return <Box key={i} py={3} sx={{
+                          overflow: 'hidden',
+                          textOverflow: 'none',
+                          width: '100%',
+                          fontSize: 15,
+                          // borderRadius: '5px',
+                          color: '#777',
+                          textAlign: 'justify',
+                          borderBottom: '1px solid rgba(0,0,0,0.03)',
+                        }}>
+                          {parentNote}
+                        </Box>
+                      })}
+                    </>)
+                  }
                   {isOpen && homeWorks.length > 0 && (
                     <>
                       <Text sx={{
                         fontSize: 15,
                         fontWeight: 'bold',
                         marginTop: 10
-                      }}> Home Work</Text>
+                      }}>Home Work:</Text>
                       {homeWorks?.map((homeWork, i) => {
                         return <Box key={i} py={3} sx={{
                           overflow: 'hidden',
                           textOverflow: 'none',
                           width: '100%',
-                          fontSize: 14,
+                          fontSize: 15,
                           // borderRadius: '5px',
                           color: '#777',
                           textAlign: 'justify',
@@ -200,22 +228,6 @@ const CmapList = () => {
                     </>)
                   }
                 </Box>
-                <Stack align="center" justify="center" py={4} sx={{
-                  display: 'inline-flex',
-                  // justifyContent: 'center',
-                  flexDirection: 'row',
-                  // alignItems: 'center',
-                  // borderRadius: 5,
-                  whiteSpace: 'nowrap',
-                  fontSize: 12,
-                  gap: 5,
-                  color: '#333',
-                }}>
-                  <IconCalendar size={13}/>
-                  <span style={{paddingTop: 1}}>
-                  {new Date(cmap.real_date).toLocaleDateString()?.replace(/\//g, '-') || '-'}
-                </span>
-                </Stack>
               </Box>
               <Box sx={{
                 whiteSpace: 'nowrap',

@@ -4,7 +4,7 @@ import frappe
 @frappe.whitelist()
 def get_students():
     user = frappe.session.user
-    guardian = frappe.get_doc("Guardian", {"user": user})
+    guardian = frappe.get_cached_doc("Guardian", {"user": user})
     students = frappe.get_all("Student", filters={"guardian": guardian.name}, fields=["*"])
     return students
 
@@ -20,9 +20,9 @@ def get_student_class_details(student):
         return {}
 
     program = program_enrollments[0]["program"]
-    program_data = frappe.get_doc("Program", program)
-    class_type = frappe.get_doc("Class Type", program_data.program_name)
-    division = frappe.get_doc("Student Group", program_enrollments[0]["student_group"])
+    program_data = frappe.get_cached_doc("Program", program)
+    class_type = frappe.get_cached_doc("Class Type", program_data.program_name)
+    division = frappe.get_cached_doc("Student Group", program_enrollments[0]["student_group"])
 
     return {
         "division": division,
@@ -57,7 +57,8 @@ def get_all_cmaps(subject, unit, division):
     all_items = frappe.get_all("Item", fields=["*"], filters={"name": ["in", item_names]})
     broadcast_names = [product.broadcast for product in all_products if product.broadcast]
     homework_names = [product.home_work for product in all_products if product.home_work]
-    cmap_material_names = broadcast_names + homework_names
+    parentnote_names = [product.parent_note for product in all_products if product.parent_note]
+    cmap_material_names = broadcast_names + homework_names + parentnote_names
     cmap_materials = frappe.get_all("Item CMAP Material", fields=["*"], filters={"name": ["in", cmap_material_names]})
 
     for product in all_products:
@@ -70,6 +71,9 @@ def get_all_cmaps(subject, unit, division):
         for homework in cmap_materials:
             if homework.name == product.home_work:
                 product['homework_description'] = homework.description
+        for parentnote in cmap_materials:
+            if parentnote.name == product.parent_note:
+                product['parentnote_description'] = parentnote.description
 
     for cmap in cmaps:
         cmap.products = []
