@@ -45,9 +45,10 @@ from edu_quality.public.py.discount import remove_discount
 
 
 def after_insert(doc, method=None):
+    apply_referral_for_unpaid_fee_advance(doc)
     payment_plan(doc)
     doc.save()
-
+    doc.reload()
 
 def before_submit(doc, method=None):
     time_dis = time_based_discount(doc)
@@ -108,18 +109,61 @@ def update_referral_discount(doc, fee_advance):
         for component in doc.components:
             if component.fees_category == "Tuition Fee":
                 fee_comp = frappe.get_value(
-                    "Fee Component", component.name, ["amount","custom_discount_amount", "custom_amount_after_discount"], as_dict=True
+                    "Fee Component", component.name, ["amount","custom_discount_amount", "custom_amount_after_discount","custom_discounts"], as_dict=True
                 )
                 discount_amount = fee_comp.custom_discount_amount + fee_advance.referral_amount
+                if fee_comp.custom_discounts:
+                    fee_comp.custom_discounts += ", Referral"
+                else:
+                    fee_comp.custom_discounts = "Referral"
                 updates = {
                     "custom_discount_amount": fee_comp.custom_discount_amount + fee_advance.referral_amount,
                     "custom_amount_after_discount": fee_comp.custom_amount_after_discount - fee_advance.referral_amount,
                     "custom_discount_percentage": calculate_discount(fee_comp.amount, discount_amount),
+                    "custom_discounts": fee_comp.custom_discounts
                 }
                 frappe.db.set_value("Fee Component", component.name, updates)
                 doc.add_discount_entry(component.custom_company, fee_advance.referral_amount)
         return fee_advance.referral_amount 
     return 0
+        
+        
+def apply_referral_for_unpaid_fee_advance(doc):
+    total_discount = 0
+    filters = {
+        "student": doc.student,
+        "outstanding_amount": ["!=", 0],
+        "next_program": doc.program,
+        "academic_year": doc.academic_year,
+        "docstatus": 1,
+    }
+    fee_advance = frappe.get_value("Fee Advance", filters)
+    if fee_advance:
+        fee_advance = frappe.get_doc("Fee Advance", filters)
+        doc.payment_plan = fee_advance.payment_plan
+        discount_applied = get_one_time_discounts(fee_advance)
+        for discount in discount_applied.keys():
+            if "payplan" not in discount.lower():
+                add_discount(doc.name, discount)
+                total_discount += discount_applied.get(discount)
+
+        if fee_advance.referral_amount:
+            for component in doc.components:
+                if component.fees_category == "Tuition Fee":
+                    amount_after_discount = component.custom_amount_after_discount or component.amount
+                    discount_amount = component.custom_discount_amount + fee_advance.referral_amount
+                    component.custom_discount_amount = component.custom_discount_amount + fee_advance.referral_amount
+                    component.custom_amount_after_discount = amount_after_discount - fee_advance.referral_amount
+                    component.custom_discount_percentage = calculate_discount(component.amount, discount_amount)
+                    if component.custom_discounts:
+                        component.custom_discounts += ", Referral"
+                    else:
+                        component.custom_discounts = "Referral"
+                    doc.total_discount += fee_advance.referral_amount
+                    doc.grand_total -= fee_advance.referral_amount
+                    doc.outstanding_amount -= fee_advance.referral_amount
+                    doc.add_discount_entry(component.custom_company, fee_advance.referral_amount)
+
 
 
 def verify_invoice_portion(payment_schedule):
