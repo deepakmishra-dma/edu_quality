@@ -271,7 +271,7 @@ def check_paid_advance(doc):
         fee_advance = frappe.get_doc("Fee Advance", filters)
         if fee_advance.outstanding_amount>0:
             set_discount_to_fee(doc,fee_advance)
-            fee_advance.cancel()
+            # fee_advance.cancel()
             return False
         return True
     return False
