@@ -8,16 +8,29 @@ let globalPage = null
 let saveButtonAdded = false
 
 frappe.pages['cmap-tracker'].on_page_load = async function (wrapper) {
+
 	var page = frappe.ui.make_app_page({
 		parent: wrapper,
 		title: 'CMAP Tracker',
 		single_column: true
 	});
 	globalPage = page
+
+	onLoad(page)
+}
+frappe.pages['cmap-tracker'].refresh = async function (wrapper) {
+
+	onLoad()
+}
+
+async function onLoad() {
+
 	frappe.require(["/assets/edu_quality/css/cmap-tracker.css"])
-	const el = document.querySelector('.container.page-body')
-	el.classList.add("cmap-tracker")
-	const teachersData = await getTeachers()
+	const el = globalPage.wrapper.find('.container.page-body');
+
+	el.addClass("cmap-tracker");
+	const [teachersData, acadYear, school] = await getTeachers()
+
 	const teacherFilter = !teachersData ? [{
 		label: 'Teacher',
 		fieldname: 'teacher',
@@ -37,12 +50,14 @@ frappe.pages['cmap-tracker'].on_page_load = async function (wrapper) {
 		},
 		change: () => filterOnChange(filtersRef.fields_dict.school)
 	}] : [];
-
+	// el.innerHTML = ""
+	el.empty();
 	filtersRef = make_fieldgroup(el, [
 		{
 			label: 'Academic Year',
 			fieldname: 'academic_year',
 			fieldtype: 'Link',
+			default: acadYear || '',
 			options: "Academic Year",
 			change: () => filterOnChange(filtersRef.fields_dict.academic_year)
 		},
@@ -50,7 +65,9 @@ frappe.pages['cmap-tracker'].on_page_load = async function (wrapper) {
 			label: 'School',
 			fieldname: 'school',
 			fieldtype: 'Link',
+			default: school || '',
 			options: "School",
+			readonly: parseInt(!!school),
 			change: () => filterOnChange(filtersRef.fields_dict.school)
 		},
 		{
@@ -95,22 +112,12 @@ frappe.pages['cmap-tracker'].on_page_load = async function (wrapper) {
 		},
 	])
 
+	const tableContainer = $('<div>').attr('id', 'report-table-container');
+	const editContainer = $('<div>').attr('id', 'report-edit-container');
 
-	// page.add_inner_button('Fetch', () => {
-
-
-	// 	getCmap()
-
-	// })
-	const tableContainer = document.createElement('div')
-	const editContainer = document.createElement('div')
-	editContainer.id = 'report-edit-container'
-	tableContainer.id = 'report-table-container'
-
-	el.appendChild(tableContainer)
-	el.appendChild(editContainer)
+	el.append(tableContainer);
+	el.append(editContainer);
 	setupDataTable()
-
 }
 async function reInitCMAP() {
 	if (cmapDataPresent()) {
@@ -175,7 +182,7 @@ function getFilters() {
 
 async function getTeachers() {
 	const teacherData = await frappe.call({
-		method: 'edu_quality.edu_quality.page.cmap_tracker.cmap_tracker.calculate_teacher_value',
+		method: 'edu_quality.edu_quality.page.cmap_tracker.cmap_tracker.get_teacher_details',
 		args: { value_for_admin: "" }
 	})
 	return teacherData?.message

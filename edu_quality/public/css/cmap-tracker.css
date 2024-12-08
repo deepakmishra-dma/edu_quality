@@ -66,3 +66,7 @@ td {
   flex-direction: column;
   gap: 4px;
 }
+
+.cmap-tracker .products-list a {
+  color: var(--dt-primary-color);
+}
