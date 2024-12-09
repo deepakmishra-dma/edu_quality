@@ -63,7 +63,7 @@ class CustomPaymentEntry(PaymentEntry):
             fee = frappe.get_doc("Fee Advance", self.reference_name)
             for component in fee.components:
                 if component.custom_company == self.company:
-                    if component.fees_category=="Tuition Fee":
+                    if component.fees_category in ["Tuition Fee", 'Tuition Fee (KG)']:
                         ref_fee_head_check = True
                     if component.custom_discounts:
                         other_discount += component.custom_discount_amount
