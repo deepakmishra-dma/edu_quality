@@ -61,7 +61,7 @@ def change_payment_plan(payment_plan, doctype, fee_name):
             doc.components = []
             doc.remove_all_discount_entries()
             for component in components:
-                if component['fees_category'] =='Tuition Fees':
+                if component['fees_category'] in ["Tuition Fee", 'Tuition Fee (KG)']:
                     if doc.referral_amount:
                         component['custom_discount_amount'] = doc.referral_amount
                 doc.append('components', component)

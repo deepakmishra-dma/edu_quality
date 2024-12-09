@@ -318,7 +318,7 @@ class FeeAdvance(AccountsController):
 def add_referral_discount(doc, method=None):
     grand_total = 0
     for component in doc.components:
-        if component.fees_category == 'Tuition Fee':
+        if component.fees_category in ["Tuition Fee", 'Tuition Fee (KG)']:
             if doc.referral_amount:
                 component.custom_discounts = "Referral"
                 component.custom_discount_amount = doc.referral_amount
@@ -335,7 +335,7 @@ def add_referral_discount(doc, method=None):
 def remove_referral_discount(doc):
     referral_amount = 0
     for component in doc.components:
-        if component.fees_category == 'Tuition Fee':
+        if component.fees_category in ["Tuition Fee", 'Tuition Fee (KG)']:
             if not component.custom_discounts:
                 return
             if "Referral" in component.custom_discounts:
@@ -539,7 +539,7 @@ def referal_discount(doc, method=None):
     discount = float(student.referral_amount)
 
     for component in doc.components:
-        if not component.fees_category != "Tuition Fee":
+        if not component.fees_category in ["Tuition Fee", 'Tuition Fee (KG)']:
             continue
 
         if component.amount > discount and discount != 0:
