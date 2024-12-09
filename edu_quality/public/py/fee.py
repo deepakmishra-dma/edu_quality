@@ -102,7 +102,7 @@ def on_submit(doc, method=None):
 # def update_referral_discount(doc, fee_advance):
 #     if fee_advance.referral_amount:
 #         for component in doc.components:
-#             if component.fees_category == "Tuition Fee":
+#             if component.fees_category in ["Tuition Fee", 'Tuition Fee (KG)']:
 #                 fee_comp = frappe.get_value(
 #                     "Fee Component", component.name, ["amount","custom_discount_amount", "custom_amount_after_discount","custom_discounts"], as_dict=True
 #                 )
