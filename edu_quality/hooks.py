@@ -161,6 +161,7 @@ doc_events = {
             "edu_quality.public.py.fee.create_fees",
             "edu_quality.public.py.fee.update_program_enrollment",
         ],
+        "before_insert": "edu_quality.public.py.fee.sync_student_data",
         "after_insert": [
             "edu_quality.public.py.fee.append_program_enrollment",
             "edu_quality.public.py.fee.create_id_card",
