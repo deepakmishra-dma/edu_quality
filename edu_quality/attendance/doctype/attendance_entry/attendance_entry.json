@@ -14,7 +14,8 @@
   "class",
   "division",
   "other_details_section",
-  "status"
+  "status",
+  "absent_and_delays"
  ],
  "fields": [
   {
@@ -67,11 +68,17 @@
    "fieldname": "other_details_section",
    "fieldtype": "Section Break",
    "label": "Other Details"
+  },
+  {
+   "fieldname": "absent_and_delays",
+   "fieldtype": "Table",
+   "label": "Absent and Delays",
+   "options": "Absent and Delay"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-04 17:28:27.512622",
+ "modified": "2024-03-14 14:26:44.610715",
  "modified_by": "Administrator",
  "module": "Attendance",
  "name": "Attendance Entry",
