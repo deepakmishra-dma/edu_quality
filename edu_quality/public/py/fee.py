@@ -79,7 +79,7 @@ def on_submit(doc, method=None):
             if "payplan" not in discount.lower():
                 add_discount(doc.name, discount)
         if fee_advance.referral_amount:
-            update_referral_discount(doc,fee_advance.referral_amount)
+            update_referral_discount(doc,fee_advance.referral_amount,True)
         if doc.payment_schedule:
             frappe.db.set_value(
                 "Payment Schedule", doc.payment_schedule[0].name, "outstanding", 0
