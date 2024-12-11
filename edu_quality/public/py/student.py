@@ -64,7 +64,7 @@ def on_update(doc, method=None):
     frappe.db.sql(
         """
         UPDATE `tabProgram Enrollment` 
-        SET student_status=%s,
+        SET custom_status=%s,
             has_allergies=%s,
             allergies=%s,
             is_handicap=%s,

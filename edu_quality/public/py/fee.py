@@ -255,11 +255,12 @@ def get_deposit(doc_payment_plan, payment_plan):
 
 
 def sync_student_data(doc, method=None):
-    student = frappe.get_value("Student", doc.student, ["has_allergies", "allergies", "is_handicap", "handicap"], as_dict=True)
+    student = frappe.get_value("Student", doc.student, ["has_allergies", "allergies", "is_handicap", "handicap", "student_status"], as_dict=True)
     doc.has_allergies = student.has_allergies
     doc.allergies = student.allergies
     doc.is_handicap = student.is_handicap
     doc.handicap = student.handicap
+    doc.custom_status = student.student_status
 
 
 def create_id_card(doc, method=None):
