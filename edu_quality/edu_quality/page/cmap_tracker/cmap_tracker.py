@@ -3,6 +3,7 @@ import json
 from edu_quality.public.py.utils import check_admin_roles, check_roles
 from frappe.query_builder import Order
 from frappe.query_builder.functions import Cast
+from edu_quality.edu_quality.server_scripts.utils import current_academic_year
 
 
 # edu_quality.edu_quality.page.cmap_tracker.cmap_tracker.get_cmap
@@ -187,6 +188,17 @@ def calculate_teacher_value(value_for_admin):
 
     frappe.msgprint("Teacher couldn't be found, Please Contact Admin", "Error")
     return frappe.redirect("/app")
+
+
+@frappe.whitelist()
+def get_teacher_details(value_for_admin):
+    teacher = calculate_teacher_value(value_for_admin)
+    if teacher:
+        school = frappe.db.get_value(
+            "Instructor", filters={"name": teacher}, fieldname="custom_school"
+        )
+        return teacher, current_academic_year(), school
+    return teacher, None, None
 
 
 def find_first_non_empty_key(objects_list, key):

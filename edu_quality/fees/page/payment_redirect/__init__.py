@@ -143,7 +143,7 @@ def get_discounts(fees):
         pass
     if fees.doctype == "Fee Advance":
         for component in fees.components:
-            if component.fees_category=="Tuition Fee":
+            if component.fees_category in ["Tuition Fee", 'Tuition Fee (KG)']:
                 referral_discount_company = component.custom_company
             if component.custom_discounts:
                 if component.custom_company == fees.company:

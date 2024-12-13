@@ -21,6 +21,7 @@ from edu_quality.api.google_drive_upload import (
     update_file_on_drive,
 )
 import datetime
+import pytz
 import fitz
 from PIL import Image
 from io import BytesIO
@@ -273,7 +274,11 @@ def upload_to_drive(**doc):
                 docname,
             )
 
-        item_doc.custom_upload_date_on_drive = datetime.datetime.now()
+        utc_now = datetime.datetime.now(pytz.UTC)
+        ist_now = utc_now.astimezone(pytz.timezone("Asia/Kolkata")).strftime(
+            "%Y-%m-%d %H:%M:%S"
+        )
+        item_doc.custom_upload_date_on_drive = ist_now
         item_doc.custom_product_url = (
             f"https://drive.google.com/file/d/{id.get('id')}" or "Something went wrong"
         )
@@ -520,8 +525,11 @@ def upload_to_drive_from_filesystem(docname, file):
                 mimetype=mimetype,
                 file_name=file_name_with_ext,
             )
-
-        item_doc.custom_upload_date_on_drive = datetime.datetime.now()
+        utc_now = datetime.datetime.now(pytz.UTC)
+        ist_now = utc_now.astimezone(pytz.timezone("Asia/Kolkata")).strftime(
+            "%Y-%m-%d %H:%M:%S"
+        )
+        item_doc.custom_upload_date_on_drive = ist_now
         item_doc.custom_import_file_synced = 1
 
         item_doc.custom_product_url = f"https://drive.google.com/file/d/{id.get('id')}"
