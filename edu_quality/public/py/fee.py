@@ -127,7 +127,7 @@ def apply_referral_for_unpaid_fee_advance(doc):
     total_discount = 0
     filters = {
         "student": doc.student,
-        "outstanding_amount": ["!=", 0],
+        "outstanding_amount": ["<", 0],
         "next_program": doc.program,
         "academic_year": doc.academic_year,
         "docstatus": 1,
