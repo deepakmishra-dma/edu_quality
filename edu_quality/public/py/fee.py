@@ -64,7 +64,7 @@ def on_submit(doc, method=None):
     total_discount = 0
     filters = {
         "student": doc.student,
-        "outstanding_amount": 0,
+        "outstanding_amount": ["<=",0],
         "next_program": doc.program,
         "academic_year": doc.academic_year,
         "docstatus": 1,
