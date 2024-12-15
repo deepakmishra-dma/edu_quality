@@ -196,6 +196,8 @@ def enroll_student(source_name, email=None, refno=None, data=None,division=None)
     if data:
         student_data = update_student(data)
         student.update(student_data)
+    if student_applicant.custom_allergies:
+        student.allergies = student_applicant.custom_allergies
     student.save()
     create_student_account(student, student_applicant)
     program_enrollment = frappe.new_doc("Program Enrollment")
