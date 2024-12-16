@@ -45,7 +45,7 @@ from edu_quality.public.py.discount import remove_discount
 
 
 def after_insert(doc, method=None):
-    apply_referral_for_unpaid_fee_advance(doc)
+    apply_referral_for_fee_advance(doc)
     payment_plan(doc)
     doc.save()
     doc.reload()
@@ -61,7 +61,7 @@ def before_submit(doc, method=None):
 
 
 def on_submit(doc, method=None):
-    total_discount = 0
+    return
     filters = {
         "student": doc.student,
         "outstanding_amount": 0,
@@ -123,18 +123,24 @@ def on_submit(doc, method=None):
 #     return 0
         
         
-def apply_referral_for_unpaid_fee_advance(doc):
-    total_discount = 0
-    filters = {
+def apply_referral_for_fee_advance(doc):
+    unpaid_filters = {
         "student": doc.student,
         "outstanding_amount": ["!=", 0],
         "next_program": doc.program,
         "academic_year": doc.academic_year,
         "docstatus": 1,
     }
-    fee_advance = frappe.get_value("Fee Advance", filters)
+    paid_filters = {
+        "student": doc.student,
+        "outstanding_amount": 0,
+        "next_program": doc.program,
+        "academic_year": doc.academic_year,
+        "docstatus": 1,
+    }
+    fee_advance = frappe.get_value("Fee Advance", unpaid_filters)
     if fee_advance:
-        fee_advance = frappe.get_doc("Fee Advance", filters)
+        fee_advance = frappe.get_doc("Fee Advance", unpaid_filters)
         doc.payment_plan = fee_advance.payment_plan
         discount_applied = get_one_time_discounts(fee_advance)
         for discount in discount_applied.keys():
@@ -143,10 +149,29 @@ def apply_referral_for_unpaid_fee_advance(doc):
 
         if fee_advance.referral_amount:
             update_referral_discount(doc,fee_advance.referral_amount)
+        fee_advance.cancel()
         doc.reload()
-        return fee_advance
-
-
+    elif frappe.db.exists("Fee Advance", paid_filters):
+        fee_advance = frappe.get_doc("Fee Advance", paid_filters)
+        doc.payment_plan = fee_advance.payment_plan
+        # cancel_liability_entries(fee_advance)
+        discount_applied = get_one_time_discounts(fee_advance)
+        for discount in discount_applied.keys():
+            if "payplan" not in discount.lower():
+                add_discount(doc.name, discount)
+        if fee_advance.referral_amount:
+            update_referral_discount(doc,fee_advance.referral_amount,True)
+        if doc.payment_schedule:
+            frappe.db.set_value(
+                "Payment Schedule", doc.payment_schedule[0].name, "outstanding", 0
+            )
+            term_first_amount =  frappe.get_value("Payment Schedule",doc.payment_schedule[0].name,"payment_amount")
+            fee_outstanding_amount = doc.outstanding_amount - term_first_amount
+            frappe.db.set_value(
+                "Fees", doc.name, "outstanding_amount", fee_outstanding_amount
+            )
+        doc.reload()
+        
 
 def verify_invoice_portion(payment_schedule):
     total_portion = sum([ps.invoice_portion for ps in payment_schedule])
