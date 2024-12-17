@@ -24,6 +24,7 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Notice Subject",
+   "length": 1000,
    "reqd": 1,
    "set_only_once": 1
   },
@@ -105,7 +106,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-13 18:25:37.449967",
+ "modified": "2024-03-15 17:02:28.632660",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "School Notice",

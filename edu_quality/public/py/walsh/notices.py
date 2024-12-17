@@ -13,7 +13,7 @@ def get_students():
 
 
 @frappe.whitelist()
-def get_all_notices(page=1, limit=0):
+def get_all_notices(page=1, limit=0, stared_only=False, archived_only=False):
     if page:
         page = int(page)
     if limit:
@@ -103,10 +103,68 @@ def get_all_notices(page=1, limit=0):
                 "student_first_name": student_dict[notice.student].first_name
             })
 
-    return {
-        "success": True,
-        "data": final_notices,
-    }
+    try:
+        notice_statuses = frappe.get_all("School Notice Status", filters=[
+            ["student", "in", student_names],
+            ["notice", "in", [notice.get("name") for notice in final_notices]],
+            ['user', '=', user]
+        ], fields=["*"])
+
+        for notice in final_notices:
+            for notice_status in notice_statuses:
+                if notice.get("name") == notice_status.notice and notice.get("student") == notice_status.student:
+                    notice["is_read"] = notice_status.is_read
+                    notice["is_archived"] = notice_status.is_archived
+                    notice["is_stared"] = notice_status.is_stared
+                    break
+    except Exception as e:
+        frappe.logger("notice").exception(e)
+
+    return [notice for notice in final_notices if (
+        notice.get('is_stared') if stared_only else
+        notice.get('is_archived') if archived_only else
+        not notice.get('is_archived')
+    )]
+
+
+def create_or_update_notice_status(notice, student, statues):
+    user = frappe.session.user
+    if frappe.db.exists("School Notice Status", {
+        "notice": notice,
+        "user": user,
+        "student": student
+    }):
+        notice_status = frappe.get_doc("School Notice Status", {
+            "notice": notice,
+            "user": user,
+            "student": student
+        })
+        notice_status.update(statues)
+        notice_status.save(ignore_permissions=True)
+        return notice_status
+    else:
+        notice_status = frappe.new_doc("School Notice Status")
+        notice_status.user = user
+        notice_status.notice = notice
+        notice_status.student = student
+        notice_status.update(statues)
+        notice_status.insert(ignore_permissions=True)
+        return notice_status
+
+
+@frappe.whitelist()
+def mark_as_stared(notice, student, stared=True):
+    return create_or_update_notice_status(notice, student, {"is_stared": 1 if stared else 0})
+
+
+@frappe.whitelist()
+def mark_as_archived(notice, student, archived=True):
+    return create_or_update_notice_status(notice, student, {"is_archived": 1 if archived else 0})
+
+
+@frappe.whitelist()
+def mark_as_read(notice, student, read=True):
+    return create_or_update_notice_status(notice, student, {"is_read": 1 if read else 0})
 
 
 @frappe.whitelist()
@@ -134,28 +192,8 @@ def get_notice_by_id(id, student=None):
         school_notice["student_first_name"] = frappe.db.get_value("Student", school_notice.student, "first_name")
 
     try:
-        if frappe.db.exists("School Notice Status", {
-            "notice": id,
-            "user": user,
-            "student": student
-        }):
-            notice_status = frappe.get_doc("School Notice Status", {
-                "notice": id,
-                "user": user,
-                "student": student
-            })
-            if not notice_status.is_read:
-                notice_status.is_read = True
-                notice_status.save()
-                frappe.db.commit()
-        else:
-            notice_status = frappe.new_doc("School Notice Status")
-            notice_status.is_read = True
-            notice_status.notice = id
-            notice_status.student = student
-            notice_status.user = user
-            notice_status.insert(ignore_permissions=True)
-            frappe.db.commit()
+        create_or_update_notice_status(id, student, {"is_read": 1})
+        frappe.db.commit()
     except:
         pass
 

@@ -1,7 +1,7 @@
 import {Box, Burger, Navbar as MantineNavbar, NavLink, Stack} from '@mantine/core';
 import React, {useEffect} from "react";
 // @ts-expect-error no types
-import {IconLogout, IconMessage, IconReload, IconStack2} from "@tabler/icons";
+import {IconArchive, IconLogout, IconMessage, IconReload, IconStack2, IconStar} from "@tabler/icons";
 import {useLogout} from "@refinedev/core";
 import {useLocation, useNavigate} from "react-router-dom";
 
@@ -80,7 +80,8 @@ const Navbar: React.FC<NavbarProps> = ({setIsOpen, isOpen}) => {
               top: 0,
               bottom: 0,
               cursor: "pointer",
-              marginLeft: 'auto'
+              marginLeft: 'auto',
+              marginRight: 10
             }}>
             <Burger opened={isOpen}/>
           </Stack>
@@ -90,6 +91,12 @@ const Navbar: React.FC<NavbarProps> = ({setIsOpen, isOpen}) => {
           sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%', borderBottom: '1px solid rgba(0,0,0,0.1)'}}
           label="Messages"
           icon={<IconMessage size={35} stroke={1.5} color='#00b8ff'/>}
+        />
+        <NavLink
+          onClick={() => changeLocation('/stared')}
+          sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%', borderBottom: '1px solid rgba(0,0,0,0.1)'}}
+          label="Stared Messages"
+          icon={<IconStar size={35} stroke={1.5} color='#00b8ff'/>}
         />
         <NavLink
           onClick={() => changeLocation('/cmap')}
@@ -109,6 +116,12 @@ const Navbar: React.FC<NavbarProps> = ({setIsOpen, isOpen}) => {
         {/*  label="Student Profile"*/}
         {/*  icon={<IconUser size={35} stroke={1.5} color='#00b8ff'/>}*/}
         {/*/>*/}
+        <NavLink
+          onClick={() => changeLocation('/archived')}
+          sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%', borderBottom: '1px solid rgba(0,0,0,0.1)'}}
+          label="Arcihved Messages"
+          icon={<IconArchive size={35} stroke={1.5} color='#00b8ff'/>}
+        />
         <NavLink
           onClick={() => window.location.reload()}
           sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%', borderBottom: '1px solid rgba(0,0,0,0.1)'}}
