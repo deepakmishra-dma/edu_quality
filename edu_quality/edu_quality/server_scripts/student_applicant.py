@@ -140,8 +140,8 @@ def update_referral_discount(doc, discount_amount,is_paid=False):
                     "outstanding_amount": doc.outstanding_amount - discount_amount,
                     "total_discount": doc.total_discount + discount_amount
                 }
-
-                frappe.db.set_value("Fees", doc.name, doc_updates)
+                if not is_paid:
+                    frappe.db.set_value("Fees", doc.name, doc_updates)
                 doc.reload()
                 doc.add_discount_entry(component.custom_company, discount_amount)
                 update_total_discount_in_fees(doc.name)
