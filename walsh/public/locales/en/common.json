@@ -140,21 +140,21 @@
     }
   },
   "documentTitle": {
-    "default": "refine",
-    "suffix": " | refine",
+    "default": "WalSh",
+    "suffix": " | WalSh",
     "notice-boardx": {
-      "list": "Blog Posts | refine",
-      "show": "#{{id}} Show Blog Post | refine",
-      "edit": "#{{id}} Edit Blog Post | refine",
-      "create": "Create new Blog Post | refine",
-      "clone": "#{{id}} Clone Blog Post | refine"
+      "list": "Blog Posts | WalSh",
+      "show": "#{{id}} Show Blog Post | WalSh",
+      "edit": "#{{id}} Edit Blog Post | WalSh",
+      "create": "Create new Blog Post | WalSh",
+      "clone": "#{{id}} Clone Blog Post | WalSh"
     },
     "categories": {
-      "list": "Categories | refine",
-      "show": "#{{id}} Show Category | refine",
-      "edit": "#{{id}} Edit Category | refine",
-      "create": "Create new Category | refine",
-      "clone": "#{{id}} Clone Category | refine"
+      "list": "Categories | WalSh",
+      "show": "#{{id}} Show Category | WalSh",
+      "edit": "#{{id}} Edit Category | WalSh",
+      "create": "Create new Category | WalSh",
+      "clone": "#{{id}} Clone Category | WalSh"
     }
   },
   "table": {

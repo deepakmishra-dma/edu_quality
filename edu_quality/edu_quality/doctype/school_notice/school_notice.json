@@ -11,6 +11,7 @@
   "class",
   "division",
   "column_break_tydn",
+  "academic_year",
   "student_status",
   "is_generic_notice",
   "section_break_goux",
@@ -23,15 +24,16 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Notice Subject",
-   "read_only": 1,
-   "reqd": 1
+   "length": 1000,
+   "reqd": 1,
+   "set_only_once": 1
   },
   {
    "fieldname": "notice",
    "fieldtype": "Text Editor",
    "label": "Notice Content",
-   "read_only": 1,
-   "reqd": 1
+   "reqd": 1,
+   "set_only_once": 1
   },
   {
    "fieldname": "student",
@@ -39,7 +41,7 @@
    "in_standard_filter": 1,
    "label": "Student",
    "options": "Student",
-   "read_only": 1
+   "set_only_once": 1
   },
   {
    "fieldname": "school",
@@ -93,11 +95,18 @@
    "in_standard_filter": 1,
    "label": "Is Generic Notice",
    "read_only": 1
+  },
+  {
+   "fieldname": "academic_year",
+   "fieldtype": "Link",
+   "label": "Academic Year",
+   "options": "Academic Year",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-28 12:54:58.322643",
+ "modified": "2024-03-15 17:02:28.632660",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "School Notice",
@@ -116,7 +125,9 @@
    "write": 1
   }
  ],
+ "show_title_field_in_link": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": []
+ "states": [],
+ "title_field": "subject"
 }

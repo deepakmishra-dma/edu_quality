@@ -205,9 +205,13 @@ def generate_challan_list(self, selected_items=None):
     else:
         purchase_receipt_items = None
     self = transform_data(self.get("items"), selected_items, purchase_receipt_items)
-    all_classes = frappe.db.get_list(
-        "Item", fields=["custom_class"], filters=[["name", "in", selected_items]]
+    item_table = frappe.qb.DocType("Item")
+    query = (
+        frappe.qb.from_(item_table)
+        .where((item_table.name.isin(selected_items or [None])))
+        .select(item_table.custom_class)
     )
+    all_classes = query.run(as_dict=True)
     classes_array = [i.get("custom_class") for i in all_classes]
     all_schools = frappe.db.get_list(
         "Program",
@@ -345,7 +349,8 @@ def calculate_print_count(self):
 
 @frappe.whitelist()
 def convertyearMonthDate(date_input):
-
+    if date_input == None:
+        return ""
     if isinstance(date_input, date):
         date_str = date_input.strftime("%Y-%m-%d")
     else:

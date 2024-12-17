@@ -164,9 +164,11 @@ def transform_data(program_enrollments, CMAPS, class_filter):
             i[school.get("fieldname")] = (
                 converted_dict.get(f'{i.get("class")}-{school.get("label")}', 0) or 0
             )
+
             i[f"extra_{school.get('fieldname')}"] = frappe.db.get_value(
                 "School", school.get("label"), "custom_extra_print_qty"
             )
+
 
         i["total_quantity"] = get_school_fields_sum(i)
 

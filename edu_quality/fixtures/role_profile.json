@@ -91,5 +91,179 @@
     "role": "Clerk"
    }
   ]
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Role Profile",
+  "modified": "2024-03-11 17:19:40.210753",
+  "name": "Teacher",
+  "role_profile": "Teacher",
+  "roles": [
+   {
+    "parent": "Teacher",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Teacher"
+   },
+   {
+    "parent": "Teacher",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Instructor"
+   },
+   {
+    "parent": "Teacher",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Employee"
+   }
+  ]
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Role Profile",
+  "modified": "2024-03-13 16:20:03.680260",
+  "name": "HoD",
+  "role_profile": "HoD",
+  "roles": [
+   {
+    "parent": "HoD",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "HoD"
+   },
+   {
+    "parent": "HoD",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Instructor"
+   },
+   {
+    "parent": "HoD",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Teacher"
+   },
+   {
+    "parent": "HoD",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Employee"
+   },
+   {
+    "parent": "HoD",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Content Creator"
+   },
+   {
+    "parent": "HoD",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Content Admin"
+   }
+  ]
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Role Profile",
+  "modified": "2024-03-13 16:20:35.958676",
+  "name": "Principal",
+  "role_profile": "Principal",
+  "roles": [
+   {
+    "parent": "Principal",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Content Admin"
+   },
+   {
+    "parent": "Principal",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Content Creator"
+   },
+   {
+    "parent": "Principal",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Employee"
+   },
+   {
+    "parent": "Principal",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Principal"
+   },
+   {
+    "parent": "Principal",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Instructor"
+   },
+   {
+    "parent": "Principal",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Teacher"
+   }
+  ]
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Role Profile",
+  "modified": "2024-03-13 16:21:14.694709",
+  "name": "Vice Principal",
+  "role_profile": "Vice Principal",
+  "roles": [
+   {
+    "parent": "Vice Principal",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Clerk"
+   },
+   {
+    "parent": "Vice Principal",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Content Admin"
+   },
+   {
+    "parent": "Vice Principal",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Content Creator"
+   },
+   {
+    "parent": "Vice Principal",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Teacher"
+   },
+   {
+    "parent": "Vice Principal",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "HoD"
+   },
+   {
+    "parent": "Vice Principal",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Instructor"
+   },
+   {
+    "parent": "Vice Principal",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Vice Principal"
+   },
+   {
+    "parent": "Vice Principal",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Employee"
+   }
+  ]
  }
 ]

@@ -16,7 +16,7 @@
    "fieldname": "type",
    "fieldtype": "Select",
    "label": "Type",
-   "options": "email\nnotice",
+   "options": "email\nnotice\nnotification",
    "read_only": 1
   },
   {
@@ -46,7 +46,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-28 22:03:23.755524",
+ "modified": "2024-03-04 17:39:44.992041",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "School Notice Error",

@@ -112,9 +112,10 @@ def create_student_application(**args):
         created_mgr_lead = upload_to_mgr(student_application)
         student_application.lms_id = created_mgr_lead.get("ID")
         # lead_application.lead_status = "Enrolled"
-        lead_application.status = "Enrolled"
-        lead_application.flags.ignore_mandatory = True
-        lead_application.save()
+        frappe.db.set_value("Lead", lead_application.name, "status", "Enrolled")
+        # lead_application.status = "Enrolled"
+        # lead_application.flags.ignore_mandatory = True
+        # lead_application.save()
         student_application.insert()
         frappe.msgprint(("Upload to MGR successful"))
         return student_application
@@ -133,305 +134,323 @@ school_id_map = {
 
 @frappe.whitelist(allow_guest=True)
 def update_stud_data(**data):
-    ref_no = data.get("Student").get("refNo", "")
-    ref_no = None if ref_no == "<REF-NO>" else ref_no
-    school_id = data.get("Student").get("school_id", None)
-    data = data.get("Student").get("StudentInfoChange")
-    isStudent = False if not ref_no or not school_id else True
-    # ref_no = data.get("refNo", None) or data.get("Student", {}).get("refNo", None)
-    # school_id = data.get("school_id", None) or data.get("Student", {}).get(
-    #     "school_id", None
-    # )
-    # applicant
-    existing_student_doc = None
+    try:
+        ref_no = data.get("Student").get("refNo", "")
+        ref_no = None if ref_no == "<REF-NO>" else ref_no
+        school_id = data.get("Student").get("school_id", None)
+        data = data.get("Student").get("StudentInfoChange")
+        isStudent = False if not ref_no or not school_id else True
+        # ref_no = data.get("refNo", None) or data.get("Student", {}).get("refNo", None)
+        # school_id = data.get("school_id", None) or data.get("Student", {}).get(
+        #     "school_id", None
+        # )
+        # applicant
+        existing_student_doc = None
 
-    if not isStudent:
-        existing_student_doc = frappe.get_list(
-            "Student Applicant",
-            {"lms_id": data.get("lms_id"), "school": data.get("school_name")},
-            ignore_permissions=True,
+        if not isStudent:
+            existing_student_doc = frappe.get_list(
+                "Student Applicant",
+                {"lms_id": data.get("lms_id"), "school": data.get("school_name")},
+                ignore_permissions=True,
+            )
+        else:
+            existing_student_doc = frappe.get_list(
+                "Student",
+                {
+                    "reference_number": ref_no,
+                    "school": school_id_map.get(str(school_id), ""),
+                },
+                ignore_permissions=True,
+            )
+
+        if not existing_student_doc or len(existing_student_doc) == 0:
+            raise Exception("Student Doesnt exist")
+        name = existing_student_doc[0].get("name")
+
+        current_user = frappe.session.user
+
+        frappe.set_user("Administrator")
+
+        # adhar_card_cert = save_file(
+        #     str(uuid.uuid4()),
+        #     data.get("adhar_card_cert"),
+        #     "Student Applicant",
+        #     name,
+        #     decode=True,
+        # )
+        try:
+            court_order = (
+                save_file(
+                    str(uuid.uuid4()),
+                    data.get("court_order_doc"),
+                    "Student" if isStudent else "Student Applicant",
+                    name,
+                    decode=True,
+                )
+                if data.get("court_order_doc", "")
+                else {}
+            )
+        except Exception:
+            court_order={}
+            frappe.log_error("Error uploading student data court order",str(frappe.get_traceback()))
+
+        try:
+            image = (
+                save_file(
+                    str(uuid.uuid4()),
+                    data.get("student_photo"),
+                    "Student" if isStudent else "Student Applicant",
+                    name,
+                    decode=True,
+                )
+                if data.get("student_photo", "")
+                else {}
+            )
+        except Exception:
+            image={}
+            frappe.log_error("Error uploading student data image",str(frappe.get_traceback()))
+        try:    
+            birth_cert = (
+                save_file(
+                    str(uuid.uuid4()),
+                    data.get("birth_cert"),
+                    "Student" if isStudent else "Student Applicant",
+                    name,
+                    decode=True,
+                )
+                if data.get("birth_cert", "")
+                else {}
+            )
+        except Exception:
+            birth_cert={}
+            frappe.log_error("Error uploading student data birth cert",str(frappe.get_traceback()))
+
+        try:
+            adhar_card_cert = (
+                save_file(
+                    str(uuid.uuid4()),
+                    data.get("adhar_card_cert"),
+                    "Student" if isStudent else "Student Applicant",
+                    name,
+                    decode=True,
+                )
+                if data.get("adhar_card_cert", "")
+                else {}
+            )
+        except Exception:
+            adhar_card_cert={}
+            frappe.log_error("Error uploading student aadhaar card cert",str(frappe.get_traceback()))
+
+        frappe.set_user(current_user)
+        if not isStudent:
+            existing_student_doc = frappe.get_doc("Student Applicant", {"name": name})
+        else:
+            existing_student_doc = frappe.get_doc("Student", {"name": name})
+        father_in_doc = next(
+            (
+                item
+                for item in existing_student_doc.get("guardians")
+                if item.get("relation") == "Father"
+            ),
+            {},
         )
-    else:
-        existing_student_doc = frappe.get_list(
-            "Student",
-            {
-                "reference_number": ref_no,
-                "school": school_id_map.get(str(school_id), ""),
-            },
-            ignore_permissions=True,
+        mother_in_doc = next(
+            (
+                item
+                for item in existing_student_doc.get("guardians")
+                if item.get("relation") == "Mother"
+            ),
+            {},
         )
-
-    if not existing_student_doc or len(existing_student_doc) == 0:
-        raise Exception("Student Doesnt exist")
-    name = existing_student_doc[0].get("name")
-
-    current_user = frappe.session.user
-
-    frappe.set_user("Administrator")
-
-    # adhar_card_cert = save_file(
-    #     str(uuid.uuid4()),
-    #     data.get("adhar_card_cert"),
-    #     "Student Applicant",
-    #     name,
-    #     decode=True,
-    # )
-    court_order = (
-        save_file(
-            str(uuid.uuid4()),
-            data.get("court_order_doc"),
-            "Student" if isStudent else "Student Applicant",
-            name,
-            decode=True,
+        other_in_doc = next(
+            (
+                item
+                for item in existing_student_doc.get("guardians")
+                if item.get("relation") == "Others"
+            ),
+            {},
         )
-        if data.get("court_order_doc", "")
-        else {}
-    )
-
-    image = (
-        save_file(
-            str(uuid.uuid4()),
-            data.get("student_photo"),
-            "Student" if isStudent else "Student Applicant",
-            name,
-            decode=True,
+        father = frappe.get_doc({"doctype": "Guardian"})
+        if father_in_doc:
+            father = frappe.get_doc("Guardian", father_in_doc.get("guardian"))
+        # father =frappe.get_doc({"doctype":'Guardian',"name":father_in_doc.get('guardian')})
+        father.first_name = (data.get("father_f_name"),)
+        father.guardian_name = data.get("father_f_name")
+        father.middle_name = data.get("father_m_name")
+        father.last_name = data.get("father_l_name")
+        father.education = data.get("father_education")
+        father.occupation = (
+            data.get("father_profession") or data.get("father_profession_other") or ""
         )
-        if data.get("student_photo", "")
-        else {}
-    )
+        father.mobile_number = data.get("father_mobile_no")
+        father.annual_income = data.get("father_annual_income")
+        father.email_address = data.get("father_email_id")
+        father.company_name = data.get("father_company_name")
+        father.designation = data.get("father_designation")
+        father.work_address = data.get("father_office_address")
+        father_in_doc = bool(father_in_doc)
 
-    birth_cert = (
-        save_file(
-            str(uuid.uuid4()),
-            data.get("birth_cert"),
-            "Student" if isStudent else "Student Applicant",
-            name,
-            decode=True,
+        if not father_in_doc:
+            father = father.insert(ignore_permissions=True)
+        else:
+            father.save(ignore_permissions=True)
+
+        # mother =frappe.get_doc({"doctype":'Guardian',"name":mother_in_doc.get('guardian')})
+        mother = frappe.get_doc({"doctype": "Guardian"})
+        if mother_in_doc:
+            mother = frappe.get_doc("Guardian", mother_in_doc.get("guardian"))
+        mother.first_name = data.get("mother_f_name")
+        mother.middle_name = data.get("mother_m_name")
+        mother.guardian_name = data.get("mother_f_name")
+        mother.last_name = data.get("mother_l_name")
+        mother.education = (data.get("mother_education"),)
+        mother.occupation = (
+            data.get("mother_profession") or data.get("mother_profession_other") or ""
         )
-        if data.get("birth_cert", "")
-        else {}
-    )
+        mother.email_address = data.get("mother_email_id")
+        mother.mobile_number = data.get("mother_mobile_no")
+        mother.annual_income = data.get("mother_annual_income")
+        mother.company_name = data.get("mother_company_name")
+        mother.designation = data.get("mother_designation")
+        mother.work_address = data.get("mother_office_address")
 
-    adhar_card_cert = (
-        save_file(
-            str(uuid.uuid4()),
-            data.get("adhar_card_cert"),
-            "Student" if isStudent else "Student Applicant",
-            name,
-            decode=True,
+        mother_in_doc = bool(mother_in_doc)
+
+        if not mother_in_doc:
+            mother = mother.insert(ignore_permissions=True)
+        else:
+            mother.save(ignore_permissions=True)
+
+        # other = frappe.get_doc({"doctype":'Guardian',"name":other_in_doc.get('guardian')})
+        other = frappe.get_doc({"doctype": "Guardian"})
+        if other_in_doc:
+            other = frappe.get_doc("Guardian", other_in_doc.get("guardian"))
+        other.first_name = data.get("guardian_f_name")
+        other.guardian_name = data.get("guardian_f_name") or "not picked"
+        other.middle_name = data.get("guardian_m_name")
+        other.last_name = data.get("guardian_l_name")
+        other.education = data.get("guardian_education")
+        other.occupation = (
+            data.get("other_profession") or data.get("other_profession_other") or ""
         )
-        if data.get("adhar_card_cert", "")
-        else {}
-    )
+        other.mobile_number = data.get("guardian_mobile_no") or ""
+        other.address_line_1 = (data.get("guardian_bld_house"),)
+        other.address_line_2 = (data.get("guardian_sub_area"),)
+        other.city = (data.get("guardian_city"),)
+        other.pincode = (data.get("guardian_pin"),)
+        other.day_care_contact = data.get("day_care_contact")
+        other_in_doc = bool(other_in_doc)
 
-    frappe.set_user(current_user)
-    if not isStudent:
-        existing_student_doc = frappe.get_doc("Student Applicant", {"name": name})
-    else:
-        existing_student_doc = frappe.get_doc("Student", {"name": name})
-    father_in_doc = next(
-        (
-            item
-            for item in existing_student_doc.get("guardians")
-            if item.get("relation") == "Father"
-        ),
-        {},
-    )
-    mother_in_doc = next(
-        (
-            item
-            for item in existing_student_doc.get("guardians")
-            if item.get("relation") == "Mother"
-        ),
-        {},
-    )
-    other_in_doc = next(
-        (
-            item
-            for item in existing_student_doc.get("guardians")
-            if item.get("relation") == "Others"
-        ),
-        {},
-    )
-    father = frappe.get_doc({"doctype": "Guardian"})
-    if father_in_doc:
-        father = frappe.get_doc("Guardian", father_in_doc.get("guardian"))
-    # father =frappe.get_doc({"doctype":'Guardian',"name":father_in_doc.get('guardian')})
-    father.first_name = (data.get("father_f_name"),)
-    father.guardian_name = data.get("father_f_name")
-    father.middle_name = data.get("father_m_name")
-    father.last_name = data.get("father_l_name")
-    father.education = data.get("father_education")
-    father.occupation = (
-        data.get("father_profession") or data.get("father_profession_other") or ""
-    )
-    father.mobile_number = data.get("father_mobile_no")
-    father.annual_income = data.get("father_annual_income")
-    father.email_address = data.get("father_email_id")
-    father.company_name = data.get("father_company_name")
-    father.designation = data.get("father_designation")
-    father.work_address = data.get("father_office_address")
-    father_in_doc = bool(father_in_doc)
+        if not other_in_doc and data.get("guardian_f_name"):
+            other = other.insert(ignore_permissions=True)
 
-    if not father_in_doc:
-        father = father.insert(ignore_permissions=True)
-    else:
-        father.save(ignore_permissions=True)
+        else:
+            other.save(ignore_permissions=True)
 
-    # mother =frappe.get_doc({"doctype":'Guardian',"name":mother_in_doc.get('guardian')})
-    mother = frappe.get_doc({"doctype": "Guardian"})
-    if mother_in_doc:
-        mother = frappe.get_doc("Guardian", mother_in_doc.get("guardian"))
-    mother.first_name = data.get("mother_f_name")
-    mother.middle_name = data.get("mother_m_name")
-    mother.guardian_name = data.get("mother_f_name")
-    mother.last_name = data.get("mother_l_name")
-    mother.education = (data.get("mother_education"),)
-    mother.occupation = (
-        data.get("mother_profession") or data.get("mother_profession_other") or ""
-    )
-    mother.email_address = data.get("mother_email_id")
-    mother.mobile_number = data.get("mother_mobile_no")
-    mother.annual_income = data.get("mother_annual_income")
-    mother.company_name = data.get("mother_company_name")
-    mother.designation = data.get("mother_designation")
-    mother.work_address = data.get("mother_office_address")
+        if not mother_in_doc:
+            existing_student_doc.append(
+                "guardians",
+                {
+                    "guardian": mother.get("name"),
+                    "guardian_name": mother.get("guardian_name"),
+                    "relation": "Mother",
+                },
+            )
 
-    mother_in_doc = bool(mother_in_doc)
+        if not father_in_doc:
+            existing_student_doc.append(
+                "guardians",
+                {
+                    "guardian": father.get("name"),
+                    "guardian_name": father.get("guardian_name"),
+                    "relation": "Father",
+                },
+            )
 
-    if not mother_in_doc:
-        mother = mother.insert(ignore_permissions=True)
-    else:
-        mother.save(ignore_permissions=True)
+        if not other_in_doc and data.get("guardian_f_name"):
+            existing_student_doc.append(
+                "guardians",
+                {
+                    "guardian": other.get("name"),
+                    "guardian_name": other.get("guardian_name"),
+                    "relation": "Others",
+                },
+            )
 
-    # other = frappe.get_doc({"doctype":'Guardian',"name":other_in_doc.get('guardian')})
-    other = frappe.get_doc({"doctype": "Guardian"})
-    if other_in_doc:
-        other = frappe.get_doc("Guardian", other_in_doc.get("guardian"))
-    other.first_name = data.get("guardian_f_name")
-    other.guardian_name = data.get("guardian_f_name") or "not picked"
-    other.middle_name = data.get("guardian_m_name")
-    other.last_name = data.get("guardian_l_name")
-    other.education = data.get("guardian_education")
-    other.occupation = (
-        data.get("other_profession") or data.get("other_profession_other") or ""
-    )
-    other.mobile_number = data.get("guardian_mobile_no") or ""
-    other.address_line_1 = (data.get("guardian_bld_house"),)
-    other.address_line_2 = (data.get("guardian_sub_area"),)
-    other.city = (data.get("guardian_city"),)
-    other.pincode = (data.get("guardian_pin"),)
-    other.day_care_contact = data.get("day_care_contact")
-    other_in_doc = bool(other_in_doc)
+        existing_student_doc.lms_status = data.get("lms_status")
 
-    if not other_in_doc and data.get("guardian_f_name"):
-        other = other.insert(ignore_permissions=True)
+        existing_student_doc.first_name = data.get("stud_f_name")
+        existing_student_doc.last_name = data.get("stud_l_name")
 
-    else:
-        other.save(ignore_permissions=True)
-
-    if not mother_in_doc:
-        existing_student_doc.append(
-            "guardians",
-            {
-                "guardian": mother.get("name"),
-                "guardian_name": mother.get("guardian_name"),
-                "relation": "Mother",
-            },
+        existing_student_doc.gender = data.get("gender")
+        existing_student_doc.date_of_birth = data.get("b_date")
+        existing_student_doc.address_line_1 = data.get("bld_house")
+        existing_student_doc.address_line_2 = data.get("sub_area")
+        existing_student_doc.landmark = data.get("landmark")
+        existing_student_doc.pincode = data.get("pin")
+        existing_student_doc.city = data.get("city")
+        existing_student_doc.state = data.get("state")
+        existing_student_doc.country = data.get("country")
+        existing_student_doc.bus_service_required = data.get("bus_service_required")
+        existing_student_doc.admission_to = data.get("admission_to")
+        existing_student_doc.academic_year = data.get("academic_year")
+        existing_student_doc.stud_rte = data.get("stud_rte")
+        existing_student_doc.is_rte = data.get("stud_rte")
+        existing_student_doc.caste = data.get("other_caste") or data.get("caste")
+        existing_student_doc.religion = data.get("other_religion") or data.get("religion")
+        existing_student_doc.subcaste = data.get("other_subcaste") or data.get("subcaste")
+        existing_student_doc.sub_caste = data.get("other_subcaste") or data.get("subcaste")
+        existing_student_doc.birth_place = data.get("b_city") or data.get("b_city")
+        existing_student_doc.student_mobile_number = data.get("student_sms_no")
+        existing_student_doc.student_is_existingstudent = int(
+            data.get("student_isexistingstudent") or 0
         )
-
-    if not father_in_doc:
-        existing_student_doc.append(
-            "guardians",
-            {
-                "guardian": father.get("name"),
-                "guardian_name": father.get("guardian_name"),
-                "relation": "Father",
-            },
+        existing_student_doc.student_existing_ref_number = data.get(
+            "student_existing_ref_number"
         )
-
-    if not other_in_doc and data.get("guardian_f_name"):
-        existing_student_doc.append(
-            "guardians",
-            {
-                "guardian": other.get("name"),
-                "guardian_name": other.get("guardian_name"),
-                "relation": "Others",
-            },
+        existing_student_doc.is_sibling_in_school = int(
+            data.get("student_bro_sis_inschool") or 0
         )
+        existing_student_doc.school = data.get("school_name")
+        existing_student_doc.blood_group = data.get("blood_group")
+        existing_student_doc.catering = data.get("catering")
+        existing_student_doc.aadhaar_card_number = data.get("adhar_card_no")
 
-    existing_student_doc.lms_status = data.get("lms_status")
-
-    existing_student_doc.first_name = data.get("stud_f_name")
-    existing_student_doc.last_name = data.get("stud_l_name")
-
-    existing_student_doc.gender = data.get("gender")
-    existing_student_doc.date_of_birth = data.get("b_date")
-    existing_student_doc.address_line_1 = data.get("bld_house")
-    existing_student_doc.address_line_2 = data.get("sub_area")
-    existing_student_doc.landmark = data.get("landmark")
-    existing_student_doc.pincode = data.get("pin")
-    existing_student_doc.city = data.get("city")
-    existing_student_doc.state = data.get("state")
-    existing_student_doc.country = data.get("country")
-    existing_student_doc.bus_service_required = data.get("bus_service_required")
-    existing_student_doc.admission_to = data.get("admission_to")
-    existing_student_doc.academic_year = data.get("academic_year")
-    existing_student_doc.stud_rte = data.get("stud_rte")
-    existing_student_doc.is_rte = data.get("stud_rte")
-    existing_student_doc.caste = data.get("other_caste") or data.get("caste")
-    existing_student_doc.religion = data.get("other_religion") or data.get("religion")
-    existing_student_doc.subcaste = data.get("other_subcaste") or data.get("subcaste")
-    existing_student_doc.sub_caste = data.get("other_subcaste") or data.get("subcaste")
-    existing_student_doc.birth_place = data.get("b_city") or data.get("b_city")
-    existing_student_doc.student_mobile_number = data.get("student_sms_no")
-    existing_student_doc.student_is_existingstudent = int(
-        data.get("student_isexistingstudent") or 0
-    )
-    existing_student_doc.student_existing_ref_number = data.get(
-        "student_existing_ref_number"
-    )
-    existing_student_doc.is_sibling_in_school = int(
-        data.get("student_bro_sis_inschool") or 0
-    )
-    existing_student_doc.school = data.get("school_name")
-    existing_student_doc.blood_group = data.get("blood_group")
-    existing_student_doc.catering = data.get("catering")
-    existing_student_doc.aadhaar_card_number = data.get("adhar_card_no")
-
-    existing_student_doc.nationality = data.get("nationality")
-    existing_student_doc.allergies = bool(
-        data.get("other_allergies") or data.get("allergies")
-    )
-    existing_student_doc.custom_allergies = data.get("other_allergies") or data.get(
-        "allergies"
-    )
-    existing_student_doc.custom_mother_tongue = data.get("mother_tongue") or data.get(
-        "other_mother_tongue"
-    )
-    existing_student_doc.mother_tongue = data.get("mother_tongue") or data.get(
-        "other_mother_tongue"
-    )
-    existing_student_doc.custom_mother_tongue = data.get("mother_tongue") or data.get(
-        "other_mother_tongue"
-    )
-    existing_student_doc.aadhaar_card_certificate = adhar_card_cert.get("file_url", "")
-    existing_student_doc.aadhar_card_cert = adhar_card_cert.get("file_url", "")
-    existing_student_doc.birth_cert = birth_cert.get("file_url", "")
-    existing_student_doc.image = image.get("file_url", "")
-    existing_student_doc.custom_court_order = court_order.get("file_url", "")
-    existing_student_doc.save(ignore_permissions=True)
-    # if(mother_in_doc):
-    #     mother.save(ignore_permissions=True)
-    # if(father_in_doc):
-    #     father.save(ignore_permissions=True)
-    # if(other_in_doc):
-    #     other.save(ignore_permissions=True)
-    frappe.logger("Student Debug").exception(data)
-    frappe.logger("Student Debug").exception(ref_no)
-    frappe.logger("Student Debug").exception(school_id)
-    return existing_student_doc
-
+        existing_student_doc.nationality = data.get("nationality")
+        existing_student_doc.allergies = bool(
+            data.get("other_allergies") or data.get("allergies")
+        )
+        existing_student_doc.custom_allergies = data.get("other_allergies") or data.get(
+            "allergies"
+        )
+        existing_student_doc.custom_mother_tongue = data.get("mother_tongue") or data.get(
+            "other_mother_tongue"
+        )
+        existing_student_doc.mother_tongue = data.get("mother_tongue") or data.get(
+            "other_mother_tongue"
+        )
+        existing_student_doc.custom_mother_tongue = data.get("mother_tongue") or data.get(
+            "other_mother_tongue"
+        )
+        existing_student_doc.aadhaar_card_certificate = adhar_card_cert.get("file_url", "")
+        existing_student_doc.aadhar_card_cert = adhar_card_cert.get("file_url", "")
+        existing_student_doc.birth_cert = birth_cert.get("file_url", "")
+        existing_student_doc.image = image.get("file_url", "")
+        existing_student_doc.custom_court_order = court_order.get("file_url", "")
+        existing_student_doc.save(ignore_permissions=True)
+        # if(mother_in_doc):
+        #     mother.save(ignore_permissions=True)
+        # if(father_in_doc):
+        #     father.save(ignore_permissions=True)
+        # if(other_in_doc):
+        #     other.save(ignore_permissions=True)
+        frappe.logger("Student Debug").exception(data)
+        frappe.logger("Student Debug").exception(ref_no)
+        frappe.logger("Student Debug").exception(school_id)
+    
+        return existing_student_doc
+    except Exception:
+        frappe.log_error("Error updating student data",[str(frappe.get_traceback()),str(data)])
 
 def default(obj):
     if isinstance(obj, (datetime.date, datetime.datetime)):
@@ -506,45 +525,10 @@ def serialize_lead_to_application(doc: dict):
         "name",
     )
     fathers_name = separate_name(doc.get("fathers_name"))
-    father = frappe.get_doc(
-        {
-            "doctype": "Guardian",
-            "guardian_name": doc.get("fathers_name"),
-            "first_name": fathers_name.get("first_name") or " ",
-            "middle_name": fathers_name.get("middle_name"),
-            "last_name": fathers_name.get("last_name"),
-            "mobile_number": doc.get("fathers_phone"),
-            "email_address": doc.get("fathers_email"),
-        }
-    ).insert(ignore_permissions=True)
-    guardians = [
-        {
-            "guardian": father.get("name"),
-            "relation": "Father",
-            "guardian_name": father.get("guardian_name"),
-        }
-    ]
 
-    if doc.get("mothers_name") and doc.get("mothers_name").strip():
-        mothers_name = separate_name(doc.get("mothers_name"))
-        mother = frappe.get_doc(
-            {
-                "doctype": "Guardian",
-                "guardian_name": doc.get("mothers_name") or " ",
-                "first_name": mothers_name.get("first_name") or " ",
-                "middle_name": mothers_name.get("middle_name"),
-                "last_name": mothers_name.get("last_name"),
-                "mobile_number": doc.get("mothers_phone") or " ",
-                "email_address": doc.get("mothers_email"),
-            }
-        ).insert(ignore_permissions=True)
-        guardians.append(
-            {
-                "guardian": mother.get("name"),
-                "relation": "Mother",
-                "guardian_name": mother.get("guardian_name"),
-            }
-        )
+    guardians = []
+    append_father_guardian(doc, guardians, fathers_name)
+    append_mother_guardian(doc, guardians)
 
     siblings = []
     if doc.get("is_sibling_already_at_walnut"):
@@ -589,6 +573,69 @@ def serialize_lead_to_application(doc: dict):
         "seeking_admission_in_class": doc.get("class"),
         "if_yes_reference_number_of_child": doc.get("if_yes_reference_number_of_child"),
     }
+
+
+def append_mother_guardian(doc, guardians):
+
+    if doc.get("mothers_name") and doc.get("mothers_name").strip():
+        existing_mother = frappe.db.get_value(
+            "Guardian",
+            filters={"mobile_number": doc.get("mothers_phone")},
+            fieldname="name",
+        )
+        mothers_name = separate_name(doc.get("mothers_name"))
+        if not existing_mother:
+            mother = frappe.get_doc(
+                {
+                    "doctype": "Guardian",
+                    "guardian_name": doc.get("mothers_name") or " ",
+                    "first_name": mothers_name.get("first_name") or " ",
+                    "middle_name": mothers_name.get("middle_name"),
+                    "last_name": mothers_name.get("last_name"),
+                    "mobile_number": doc.get("mothers_phone") or " ",
+                    "email_address": doc.get("mothers_email"),
+                }
+            ).insert(ignore_permissions=True)
+        else:
+            mother = frappe.get_doc("Guardian", existing_mother)
+        guardians.append(
+            {
+                "guardian": mother.get("name"),
+                "relation": "Mother",
+                "guardian_name": mother.get("guardian_name"),
+            }
+        )
+
+
+def append_father_guardian(doc, guardians, fathers_name):
+    existing_father = frappe.db.get_value(
+        "Guardian",
+        filters={"mobile_number": doc.get("fathers_phone")},
+        fieldname="name",
+    )
+    if not existing_father:
+        father = frappe.get_doc(
+            {
+                "doctype": "Guardian",
+                "guardian_name": doc.get("fathers_name"),
+                "first_name": fathers_name.get("first_name") or " ",
+                "middle_name": fathers_name.get("middle_name"),
+                "last_name": fathers_name.get("last_name"),
+                "mobile_number": doc.get("fathers_phone"),
+                "email_address": doc.get("fathers_email"),
+            }
+        ).insert(ignore_permissions=True)
+
+    else:
+        father = frappe.get_doc("Guardian", existing_father)
+
+    guardians.append(
+        {
+            "guardian": father.get("name"),
+            "relation": "Father",
+            "guardian_name": father.get("guardian_name"),
+        }
+    )
 
 
 # 46 Fursungi

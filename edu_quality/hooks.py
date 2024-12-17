@@ -48,6 +48,7 @@ doctype_js = {
 }
 doctype_list_js = {
     "Student Applicant": "public/js/list/student_applicant_list.js",
+    "Guardian": "public/js/list/guardian_list.js",
     "Lead": "public/js/list/lead_list.js",
     "Program Enrollment": "public/js/list/program_enrollment_list.js",
     "Student": "public/js/list/student_list.js",
@@ -88,7 +89,10 @@ doctype_list_js = {
 
 # add methods and filters to jinja environment
 jinja = {
-    "methods": ["edu_quality.overrides_hooks.purchase_order"],
+    "methods": [
+        "edu_quality.overrides_hooks.purchase_order",
+        "edu_quality.public.py.utils",
+    ],
     # "filters": "edu_quality.utils.jinja_filters"
 }
 
@@ -155,12 +159,14 @@ doc_events = {
     "Program Enrollment": {
         "on_submit": [
             "edu_quality.public.py.fee.create_fees",
+            "edu_quality.public.py.fee.update_program_enrollment",
         ],
         "after_insert": [
             "edu_quality.public.py.fee.append_program_enrollment",
             "edu_quality.public.py.fee.create_id_card",
         ],
         "on_trash": "edu_quality.public.py.fee.remove_program_enrollment",
+        "on_update_after_submit": "edu_quality.public.py.fee.update_program_enrollment",
     },
     "Contact": {
         "before_validate": "edu_quality.overrides_hooks.contact.before_validate"
@@ -207,7 +213,8 @@ doc_events = {
     #     "after_delete": "edu_quality.overrides_hooks.instructor.after_delete",
     # },
     "Purchase Receipt": {
-        "before_validate": "edu_quality.overrides_hooks.purchase_order.before_validate"
+        "before_save": "edu_quality.overrides_hooks.purchase_receipt.before_save",
+        "before_validate": "edu_quality.overrides_hooks.purchase_order.before_validate",
     },
 }
 
@@ -216,7 +223,7 @@ doc_events = {
 scheduler_events = {
     "all": [
         "edu_quality.api.student_application.get_and_schedule_pending_walkouts",
-        # "edu_quality.overrides_hooks.item.upload_all_imported_to_drive",
+        "edu_quality.overrides_hooks.item.upload_all_imported_to_drive",
     ],
     "cron": {"0 * * * *": ["edu_quality.tasks.cron"]},
     "daily": [
@@ -354,16 +361,16 @@ fixtures = [
             ]
         ],
     },
-    {
-        "dt": "Print Format",
-        "filters": [
-            [
-                "name",
-                "in",
-                ["Printer Receipt", "Printer"],
-            ]
-        ],
-    },
+    # {
+    #     "dt": "Print Format",
+    #     "filters": [
+    #         [
+    #             "name",
+    #             "in",
+    #             ["Printer Receipt", "Printer"],
+    #         ]
+    #     ],
+    # },
     {"dt": "Workspace"},
     {"dt": "Number Card"},
     # {"dt": "Funnel"},
@@ -444,7 +451,18 @@ fixtures = [
             [
                 "name",
                 "in",
-                ["Councellor", "Content Creator", "Printer", "Watchman", "Clerk"],
+                [
+                    "Councellor",
+                    "Content Creator",
+                    "Printer",
+                    "Watchman",
+                    "Clerk",
+                    "Principal",
+                    "Vice Principal",
+                    "HoD",
+                    "Teacher",
+                    "Instructor",
+                ],
             ]
         ],
     },
@@ -454,7 +472,18 @@ fixtures = [
             [
                 "name",
                 "in",
-                ["Councellor", "Content Creator", "Printer", "Watchman", "Clerk"],
+                [
+                    "Councellor",
+                    "Content Creator",
+                    "Printer",
+                    "Watchman",
+                    "Clerk",
+                    "Teacher",
+                    "Instructor",
+                    "Principal",
+                    "Vice Principal",
+                    "HoD",
+                ],
             ]
         ],
     },

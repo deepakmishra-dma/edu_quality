@@ -1,26 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8"/>
     <link href="/vite.svg" rel="icon" type="image/svg+xml"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Vite + React + TS</title>
+    <meta content="width=device-width, initial-scale=1.0, user-scalable=no" name="viewport"/>
+    <title>WalSh</title>
     <link href="https://cdn.jsdelivr.net/npm/quill@2.0.0-beta.0/dist/quill.snow.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/quill@2.0.0-beta.0/dist/quill.bubble.css" rel="stylesheet">
-  </head>
-  <body>
-    <div id="root"></div>
-    <script>
-      window.frappe = {}
-      window.frappe.csrf_token = "{{ frappe.session.csrf_token }}";
-      window.csrf_token = "{{ frappe.session.csrf_token }}";
-    </script>
-    <script src="/src/index.tsx" type="module"></script>
-  </body>
-  <style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+    window.frappe = {}
+    window.frappe.csrf_token = "{{ frappe.session.csrf_token }}";
+    window.csrf_token = "{{ frappe.session.csrf_token }}";
+</script>
+<script src="/src/index.tsx" type="module"></script>
+</body>
+<style>
     .ql-editor table {
-      width: unset;
-      min-width: 100%;
+        width: unset;
+        min-width: 100%;
     }
-  </style>
+</style>
 </html>

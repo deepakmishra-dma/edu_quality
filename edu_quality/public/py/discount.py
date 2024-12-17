@@ -271,7 +271,7 @@ def check_paid_advance(doc):
         fee_advance = frappe.get_doc("Fee Advance", filters)
         if fee_advance.outstanding_amount>0:
             set_discount_to_fee(doc,fee_advance)
-            fee_advance.cancel()
+            # fee_advance.cancel()
             return False
         return True
     return False
@@ -297,6 +297,16 @@ def payment_plan(doc, method=None):
         doc.payment_plan = pe.payment_plan
     else:
         doc.payment_plan = frappe.db.get_value("Fee Schedule",doc.fee_schedule,'payment_plan')
+    filters = {
+        "student": doc.student,
+        "next_program": doc.program,
+        "academic_year": doc.academic_year,
+        "docstatus": 1,
+    }
+    if frappe.db.exists("Fee Advance", filters):
+        fee_advance = frappe.get_doc("Fee Advance", filters)
+        doc.payment_plan = fee_advance.payment_plan
+        
     if doc.payment_plan:
         pp = frappe.get_doc("Payment Plan",doc.payment_plan)
         doc.payment_schedule = []

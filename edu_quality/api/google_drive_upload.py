@@ -43,7 +43,7 @@ def check_for_folder_in_google_drive(folder_name=None, root_folder=None):
     """Checks if folder exists in Google Drive else create it."""
     service_account_doc = frappe.get_single("Google Service Account")
     root_folder_id = root_folder or service_account_doc.get(("root_folder"))
-
+    frappe.log_error("Checking and creating folder drive",str([root_folder,root_folder_id,folder_name,service_account_doc.get(("root_folder"))]))
     if folder_name == None:
         return root_folder_id
 
@@ -299,6 +299,16 @@ def upload_file(file_url, folder_name, root_folder=None):
     return "Queued Successfully"
 
 
+def schedule_delete_file_from_drive(file_id):
+    frappe.enqueue(
+        "edu_quality.edu_quality.api.google_drive_upload.delete_file_from_drive",
+        queue="long",
+        timeout=1800,
+        file_id=file_id,
+    )
+
+
+@frappe.whitelist()
 def delete_file_from_drive(file_id):
     try:
         google_drive = get_google_drive_object()

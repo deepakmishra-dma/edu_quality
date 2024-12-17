@@ -24,6 +24,19 @@ from erpnext.accounts.party import get_party_bank_account
 
 
 class CustomPaymentRequest(PaymentRequest):
+
+    def set_as_paid(self):
+        if self.payment_channel == "Phone":
+            self.db_set("status", "Paid")
+
+        else:
+            if self.status != 'Paid':
+                payment_entry = self.create_payment_entry()
+                self.make_invoice()
+
+                return payment_entry
+
+            
     def create_payment_entry(self,submit=False):
         fees = frappe.get_doc(self.reference_doctype, self.reference_name)
         paid_amount = 0

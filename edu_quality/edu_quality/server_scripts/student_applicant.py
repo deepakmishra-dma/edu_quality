@@ -99,7 +99,7 @@ def get_outstanding_fees(student):
     return None
 
 
-def update_referral_discount(doc, discount_amount):
+def update_referral_discount(doc, discount_amount,is_paid=False):
     """
     Update the referral discount for a document.
 
@@ -146,7 +146,8 @@ def update_referral_discount(doc, discount_amount):
                 doc.add_discount_entry(component.custom_company, discount_amount)
                 update_total_discount_in_fees(doc.name)
                 update_payment_plan_after_discount(doc, discount_amount, apply_discount=True,dis={"type":"Referral"})
-                update_payment_request_after_discount(doc)
+                if not is_paid:
+                    update_payment_request_after_discount(doc)
                 doc.update_split()
                 return 
             
@@ -280,7 +281,7 @@ def referal_discount(doc, method=None):
                 "grand_total": grand_total,
                 "grand_total_in_words": grand_total_in_words,
                 "outstanding_amount": doc.outstanding_amount - discount,
-                "total_discount": doc.total_discount + discount
+                "total_discount": (doc.total_discount or 0) + discount
             }
 
             frappe.db.set_value("Fees", doc.name, doc_updates)

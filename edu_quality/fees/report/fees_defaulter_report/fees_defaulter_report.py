@@ -1,6 +1,6 @@
 import frappe
 from frappe.utils.data import getdate, nowdate
-
+from edu_quality.api.google_admin import suspend_google_user
 
 def execute(filters=None):
     columns, data = [], []
@@ -20,10 +20,17 @@ def get_columns():
             "width": 250,
         },
         {
-            "label": "Fees",
-            "fieldname": "fees",
+            "label": "Fees/Fee Advance",
+            "fieldname": "reference_doctype",
             "fieldtype": "Link",
-            "options": "Fees",
+            "options": "DocType",
+            "width": 250,
+        },
+        {
+            "label": "Fee Name",
+            "fieldname": "fees",
+            "fieldtype": "Dynamic Link",
+            "options": "reference_doctype",
             "width": 250,
         },
         {
@@ -135,6 +142,7 @@ def get_data(filters):
                 WHEN pr.reference_doctype = 'Fee Advance' THEN f2.next_program
                 ELSE NULL
             END AS program,
+            pr.reference_doctype as reference_doctype,
             COALESCE(f1.name, f2.name) AS fees,
             CONCAT_WS(" ", student.first_name, COALESCE(student.middle_name, ''), student.last_name) AS student,
             student.student_status AS student_status,
@@ -164,6 +172,7 @@ def get_data(filters):
             AND pr.status != 'Paid'
             AND COALESCE(f1.docstatus, f2.docstatus) = 1
             AND COALESCE(ps.due_date,  f2.due_date) < CURDATE()
+            AND student.student_status != 'Cancelled'
         """
     values = []
     if from_date:
@@ -190,7 +199,7 @@ def get_data(filters):
 
     sql_query += """
         GROUP BY
-            refno, program, fees, student, student_status, school, payment_plan, payment_term, amount_due, academic_year, admission_date, creation_date, due_date, email_id, mobile_number;
+            refno, program, reference_doctype, fees, student, student_status, school, payment_plan, payment_term, amount_due, academic_year, admission_date, creation_date, due_date, email_id, mobile_number;
     """
     data = frappe.db.sql(sql_query, values, as_dict=True)
     return data
@@ -235,15 +244,16 @@ def send_payment_reminder(data):
 def mark_student_as_defaulter(data):
     try:
         for row in data:
-            stud_doc = frappe.get_doc("Student",{"reference_number": row.get("refno"), "school": row.get("school")})
-            stud_doc.student_status = "Defaulter"
-            stud_doc.save()
-            # frappe.db.set_value(
-            #     "Student",
-            #     {"reference_number": row.get("refno"), "school": row.get("school")},
-            #     "student_status",
-            #     "Defaulter",
-            # )
+            stud_doc = frappe.get_doc("Student",{"reference_number": row.get("refno"), "school": row.get("school")},"student_email_id")
+            # stud_doc.student_status = "Defaulter"
+            # stud_doc.save()
+            frappe.db.set_value(
+                "Student",
+                {"reference_number": row.get("refno"), "school": row.get("school")},
+                "student_status",
+                "Defaulter",
+            )
+            suspend_google_user(stud_doc)
     except Exception as e:
         frappe.logger("mark_student_as_defaulter").exception(e)
 
