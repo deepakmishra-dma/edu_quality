@@ -1,0 +1,79 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:status",
+ "creation": "2024-03-04 17:20:30.163344",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "status",
+  "type",
+  "column_break_mddjp",
+  "code",
+  "color"
+ ],
+ "fields": [
+  {
+   "fieldname": "status",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Status",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Type",
+   "options": "Present\nAbsent\nOther",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_mddjp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "code",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Code",
+   "options": "A\nP\nL\nE",
+   "reqd": 1
+  },
+  {
+   "fieldname": "color",
+   "fieldtype": "Color",
+   "in_list_view": 1,
+   "label": "Color",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-03-04 17:20:46.785677",
+ "modified_by": "Administrator",
+ "module": "Attendance",
+ "name": "Attendance Status",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1,0 +1,103 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-03-04 17:25:46.836952",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "student_details_section",
+  "student",
+  "student_name",
+  "column_break_zcgh0",
+  "class",
+  "division",
+  "other_details_section",
+  "status",
+  "absent_and_delays"
+ ],
+ "fields": [
+  {
+   "fieldname": "student",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Student",
+   "options": "Student",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "student.student_name",
+   "fieldname": "student_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Student Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "class",
+   "fieldtype": "Link",
+   "label": "Class",
+   "options": "Program",
+   "reqd": 1
+  },
+  {
+   "fieldname": "division",
+   "fieldtype": "Link",
+   "label": "Division",
+   "options": "Student Group",
+   "reqd": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Link",
+   "label": "Status",
+   "options": "Attendance Status",
+   "reqd": 1
+  },
+  {
+   "fieldname": "student_details_section",
+   "fieldtype": "Section Break",
+   "label": "Student Details"
+  },
+  {
+   "fieldname": "column_break_zcgh0",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "other_details_section",
+   "fieldtype": "Section Break",
+   "label": "Other Details"
+  },
+  {
+   "fieldname": "absent_and_delays",
+   "fieldtype": "Table",
+   "label": "Absent and Delays",
+   "options": "Absent and Delay"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-03-14 14:26:44.610715",
+ "modified_by": "Administrator",
+ "module": "Attendance",
+ "name": "Attendance Entry",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

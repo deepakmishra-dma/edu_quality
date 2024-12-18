@@ -1,0 +1,158 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-03-04 17:14:06.010265",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "branch",
+  "timings_section",
+  "from_date",
+  "from_time",
+  "column_break_0v6aq",
+  "to_date",
+  "to_time",
+  "additional_details_section",
+  "holiday",
+  "office_open",
+  "column_break_ps9lc",
+  "all_day",
+  "show_only_for_employees",
+  "section_break_ov9si",
+  "event_type",
+  "description",
+  "column_break_yamb1",
+  "classes_applicable_to"
+ ],
+ "fields": [
+  {
+   "fieldname": "branch",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Branch",
+   "options": "School",
+   "reqd": 1
+  },
+  {
+   "fieldname": "timings_section",
+   "fieldtype": "Section Break",
+   "label": "Timings"
+  },
+  {
+   "fieldname": "from_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "From Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "from_time",
+   "fieldtype": "Time",
+   "label": "From Time"
+  },
+  {
+   "fieldname": "column_break_0v6aq",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "to_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "To Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "to_time",
+   "fieldtype": "Time",
+   "label": "To Time"
+  },
+  {
+   "fieldname": "additional_details_section",
+   "fieldtype": "Section Break",
+   "label": "Event Conditions"
+  },
+  {
+   "default": "0",
+   "fieldname": "holiday",
+   "fieldtype": "Check",
+   "label": "Holiday"
+  },
+  {
+   "default": "0",
+   "fieldname": "office_open",
+   "fieldtype": "Check",
+   "label": "Office Open"
+  },
+  {
+   "fieldname": "column_break_ps9lc",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "all_day",
+   "fieldtype": "Check",
+   "label": "All Day"
+  },
+  {
+   "default": "0",
+   "fieldname": "show_only_for_employees",
+   "fieldtype": "Check",
+   "label": "Show only for Employees"
+  },
+  {
+   "fieldname": "section_break_ov9si",
+   "fieldtype": "Section Break",
+   "label": "Event Details"
+  },
+  {
+   "fieldname": "event_type",
+   "fieldtype": "Link",
+   "label": "Event Type",
+   "options": "Event Type",
+   "reqd": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description",
+   "reqd": 1
+  },
+  {
+   "fieldname": "classes_applicable_to",
+   "fieldtype": "Table MultiSelect",
+   "label": "Classes Applicable To",
+   "options": "Classes",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_yamb1",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-03-04 17:17:25.608519",
+ "modified_by": "Administrator",
+ "module": "Attendance",
+ "name": "Calender",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
