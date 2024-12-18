@@ -1,0 +1,125 @@
+{
+ "actions": [],
+ "autoname": "format:AE-{class}-{####}",
+ "creation": "2024-03-14 14:30:58.379158",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "from_date",
+  "to_date",
+  "class",
+  "divisions",
+  "printed",
+  "received_by_teacher",
+  "qr_code",
+  "holiday_list",
+  "students",
+  "amended_from",
+  "working_days"
+ ],
+ "fields": [
+  {
+   "fieldname": "from_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "From Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "to_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "To Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "class",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Class",
+   "options": "Program",
+   "reqd": 1
+  },
+  {
+   "fieldname": "divisions",
+   "fieldtype": "Table MultiSelect",
+   "label": "Divisions",
+   "options": "Divisions",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "printed",
+   "fieldtype": "Check",
+   "label": "Printed"
+  },
+  {
+   "default": "0",
+   "fieldname": "received_by_teacher",
+   "fieldtype": "Check",
+   "label": "Received by Teacher"
+  },
+  {
+   "fieldname": "qr_code",
+   "fieldtype": "Attach",
+   "label": "QR Code"
+  },
+  {
+   "fieldname": "students",
+   "fieldtype": "Table",
+   "label": "Students",
+   "options": "Attendance Students",
+   "read_only": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Attendance Entry Print",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "holiday_list",
+   "fieldtype": "Link",
+   "label": "Holiday List",
+   "options": "Holiday List",
+   "reqd": 1
+  },
+  {
+   "fieldname": "working_days",
+   "fieldtype": "Small Text",
+   "hidden": 1,
+   "label": "Working Days"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2024-03-15 09:56:07.385862",
+ "modified_by": "Administrator",
+ "module": "Attendance",
+ "name": "Attendance Entry Print",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
