@@ -10,8 +10,8 @@ def execute():
         gl_entries = (
             frappe.qb.from_(gl_entry)
             .select("*")
-            .where(gl_entry.voucher_type == entry.account)
-            .where(gl_entry.against == entry.against)
+            .where(gl_entry.voucher_type == entry['account'])
+            .where(gl_entry.against == entry['against'])
             .where(gl_entry.is_cancelled == 0)
             .for_update()
         ).run(as_dict=1)
