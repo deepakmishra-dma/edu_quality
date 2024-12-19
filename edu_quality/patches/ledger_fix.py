@@ -15,4 +15,5 @@ def execute():
             .where(gl_entry.is_cancelled == 0)
             .for_update()
         ).run(as_dict=1)
+        frappe.logger('entry').exception(gl_entries)
         make_reverse_gl_entries(gl_entries=gl_entries)
