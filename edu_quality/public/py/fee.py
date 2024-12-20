@@ -94,25 +94,6 @@ def on_submit(doc, method=None):
             "docstatus": 1,
             "status": ["!=", "Paid"]
         }
-        if frappe.db.exists("Payment Request", payment_filter):
-            frappe.get_doc("Payment Request", payment_filter).cancel()
-            frappe.enqueue(
-                "edu_quality.public.py.student.create_payment_request",
-                fee=doc,
-                term = None,
-                is_async=True,
-                queue="long",
-                timeout=1800
-            )
-        else:
-            frappe.enqueue(
-                "edu_quality.public.py.student.create_payment_request",
-                fee=doc,
-                term = None,
-                is_async=True,
-                queue="long",
-                timeout=1800
-            )
     else:
         fee_advance = apply_referral_for_unpaid_fee_advance(doc)
         if fee_advance:
