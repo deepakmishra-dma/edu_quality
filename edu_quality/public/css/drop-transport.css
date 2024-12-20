@@ -1,0 +1,113 @@
+.drop-transport * {
+  box-sizing: border-box;
+}
+.drop-transport {
+  overflow: hidden;
+}
+
+.drop-transport table {
+  table-layout: fixed;
+}
+.drop-transport table thead {
+  position: sticky;
+  top: 0;
+}
+.drop-transport .ep-bg {
+  background-color: var(--blue-300);
+}
+.drop-transport .ld-bg {
+  background-color: var(--yellow-300);
+}
+.drop-transport .ob-bg {
+  background-color: var(--green-300);
+}
+.drop-transport .ab-bg {
+  background-color: var(--red-300);
+}
+.drop-transport td img {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 8px;
+}
+.drop-transport .legend,
+.drop-transport .legend-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+}
+.drop-transport .legend-container {
+  margin-bottom: 16px;
+}
+.drop-transport .legend > div:nth-child(1) {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
+.drop-transport #report-table-container {
+  padding-left: 15px;
+  padding-right: 15px;
+}
+.drop-transport #report-table-container > div {
+  overflow-x: auto;
+  max-height: 249px;
+  overflow-y: auto;
+  margin-bottom: 16px;
+}
+.drop-transport th,
+td {
+  padding: 4px 16px;
+  border: 1px solid var(--gray-200);
+}
+
+.drop-transport th {
+  background-color: var(--subtle-fg);
+}
+
+.drop-transport .no-content {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+}
+
+.drop-transport th.period-no-header {
+  padding: 4px 12px;
+}
+
+.drop-transport td {
+  font-size: medium;
+}
+
+.drop-transport .products-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.drop-transport .products-list a {
+  color: var(--dt-primary-color);
+}
+
+.drop-transport .qr-code-btn {
+  height: 40px;
+  max-width: 300px;
+  gap: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+@media (min-width: 600px) {
+  .drop-transport button[data-fieldname="view_button"] {
+    margin-top: 26px;
+    width: 150px;
+  }
+  .drop-transport form {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+}
