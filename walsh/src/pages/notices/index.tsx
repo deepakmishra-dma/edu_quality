@@ -67,6 +67,7 @@ export const NoticeList: React.FC<StaredNoticeListProps> = ({staredOnly, archive
             sx={{
               cursor: 'pointer',
               width: 'calc(100% - 50px)',
+              flexShrink: 0,
               ":hover": {
                 backgroundColor: 'rgba(0,0,0,0.02)'
               }
@@ -145,9 +146,9 @@ export const NoticeList: React.FC<StaredNoticeListProps> = ({staredOnly, archive
               style={{
                 marginBottom: 10
               }}
-              size={35}
+              size={30}
               fill={item.is_stared ? getStudentProfileColor(item.student, data?.data?.message || []) : 'white'}
-              color={item.is_stared ? "white" : getStudentProfileColor(item.student, data?.data?.message || [])}
+              color={getStudentProfileColor(item.student, data?.data?.message || [])}
               stroke={1}
               onClick={() => {
                 markAsStared({notice: item.name, student: item.student, stared: !item.is_stared})

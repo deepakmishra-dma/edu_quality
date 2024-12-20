@@ -93,12 +93,6 @@ const Navbar: React.FC<NavbarProps> = ({setIsOpen, isOpen}) => {
           icon={<IconMessage size={35} stroke={1.5} color='#00b8ff'/>}
         />
         <NavLink
-          onClick={() => changeLocation('/stared')}
-          sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%', borderBottom: '1px solid rgba(0,0,0,0.1)'}}
-          label="Stared Messages"
-          icon={<IconStar size={35} stroke={1.5} color='#00b8ff'/>}
-        />
-        <NavLink
           onClick={() => changeLocation('/cmap')}
           sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%', borderBottom: '1px solid rgba(0,0,0,0.1)'}}
           label="Curriculum Updates"
@@ -117,9 +111,15 @@ const Navbar: React.FC<NavbarProps> = ({setIsOpen, isOpen}) => {
         {/*  icon={<IconUser size={35} stroke={1.5} color='#00b8ff'/>}*/}
         {/*/>*/}
         <NavLink
+          onClick={() => changeLocation('/stared')}
+          sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%', borderBottom: '1px solid rgba(0,0,0,0.1)'}}
+          label="Starred Messages"
+          icon={<IconStar size={35} stroke={1.5} color='#00b8ff'/>}
+        />
+        <NavLink
           onClick={() => changeLocation('/archived')}
           sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%', borderBottom: '1px solid rgba(0,0,0,0.1)'}}
-          label="Arcihved Messages"
+          label="Archived Messages"
           icon={<IconArchive size={35} stroke={1.5} color='#00b8ff'/>}
         />
         <NavLink

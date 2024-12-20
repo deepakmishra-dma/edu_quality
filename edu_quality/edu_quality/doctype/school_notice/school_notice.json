@@ -16,6 +16,7 @@
   "is_generic_notice",
   "section_break_goux",
   "subject",
+  "is_raw_html",
   "notice"
  ],
  "fields": [
@@ -102,11 +103,18 @@
    "label": "Academic Year",
    "options": "Academic Year",
    "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_raw_html",
+   "fieldtype": "Check",
+   "label": "Is Raw Html",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-15 17:02:28.632660",
+ "modified": "2024-03-15 22:47:54.352550",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "School Notice",

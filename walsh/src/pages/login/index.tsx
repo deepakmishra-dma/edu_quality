@@ -4,6 +4,8 @@ import {Box, Button, Flex, Image, Stack, Text, TextInput,} from "@mantine/core";
 import {useEffect, useMemo, useState} from "react";
 import {OtpInput} from "../../components";
 import {useLogin} from "@refinedev/core";
+// @ts-expect-error no types
+import {IconReload} from "@tabler/icons";
 
 export const Login = () => {
   const {mutateAsync, isLoading} = useLogin();
@@ -143,13 +145,64 @@ export const Login = () => {
                  <OtpInput style={{width: "100%"}} {...getInputProps("otp")} />
                </Flex>
              )}
-            <Text color={"red"} size={"sm"} align={"center"}>{errorMessage}</Text>
-            <Text color={"green"} size={"sm"} align={"center"}>{otpMessage}</Text>
+            {errorMessage && <Text color={"red"} size={"sm"} align={"center"}>{errorMessage}</Text>}
+            {otpMessage && <Text color={"green"} size={"sm"} align={"center"}>{otpMessage}</Text>}
             <Button type="submit" sx={{
               backgroundColor: "#00b3ff",
+              marginTop: 10,
+              ":hover": {
+                backgroundColor: "#03a5ea",
+              }
             }}>
               {mode !== "otp" ? "Get OTP" : "Submit OTP"}
             </Button>
+            <Button
+              sx={{
+                border: "1px solid #03aaf1",
+                backgroundColor: "transparent",
+                marginTop: 25,
+                color: "#03aaf1",
+                ":hover": {
+                  backgroundColor: "#6dd2ff",
+                  color: "#fff",
+                },
+                ":active": {
+                  backgroundColor: "#6dd2ff",
+                  color: "#fff",
+                }
+              }}
+              onClick={e => {
+                e.preventDefault()
+                window.open('/student-application')
+              }}
+            >
+              New Student Admission ?
+            </Button>
+            <Box sx={{
+              textAlign: "center",
+            }}>
+              <Button
+                sx={{
+                  backgroundColor: "transparent",
+                  color: "#03aaf1",
+                  width: "fit-content",
+                  ":hover": {
+                    backgroundColor: "transparent",
+                  },
+                  ":active": {
+                    backgroundColor: "transparent",
+                  }
+                }}
+                onClick={() => window.location.reload()}
+              >
+                Reload
+                <IconReload
+                  size={15}
+                  style={{
+                    marginLeft: 5
+                  }}/>
+              </Button>
+            </Box>
             {mode === "otp" ? (
               <Text align='center' sx={{
                 fontSize: 14,
