@@ -14,7 +14,7 @@ def get_divisions(**filters):
         filters={"program": program, "academic_year": filters.get("academic_year")},
         fields=["student_group_name"],
     )
-    print(divisions)
+
     return [division.get("student_group_name", "") for division in divisions]
 
 
@@ -104,7 +104,7 @@ def get_cmap(**filters):
     )
     products_data = products_query.run(as_dict=True)
     data = final_query.run(as_dict=True)
-    print(data)
+
     # return data
     hash_map = construct_map(data, products_data)
     return hash_map
