@@ -44,7 +44,7 @@ def on_update(doc,method=None):
 
 def validate_name(doc):
     if doc.guardian_name == "not picked":
-        frappe.db.delete("Guardian",doc.name)
+        frappe.delete_doc("Guardian",doc.name)
         return False 
     return True
 
@@ -81,6 +81,8 @@ def create_user(doc, patch=0):
 def set_student_permissions(doc,patch=0):
     #student permissions
     students = frappe.db.get_all("Student Guardian",{'guardian':doc.name,'parenttype':"Student"},"parent")
+    if not doc.user:
+        return
     for student in students:
         if not frappe.db.exists("User Permission",{"user":doc.user,"allow":"Student","for_value":student.parent}):
             perm = frappe.new_doc("User Permission")
