@@ -240,6 +240,7 @@ def before_save(doc,method=None):
                     "custom_company": component.custom_company,
                     "rte_excempt": 0,
                     "school": component.school,
+                    'label': component.label,
                     "doctype": "Fee Component"
                     })
 

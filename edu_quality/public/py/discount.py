@@ -9,7 +9,7 @@ from edu_quality.public.py.term import get_first_unpaid_term,get_last_term
 
 def get_discount_applicable_term(dis):
     if dis.type == "Payment Plan":
-        return -1 
+        return -1
     return "All"
 
 @frappe.whitelist()
@@ -164,7 +164,7 @@ def update_total_discount_in_fees(fees):
         frappe.db.set_value("Fees",fees.name,'total_discount',get_all_discounts(fees))
     except Exception as e:
         frappe.logger('custom').exception(e)
-    
+
 
 
 def get_all_discounts(doc,method=None):
@@ -275,7 +275,7 @@ def check_paid_advance(doc):
             return False
         return True
     return False
-    
+
 def set_discount_to_fee(doc,fee_advance):
     discount_applied = get_one_time_discounts(fee_advance)
     for discount in discount_applied.keys():
@@ -306,7 +306,7 @@ def payment_plan(doc, method=None):
     if frappe.db.exists("Fee Advance", filters):
         fee_advance = frappe.get_doc("Fee Advance", filters)
         doc.payment_plan = fee_advance.payment_plan
-        
+
     if doc.payment_plan:
         pp = frappe.get_doc("Payment Plan",doc.payment_plan)
         doc.payment_schedule = []
@@ -336,7 +336,7 @@ def payment_plan(doc, method=None):
                         #student check
                         elif pe.do_not_combine_deposit_and_due_fees:
                             separate_links(doc,schedule.payment_term)
-                        #combination case                      
+                        #combination case
                         else:
                             payment_amount = payment_amount + initial_payment
                             if initial_payment>0:
@@ -372,7 +372,7 @@ def separate_links(doc,term):
 
 
 
-def only_deposit(doc):    
+def only_deposit(doc):
     frappe.logger('only').exception('called')
     make_payment_request(
         party_type="Student",
@@ -396,7 +396,7 @@ def time_based_discount(doc):
                 "type": "Time Based",
                 "enabled": 1,
             },
-        ):            
+        ):
             dis = frappe.get_doc(
                 "Discount Configuration",
                 {
@@ -409,7 +409,7 @@ def time_based_discount(doc):
             if dis.start_date <= getdate(today()) <= dis.end_date:
                 discount_amount = apply_time_based_discount(dis, component, doc)
                 doc.add_discount_entry(component.custom_company, discount_amount)
-                label = component.label or get_label(component.fees_category)
+                label = component.label if component.label else get_label(component.fees_category)
                 return {label:{component.fees_category:discount_amount}
 }
 
@@ -458,7 +458,7 @@ def update_payment_plan_after_discount(doc, total_discount=0, apply_discount=Fal
                     #     frappe.db.set_value("Payment Schedule",schedule.name,"payment_amount",amount)
                     #     frappe.db.set_value("Payment Schedule",schedule.name,"outstanding",amount)
                         # dis_breakup = frappe.db.get_value("Payment Schedule",schedule.name,"discount_breakup")
-                        # dis_breakup = json.loads(dis_breakup) if dis_breakup else None 
+                        # dis_breakup = json.loads(dis_breakup) if dis_breakup else None
                         # if dis_breakup:
                         #     if "Referral" in dis_breakup:
                         #         dis_breakup["Referral"]['discount_amount'] = dis_breakup["Referral"]['discount_amount'] + total_discount
@@ -529,7 +529,7 @@ def get_payment_plan_discount(payment_plan, doc):
 
 
 
-            
+
 
 def update_payment_schedule(doc, payment_plan=None):
     try:
@@ -543,7 +543,7 @@ def update_payment_schedule(doc, payment_plan=None):
         #         discount_amount = component.custom_discount_amount
         #         if discount_amount and "payment plan" not in discount_name:
         #             other_discount += component.custom_discount_amount
-        
+
         # discount_applied = False
         # discount_amount = 0
         # for i, schedule in enumerate(doc.payment_schedule):
@@ -625,10 +625,10 @@ def update_breakups(dis, component, fees, term="All", update=0,remove=0,custom=0
                         discount_amount = 0
                     if not update:
                         schedule.discount_breakup = discount_breakup
-                        schedule.payment_amount = schedule.payment_amount - discount_amount 
+                        schedule.payment_amount = schedule.payment_amount - discount_amount
                         schedule.outstanding = schedule.outstanding - discount_amount
                     else:
-                        data = {   
+                        data = {
                                                 'payment_amount': schedule.payment_amount - discount_amount,
                                                 'outstanding': schedule.outstanding - discount_amount,
                                                 'discount_breakup':discount_breakup
@@ -648,11 +648,11 @@ def update_breakups(dis, component, fees, term="All", update=0,remove=0,custom=0
                     discount_amount = 0-discount_amount
                 if not update:
                     schedule.discount_breakup = discount_breakup
-                    schedule.payment_amount = schedule.payment_amount - discount_amount 
+                    schedule.payment_amount = schedule.payment_amount - discount_amount
                     schedule.outstanding = schedule.outstanding - discount_amount
                 else:
                     frappe.db.set_value("Payment Schedule",schedule.name,
-                                            {   
+                                            {
                                                 'payment_amount': schedule.payment_amount - discount_amount,
                                                 'outstanding': schedule.outstanding - discount_amount,
                                                 'discount_breakup':discount_breakup
@@ -660,7 +660,7 @@ def update_breakups(dis, component, fees, term="All", update=0,remove=0,custom=0
         fees.reload()
     except Exception as e:
         frappe.logger("breakup").exception(e)
-        
+
 
 
 
@@ -685,13 +685,13 @@ def update_discount_breakup(component_amount,discount_breakup,discount,discount_
         if not remove:
             breakup[discount_name]['discount_amount'] += discount_amount
             if breakup[discount_name].get('discount_percentage'):
-                breakup[discount_name]['discount_percentage'] += discount 
+                breakup[discount_name]['discount_percentage'] += discount
             else:
                 breakup[discount_name]['discount_percentage'] = discount
         else:
             breakup[discount_name]['discount_amount'] -= discount_amount
             if breakup[discount_name].get('discount_percentage'):
-                breakup[discount_name]['discount_percentage'] -= discount 
+                breakup[discount_name]['discount_percentage'] -= discount
             else:
                 breakup[discount_name]['discount_percentage'] = discount
 
@@ -709,7 +709,7 @@ def update_discount_breakup(component_amount,discount_breakup,discount,discount_
 def update_breakup_after_pp_change(fees):
     return
     for component in fees.components:
-        breakup = json.loads(component.discount_breakup) if component.discount_breakup else None 
+        breakup = json.loads(component.discount_breakup) if component.discount_breakup else None
         if not breakup:
             continue
         for dis in breakup:
@@ -736,4 +736,3 @@ def update_breakup_after_pp_change(fees):
                     frappe.db.set_value("Payment Schedule",schedule.name,{'discount_breakup':new_breakup})
                     fees.reload()
     fees.update_split()
-
