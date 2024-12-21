@@ -4,4 +4,4 @@ edu_quality.patches.class #07-11-2023
 edu_quality.patches.school #07-11-2023
 edu_quality.patches.payment_term #08-11-2023
 edu_quality.patches.academic_year #28-11-2023
-edu_quality.patches.ledger_fix #15-03-2024 5
+edu_quality.patches.update_guardian_details #17-03-2024 1
