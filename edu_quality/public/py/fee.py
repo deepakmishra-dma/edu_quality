@@ -142,7 +142,7 @@ def apply_referral_for_unpaid_fee_advance(doc):
         doc.payment_plan = fee_advance.payment_plan
         discount_applied = get_one_time_discounts(fee_advance)
         for discount in discount_applied.keys():
-            if "payplan" not in discount.lower():
+            if "payplan" not in discount.lower(): 
                 add_discount(doc.name, discount)
 
         if fee_advance.referral_amount:
