@@ -129,16 +129,16 @@ async function getLinkedSubject(frm) {
 
 }
 function texbookQuery(frm) {
-    frm.fields_dict['products'].grid.get_field('textbook').get_query = function (doc, cdt, dn) {
-        let d = locals[cdt][dn];
-        return {
-            "filters": {
-                "subject": cur_frm.doc.subject,
-                "class": cur_frm.doc.class
-            },
+    // frm.fields_dict['products'].grid.get_field('textbook').get_query = function (doc, cdt, dn) {
+    //     let d = locals[cdt][dn];
+    //     return {
+    //         "filters": {
+    //             "subject": cur_frm.doc.subject,
+    //             "class": cur_frm.doc.class
+    //         },
 
-        };
-    }
+    //     };
+    // }
 }
 frappe.ui.form.on("CMAP", {
     refresh(frm) {

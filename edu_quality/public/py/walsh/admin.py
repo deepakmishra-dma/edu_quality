@@ -133,6 +133,7 @@ def enqueued_specific_notice_docs(__args):
     csv_file = __args.get("csv_file")
     subject = __args.get("subject")
     content = __args.get("notice")
+    raw_html = __args.get("raw_html")
 
     csv_file_path = frappe.get_site_path() + csv_file
     csv_text = open(csv_file_path, mode="r", encoding="utf-8-sig").read()
@@ -158,7 +159,8 @@ def enqueued_specific_notice_docs(__args):
                 "doctype": "School Notice",
                 "student": student.name,
                 "subject": notice_subject,
-                "notice": notice_content
+                "notice": notice_content,
+                "is_raw_html": 1 if raw_html else 0
             }).insert()
             notice.reload()
             notice_ids.append(notice.name)
@@ -332,6 +334,7 @@ def enqueued_generic_notice_docs(__args):
     divisions = __args.get("divisions")
     student_statuses = __args.get("student_statuses")
     academic_year = __args.get("academic_year")
+    raw_html = __args.get("raw_html")
     notice_ids = []
     for student_status in student_statuses:
         if len(classes) > 1 or len(divisions) == 0:
@@ -344,7 +347,8 @@ def enqueued_generic_notice_docs(__args):
                     "subject": subject,
                     "student_status": student_status,
                     "notice": content,
-                    'academic_year': academic_year
+                    'academic_year': academic_year,
+                    "is_raw_html": 1 if raw_html else 0
                 }).insert()
                 notice.reload()
                 notice_ids.append(notice.name)

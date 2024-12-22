@@ -52,6 +52,8 @@ const Pages = () => {
             <Navbar isOpen={isNavBarOpen} setIsOpen={setIsNavBarOpen}/>
             <Routes>
               <Route path="/" element={<NoticeList/>}/>
+              <Route path="/stared" element={<NoticeList staredOnly/>}/>
+              <Route path="/archived" element={<NoticeList archivedOnly/>}/>
               <Route path="/notice/:id" element={<NoticeDetails/>}/>
               <Route path="/cmap" element={<Cmap/>}/>
               <Route path="/cmap/list" element={<CmapList/>}/>

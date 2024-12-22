@@ -40,6 +40,7 @@ export const Header: React.FC<HeaderProps> = ({setNavbarOpen}) => {
           // align="center"
           p={10}
           w={50}
+          mr={10}
           sx={{
             position: "absolute",
             right: 0,
@@ -54,6 +55,8 @@ export const Header: React.FC<HeaderProps> = ({setNavbarOpen}) => {
           fontWeight: "bold",
         }}>
           {location.pathname === '/' ? "Notices" :
+           location.pathname === '/archived' ? "Archived Messages" :
+           location.pathname === '/stared' ? "Starred Messages" :
            /^\/notice\/([0-9a-f]+)$/.test(location.pathname) ? "" :
            /^\/cmap$/.test(location.pathname) ? "Curriculum Updates" :
            /^\/cmap\/list$/.test(location.pathname) ? "Curriculum Updates" :
