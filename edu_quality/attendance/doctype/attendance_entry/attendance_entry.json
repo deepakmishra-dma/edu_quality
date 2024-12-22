@@ -13,6 +13,7 @@
   "column_break_zcgh0",
   "class",
   "division",
+  "date",
   "other_details_section",
   "status",
   "absent_and_delays"
@@ -74,11 +75,17 @@
    "fieldtype": "Table",
    "label": "Absent and Delays",
    "options": "Absent and Delay"
+  },
+  {
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "label": "Date",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-14 14:26:44.610715",
+ "modified": "2024-03-17 14:15:01.330594",
  "modified_by": "Administrator",
  "module": "Attendance",
  "name": "Attendance Entry",

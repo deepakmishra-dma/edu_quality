@@ -6,7 +6,9 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "reason"
+  "reason",
+  "status",
+  "timestamp"
  ],
  "fields": [
   {
@@ -16,12 +18,24 @@
    "label": "Reason",
    "options": "Absent and Delay Reason",
    "reqd": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Data",
+   "label": "Status",
+   "reqd": 1
+  },
+  {
+   "fieldname": "timestamp",
+   "fieldtype": "Datetime",
+   "label": "Timestamp",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-03-14 14:25:52.833212",
+ "modified": "2024-03-17 14:15:37.220955",
  "modified_by": "Administrator",
  "module": "Attendance",
  "name": "Absent and Delay",
