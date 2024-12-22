@@ -358,6 +358,7 @@ def payment_plan(doc, method=None):
                 'payment_amount': payment_amount,
                 'outstanding': payment_amount,
             })
+    doc.save()
 
 def separate_links(doc,term):
     only_deposit(doc)

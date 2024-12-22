@@ -47,7 +47,6 @@ from edu_quality.public.py.discount import remove_discount
 def after_insert(doc, method=None):
     apply_referral_for_unpaid_fee_advance(doc)
     payment_plan(doc)
-    doc.save()
     doc.reload()
 
 def before_submit(doc, method=None):
@@ -144,7 +143,7 @@ def apply_referral_for_unpaid_fee_advance(doc):
 
         if fee_advance.referral_amount:
             update_referral_discount(doc,fee_advance.referral_amount)
-        # doc.reload()
+        doc.reload()
         return fee_advance
 
 
