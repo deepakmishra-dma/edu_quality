@@ -292,6 +292,7 @@ def get_one_time_discounts(doc):
     }
 
 def payment_plan(doc, method=None):
+    doc.reload()
     pe = frappe.get_doc("Program Enrollment", doc.program_enrollment)
     if pe.payment_plan is not None:
         doc.payment_plan = pe.payment_plan
