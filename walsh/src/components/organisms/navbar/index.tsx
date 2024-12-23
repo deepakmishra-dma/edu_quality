@@ -1,7 +1,6 @@
 import {Box, Burger, Navbar as MantineNavbar, NavLink, Stack} from '@mantine/core';
 import React, {useEffect} from "react";
-// @ts-expect-error no types
-import {IconArchive, IconLogout, IconMessage, IconReload, IconStack2, IconStar} from "@tabler/icons";
+import {IconArchive, IconCalendarOff, IconLogout, IconMessage, IconReload, IconStack2, IconStar} from "@tabler/icons";
 import {useLogout} from "@refinedev/core";
 import {useLocation, useNavigate} from "react-router-dom";
 
@@ -86,57 +85,31 @@ const Navbar: React.FC<NavbarProps> = ({setIsOpen, isOpen}) => {
             <Burger opened={isOpen}/>
           </Stack>
         </Stack>
-        <NavLink
-          onClick={() => changeLocation('/')}
-          sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%', borderBottom: '1px solid rgba(0,0,0,0.1)'}}
-          label="Messages"
-          icon={<IconMessage size={35} stroke={1.5} color='#00b8ff'/>}
-        />
-        <NavLink
-          onClick={() => changeLocation('/cmap')}
-          sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%', borderBottom: '1px solid rgba(0,0,0,0.1)'}}
-          label="Curriculum Updates"
-          icon={<IconStack2 size={35} stroke={1.5} color='#00b8ff'/>}
-        />
-        {/*<NavLink*/}
-        {/*  onClick={() => changeLocation('/absent-note')}*/}
-        {/*  sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%', borderBottom: '1px solid rgba(0,0,0,0.1)'}}*/}
-        {/*  label="Absent/Sick Note"*/}
-        {/*  icon={<IconMoodSad size={35} stroke={1.5} color='#00b8ff'/>}*/}
-        {/*/>*/}
-        {/*<NavLink*/}
-        {/*  onClick={() => changeLocation('/student-profile')}*/}
-        {/*  sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%', borderBottom: '1px solid rgba(0,0,0,0.1)'}}*/}
-        {/*  label="Student Profile"*/}
-        {/*  icon={<IconUser size={35} stroke={1.5} color='#00b8ff'/>}*/}
-        {/*/>*/}
-        <NavLink
-          onClick={() => changeLocation('/stared')}
-          sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%', borderBottom: '1px solid rgba(0,0,0,0.1)'}}
-          label="Starred Messages"
-          icon={<IconStar size={35} stroke={1.5} color='#00b8ff'/>}
-        />
-        <NavLink
-          onClick={() => changeLocation('/archived')}
-          sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%', borderBottom: '1px solid rgba(0,0,0,0.1)'}}
-          label="Archived Messages"
-          icon={<IconArchive size={35} stroke={1.5} color='#00b8ff'/>}
-        />
-        <NavLink
-          onClick={() => window.location.reload()}
-          sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%', borderBottom: '1px solid rgba(0,0,0,0.1)'}}
-          label="Reload"
-          icon={<IconReload size={35} stroke={1.5} color='#00b8ff'/>}
-        />
-        <NavLink
-          label="Logout"
-          icon={<IconLogout size={35} stroke={1.5} color='#00b8ff'/>}
-          onClick={() => logout()}
-          sx={{
-            position: 'sticky', borderBottom: '1px solid rgba(0,0,0,0.1)',
-            margin: 5, boxSizing: 'border-box', maxWidth: '100%', bottom: 0,
-          }}
-        />
+        {
+          [
+            {label: 'Messages', icon: IconMessage, location: '/',},
+            {label: 'Curriculum Updates', icon: IconStack2, location: '/cmap',},
+            {label: 'Leave / Sick Note', icon: IconCalendarOff, location: '/leave-note',},
+            {label: 'Starred Messages', icon: IconStar, location: '/stared',},
+            {label: 'Archived Messages', icon: IconArchive, location: '/archived',},
+            {
+              label: 'Reload', icon: IconReload, onClick: () => {
+                window.location.reload()
+              }
+            },
+            {label: 'Logout', icon: IconLogout, onClick: () => logout()}
+          ].map(n => {
+            return (
+              <NavLink
+                key={n.label}
+                onClick={() => n.location ? changeLocation(n.location) : n?.onClick?.()}
+                sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%', borderBottom: '1px solid rgba(0,0,0,0.1)'}}
+                label={n.label}
+                icon={<n.icon size={35} stroke={1.5} color='#00b8ff'/>}
+              />
+            )
+          })
+        }
       </Box>
     </MantineNavbar>
   );

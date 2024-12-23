@@ -1,10 +1,9 @@
 import {useForm} from "@refinedev/mantine";
-import {LOGIN_FORM} from "../../components/forms";
+import {LOGIN_FORM} from "../components/forms";
 import {Box, Button, Flex, Image, Stack, Text, TextInput,} from "@mantine/core";
 import {useEffect, useMemo, useState} from "react";
-import {OtpInput} from "../../components";
+import {OtpInput} from "../components";
 import {useLogin} from "@refinedev/core";
-// @ts-expect-error no types
 import {IconReload} from "@tabler/icons";
 
 export const Login = () => {

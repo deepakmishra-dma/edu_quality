@@ -4,7 +4,6 @@ import {useNavigate, useSearchParams} from "react-router-dom";
 import useStudentList from "../../components/queries/useStudentList.ts";
 import useClassDetails from "../../components/queries/useClassDetails.ts";
 import useStudentProfileColor from "../../components/hooks/useStudentProfileColor.ts";
-// @ts-expect-error no types
 import {IconBook, IconList} from "@tabler/icons";
 
 const Cmap = () => {

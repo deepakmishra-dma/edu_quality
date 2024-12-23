@@ -1,6 +1,6 @@
 import {Route, Routes, useNavigate} from "react-router-dom";
 import {Authenticated, useIsAuthenticated} from "@refinedev/core";
-import {Login} from "./login";
+import {Login} from "./login.tsx";
 import {Header} from "../components";
 import {NoticeList} from "./notices";
 import {NoticeDetails} from "./notices/details.tsx";
@@ -10,6 +10,7 @@ import Navbar from "../components/organisms/navbar";
 import React, {useEffect} from "react";
 import Cmap from "./cmap";
 import CmapList from "./cmap/list.tsx";
+import LeaveNote from "./leave-note.tsx";
 
 const Pages = () => {
   // const location = useLocation()
@@ -57,6 +58,7 @@ const Pages = () => {
               <Route path="/notice/:id" element={<NoticeDetails/>}/>
               <Route path="/cmap" element={<Cmap/>}/>
               <Route path="/cmap/list" element={<CmapList/>}/>
+              <Route path="/leave-note" element={<LeaveNote/>}/>
               <Route path="*" element={<ErrorComponent/>}/>
             </Routes>
           </Authenticated>

@@ -2,7 +2,6 @@ import {IResourceComponentsProps, useOne} from "@refinedev/core";
 import React from "react";
 import {Box, Stack, Text} from "@mantine/core";
 import {useParams, useSearchParams} from "react-router-dom";
-// @ts-expect-error no types
 import {IconCalendar} from "@tabler/icons";
 import {Notice} from "../../components/queries/useNoticeList.ts";
 // import {IconArchive, IconStar} from "@tabler/icons";

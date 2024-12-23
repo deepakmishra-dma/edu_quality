@@ -2,7 +2,6 @@ import {IResourceComponentsProps} from "@refinedev/core";
 import React, {useMemo, useState} from "react";
 import {Box, Input, Stack, Text} from "@mantine/core";
 import {useNavigate} from "react-router-dom";
-// @ts-expect-error no types
 import {IconArchive, IconCalendar, IconSearch, IconStar} from "@tabler/icons";
 import useStudentList from "../../components/queries/useStudentList.ts";
 import {getStudentProfileColor} from "../../components/hooks/useStudentProfileColor.ts";
