@@ -39,10 +39,15 @@ export const authProvider: AuthBindings = {
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
 
+    // @ts-expect-error undefined
+    const pushToken = window.getPushNotificationToken?.();
+
     const response = await fetch("/api/method/edu_quality.public.py.walsh.login.logout", {
       method: 'POST',
       headers: myHeaders,
-      body: JSON.stringify({}),
+      body: JSON.stringify({
+        push_token: pushToken || undefined
+      }),
       redirect: 'follow'
     })
     const data = await response.json()

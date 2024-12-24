@@ -1,8 +1,15 @@
 import {useState} from "react";
 import {useSearchParams} from "react-router-dom";
 import {Box, Stack, Text} from "@mantine/core";
-// @ts-expect-error no types
-import {IconCalendar, IconFile, IconFileChart, IconFileSpreadsheet, IconFileText} from "@tabler/icons";
+import {
+  IconCalendar,
+  IconChevronDown,
+  IconChevronUp,
+  IconFile,
+  IconFileChart,
+  IconFileSpreadsheet,
+  IconFileText
+} from "@tabler/icons";
 import useStudentList from "../../components/queries/useStudentList.ts";
 import useCmapList from "../../components/queries/useCmapList.ts";
 import useClassDetails from "../../components/queries/useClassDetails.ts";
@@ -128,6 +135,7 @@ const CmapList = () => {
                   display: 'inline-flex',
                   // justifyContent: 'center',
                   flexDirection: 'row',
+                  width: '100%',
                   // alignItems: 'center',
                   // borderRadius: 5,
                   whiteSpace: 'nowrap',
@@ -153,6 +161,20 @@ const CmapList = () => {
                   <span style={{paddingTop: 1}}>
                     {new Date(cmap.real_date).toLocaleDateString()?.replace(/\//g, '-') || '-'}
                   </span>
+                  {isOpen ?
+                   <IconChevronUp style={{
+                     marginLeft: 'auto',
+                     borderRadius: "50%",
+                     backgroundColor: studentProfileColor + "17",
+                     padding: "2px",
+                   }} size={17}/> :
+                   <IconChevronDown style={{
+                     marginLeft: 'auto',
+                     borderRadius: "50%",
+                     backgroundColor: studentProfileColor + "17",
+                     padding: "2px",
+                   }} size={17}/>
+                  }
                 </Stack>
                 <Text mih={20} weight="bold" size="lg" sx={{
                   whiteSpace: isOpen ? undefined : 'nowrap',
@@ -163,7 +185,7 @@ const CmapList = () => {
                 }}>
                   {cmapTitle}
                 </Text>
-                <Box h={isOpen ? undefined : '4em'} sx={{
+                <Box mah={isOpen ? undefined : '4em'} sx={{
                   overflow: 'hidden',
                   textAlign: 'justify',
                 }}>
@@ -243,8 +265,6 @@ const CmapList = () => {
                     key={i}
                     sx={{
                       backgroundColor: fileType.color + '22',
-                      // width: 10,
-                      // height: 10,
                       borderRadius: 5,
                       display: 'inline-block',
                       marginRight: 5,

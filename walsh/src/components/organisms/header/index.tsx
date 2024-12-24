@@ -1,7 +1,6 @@
 import {Box, Burger, Header as MantineHeader, Stack} from "@mantine/core";
 import React from "react";
 import {useLocation, useNavigate} from "react-router-dom";
-// @ts-expect-error no types
 import {IconArrowLeft} from "@tabler/icons";
 
 interface HeaderProps {
@@ -57,6 +56,7 @@ export const Header: React.FC<HeaderProps> = ({setNavbarOpen}) => {
           {location.pathname === '/' ? "Notices" :
            location.pathname === '/archived' ? "Archived Messages" :
            location.pathname === '/stared' ? "Starred Messages" :
+           location.pathname === '/leave-note' ? "Leave / Sick Note" :
            /^\/notice\/([0-9a-f]+)$/.test(location.pathname) ? "" :
            /^\/cmap$/.test(location.pathname) ? "Curriculum Updates" :
            /^\/cmap\/list$/.test(location.pathname) ? "Curriculum Updates" :
