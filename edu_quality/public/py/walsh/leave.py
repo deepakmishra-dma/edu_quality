@@ -28,8 +28,7 @@ def add_leave_note(note, type, student, dates):
             "timestamp": frappe.utils.get_datetime()
         })
         entry.update({
-            "absent_and_delays": absent_and_delays,
-            "status": entry.status or "absent"
+            "absent_and_delays": absent_and_delays
         })
         entry.save(ignore_permissions=True)
     return {
