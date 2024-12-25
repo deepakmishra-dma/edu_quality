@@ -53,8 +53,7 @@
    "fieldname": "status",
    "fieldtype": "Link",
    "label": "Status",
-   "options": "Attendance Status",
-   "reqd": 1
+   "options": "Attendance Status"
   },
   {
    "fieldname": "student_details_section",
@@ -85,7 +84,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-17 14:15:01.330594",
+ "modified": "2024-03-18 12:42:40.039670",
  "modified_by": "Administrator",
  "module": "Attendance",
  "name": "Attendance Entry",

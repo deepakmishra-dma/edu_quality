@@ -93,16 +93,16 @@ def save_push_notification_token(push_token, user_id=None):
 
 
 @frappe.whitelist()
-def remove_push_notification_token(token=None, remove_all=False):
+def remove_push_notification_token(push_token=None, remove_all=False):
     user_id = frappe.session.user
     if remove_all:
         frappe.db.delete("Mobile Push Token", {"user_id": user_id})
         return
-    if not token:
+    if not push_token:
         return
-    has_token = frappe.db.exists("Mobile Push Token", {"token": token, "user_id": user_id})
+    has_token = frappe.db.exists("Mobile Push Token", {"token": push_token, "user_id": user_id})
     if has_token:
-        frappe.db.delete("Mobile Push Token", {"token": token, "user_id": user_id})
+        frappe.db.delete("Mobile Push Token", {"token": push_token, "user_id": user_id})
 
 
 def is_defaulter(guardian_name, logout_if_defaulter=False):
