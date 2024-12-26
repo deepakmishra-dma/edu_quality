@@ -29,7 +29,7 @@ def get_transport_data(**filters):
         ]
     if check_admin_roles(user_roles):
         school = frappe.db.get_all("School")
-
+    schools = [i.get("name") for i in school]
     query = (
         frappe.qb.from_(student_table)
         .inner_join(enrollment_table)
@@ -42,7 +42,7 @@ def get_transport_data(**filters):
         .on(attendance_entry.status == attendance_status.name)
         .where(
             (enrollment_table.docstatus == 1)
-            & (enrollment_table.custom_school.isin(school))
+            & (enrollment_table.custom_school.isin(schools))
             & (student_table.bus_service_required == 1)
             & (student_table.drop_bus == filters.get("bus_no"))
             & (enrollment_table.academic_year == academic_year)
