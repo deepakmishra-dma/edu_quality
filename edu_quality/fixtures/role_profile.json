@@ -2,6 +2,27 @@
  {
   "docstatus": 0,
   "doctype": "Role Profile",
+  "modified": "2024-03-18 10:14:35.158567",
+  "name": "Transporter",
+  "role_profile": "Transporter",
+  "roles": [
+   {
+    "parent": "Transporter",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Transporter"
+   },
+   {
+    "parent": "Transporter",
+    "parentfield": "roles",
+    "parenttype": "Role Profile",
+    "role": "Employee"
+   }
+  ]
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Role Profile",
   "modified": "2023-10-11 10:07:01.117153",
   "name": "Councellor",
   "role_profile": "Councellor",

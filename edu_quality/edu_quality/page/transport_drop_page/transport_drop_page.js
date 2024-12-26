@@ -31,11 +31,15 @@ async function openScanner() {
 
 }
 
-function scannerResolveHandler(data) {
+async function scannerResolveHandler(data) {
 
 	const scannedRefNo = data?.payload?.data
 	const [academicYear, school, refNo] = scannedRefNo.split("/")
-	
+	await frappe.call({
+		method: 'edu_quality.edu_quality.page.transport_drop_page.transport_drop_page.update_qr',
+		args: { acad: academicYear, ref: refNo, school: school }
+	})
+
 }
 async function onLoad() {
 
@@ -64,7 +68,7 @@ async function onLoad() {
 			fieldname: "view_button",
 			fieldtype: "Button",
 			click: () => {
-				console.log('hah')
+
 				onViewClicked()
 			}
 		}
@@ -177,7 +181,7 @@ function studentCheckChange(e) {
 		const d = new frappe.confirm('Are you sure you wanna mark this child as onboarded?', async () => {
 			await frappe.call({
 				method: 'edu_quality.edu_quality.page.transport_drop_page.transport_drop_page.update',
-				args: { id: dataset.index }
+				args: { id: dataset.index, message: "Onboard marked with checkmark on drop transport page" }
 			})
 			onViewClicked()
 		}, () => { })
@@ -219,7 +223,7 @@ function createTable(data) {
 	if (data)
 
 		data.forEach((row, index) => {
-			const row_html = createRow(row.image, row.student_name, row.drop_address || '', row.attendance_id, row.drop_type, index === 0, 0, index)
+			const row_html = createRow(row.image, row.student_name, row.drop_address || '', row.student_id, row.drop_type, index === 0, 0, index)
 			tbody.innerHTML += (row_html)
 		})
 

@@ -124,7 +124,9 @@ def update(filters, cmap_data):
     cmap_data = json.loads(cmap_data) if isinstance(cmap_data, str) else cmap_data
     teacher = calculate_teacher_value(filters.get("teacher"))
     user_roles = frappe.get_roles(frappe.session.user)
-    is_admin = check_admin_roles(user_roles, ["Principal", "Vice Principal", "HoD"])
+    is_admin = check_admin_roles(
+        user_roles, ["Principal", "Vice Principal", "HoD", "Clerk"]
+    )
 
     for cmap_name in cmap_data:
         cmap = frappe.get_doc("CMAP", cmap_name)
