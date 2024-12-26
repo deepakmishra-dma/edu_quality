@@ -133,9 +133,9 @@ def update(filters, cmap_data):
         updated_data = cmap_data.get(cmap_name)
         division = filters.get("division")
         real_date = updated_data.get("real_date")
-        allow_edit = is_admin or (not item.real_date)
 
         for item in cmap.table_vwbr:
+            allow_edit = is_admin or (not item.real_date)
 
             if (
                 item.school == filters.get("school")
