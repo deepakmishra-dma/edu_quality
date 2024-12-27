@@ -2,6 +2,7 @@ let globalTableRef = null
 let filtersRef = null
 let transportData = []
 
+
 frappe.pages['transport-drop-page'].on_page_load = async function (wrapper) {
 	var page = frappe.ui.make_app_page({
 		parent: wrapper,
@@ -19,17 +20,37 @@ function getBusDetails() {
 
 }
 
-function onViewClicked() {
+async function onViewClicked() {
+	transportData = await getTransportData()
 	setupViewTable()
 }
 
+async function openScanner() {
 
+	const images = await nativeInterface.execute('openWebViewScanner', { multiple: true, infiniteScannerKey: "TRANSPORT_INFINITE_SCANNER", "scannerToastMessage": "Student Onboarding Successful", galleryTitle: "Walnut School at Shivane" })
 
+}
 
+async function scannerResolveHandler(data) {
 
+	const scannedRefNo = data?.payload?.data
+	const [academicYear, school, refNo] = scannedRefNo.split("/")
+	await frappe.call({
+		method: 'edu_quality.edu_quality.page.transport_drop_page.transport_drop_page.update_qr',
+		args: { acad: academicYear, ref: refNo, school: school }
+	})
+
+}
 async function onLoad() {
 
 	frappe.require(["/assets/edu_quality/css/drop-transport.css"])
+	// reset observer class
+	window.nativeInterface.eventKeys["TRANSPORT_INFINITE_SCANNER"] = undefined
+	// resub observer
+	window.nativeInterface.subscribeToEvent(
+		'TRANSPORT_INFINITE_SCANNER',
+		scannerResolveHandler
+	);
 
 	const el = globalPage.wrapper.find('.container.page-body');
 
@@ -47,7 +68,7 @@ async function onLoad() {
 			fieldname: "view_button",
 			fieldtype: "Button",
 			click: () => {
-				console.log('hah')
+
 				onViewClicked()
 			}
 		}
@@ -63,14 +84,15 @@ function transportDataPresent() {
 	return transportData.length !== 0
 }
 
-function updateTransport(cmapName, key, value) {
-	const cmap = cmapUpdate[cmapName]
-	if (cmap) {
-		cmap[key] = value
-	}
-	else {
-		cmapUpdate[cmapName] = { [key]: value }
-	}
+
+
+async function getTransportData() {
+	const filters = getFilters()
+	const transportData = await frappe.call({
+		method: 'edu_quality.edu_quality.page.transport_drop_page.transport_drop_page.get_transport_data',
+		args: filters
+	})
+	return transportData?.message
 }
 
 function getFilters() {
@@ -108,6 +130,7 @@ async function setupViewTable() {
 	container.appendChild(subContainer)
 	const qrButton = document.createElement('button')
 	qrButton.classList.add('qr-code-btn', "btn", "btn-primary", "btn-sm", "primary-action")
+	qrButton.addEventListener('click', openScanner)
 	qrButton.innerHTML = `<div style ="height:24px;width:24px" ><i style ="font-size:24px;height:24px;width:24px" class="fa fa-qrcode" aria-hidden="true"></i></div>Scan QR`
 	container.appendChild(qrButton)
 }
@@ -151,16 +174,28 @@ const headers = [
 	{ textContent: 'Address', colSpan: 2 },
 	{ textContent: '', colSpan: 1 },
 ];
-function studentCheckChange() {
+function studentCheckChange(e) {
+	const dataset = e.target.dataset
+
+	if (dataset.index && transportData) {
+		const d = new frappe.confirm('Are you sure you wanna mark this child as onboarded?', async () => {
+			await frappe.call({
+				method: 'edu_quality.edu_quality.page.transport_drop_page.transport_drop_page.update',
+				args: { id: dataset.index, message: "Onboard marked with checkmark on drop transport page" }
+			})
+			onViewClicked()
+		}, () => { })
+
+	}
 
 }
 
 function createTable(data) {
-	// if (!transportDataPresent()) {
-	// 	const div = document.createElement("div")
+	if (!transportDataPresent()) {
+		const div = document.createElement("div")
 
-	// 	return div
-	// }
+		return div
+	}
 
 	const table = document.createElement('table');
 	const thead = document.createElement('thead')
@@ -178,17 +213,17 @@ function createTable(data) {
 		}
 		headerRow.appendChild(headerCell);
 	});
-	data = [{ "address": "Lorem ipsum test", "student": "Aryan", "photo": "https://thumbs.dreamstime.com/b/pet-animal-cute-white-cat-turkish-ankara-141360014.jpg", drop_type: "early_pickup" },
-	{ "address": "Lorem ipsum test", "student": "Aryan", "photo": "https://thumbs.dreamstime.com/b/pet-animal-cute-white-cat-turkish-ankara-141360014.jpg", drop_type: "absent" },
-	{ "address": "Lorem ipsum test", "student": "Aryan", "photo": "https://thumbs.dreamstime.com/b/pet-animal-cute-white-cat-turkish-ankara-141360014.jpg", drop_type: "late_drop" },
-	{ "address": "Lorem ipsum test", "student": "Aryan", "photo": "https://thumbs.dreamstime.com/b/pet-animal-cute-white-cat-turkish-ankara-141360014.jpg", drop_type: "onboard" },
-	{ "address": "Lorem ipsum test", "student": "Aryan", "photo": "https://thumbs.dreamstime.com/b/pet-animal-cute-white-cat-turkish-ankara-141360014.jpg", drop_type: "onboard" },
-	{ "address": "Lorem ipsum test", "student": "Aryan", "photo": "https://thumbs.dreamstime.com/b/pet-animal-cute-white-cat-turkish-ankara-141360014.jpg", drop_type: "onboard" },
-	{ "address": "Lorem ipsum test", "student": "Aryan", "photo": "https://thumbs.dreamstime.com/b/pet-animal-cute-white-cat-turkish-ankara-141360014.jpg", drop_type: "onboard" }]
+	// data = [{ "address": "Lorem ipsum test", "student": "Aryan", "photo": "https://thumbs.dreamstime.com/b/pet-animal-cute-white-cat-turkish-ankara-141360014.jpg", drop_type: "early_pickup" },
+	// { "address": "Lorem ipsum test", "student": "Aryan", "photo": "https://thumbs.dreamstime.com/b/pet-animal-cute-white-cat-turkish-ankara-141360014.jpg", drop_type: "absent" },
+	// { "address": "Lorem ipsum test", "student": "Aryan", "photo": "https://thumbs.dreamstime.com/b/pet-animal-cute-white-cat-turkish-ankara-141360014.jpg", drop_type: "late_drop" },
+	// { "address": "Lorem ipsum test", "student": "Aryan", "photo": "https://thumbs.dreamstime.com/b/pet-animal-cute-white-cat-turkish-ankara-141360014.jpg", drop_type: "onboard" },
+	// { "address": "Lorem ipsum test", "student": "Aryan", "photo": "https://thumbs.dreamstime.com/b/pet-animal-cute-white-cat-turkish-ankara-141360014.jpg", drop_type: "onboard" },
+	// { "address": "Lorem ipsum test", "student": "Aryan", "photo": "https://thumbs.dreamstime.com/b/pet-animal-cute-white-cat-turkish-ankara-141360014.jpg", drop_type: "onboard" },
+	// { "address": "Lorem ipsum test", "student": "Aryan", "photo": "https://thumbs.dreamstime.com/b/pet-animal-cute-white-cat-turkish-ankara-141360014.jpg", drop_type: "onboard" }]
 	if (data)
 
 		data.forEach((row, index) => {
-			const row_html = createRow(row.photo, row.student, row.address, "id", row.drop_type, index === 0, 0, index)
+			const row_html = createRow(row.image, row.student_name, row.drop_address || '', row.student_id, row.drop_type, index === 0, 0, index)
 			tbody.innerHTML += (row_html)
 		})
 
@@ -210,13 +245,15 @@ function createRow(photo, student, address, student_id, drop_type) {
 	<td ><img width="3rem" height="3rem" src="${photo}"/></td>
 	<td colspan="2">${student}</td>
 	<td colspan="2"${address}</td>
-	<td data-check="true" data-index="student-id">${createCheck(student_id)}</td>
+	<td data-check="true" data-index="${student_id}">${!drop_type ? createCheck(student_id) : ''}</td>
   </tr>
 		`
 
 
 }
-
+function createButton(value, index) {
+	return `<button value=${value} data-index="${value}>Onboard</button>`
+}
 function createCheck(value, index) {
 
 	return `<input type="checkbox" value=${value} data-index="${value}"  />`
