@@ -156,7 +156,8 @@ def get_fees_details(student):
             "doctype": doc.doctype,
             "parent": doc.name,
             "paid_date": doc.paid_date,
-            "description": "Installment 1"
+            "description": "Installment 1",
+            "outstanding": doc.outstanding_amount
         }]
     return False
 
