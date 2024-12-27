@@ -4,7 +4,7 @@ from frappe.utils import getdate
 
 
 @frappe.whitelist()
-def mark_entry(student,reason,status):
+def mark_entry(student,status,reason=None):
     try:
         if frappe.db.exists("Attendance Entry",{"student":student,"date":getdate()}):
             entry = frappe.get_doc("Attendance Entry",{"student":student,"date":getdate()})

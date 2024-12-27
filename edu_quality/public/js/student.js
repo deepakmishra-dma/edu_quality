@@ -7,6 +7,59 @@ frappe.ui.form.on("Student", {
         addFeeDetails(frm);
         addParentDetails(frm);
         addReferral(frm);
+    },
+
+    late_drop: function (frm) {
+        frappe.call({
+            method: "edu_quality.edu_quality.server_scripts.student.mark_entry",
+            args: {
+                student: frm.selected_doc.name,
+                reason: frm.selected_doc.reason,
+                status: "Late Drop"
+            },
+            callback: function (r) {
+                if (r.message) {
+                    frappe.show_alert({
+                        message: __("Marked Entry!"),
+                        indicator: 'green'
+                    });
+                }
+                else{
+                    frappe.show_alert({
+                        message: __("Something went wrong!"),
+                        indicator: 'red'
+                    });
+
+                }
+                d.hide();
+            }
+        });
+    },
+    early_pickup: function (frm) {
+        frappe.call({
+            method: "edu_quality.edu_quality.server_scripts.student.mark_entry",
+            args: {
+                student: frm.selected_doc.name,
+                reason: frm.selected_doc.reason,
+                status: "Early Pickup"
+            },
+            callback: function (r) {
+                if (r.message) {
+                    frappe.show_alert({
+                        message: __("Marked Entry!"),
+                        indicator: 'green'
+                    });
+                }
+                else{
+                    frappe.show_alert({
+                        message: __("Something went wrong!"),
+                        indicator: 'red'
+                    });
+
+                }
+                d.hide();
+            }
+        });
     }
 });
 
