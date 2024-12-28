@@ -87,7 +87,7 @@ def calculate_status(transport_data):
 # edu_quality.edu_quality.page.transport_drop_page.transport_drop_page.update
 @frappe.whitelist()
 def update(id, message):
-    mark_entry(id, message, "onboard")
+    mark_entry(id, "onboard", message)
 
 
 # edu_quality.edu_quality.page.transport_drop_page.transport_drop_page.update_qr
@@ -96,5 +96,5 @@ def update_qr(acad, ref, school):
     prefix = frappe.db.get_value("School", filters={"name": school}, fieldname="prefix")
     student = prefix + ref
     mark_entry(
-        student, "Onboard marked with qrcode scan on drop transport page", "onboard"
+        student, "onboard", "Onboard marked with qrcode scan on drop transport page"
     )
