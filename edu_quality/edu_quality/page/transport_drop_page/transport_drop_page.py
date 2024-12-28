@@ -46,7 +46,7 @@ def get_transport_data(**filters):
             & (student_table.bus_service_required == 1)
             & (student_table.drop_bus == filters.get("bus_no"))
             & (enrollment_table.academic_year == academic_year)
-            & (attendance_entry.date == today)
+            & ((attendance_entry.date == today) | (attendance_entry.date == None))
         )
         .select(
             student_table.name.as_("student_id"),
@@ -88,6 +88,7 @@ def calculate_status(transport_data):
 @frappe.whitelist()
 def update(id, message):
     mark_entry(id, message, "onboard")
+
 
 # edu_quality.edu_quality.page.transport_drop_page.transport_drop_page.update_qr
 @frappe.whitelist()
