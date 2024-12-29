@@ -90,9 +90,9 @@ def calculate_status(transport_data, absentees_hash):
         student_id = student.get("student_id")
         drop_status = absentees_hash.get(student_id, student).get("drop_status")
 
-        if drop_status == "early_pickup":
+        if drop_status == "early_pickup" or drop_status == "Early Pickup":
             student["drop_type"] = "early_pickup"
-        elif drop_status == "late_drop":
+        elif drop_status == "late_drop" or drop_status == "Late Drop":
             student["drop_type"] = "late_drop"
         elif drop_status == "onboard":
             student["drop_type"] = "onboard"
