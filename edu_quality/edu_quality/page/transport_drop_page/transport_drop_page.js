@@ -26,9 +26,18 @@ async function onViewClicked() {
 }
 
 async function openScanner() {
+	const currentSchools = await frappe.call({
+		method: 'edu_quality.edu_quality.page.transport_drop_page.transport_drop_page.get_current_school',
 
-	const images = await nativeInterface.execute('openWebViewScanner', { multiple: true, infiniteScannerKey: "TRANSPORT_INFINITE_SCANNER", "scannerToastMessage": "Student Onboarding Successful", galleryTitle: "Walnut School at Shivane" })
-
+	})
+	const galleryTitle = currentSchools?.message?.join(",") || ""
+	const images = await nativeInterface.execute('openWebViewScanner', { galleryTitle: galleryTitle })
+	const scannedRefNo = images?.data
+	const [academicYear, school, refNo] = scannedRefNo.split("/")
+	await frappe.call({
+		method: 'edu_quality.edu_quality.page.transport_drop_page.transport_drop_page.update_qr',
+		args: { acad: academicYear, ref: refNo, school: school }
+	})
 }
 
 async function scannerResolveHandler(data) {
@@ -45,12 +54,12 @@ async function onLoad() {
 
 	frappe.require(["/assets/edu_quality/css/drop-transport.css"])
 	// reset observer class
-	window.nativeInterface.eventKeys["TRANSPORT_INFINITE_SCANNER"] = undefined
-	// resub observer
-	window.nativeInterface.subscribeToEvent(
-		'TRANSPORT_INFINITE_SCANNER',
-		scannerResolveHandler
-	);
+	// window.nativeInterface.eventKeys["TRANSPORT_INFINITE_SCANNER"] = undefined
+	// // resub observer
+	// window.nativeInterface.subscribeToEvent(
+	// 	'TRANSPORT_INFINITE_SCANNER',
+	// 	scannerResolveHandler
+	// );
 
 	const el = globalPage.wrapper.find('.container.page-body');
 
