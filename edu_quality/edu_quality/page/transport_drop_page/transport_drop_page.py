@@ -113,10 +113,14 @@ def update(id, message):
 
 
 # edu_quality.edu_quality.page.transport_drop_page.transport_drop_page.update_qr
-@frappe.whitelist()
-def update_qr(acad, ref, school):
+@frappe.whitelist(allow_guest=True)
+def update_qr(acad=None, ref=None, school=None):
     prefix = frappe.db.get_value("School", filters={"name": school}, fieldname="prefix")
-    student = prefix + ref
+
+    student = f"{prefix}{ref}"
+    if not school and not acad:
+        student = ref
+
     mark_entry(
         student, "onboard", "Onboard marked with qrcode scan on drop transport page"
     )

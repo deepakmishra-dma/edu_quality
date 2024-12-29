@@ -38,18 +38,30 @@ async function openScanner() {
 		method: 'edu_quality.edu_quality.page.transport_drop_page.transport_drop_page.update_qr',
 		args: { acad: academicYear, ref: refNo, school: school }
 	})
+	onViewClicked()
 }
 
 async function scannerResolveHandler(data) {
 
 	const scannedRefNo = data?.payload?.data
-	const [academicYear, school, refNo] = scannedRefNo.split("/")
-	await frappe.call({
-		method: 'edu_quality.edu_quality.page.transport_drop_page.transport_drop_page.update_qr',
-		args: { acad: academicYear, ref: refNo, school: school }
-	})
-
+	const splitData = scannedRefNo.split("/")
+	if (splitData.length > 1) {
+		const [academicYear, refNo, school] = splitData
+		await frappe.call({
+			method: 'edu_quality.edu_quality.page.transport_drop_page.transport_drop_page.update_qr',
+			args: { acad: academicYear, ref: refNo, school: school }
+		})
+		onViewClicked()
+	}
+	else {
+		await frappe.call({
+			method: 'edu_quality.edu_quality.page.transport_drop_page.transport_drop_page.update_qr',
+			args: { ref: splitData[0] }
+		})
+		onViewClicked()
+	}
 }
+
 async function onLoad() {
 
 	frappe.require(["/assets/edu_quality/css/drop-transport.css"])
@@ -101,7 +113,20 @@ async function getTransportData() {
 		method: 'edu_quality.edu_quality.page.transport_drop_page.transport_drop_page.get_transport_data',
 		args: filters
 	})
-	return transportData?.message
+	const data = transportData?.message || []
+	data.sort((a, b) => {
+		const nameA = a.student_name.toUpperCase(); // Convert names to uppercase for case-insensitive comparison
+		const nameB = b.student_name.toUpperCase();
+
+		if (nameA < nameB) {
+			return -1;
+		}
+		if (nameA > nameB) {
+			return 1;
+		}
+		return 0;
+	})
+	return data
 }
 
 function getFilters() {
