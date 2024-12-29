@@ -298,6 +298,11 @@ const LeaveNote = () => {
                   const dates = [];
                   const from = new Date(fromDate);
                   const to = new Date(toDate);
+                  const delay = new Date().getTimezoneOffset();
+                  // to get local formatted string from iso string
+                  from.setMinutes(from.getMinutes() - delay);
+                  to.setMinutes(to.getMinutes() - delay);
+                  console.log()
                   for (let i = from; i <= to; i.setDate(i.getDate() + 1)) {
                     dates.push(i.toISOString().split("T")[0]);
                   }
@@ -305,7 +310,7 @@ const LeaveNote = () => {
                     student: selectedStudent,
                     dates: dates,
                     note: note,
-                    type: sickLeave
+                    status: sickLeave
                   }).then(() => {
                     clearForm();
                     setSuccess(true)
