@@ -26,31 +26,52 @@ async function onViewClicked() {
 }
 
 async function openScanner() {
+	const currentSchools = await frappe.call({
+		method: 'edu_quality.edu_quality.page.transport_drop_page.transport_drop_page.get_current_school',
 
-	const images = await nativeInterface.execute('openWebViewScanner', { multiple: true, infiniteScannerKey: "TRANSPORT_INFINITE_SCANNER", "scannerToastMessage": "Student Onboarding Successful", galleryTitle: "Walnut School at Shivane" })
-
-}
-
-async function scannerResolveHandler(data) {
-
-	const scannedRefNo = data?.payload?.data
+	})
+	const galleryTitle = currentSchools?.message?.join(",") || ""
+	const images = await nativeInterface.execute('openWebViewScanner', { galleryTitle: galleryTitle })
+	const scannedRefNo = images?.data
 	const [academicYear, school, refNo] = scannedRefNo.split("/")
 	await frappe.call({
 		method: 'edu_quality.edu_quality.page.transport_drop_page.transport_drop_page.update_qr',
 		args: { acad: academicYear, ref: refNo, school: school }
 	})
-
+	onViewClicked()
 }
+
+async function scannerResolveHandler(data) {
+
+	const scannedRefNo = data?.payload?.data
+	const splitData = scannedRefNo.split("/")
+	if (splitData.length > 1) {
+		const [academicYear, refNo, school] = splitData
+		await frappe.call({
+			method: 'edu_quality.edu_quality.page.transport_drop_page.transport_drop_page.update_qr',
+			args: { acad: academicYear, ref: refNo, school: school }
+		})
+		onViewClicked()
+	}
+	else {
+		await frappe.call({
+			method: 'edu_quality.edu_quality.page.transport_drop_page.transport_drop_page.update_qr',
+			args: { ref: splitData[0] }
+		})
+		onViewClicked()
+	}
+}
+
 async function onLoad() {
 
 	frappe.require(["/assets/edu_quality/css/drop-transport.css"])
 	// reset observer class
-	window.nativeInterface.eventKeys["TRANSPORT_INFINITE_SCANNER"] = undefined
-	// resub observer
-	window.nativeInterface.subscribeToEvent(
-		'TRANSPORT_INFINITE_SCANNER',
-		scannerResolveHandler
-	);
+	// window.nativeInterface.eventKeys["TRANSPORT_INFINITE_SCANNER"] = undefined
+	// // resub observer
+	// window.nativeInterface.subscribeToEvent(
+	// 	'TRANSPORT_INFINITE_SCANNER',
+	// 	scannerResolveHandler
+	// );
 
 	const el = globalPage.wrapper.find('.container.page-body');
 
@@ -92,7 +113,20 @@ async function getTransportData() {
 		method: 'edu_quality.edu_quality.page.transport_drop_page.transport_drop_page.get_transport_data',
 		args: filters
 	})
-	return transportData?.message
+	const data = transportData?.message || []
+	data.sort((a, b) => {
+		const nameA = a.student_name.toUpperCase(); // Convert names to uppercase for case-insensitive comparison
+		const nameB = b.student_name.toUpperCase();
+
+		if (nameA < nameB) {
+			return -1;
+		}
+		if (nameA > nameB) {
+			return 1;
+		}
+		return 0;
+	})
+	return data
 }
 
 function getFilters() {

@@ -3,7 +3,7 @@ import {useCallback} from "react";
 
 interface LeaveNoteVariables {
   note: string,
-  type: 'sick' | 'leave',
+  status: 'sick' | 'leave',
   student: string,
   dates: string[]
 }

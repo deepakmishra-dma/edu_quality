@@ -437,6 +437,7 @@ fixtures = [
                     "Tools",
                     "Integrations",
                     "Clerk",
+                    "Transporter"
                 ],
             ]
         ],
