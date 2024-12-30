@@ -204,8 +204,12 @@ class CustomFees(Fees):
                                 ))
             entries = []
             for i in student_entries.values():
+                if int(i.get("debit")) == 0 and int(i.get("credit")) == 0:
+                    continue
                 entries.append(i)
             for j in fee_entries.values():
+                if int(i.get("debit")) == 0 and int(i.get("credit")) == 0:
+                    continue
                 entries.append(j)
             entries.extend(fee_advance_entries if fee_advance_entries else [])
             return entries
@@ -236,6 +240,7 @@ def before_save(doc,method=None):
                     "custom_company": component.custom_company,
                     "rte_excempt": 0,
                     "school": component.school,
+                    'label': component.label,
                     "doctype": "Fee Component"
                     })
 

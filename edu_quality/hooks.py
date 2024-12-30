@@ -439,6 +439,7 @@ fixtures = [
                     "Tools",
                     "Integrations",
                     "Clerk",
+                    "Transporter"
                 ],
             ]
         ],
@@ -464,6 +465,7 @@ fixtures = [
                     "HoD",
                     "Teacher",
                     "Instructor",
+                    "Transporter",
                 ],
             ]
         ],
@@ -485,6 +487,7 @@ fixtures = [
                     "Principal",
                     "Vice Principal",
                     "HoD",
+                    "Transporter",
                 ],
             ]
         ],

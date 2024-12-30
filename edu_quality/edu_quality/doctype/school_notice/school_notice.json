@@ -16,6 +16,7 @@
   "is_generic_notice",
   "section_break_goux",
   "subject",
+  "is_raw_html",
   "notice"
  ],
  "fields": [
@@ -24,6 +25,7 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Notice Subject",
+   "length": 1000,
    "reqd": 1,
    "set_only_once": 1
   },
@@ -101,11 +103,18 @@
    "label": "Academic Year",
    "options": "Academic Year",
    "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_raw_html",
+   "fieldtype": "Check",
+   "label": "Is Raw Html",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-11 12:40:47.271796",
+ "modified": "2024-03-15 22:47:54.352550",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "School Notice",
@@ -124,7 +133,9 @@
    "write": 1
   }
  ],
+ "show_title_field_in_link": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": []
+ "states": [],
+ "title_field": "subject"
 }

@@ -45,9 +45,8 @@ from edu_quality.public.py.discount import remove_discount
 
 
 def after_insert(doc, method=None):
-    apply_referral_for_unpaid_fee_advance(doc)
     payment_plan(doc)
-    doc.save()
+    apply_referral_for_unpaid_fee_advance(doc)
     doc.reload()
 
 def before_submit(doc, method=None):
@@ -64,7 +63,7 @@ def on_submit(doc, method=None):
     total_discount = 0
     filters = {
         "student": doc.student,
-        "outstanding_amount": 0,
+        "outstanding_amount": ["<=",0],
         "next_program": doc.program,
         "academic_year": doc.academic_year,
         "docstatus": 1,
@@ -127,7 +126,7 @@ def apply_referral_for_unpaid_fee_advance(doc):
     total_discount = 0
     filters = {
         "student": doc.student,
-        "outstanding_amount": ["!=", 0],
+        "outstanding_amount": [">", 0],
         "next_program": doc.program,
         "academic_year": doc.academic_year,
         "docstatus": 1,
@@ -135,6 +134,7 @@ def apply_referral_for_unpaid_fee_advance(doc):
     fee_advance = frappe.get_value("Fee Advance", filters)
     if fee_advance:
         fee_advance = frappe.get_doc("Fee Advance", filters)
+        fee_advance.reload()
         doc.payment_plan = fee_advance.payment_plan
         discount_applied = get_one_time_discounts(fee_advance)
         for discount in discount_applied.keys():
@@ -143,6 +143,7 @@ def apply_referral_for_unpaid_fee_advance(doc):
 
         if fee_advance.referral_amount:
             update_referral_discount(doc,fee_advance.referral_amount)
+        doc.save()
         doc.reload()
         return fee_advance
 

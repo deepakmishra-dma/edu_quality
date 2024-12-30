@@ -1,34 +1,36 @@
-import {IResourceComponentsProps, useList} from "@refinedev/core";
+import {IResourceComponentsProps} from "@refinedev/core";
 import React, {useMemo, useState} from "react";
-import {Notice} from "../../providers/data/notices.ts";
 import {Box, Input, Stack, Text} from "@mantine/core";
 import {useNavigate} from "react-router-dom";
-// @ts-expect-error no types
-import {IconCalendar, IconSearch} from "@tabler/icons";
-import {getStudentProfileColor} from "../../components/hooks/useStudentProfileColor.ts";
+import {IconArchive, IconCalendar, IconSearch, IconStar} from "@tabler/icons";
 import useStudentList from "../../components/queries/useStudentList.ts";
+import {getStudentProfileColor} from "../../components/hooks/useStudentProfileColor.ts";
+import useMarkAsStared from "../../components/queries/useMarkStarMutation.ts";
+import useMarkAsArchived from "../../components/queries/useMarkArchivedMutation.ts";
+import useNoticeList from "../../components/queries/useNoticeList.ts";
 
-export const NoticeList: React.FC<IResourceComponentsProps> = () => {
+interface StaredNoticeListProps extends IResourceComponentsProps {
+  staredOnly?: boolean
+  archivedOnly?: boolean
+}
+
+export const NoticeList: React.FC<StaredNoticeListProps> = ({staredOnly, archivedOnly}) => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const {data} = useStudentList()
-  const {data: list, isLoading} = useList<Notice>({
-    queryOptions: {
-      queryKey: ["list", "notices"],
-    },
-    pagination: {
-      current: 1,
-      pageSize: 10000,
-      mode: 'server',
-    },
+  const {mutateAsync: markAsStared} = useMarkAsStared()
+  const {mutateAsync: markAsArchived} = useMarkAsArchived()
+  const {data: list, isLoading, remove, refetch} = useNoticeList({
+    staredOnly,
+    archivedOnly
   });
 
   const filteredList = useMemo(() => {
     if (!list)
       return [];
     if (!searchQuery)
-      return list?.data;
-    return list?.data.filter(item => item?.subject?.toLowerCase?.()?.includes(searchQuery.toLowerCase())) || []
+      return list?.data?.message || [];
+    return list?.data?.message?.filter(item => item?.subject?.toLowerCase?.()?.includes(searchQuery.toLowerCase())) || []
   }, [list, searchQuery]);
 
   return <Box>
@@ -46,45 +48,36 @@ export const NoticeList: React.FC<IResourceComponentsProps> = () => {
       {!filteredList?.length && <Text align="center" color="dimmed" weight="bold" my={30}>
         {isLoading ? "Loading..." : "No Notice Found"}
       </Text>}
-      {filteredList?.map((item) => item?.subject?.toLowerCase?.()?.includes(searchQuery.toLowerCase()) && (
+      {filteredList?.map?.((item) => item?.subject?.toLowerCase?.()?.includes(searchQuery.toLowerCase()) && (
         <Stack
           key={item.name + String(item.student || "")}
           sx={{
-            backgroundColor: 'white',
+            backgroundColor: item.is_read ? '#F6FAFF' : 'white',
             marginBottom: 10,
             border: '1px solid rgba(0,0,0,0.05)',
             padding: 5,
             flexDirection: 'row',
             display: 'flex',
-            alignItems: 'center',
+            alignItems: 'flex-start',
             gap: 5
           }}>
-          <Box sx={{
-            height: 40,
-            width: 40,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: '100%',
-            backgroundColor: getStudentProfileColor(item.student, data?.data?.message || []),
-            color: 'white',
-            flexGrow: 0,
-            flexShrink: 0,
-            fontSize: 25,
-            fontWeight: 'bold',
-          }}>
-            {item?.student_first_name?.[0]?.toUpperCase()}
-          </Box>
           <Box
             p={5}
             sx={{
               cursor: 'pointer',
               width: 'calc(100% - 50px)',
+              flexShrink: 0,
               ":hover": {
                 backgroundColor: 'rgba(0,0,0,0.02)'
               }
             }}
-            onClick={() => navigate(`/notice/${item.name}?student=${encodeURIComponent(item.student)}`)}
+            onClick={() => {
+              if (!item.is_read) {
+                remove()
+                refetch().then(undefined)
+              }
+              navigate(`/notice/${item.name}?student=${encodeURIComponent(item.student)}`)
+            }}
           >
             <Text mih={20} weight="bold" size="lg" sx={{
               whiteSpace: 'nowrap',
@@ -95,12 +88,14 @@ export const NoticeList: React.FC<IResourceComponentsProps> = () => {
             }}>
               {item.subject || '-'}
             </Text>
-            <Box h={55} my={5} sx={{
+            <Box my={5} sx={{
               overflow: 'hidden',
               textOverflow: 'none',
               whiteSpace: 'nowrap',
               width: '100%',
-              fontSize: 12,
+              fontSize: 14,
+              height: "5em",
+              pointerEvents: 'none',
               // borderRadius: '5px',
               // color: '#888',
             }}>
@@ -116,11 +111,14 @@ export const NoticeList: React.FC<IResourceComponentsProps> = () => {
               gap: 10,
               color: '#666',
             }}>
-              <Stack align="center" justify="center" pt={4} pr={10} sx={{
+              <Stack align="center" justify="center" mt={4} px={10} sx={{
                 display: 'inline-block',
                 whiteSpace: 'nowrap',
                 fontSize: 13,
-                borderRight: '1px solid #eee'
+                backgroundColor: getStudentProfileColor(item.student, data?.data?.message || []),
+                color: 'white',
+                fontWeight: 'bold',
+                borderRadius: 3,
               }}>{item?.student_first_name}</Stack>
               <Stack align="center" justify="center" py={4} sx={{
                 display: 'inline-flex',
@@ -139,7 +137,34 @@ export const NoticeList: React.FC<IResourceComponentsProps> = () => {
               </Stack>
             </Stack>
           </Box>
-          {/*<Divider/>*/}
+          <Box sx={{
+            padding: 5,
+            paddingRight: 10,
+          }}>
+            <IconStar
+              style={{
+                marginBottom: 10
+              }}
+              size={30}
+              fill={item.is_stared ? getStudentProfileColor(item.student, data?.data?.message || []) : 'white'}
+              color={getStudentProfileColor(item.student, data?.data?.message || [])}
+              stroke={1}
+              onClick={() => {
+                markAsStared({notice: item.name, student: item.student, stared: !item.is_stared})
+                  .then(() => refetch())
+              }}
+            />
+            <IconArchive
+              size={30}
+              color={item.is_archived ? "white" : getStudentProfileColor(item.student, data?.data?.message || [])}
+              stroke={1}
+              fill={item.is_archived ? getStudentProfileColor(item.student, data?.data?.message || []) : 'white'}
+              onClick={() => {
+                markAsArchived({notice: item.name, student: item.student, archived: !item.is_archived})
+                  .then(() => refetch())
+              }}
+            />
+          </Box>
         </Stack>
       ))}
     </Box>

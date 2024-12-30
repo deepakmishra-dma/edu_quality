@@ -4,13 +4,23 @@
  "docstatus": 0,
  "doctype": "Page",
  "idx": 0,
- "modified": "2024-03-15 21:41:10.614573",
+ "modified": "2024-03-18 16:05:53.286463",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "transport-drop-page",
  "owner": "Administrator",
  "page_name": "transport-drop-page",
- "roles": [],
+ "roles": [
+  {
+   "role": "Transporter"
+  },
+  {
+   "role": "Administrator"
+  },
+  {
+   "role": "System Manager"
+  }
+ ],
  "script": null,
  "standard": "Yes",
  "style": null,

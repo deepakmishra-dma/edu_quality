@@ -1,10 +1,9 @@
 import {IResourceComponentsProps, useOne} from "@refinedev/core";
 import React from "react";
-import {Notice} from "../../providers/data/notices.ts";
 import {Box, Stack, Text} from "@mantine/core";
 import {useParams, useSearchParams} from "react-router-dom";
-// @ts-expect-error no types
 import {IconCalendar} from "@tabler/icons";
+import {Notice} from "../../components/queries/useNoticeList.ts";
 // import {IconArchive, IconStar} from "@tabler/icons";
 
 export const NoticeDetails: React.FC<IResourceComponentsProps> = () => {
@@ -71,7 +70,15 @@ export const NoticeDetails: React.FC<IResourceComponentsProps> = () => {
       width: '100%',
       padding: 10
     }}>
-      <div className="ql-editor" dangerouslySetInnerHTML={{__html: data?.data?.notice || ""}}></div>
+      {
+        data?.data?.is_raw_html ? <>
+          <div dangerouslySetInnerHTML={{__html: data?.data?.notice || ""}}></div>
+        </> : <>
+          <link href="https://cdn.jsdelivr.net/npm/quill@2.0.0-beta.0/dist/quill.snow.css" rel="stylesheet"/>
+          <link href="https://cdn.jsdelivr.net/npm/quill@2.0.0-beta.0/dist/quill.bubble.css" rel="stylesheet"/>
+          <div className="ql-editor" dangerouslySetInnerHTML={{__html: data?.data?.notice || ""}}></div>
+        </>
+      }
     </Box>
   </Box>
 };
