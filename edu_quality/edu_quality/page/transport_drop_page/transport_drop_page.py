@@ -58,7 +58,7 @@ def get_transport_data(**filters):
         .where(absent_and_delays.parent.isin(attendance_ids or [None]))
         .orderby(absent_and_delays.creation, Order.desc)
     ).select(
-        absent_and_delays.creation,
+        absent_and_delays.timestamp.as_("creation"),
         absent_and_delays.status.as_("drop_status"),
         attendance_entry.student.as_("student_id"),
     )
@@ -113,7 +113,7 @@ def update(id, message):
 
 
 # edu_quality.edu_quality.page.transport_drop_page.transport_drop_page.update_qr
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist()
 def update_qr(acad=None, ref=None, school=None):
     prefix = frappe.db.get_value("School", filters={"name": school}, fieldname="prefix")
 
@@ -136,9 +136,9 @@ def get_current_school():
                 filters={"user": frappe.session.user},
                 fieldname="parent",
             )
-            or None
         ]
+
     if check_admin_roles(user_roles):
         school = frappe.db.get_all("School")
-    schools = [i.get("name") for i in school]
+    schools = [i.get("name") if isinstance(i, dict) else i for i in school]
     return schools
