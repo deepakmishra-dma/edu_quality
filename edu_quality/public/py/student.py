@@ -71,6 +71,28 @@ def before_save(doc, method=None):
     except Exception as e:
         frappe.logger("google_user").exception(e)
 
+
+def on_update(doc, method=None):
+    frappe.db.sql(
+        """
+        UPDATE `tabProgram Enrollment` 
+        SET custom_status=%s,
+            has_allergies=%s,
+            allergies=%s,
+            is_handicap=%s,
+            handicap=%s
+        WHERE student=%s
+        """, 
+        (
+            doc.student_status,
+            doc.has_allergies,
+            doc.allergies,
+            doc.is_handicap,
+            doc.handicap,
+            doc.name
+        )
+    )
+
 def comment_on_possible_dropout(doc,old_doc):
     if not old_doc:
         return 
@@ -169,7 +191,8 @@ def get_fees_details(student):
             "doctype": doc.doctype,
             "parent": doc.name,
             "paid_date": doc.paid_date,
-            "description": "Installment 1"
+            "description": "Installment 1",
+            "outstanding": doc.outstanding_amount
         }]
     return False
 
