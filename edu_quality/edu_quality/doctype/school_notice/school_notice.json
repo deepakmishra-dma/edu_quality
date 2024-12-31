@@ -39,14 +39,16 @@
    "fieldtype": "Link",
    "in_standard_filter": 1,
    "label": "Student",
-   "options": "Student"
+   "options": "Student",
+   "read_only": 1
   },
   {
    "fieldname": "school",
    "fieldtype": "Link",
    "in_standard_filter": 1,
    "label": "School",
-   "options": "School"
+   "options": "School",
+   "read_only": 1
   },
   {
    "fieldname": "section_break_fbze",
@@ -65,21 +67,24 @@
    "fieldtype": "Select",
    "in_standard_filter": 1,
    "label": "Student Status",
-   "options": "\nNew student\nCurrent student\nCancelled\nNot attending\nDefaulter\nAlumni"
+   "options": "\nNew student\nCurrent student\nCancelled\nNot attending\nDefaulter\nAlumni",
+   "read_only": 1
   },
   {
    "fieldname": "division",
    "fieldtype": "Link",
    "in_standard_filter": 1,
    "label": "Division",
-   "options": "Student Group"
+   "options": "Student Group",
+   "read_only": 1
   },
   {
    "fieldname": "class",
    "fieldtype": "Link",
    "in_standard_filter": 1,
    "label": "Class",
-   "options": "Program"
+   "options": "Program",
+   "read_only": 1
   },
   {
    "default": "0",
@@ -87,24 +92,28 @@
    "fieldname": "is_generic_notice",
    "fieldtype": "Check",
    "in_standard_filter": 1,
-   "label": "Is Generic Notice"
+   "label": "Is Generic Notice",
+   "read_only": 1
   },
   {
    "fieldname": "academic_year",
    "fieldtype": "Link",
    "label": "Academic Year",
-   "options": "Academic Year"
+   "options": "Academic Year",
+   "read_only": 1
   },
   {
    "default": "0",
+   "depends_on": "eval:doc.is_raw_html",
    "fieldname": "is_raw_html",
    "fieldtype": "Check",
-   "label": "Is Raw Html"
+   "label": "Is Raw Html",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-18 22:52:28.025707",
+ "modified": "2024-03-18 23:51:59.584765",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "School Notice",
