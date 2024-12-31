@@ -11,10 +11,10 @@ def get_students():
 
 @frappe.whitelist()
 def get_student_class_details(student):
-    current_yr = frappe.db.get_value("Academic Year",{'custom_current_academic_year':1})
+    current_yr = frappe.db.get_value("Academic Year", {'custom_current_academic_year': 1})
     program_enrollments = frappe.get_all(
         "Program Enrollment",
-        filters={"student": student,"academic_year":current_yr},
+        filters={"student": student, "academic_year": current_yr},
         fields=["program", "student_group"],
     )
     if not len(program_enrollments):

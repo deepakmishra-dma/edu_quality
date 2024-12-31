@@ -26,31 +26,27 @@
    "in_list_view": 1,
    "label": "Notice Subject",
    "length": 1000,
-   "reqd": 1,
-   "set_only_once": 1
+   "reqd": 1
   },
   {
    "fieldname": "notice",
-   "fieldtype": "Text Editor",
+   "fieldtype": "Text",
    "label": "Notice Content",
-   "reqd": 1,
-   "set_only_once": 1
+   "reqd": 1
   },
   {
    "fieldname": "student",
    "fieldtype": "Link",
    "in_standard_filter": 1,
    "label": "Student",
-   "options": "Student",
-   "set_only_once": 1
+   "options": "Student"
   },
   {
    "fieldname": "school",
    "fieldtype": "Link",
    "in_standard_filter": 1,
    "label": "School",
-   "options": "School",
-   "read_only": 1
+   "options": "School"
   },
   {
    "fieldname": "section_break_fbze",
@@ -69,24 +65,21 @@
    "fieldtype": "Select",
    "in_standard_filter": 1,
    "label": "Student Status",
-   "options": "\nNew student\nCurrent student\nCancelled\nNot attending\nDefaulter\nAlumni",
-   "read_only": 1
+   "options": "\nNew student\nCurrent student\nCancelled\nNot attending\nDefaulter\nAlumni"
   },
   {
    "fieldname": "division",
    "fieldtype": "Link",
    "in_standard_filter": 1,
    "label": "Division",
-   "options": "Student Group",
-   "read_only": 1
+   "options": "Student Group"
   },
   {
    "fieldname": "class",
    "fieldtype": "Link",
    "in_standard_filter": 1,
    "label": "Class",
-   "options": "Program",
-   "read_only": 1
+   "options": "Program"
   },
   {
    "default": "0",
@@ -94,27 +87,24 @@
    "fieldname": "is_generic_notice",
    "fieldtype": "Check",
    "in_standard_filter": 1,
-   "label": "Is Generic Notice",
-   "read_only": 1
+   "label": "Is Generic Notice"
   },
   {
    "fieldname": "academic_year",
    "fieldtype": "Link",
    "label": "Academic Year",
-   "options": "Academic Year",
-   "read_only": 1
+   "options": "Academic Year"
   },
   {
    "default": "0",
    "fieldname": "is_raw_html",
    "fieldtype": "Check",
-   "label": "Is Raw Html",
-   "read_only": 1
+   "label": "Is Raw Html"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-15 22:47:54.352550",
+ "modified": "2024-03-18 22:52:28.025707",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "School Notice",

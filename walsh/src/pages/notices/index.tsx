@@ -30,7 +30,14 @@ export const NoticeList: React.FC<StaredNoticeListProps> = ({staredOnly, archive
       return [];
     if (!searchQuery)
       return list?.data?.message || [];
-    return list?.data?.message?.filter(item => item?.subject?.toLowerCase?.()?.includes(searchQuery.toLowerCase())) || []
+    return list?.data?.message?.filter(item => {
+      if (!searchQuery) return true
+      console.log(item?.notice?.toLowerCase?.()?.indexOf(searchQuery.toLowerCase()))
+      if (item?.subject?.toLowerCase?.()?.includes(searchQuery.toLowerCase())) return true
+      console.log(item?.notice?.toLowerCase?.()?.indexOf(searchQuery.toLowerCase()))
+      if (item?.notice?.toLowerCase?.()?.includes(searchQuery.toLowerCase())) return true
+      return false
+    }) || []
   }, [list, searchQuery]);
 
   return <Box>
@@ -48,7 +55,7 @@ export const NoticeList: React.FC<StaredNoticeListProps> = ({staredOnly, archive
       {!filteredList?.length && <Text align="center" color="dimmed" weight="bold" my={30}>
         {isLoading ? "Loading..." : "No Notice Found"}
       </Text>}
-      {filteredList?.map?.((item) => item?.subject?.toLowerCase?.()?.includes(searchQuery.toLowerCase()) && (
+      {filteredList?.map?.((item) => (
         <Stack
           key={item.name + String(item.student || "")}
           sx={{
