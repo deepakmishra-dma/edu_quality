@@ -7,6 +7,59 @@ frappe.ui.form.on("Student", {
         addFeeDetails(frm);
         addParentDetails(frm);
         addReferral(frm);
+    },
+
+    late_drop: function (frm) {
+        frappe.call({
+            method: "edu_quality.edu_quality.server_scripts.student.mark_entry",
+            args: {
+                student: frm.selected_doc.name,
+                reason: frm.selected_doc.reason,
+                status: "Late Drop"
+            },
+            callback: function (r) {
+                if (r.message) {
+                    frappe.show_alert({
+                        message: __("Marked Entry!"),
+                        indicator: 'green'
+                    });
+                }
+                else{
+                    frappe.show_alert({
+                        message: __("Something went wrong!"),
+                        indicator: 'red'
+                    });
+
+                }
+                d.hide();
+            }
+        });
+    },
+    early_pickup: function (frm) {
+        frappe.call({
+            method: "edu_quality.edu_quality.server_scripts.student.mark_entry",
+            args: {
+                student: frm.selected_doc.name,
+                reason: frm.selected_doc.reason,
+                status: "Early Pickup"
+            },
+            callback: function (r) {
+                if (r.message) {
+                    frappe.show_alert({
+                        message: __("Marked Entry!"),
+                        indicator: 'green'
+                    });
+                }
+                else{
+                    frappe.show_alert({
+                        message: __("Something went wrong!"),
+                        indicator: 'red'
+                    });
+
+                }
+                d.hide();
+            }
+        });
     }
 });
 
@@ -75,7 +128,7 @@ function addFeeDetails(frm) {
             callback: function (r) {
                 if (r.message) {
                     const data = r.message.map((item, index) => {
-                        const { payment_term, description, due_date, invoice_portion, payment_amount, paid_date, parent, doctype } = item;
+                        const { payment_term, description, due_date, invoice_portion, payment_amount, outstanding, parent, doctype } = item;
                         let link = doctype == 'Fee Advance' ? `/app/fee-advance/${parent}` : `/app/fees/${parent}`;
                         return `
                             <tr>
@@ -85,7 +138,7 @@ function addFeeDetails(frm) {
                                 <td>${due_date}</td>
                                 <td>${invoice_portion}</td>
                                 <td>${payment_amount}</td>
-                                <td>${paid_date ? paid_date : 'Not Paid'}</td>
+                                <td>${outstanding == 0 ? 'Paid' : 'Not Paid'}</td>
                                 <td><a href="${link}">Open</a></td>
                             </tr>`;
                     }).join('');

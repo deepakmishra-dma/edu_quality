@@ -27,20 +27,33 @@ def autoname(doc, method=None):
         prefix = frappe.get_value("School", applicant.school, 'prefix')
         series = get_reference(doc.program)
         prefix += series
-        if frappe.db.count("Student", [["name", "Like", prefix + "%"]]) >= 99:
-            prefix = prefix[:-2] + chr(ord(prefix[-2]) + 1)
-            series = series[0] + chr(ord(series[1]) + 1)
+        ref_id = get_last_id(prefix)
+        if ref_id == 'max':
+            prefix = prefix[:2]
+            if series[1] !='Z':
+                series = series[0] + chr(ord(series[1]) + 1)
+            elif series[0] != 'Z':
+                series = chr(ord(series[0]) + 1) + 'A'
+            else:
+                series = 'A' + 'A'
             frappe.db.set_value("Program", applicant.program, 'reference_series', series)
-        if not prefix:
-            prefix = "EDU-STU-2023-"
-        count = frappe.db.count("Student", [["name", "Like", prefix + "%"]]) + 1
-        if count > 9:
-            prefix += str(count)
+            prefix = prefix + series + "01"
         else:
-            prefix += "0" + str(count)
+            prefix = prefix + ref_id
         doc.name = prefix
         doc.reference_number = doc.name[2:]
 
+def get_last_id(prefix):
+    val = frappe.db.get_all("Student",[["name", "Like", prefix + "%"]],'name',order_by="name")
+    if val:
+        series = int(val[-1].name[-2:])
+        frappe.logger('series').exception(series)
+        if series == 99:
+            return 'max'
+        series += 1
+        return str(series) if series>9 else "0"+str(series)
+    else:
+        return '01'
 
 def before_insert(doc, method=None):
     frappe.flags.in_import = True
@@ -57,6 +70,28 @@ def before_save(doc, method=None):
         comment_on_possible_dropout(doc,prev_doc)
     except Exception as e:
         frappe.logger("google_user").exception(e)
+
+
+def on_update(doc, method=None):
+    frappe.db.sql(
+        """
+        UPDATE `tabProgram Enrollment` 
+        SET custom_status=%s,
+            has_allergies=%s,
+            allergies=%s,
+            is_handicap=%s,
+            handicap=%s
+        WHERE student=%s
+        """, 
+        (
+            doc.student_status,
+            doc.has_allergies,
+            doc.allergies,
+            doc.is_handicap,
+            doc.handicap,
+            doc.name
+        )
+    )
 
 def comment_on_possible_dropout(doc,old_doc):
     if not old_doc:
@@ -156,7 +191,8 @@ def get_fees_details(student):
             "doctype": doc.doctype,
             "parent": doc.name,
             "paid_date": doc.paid_date,
-            "description": "Installment 1"
+            "description": "Installment 1",
+            "outstanding": doc.outstanding_amount
         }]
     return False
 

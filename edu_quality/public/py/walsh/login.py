@@ -81,25 +81,28 @@ def send_otp_to_sms(full_phone_no, otp):
     return response
 
 
-def save_push_notification_token(token, user_id=None):
+def save_push_notification_token(push_token, user_id=None):
     user_id = user_id or frappe.session.user
-    has_token = frappe.db.exists("Mobile Push Token", {"token": token, "user_id": user_id})
+    has_token = frappe.db.exists("Mobile Push Token", {"token": push_token, "user_id": user_id})
     if not has_token:
         frappe.get_doc({
             "doctype": "Mobile Push Token",
-            "token": token,
+            "token": push_token,
             "user_id": user_id
         }).insert(ignore_permissions=True)
 
 
-def remove_push_notification_token(token=None):
+@frappe.whitelist()
+def remove_push_notification_token(push_token=None, remove_all=False):
     user_id = frappe.session.user
-    has_token = frappe.db.exists("Mobile Push Token", {"token": token, "user_id": user_id}) \
-        if token else frappe.db.exists("Mobile Push Token", {"user_id": user_id})
-    if token and has_token:
-        frappe.db.delete("Mobile Push Token", {"token": token, "user_id": user_id})
-    elif not token and has_token:
+    if remove_all:
         frappe.db.delete("Mobile Push Token", {"user_id": user_id})
+        return
+    if not push_token:
+        return
+    has_token = frappe.db.exists("Mobile Push Token", {"token": push_token, "user_id": user_id})
+    if has_token:
+        frappe.db.delete("Mobile Push Token", {"token": push_token, "user_id": user_id})
 
 
 def is_defaulter(guardian_name, logout_if_defaulter=False):
@@ -109,7 +112,7 @@ def is_defaulter(guardian_name, logout_if_defaulter=False):
     }, fields=["*"])
     if len(students) > 0:
         if logout_if_defaulter:
-            remove_push_notification_token()
+            remove_push_notification_token(remove_all=True)
             login_manager = LoginManager()
             login_manager.logout()
         return True
@@ -167,7 +170,7 @@ def get_student_form(doc):
     link = frappe.utils.get_url() + "/walnut-school-student-application/"
     for applicant in applicants:
         student = frappe.db.get_value("Student", {'student_applicant': applicant.parent}) or applicant.parent
-        student_forms.append({"student": student, "link": link + applicant.parent})
+        student_forms.append({"student": student, "link": link + applicant.parent + "/edit"})
     return student_forms
 
 
@@ -214,15 +217,15 @@ def verify_otp(otp, phone_no, push_token=None, form_link=None):
 
 @frappe.whitelist()
 def register_push_notice(**kwargs):
-    token = kwargs.get("token")
-    if not token:
+    push_token = kwargs.get("push_token")
+    if not push_token:
         raise frappe.exceptions.MandatoryError("Push Token is required")
-    save_push_notification_token(token)
+    save_push_notification_token(push_token)
 
 
 @frappe.whitelist()
-def logout(token="__"):
-    remove_push_notification_token(token)
+def logout(push_token=None):
+    remove_push_notification_token(push_token)
     login_manager = LoginManager()
     login_manager.logout()
     return {

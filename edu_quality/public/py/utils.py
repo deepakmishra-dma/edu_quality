@@ -498,7 +498,7 @@ def reduce_font_size_steps(initial_size, step, txt, initial_char_length, lowest)
     return str(int(res))
 
 
-def check_admin_roles(roles, additional_roles):
+def check_admin_roles(roles, additional_roles=None):
     roles_to_check = ["Administrator", "Walnut Admin", "System Manager"]
     if isinstance(additional_roles, list):
         roles_to_check += additional_roles

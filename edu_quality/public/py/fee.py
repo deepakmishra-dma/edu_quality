@@ -45,9 +45,8 @@ from edu_quality.public.py.discount import remove_discount
 
 
 def after_insert(doc, method=None):
-    apply_referral_for_unpaid_fee_advance(doc)
     payment_plan(doc)
-    doc.save()
+    apply_referral_for_unpaid_fee_advance(doc)
     doc.reload()
 
 def before_submit(doc, method=None):
@@ -144,7 +143,8 @@ def apply_referral_for_unpaid_fee_advance(doc):
 
         if fee_advance.referral_amount:
             update_referral_discount(doc,fee_advance.referral_amount)
-        # doc.reload()
+        doc.save()
+        doc.reload()
         return fee_advance
 
 
@@ -253,6 +253,15 @@ def get_deposit(doc_payment_plan, payment_plan):
     if "deposit" in doc_payment_plan[0].description.lower():
         return doc_payment_plan[0].payment_amount - payment_plan[0].payment_amount
     return 0
+
+
+def sync_student_data(doc, method=None):
+    student = frappe.get_value("Student", doc.student, ["has_allergies", "allergies", "is_handicap", "handicap", "student_status"], as_dict=True)
+    doc.has_allergies = student.has_allergies
+    doc.allergies = student.allergies
+    doc.is_handicap = student.is_handicap
+    doc.handicap = student.handicap
+    doc.custom_status = student.student_status
 
 
 def create_id_card(doc, method=None):

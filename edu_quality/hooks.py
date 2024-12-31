@@ -161,6 +161,7 @@ doc_events = {
             "edu_quality.public.py.fee.create_fees",
             "edu_quality.public.py.fee.update_program_enrollment",
         ],
+        "before_insert": "edu_quality.public.py.fee.sync_student_data",
         "after_insert": [
             "edu_quality.public.py.fee.append_program_enrollment",
             "edu_quality.public.py.fee.create_id_card",
@@ -186,6 +187,7 @@ doc_events = {
         "autoname": "edu_quality.public.py.student.autoname",
         "before_insert": "edu_quality.public.py.student.before_insert",
         "before_save": "edu_quality.public.py.student.before_save",
+        "on_update": "edu_quality.public.py.student.on_update",
     },
     "Custom Field": {"after_insert": "edu_quality.public.py.fixtures.custom_fields"},
     "Custom DocPerm": {
@@ -437,6 +439,7 @@ fixtures = [
                     "Tools",
                     "Integrations",
                     "Clerk",
+                    "Transporter"
                 ],
             ]
         ],
@@ -462,6 +465,7 @@ fixtures = [
                     "HoD",
                     "Teacher",
                     "Instructor",
+                    "Transporter",
                 ],
             ]
         ],
@@ -483,6 +487,7 @@ fixtures = [
                     "Principal",
                     "Vice Principal",
                     "HoD",
+                    "Transporter",
                 ],
             ]
         ],

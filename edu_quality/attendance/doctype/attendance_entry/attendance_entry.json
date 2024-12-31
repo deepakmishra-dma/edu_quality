@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "format:{student}-{date}",
  "creation": "2024-03-04 17:25:46.836952",
  "default_view": "List",
  "doctype": "DocType",
@@ -13,9 +14,11 @@
   "column_break_zcgh0",
   "class",
   "division",
+  "date",
   "other_details_section",
   "status",
-  "absent_and_delays"
+  "absent_and_delays",
+  "amended_from"
  ],
  "fields": [
   {
@@ -31,29 +34,20 @@
    "fieldname": "student_name",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Student Name",
-   "reqd": 1
+   "label": "Student Name"
   },
   {
+   "fetch_from": "student.program",
    "fieldname": "class",
    "fieldtype": "Link",
    "label": "Class",
-   "options": "Program",
-   "reqd": 1
-  },
-  {
-   "fieldname": "division",
-   "fieldtype": "Link",
-   "label": "Division",
-   "options": "Student Group",
-   "reqd": 1
+   "options": "Program"
   },
   {
    "fieldname": "status",
    "fieldtype": "Link",
    "label": "Status",
-   "options": "Attendance Status",
-   "reqd": 1
+   "options": "Attendance Status"
   },
   {
    "fieldname": "student_details_section",
@@ -74,14 +68,37 @@
    "fieldtype": "Table",
    "label": "Absent and Delays",
    "options": "Absent and Delay"
+  },
+  {
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "label": "Date",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "student.custom_division",
+   "fieldname": "division",
+   "fieldtype": "Data",
+   "label": "Division"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Attendance Entry",
+   "print_hide": 1,
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
+ "is_submittable": 1,
  "links": [],
- "modified": "2024-03-14 14:26:44.610715",
+ "modified": "2024-03-18 12:03:46.904811",
  "modified_by": "Administrator",
  "module": "Attendance",
  "name": "Attendance Entry",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {
@@ -99,5 +116,6 @@
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": []
+ "states": [],
+ "track_changes": 1
 }

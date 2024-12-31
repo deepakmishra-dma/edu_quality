@@ -14152,7 +14152,7 @@
   "hide_custom": 0,
   "icon": "retail",
   "indicator_color": null,
-  "is_hidden": 0,
+  "is_hidden": 1,
   "label": "POS Awesome",
   "links": [
    {
@@ -21032,5 +21032,73 @@
   "sequence_id": 8.2,
   "shortcuts": [],
   "title": "Clerk"
+ },
+ {
+  "charts": [],
+  "content": "[{\"id\":\"sqqtVmoj-B\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Transporter</span>\",\"col\":12}},{\"id\":\"rRYg2D1WYV\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Transport Drop Scanner\",\"col\":3}}]",
+  "custom_blocks": [],
+  "docstatus": 0,
+  "doctype": "Workspace",
+  "for_user": "",
+  "hide_custom": 0,
+  "icon": "stock",
+  "indicator_color": "green",
+  "is_hidden": 0,
+  "label": "Transporter",
+  "links": [],
+  "modified": "2024-03-18 19:54:41.767523",
+  "module": null,
+  "name": "Transporter",
+  "number_cards": [],
+  "parent_page": "",
+  "public": 1,
+  "quick_lists": [],
+  "restrict_to_domain": null,
+  "roles": [
+   {
+    "parent": "Transporter",
+    "parentfield": "roles",
+    "parenttype": "Workspace",
+    "role": "Transporter"
+   },
+   {
+    "parent": "Transporter",
+    "parentfield": "roles",
+    "parenttype": "Workspace",
+    "role": "Administrator"
+   },
+   {
+    "parent": "Transporter",
+    "parentfield": "roles",
+    "parenttype": "Workspace",
+    "role": "Walnut Admin"
+   },
+   {
+    "parent": "Transporter",
+    "parentfield": "roles",
+    "parenttype": "Workspace",
+    "role": "System Manager"
+   }
+  ],
+  "sequence_id": 41.0,
+  "shortcuts": [
+   {
+    "color": "Grey",
+    "doc_view": "List",
+    "format": null,
+    "icon": null,
+    "kanban_board": null,
+    "label": "Transport Drop Scanner",
+    "link_to": "transport-drop-page",
+    "parent": "Transporter",
+    "parentfield": "shortcuts",
+    "parenttype": "Workspace",
+    "restrict_to_domain": null,
+    "stats_filter": null,
+    "type": "Page",
+    "url": null
+   }
+  ],
+  "title": "Transporter"
  }
 ]
