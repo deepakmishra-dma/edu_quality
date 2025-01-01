@@ -73,6 +73,7 @@ def before_save(doc, method=None):
 
 
 def on_update(doc, method=None):
+    return
     frappe.db.sql(
         """
         UPDATE `tabProgram Enrollment` 
