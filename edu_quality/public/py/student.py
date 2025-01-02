@@ -73,25 +73,17 @@ def before_save(doc, method=None):
 
 
 def on_update(doc, method=None):
-    frappe.db.sql(
-        """
-        UPDATE `tabProgram Enrollment` 
-        SET custom_status=%s,
-            has_allergies=%s,
-            allergies=%s,
-            is_handicap=%s,
-            handicap=%s
-        WHERE student=%s
-        """, 
-        (
-            doc.student_status,
-            doc.has_allergies,
-            doc.allergies,
-            doc.is_handicap,
-            doc.handicap,
-            doc.name
-        )
-    )
+    to_update = {
+        "custom_status": doc.student_status,
+        "has_allergies": doc.has_allergies,
+        "allergies": doc.allergies,
+        "is_handicap": doc.is_handicap,
+        "handicap": doc.handicap
+    }
+    program_enrollment = frappe.get_all("Program Enrollment", {"student": doc.name, "docstatus": ['!=', 2]}, ["name"])
+    for pe in program_enrollment:
+        frappe.set_value("Program Enrollment", pe.name, to_update)
+
 
 def comment_on_possible_dropout(doc,old_doc):
     if not old_doc:
