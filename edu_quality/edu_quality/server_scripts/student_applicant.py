@@ -140,8 +140,8 @@ def update_referral_discount(doc, discount_amount,is_paid=False):
                     "outstanding_amount": doc.outstanding_amount - discount_amount,
                     "total_discount": doc.total_discount + discount_amount
                 }
-
-                frappe.db.set_value("Fees", doc.name, doc_updates)
+                if not is_paid:
+                    frappe.db.set_value("Fees", doc.name, doc_updates)
                 doc.reload()
                 doc.add_discount_entry(component.custom_company, discount_amount)
                 update_total_discount_in_fees(doc.name)
@@ -151,12 +151,12 @@ def update_referral_discount(doc, discount_amount,is_paid=False):
                 doc.update_split()
                 return 
             
-        apply_referral_discount(doc, discount_amount)
+        apply_referral_discount(doc, discount_amount,is_paid)
     except Exception as e:
         frappe.logger('referral').exception(e)
 
 
-def apply_referral_discount(doc, referral_amount):
+def apply_referral_discount(doc, referral_amount,is_paid=False):
     """
     Apply referral discount to a document's components with 'Tuition Fee' category.
 
@@ -210,7 +210,8 @@ def apply_referral_discount(doc, referral_amount):
                 doc.add_discount_entry(component.custom_company, referral_amount)
                 update_total_discount_in_fees(doc.name)
                 update_payment_plan_after_discount(doc, referral_amount, apply_discount=True,dis={"type":"Referral"})
-                update_payment_request_after_discount(doc)
+                if not is_paid:
+                    update_payment_request_after_discount(doc)
                 doc.update_split()
                 return 
     except Exception as e:
