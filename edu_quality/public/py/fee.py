@@ -88,11 +88,6 @@ def on_submit(doc, method=None):
                 "Fees", doc.name, "outstanding_amount", fee_outstanding_amount
             )
         doc.reload()
-        payment_filter = {
-            "reference_name": doc.name,
-            "docstatus": 1,
-            "status": ["!=", "Paid"]
-        }
     else:
         fee_advance = apply_referral_for_unpaid_fee_advance(doc)
         if fee_advance:
@@ -282,6 +277,7 @@ def create_id_card(doc, method=None):
     )
     id_card.insert()
     frappe.db.set_value("Program Enrollment", doc.name, "custom_id_card", id_card.name)
+    doc.reload()
 
 
 def create_fees(doc, method=None):
