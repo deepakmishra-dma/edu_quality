@@ -79,14 +79,11 @@ def on_submit(doc, method=None):
         if fee_advance.referral_amount:
             update_referral_discount(doc,fee_advance.referral_amount,True)
         if doc.payment_schedule:
-            frappe.db.set_value(
-                "Payment Schedule", doc.payment_schedule[0].name, "outstanding", 0
-            )
-            term_first_amount =  frappe.get_value("Payment Schedule",doc.payment_schedule[0].name,"payment_amount")
-            fee_outstanding_amount = doc.outstanding_amount - term_first_amount
-            frappe.db.set_value(
-                "Fees", doc.name, "outstanding_amount", fee_outstanding_amount
-            )
+            payment_schedule = doc.payment_schedule[0]
+            frappe.db.set_value("Payment Schedule", payment_schedule.name, "outstanding", 0)
+            term_first_amount = frappe.get_value("Payment Schedule", payment_schedule.name, "payment_amount")
+            fee_outstanding_amount = max(0, doc.outstanding_amount - term_first_amount)
+            frappe.db.set_value("Fees", doc.name, "outstanding_amount", fee_outstanding_amount)
         doc.reload()
     else:
         fee_advance = apply_referral_for_unpaid_fee_advance(doc)
