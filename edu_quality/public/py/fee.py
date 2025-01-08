@@ -394,6 +394,8 @@ def create_fees(doc, method=None):
             update_student_group(
                 fees.program_enrollment, fee_structure=student_applicant.fee_structure
             )
+        student.custom_school = doc.custom_school
+        student.save()
     except Exception as e:
         frappe.logger("fee").exception(e)
         frappe.throw(str(e))
