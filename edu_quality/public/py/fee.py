@@ -132,6 +132,8 @@ def apply_referral_for_unpaid_fee_advance(doc):
         fee_advance = frappe.get_doc("Fee Advance", filters)
         fee_advance.reload()
         doc.payment_plan = fee_advance.payment_plan
+        doc.save()
+        doc.reload()
         discount_applied = get_one_time_discounts(fee_advance)
         for discount in discount_applied.keys():
             if "payplan" not in discount.lower(): 
@@ -139,8 +141,6 @@ def apply_referral_for_unpaid_fee_advance(doc):
 
         if fee_advance.referral_amount:
             update_referral_discount(doc,fee_advance.referral_amount)
-        doc.save()
-        doc.reload()
         return fee_advance
 
 
