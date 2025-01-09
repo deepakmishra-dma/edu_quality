@@ -84,7 +84,6 @@ def on_update(doc, method=None):
     for pe in program_enrollment:
         frappe.set_value("Program Enrollment", pe.name, to_update)
 
-
 def comment_on_possible_dropout(doc,old_doc):
     if not old_doc:
         return 
