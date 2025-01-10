@@ -79,7 +79,6 @@ frappe.query_reports["CMAP Print"] = {
 		value = default_formatter(value, row, column, data)
 		if (column.id.includes("qty")) {
 			value = `<input type="number" id="${column.id}" value=${value} oninput="changePrintCMAPReportData(this,'${column.id}','${row[0]?.rowIndex}')" />`
-			console.log(frappe.query_report)
 		}
 		if (column.id == "total_quantity") {
 			value = `<input type="number" disabled="true" id="${column.id}" value=${value} oninput="changePrintCMAPReportData(this,'${column.id}','${row[0]?.rowIndex}')" />`

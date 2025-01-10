@@ -60,7 +60,6 @@ def before_submit(doc, method=None):
 
 
 def on_submit(doc, method=None):
-    total_discount = 0
     filters = {
         "student": doc.student,
         "outstanding_amount": ["<=",0],
@@ -80,14 +79,11 @@ def on_submit(doc, method=None):
         if fee_advance.referral_amount:
             update_referral_discount(doc,fee_advance.referral_amount,True)
         if doc.payment_schedule:
-            frappe.db.set_value(
-                "Payment Schedule", doc.payment_schedule[0].name, "outstanding", 0
-            )
-            term_first_amount =  frappe.get_value("Payment Schedule",doc.payment_schedule[0].name,"payment_amount")
-            fee_outstanding_amount = doc.outstanding_amount - term_first_amount
-            frappe.db.set_value(
-                "Fees", doc.name, "outstanding_amount", fee_outstanding_amount
-            )
+            payment_schedule = doc.payment_schedule[0]
+            frappe.db.set_value("Payment Schedule", payment_schedule.name, "outstanding", 0)
+            term_first_amount = frappe.get_value("Payment Schedule", payment_schedule.name, "payment_amount")
+            fee_outstanding_amount = max(0, doc.outstanding_amount - term_first_amount)
+            frappe.db.set_value("Fees", doc.name, "outstanding_amount", fee_outstanding_amount)
         doc.reload()
     else:
         fee_advance = apply_referral_for_unpaid_fee_advance(doc)
@@ -136,15 +132,15 @@ def apply_referral_for_unpaid_fee_advance(doc):
         fee_advance = frappe.get_doc("Fee Advance", filters)
         fee_advance.reload()
         doc.payment_plan = fee_advance.payment_plan
+        doc.save()
+        doc.reload()
         discount_applied = get_one_time_discounts(fee_advance)
         for discount in discount_applied.keys():
-            if "payplan" not in discount.lower():
+            if "payplan" not in discount.lower(): 
                 add_discount(doc.name, discount)
 
         if fee_advance.referral_amount:
             update_referral_discount(doc,fee_advance.referral_amount)
-        doc.save()
-        doc.reload()
         return fee_advance
 
 
@@ -278,6 +274,7 @@ def create_id_card(doc, method=None):
     )
     id_card.insert()
     frappe.db.set_value("Program Enrollment", doc.name, "custom_id_card", id_card.name)
+    doc.reload()
 
 
 def create_fees(doc, method=None):
@@ -294,11 +291,11 @@ def create_fees(doc, method=None):
                 return
         fee_structure = frappe.get_value(
             "Fee Structure",
-            {"program": doc.program, "academic_year": doc.academic_year},
+            {"program": doc.program, "academic_year": doc.academic_year, "docstatus": 1},
             "name",
         )
         fee_schedule = frappe.get_value(
-            "Fee Schedule", {"fee_structure": fee_structure}, "name"
+            "Fee Schedule", {"fee_structure": fee_structure, "docstatus": 1}, "name"
         )
         if student.student_applicant:
             stude_appli_class = student.student_applicant
@@ -397,6 +394,8 @@ def create_fees(doc, method=None):
             update_student_group(
                 fees.program_enrollment, fee_structure=student_applicant.fee_structure
             )
+        student.custom_school = doc.custom_school
+        student.save()
     except Exception as e:
         frappe.logger("fee").exception(e)
         frappe.throw(str(e))
