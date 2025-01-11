@@ -352,16 +352,20 @@ def payment_plan(doc, method=None):
                                     timeout=1800,
                                 )
             i = i+1
-            doc.append("payment_schedule",{
-                'payment_term': schedule.payment_term,
-                'description': description,
-                'due_date': schedule.due_date,
-                'invoice_portion': schedule.invoice_portion,
-                'payment_amount': payment_amount,
-                'outstanding': payment_amount,
-            })
-        doc.save()
+            frappe.get_doc({
+                    "doctype": "Payment Schedule",
+                    "parenttype": "Fees",
+                    "parentfield": "payment_schedule",
+                    "parent": doc.name,
+                    'payment_term': schedule.payment_term,
+                    'description': description,
+                    'due_date': schedule.due_date,
+                    'invoice_portion': schedule.invoice_portion,
+                    'payment_amount': payment_amount,
+                    'outstanding': payment_amount,
+                }).insert(ignore_permissions=True)
         doc.reload()
+
 
 def separate_links(doc,term):
     only_deposit(doc)
