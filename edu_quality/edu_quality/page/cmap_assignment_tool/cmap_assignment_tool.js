@@ -12,8 +12,8 @@ frappe.pages['cmap-assignment-tool'].on_page_load = function (wrapper) {
 	});
 	globalPage = page
 	frappe.require(["/assets/edu_quality/css/cmap-assignment-tool.css"])
-	const el = document.querySelector('.container.page-body')
-	el.classList.add("cmap-assignment-tool")
+	const el = page.wrapper.find('.container.page-body');
+	el.add("cmap-assignment-tool")
 
 	filtersRef = make_fieldgroup(el, [
 		{
@@ -62,8 +62,8 @@ frappe.pages['cmap-assignment-tool'].on_page_load = function (wrapper) {
 	editContainer.id = 'report-edit-container'
 	tableContainer.id = 'report-table-container'
 
-	el.appendChild(tableContainer)
-	el.appendChild(editContainer)
+	el.append(tableContainer)
+	el.append(editContainer)
 	setupDataTable()
 
 }

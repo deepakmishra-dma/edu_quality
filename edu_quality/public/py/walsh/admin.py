@@ -454,10 +454,7 @@ def validate_args(**kwargs):
     if not content:
         raise frappe.exceptions.MandatoryError("Content is required")
 
-    if send_emails:
-        if not bcc_email_groups:
-            raise frappe.exceptions.MandatoryError("BCC Email Groups are required")
-
+    if send_emails and bcc_email_groups:
         for bcc_email_group in bcc_email_groups:
             if not frappe.db.exists("Email Group", bcc_email_group):
                 raise frappe.exceptions.ValidationError(f"BCC Email Group {bcc_email_group} not found")
