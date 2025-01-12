@@ -37,6 +37,11 @@ def before_insert(doc,method=None):
     if validate_name(doc):
         create_user(doc)
         set_student_permissions(doc)
+        try:
+            from nextai.funnel.custom_trigger import trigger_event
+            trigger_event(doc=doc, event_name="guardian_created")
+        except ImportError as e:
+            frappe.logger('guardian_user').exception(e)
 
 def on_update(doc,method=None):
     set_student_permissions(doc)
