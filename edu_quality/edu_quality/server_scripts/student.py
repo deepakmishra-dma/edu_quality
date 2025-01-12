@@ -6,7 +6,7 @@ from frappe.utils import getdate
 def mark_entry(student, status, reason=None, date=None):
     if not date:
         date = getdate()
-    print(date)
+
     try:
         if frappe.db.exists("Attendance Entry", {"student": student, "date": date}):
             entry = frappe.get_doc("Attendance Entry", {"student": student, "date": date})
