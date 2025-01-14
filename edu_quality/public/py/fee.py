@@ -86,8 +86,16 @@ def on_submit(doc, method=None):
             frappe.db.set_value("Fees", doc.name, "outstanding_amount", fee_outstanding_amount)
         doc.reload()
     else:
-        fee_advance = apply_referral_for_unpaid_fee_advance(doc)
+        filters = {
+            "student": doc.student,
+            "outstanding_amount": [">", 0],
+            "next_program": doc.program,
+            "academic_year": doc.academic_year,
+            "docstatus": 1,
+        }
+        fee_advance = frappe.get_value("Fee Advance", filters)
         if fee_advance:
+            fee_advance = frappe.get_doc("Fee Advance", fee_advance)
             fee_advance.cancel()
     
     doc.generate_split()
