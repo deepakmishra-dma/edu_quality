@@ -93,7 +93,7 @@ def get_cmap(**filters):
             cross_cmap_div_query.division_name,
             cross_cmap_div_query.student_group_name,
             cmap_assignment_table.teacher,
-            cmap_assignment_table.teacher,
+            cmap_assignment_table.name.as_("assignment_name"),
         )
     )
     products_query = (
@@ -158,7 +158,7 @@ def update_assignment(filters, cmap_data):
     # frappe.qb.from_(instructor_table).inner_join(instructor_log_table).on(
     #     instructor_log_table.parent == instructor_table.name
     # ).select("*")
-    add_data_to_cmap_assignees(filters, cmap_data)
+    return add_data_to_cmap_assignees(filters, cmap_data)
 
     # cmap_table = frappe.qb.DocType("CMAP")
     # cmap_assignees = frappe.qb.DocType("CMAP Assignment")
@@ -181,28 +181,73 @@ def update_assignment(filters, cmap_data):
 
 
 def add_data_to_cmap_assignees(filters, cmap_data):
+    all_assignments = get_cmap_assignments_data(cmap_data)
+    # return all_assignments
     for period in cmap_data:
         for assignments in cmap_data[period]:
-            cmap = frappe.get_doc("CMAP", assignments.get("name"))
+            cmap_name = assignments.get("name")
             exists = False
-            for item in cmap.table_vwbr:
+            for item in all_assignments.get(cmap_name, []):
                 if item.school == filters.get(
                     "school"
                 ) and item.division == assignments.get("division_name"):
                     # Update existing teacher
-                    item.teacher = assignments.get("teacher")
+                    frappe.db.set_value(
+                        "CMAP Assignment",
+                        item.get("name"),
+                        "teacher",
+                        assignments.get("teacher"),
+                    )
                     exists = True
                     break
 
-            # If teacher does not exist, append new entry
+                # If teacher does not exist, append new entry
             if not exists:
-                cmap.append(
-                    "table_vwbr",
+                frappe.get_doc(
                     {
+                        "doctype": "CMAP Assignment",
+                        "parenttype": "CMAP",
+                        "parentfield": "table_vwbr",
+                        "parent": cmap_name,
                         "school": filters.get("school"),
                         "division": assignments.get("division_name"),
                         "teacher": assignments.get("teacher"),
-                    },
-                )
+                    }
+                ).insert(ignore_permissions=True)
 
-            cmap.save()
+
+# def generate_assign_hash(data):
+#     query_map = {}
+#     for i in data:
+#         parent = i.get("division_name")
+#         if parent not in query_map:
+#             query_map[parent] = [i]
+#         else:
+#             query_map[parent].append(i)
+#     return query_map
+
+
+def get_cmap_assignments_data(data):
+    cmap = []
+    for period in data:
+        for assignments in data[period]:
+            cmap.append(assignments.get("name"))
+
+    cmap_assig_table = frappe.qb.DocType("CMAP Assignment")
+    query = (
+        frappe.qb.from_(cmap_assig_table)
+        .where((cmap_assig_table.parent.isin(cmap)))
+        .select("*")
+    )
+    query_data = query.run(as_dict=True)
+    # assuming every name will be unique in child table
+    # query_map = {i.get("name"): i for i in query_data}
+    query_map = {}
+    for i in query_data:
+        parent = i.get("parent")
+        if parent not in query_map:
+            query_map[parent] = [i]
+        else:
+            query_map[parent].append(i)
+
+    return query_map
