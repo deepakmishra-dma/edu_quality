@@ -161,7 +161,7 @@ def enqueued_specific_notice_docs(__args):
                 "subject": notice_subject,
                 "notice": notice_content,
                 "is_raw_html": 1 if raw_html else 0
-            }).insert()
+            }).insert(ignore_permissions=True)
             notice.reload()
             notice_ids.append(notice.name)
             success_ref_ids.append(student_id)
@@ -349,7 +349,7 @@ def enqueued_generic_notice_docs(__args):
                     "notice": content,
                     'academic_year': academic_year,
                     "is_raw_html": 1 if raw_html else 0
-                }).insert()
+                }).insert(ignore_permissions=True)
                 notice.reload()
                 notice_ids.append(notice.name)
         else:
@@ -365,7 +365,7 @@ def enqueued_generic_notice_docs(__args):
                     "student_status": student_status,
                     "notice": content,
                     'academic_year': academic_year
-                }).insert()
+                }).insert(ignore_permissions=True)
                 notice.reload()
                 notice_ids.append(notice.name)
     frappe.enqueue(enqueued_generic_notifications, queue="long", notice_ids=notice_ids)
@@ -555,6 +555,7 @@ def send_test_mail(**kwargs):
         content=notice_content,
         send_email=True,
         read_receipt=True,
+
     )
 
 
