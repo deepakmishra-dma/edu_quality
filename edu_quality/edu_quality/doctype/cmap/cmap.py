@@ -3,8 +3,10 @@
 
 import frappe
 from frappe.model.document import Document
+from frappe.query_builder.functions import Count
 from frappe.utils import parse_json
 import json
+from edu_quality.public.py.utils import check_admin_roles
 
 # edu_quality.edu_quality.doctype.cmap.cmap
 
@@ -243,3 +245,73 @@ def get_current_and_next_year(doctype, txt, searchfield, start, page_len, filter
     )
 
     return query.run()
+
+
+field_map = {
+    "Material Required": "material_required",
+    "Broadcast": "broadcast",
+    "Home Work": "home_work",
+    "Parent Note": "parent_note",
+    "Class Work": "class_work",
+}
+
+
+def calculate_product_materials(name):
+    cmap_doc = frappe.get_doc("CMAP", name)
+    products = cmap_doc.get("products", [])
+    product_names = [i.get("item") for i in products]
+    item_table = frappe.qb.DocType("Item")
+    material_table = frappe.qb.DocType("Item CMAP Material")
+
+    # only return products having one material to minimize looping and updates
+    query = (
+        frappe.qb.from_(item_table)
+        .inner_join(material_table)
+        .on(material_table.parent == item_table.name)
+        .where((item_table.name.isin(product_names)))
+        .groupby(item_table.name, material_table.material_type)
+        .having(Count(material_table.name) == 1)
+        .select(
+            material_table.name.as_("material_name"),
+            item_table.name.as_("item_name"),
+            material_table.material_type,
+            material_table.description,
+        )
+    )
+    data = query.run(as_dict=True)
+    try:
+        product_hash = {}
+        for i in data:
+            item = i.get("item_name")
+            if item not in product_hash:
+                product_hash[item] = [i]
+            else:
+                product_hash[item].append(i)
+
+        for product in products:
+            item = product.item
+            if item in product_hash:
+                for material in product_hash[item]:
+                    frappe.db.set_value(
+                        "Item Detail",
+                        product.name,
+                        field_map.get(material.get("material_type")),
+                        material.get("description", ""),
+                    )
+    except Exception as e:
+        frappe.log_error(
+            f"Error while calculating Product Material for {name}",
+            frappe.get_traceback(),
+        )
+
+
+# edu_quality.edu_quality.doctype.cmap.cmap.calculate_all_product_materials
+@frappe.whitelist()
+def calculate_all_product_materials():
+    user_roles = frappe.get_roles(frappe.session.user)
+    is_admin = check_admin_roles(user_roles, ["Content Admin", "Content Creator"])
+    if not is_admin:
+        frappe.throw(("User Is not allowed to run this method"))
+    cmaps = frappe.get_all("CMAP")
+    for i in cmaps:
+        frappe.enqueue(calculate_product_materials, name=i.get("name"), queue="long")
