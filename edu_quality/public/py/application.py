@@ -32,6 +32,8 @@ def autoname(doc, method=None):
 def set_guardian_permissions(doc):
     for guardian in doc.guardians:
         user = frappe.db.get_value("Guardian",guardian.guardian,"user")
+        if not user:
+            continue
         if not frappe.db.exists("User Permission",{"user":user,"allow":"Student Applicant","for_value":doc.name}):
             perm = frappe.new_doc("User Permission")
             perm.user = user
