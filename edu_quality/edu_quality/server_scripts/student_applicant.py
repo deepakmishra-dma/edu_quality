@@ -11,10 +11,30 @@ from edu_quality.public.py.discount import (
 )
 
 from edu_quality.public.py.payment_request import update_payment_request_after_discount
+from frappe.auth import LoginManager
 
 
-def after_insert(doc, method=None):
-    pass
+
+@frappe.whitelist(allow_guest=True)
+def get_web_form(hash):
+    if frappe.db.exists("Student Applicant",{'form_hash':hash}):
+        student_applicant = frappe.db.get_value("Student Applicant",{'form_hash':hash},'name')
+        if frappe.db.exists("User Permission",{'allow':"Student Applicant",'for_value':student_applicant}):
+            user = frappe.db.get_value("User Permission",{'allow':"Student Applicant",'for_value':student_applicant},'user')
+            login_manager = LoginManager()
+            login_manager.login_as(user)
+            return frappe.utils.get_url() + "/walnut-school-student-application/" + student_applicant + "/edit"
+        frappe.throw("User Not set for this Application!")
+    frappe.throw("Application Not Found!")
+
+
+
+def after_insert(doc,method=None):
+    doc.form_hash = generate_hash(doc.name)
+
+
+def generate_hash(val):
+    return frappe.generate_hash(val, length=20)
 
 
 
