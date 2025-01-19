@@ -41,10 +41,10 @@ def set_guardian_permissions(doc):
             perm.for_value = doc.name
             perm.insert(ignore_permissions=True)
 
-
+def after_save(doc,method= None):
+    set_guardian_permissions(doc)
 
 def before_save(doc, method=None):
-    set_guardian_permissions(doc)
     doc.fee_components = []
     doc.application_fees = 0
     if frappe.db.exists("Application Fees List", {"class_name": doc.program}):
