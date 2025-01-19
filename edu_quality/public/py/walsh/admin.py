@@ -14,6 +14,19 @@ def render_jinja(text, object):
     return frappe.render_template(text, object)
 
 
+def get_guardian_emails(student):
+    student_guardians = frappe.get_all(
+        "Student Guardian",
+        filters={'parent': student, 'parenttype': 'Student'},
+        fields=["guardian"]
+    )
+    guardians = [frappe.get_cached_doc("Guardian", g.get("guardian")) for g in student_guardians]
+    guardian_emails = []
+    for guardian in guardians:
+        guardian_emails.append(guardian.email_address)
+    return guardian_emails
+
+
 def send_notification(student_id, subject, notice_id):
     student_guardians = frappe.get_all(
         "Student Guardian",
@@ -82,8 +95,9 @@ def enqueued_specific_notice_emails(__args):
             notice_subject = render_jinja(subject, data)
             notice_content = render_jinja(content, data)
             student_email = student.student_email_id
+            guardian_email = get_guardian_emails(student_id)
             create_email(
-                recipients=[student_email],
+                recipients=[student_email] + guardian_email,
                 subject=notice_subject,
                 content=notice_content,
                 bcc=bcc_emails + ([school_admin_bcc_email] if school_admin_bcc_email else []),
@@ -241,11 +255,12 @@ def enqueued_generic_notice_emails(__args):
             notice_subject = render_jinja(subject, student)
             notice_content = render_jinja(content, student)
             student_email = student.student_email_id
+            guardian_email = get_guardian_emails(student.name)
             if not school_admin_bcc_email:
                 school = frappe.get_cached_doc("School", student.school)
                 school_admin_bcc_email = school.bcc_email_address
             create_email(
-                recipients=[student_email],
+                recipients=[student_email] + guardian_email,
                 subject=notice_subject,
                 content=notice_content,
                 bcc=bcc_emails + ([school_admin_bcc_email] if school_admin_bcc_email else []),
