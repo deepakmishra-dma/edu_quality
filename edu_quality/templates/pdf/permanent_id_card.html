@@ -342,7 +342,7 @@
       </div>
       <div class="detail-container">
         <div class="student-name">
-          <p style='font-size: {{reduce_font_size_steps(18,1,student_data.first_name,10,5)}}px;'>{{student_data.first_name}}</p>
+          <p style='font-size: {{reduce_font_size_steps(18,1,student_data.first_name,10,5)}}px;'>{{student_data.first_name.replace(" ", "&nbsp;")}}</p>
           <p style='font-size: {{reduce_font_size_steps(18,1,student_data.first_name,10,5)}}px;'>{{student_data.last_name}}</p>
         </div>
         <div class="academic-details">
