@@ -152,6 +152,7 @@ doc_events = {
         "on_update": "edu_quality.edu_quality.server_scripts.guardian.on_update",
     },
     "Student Applicant": {
+        "after_save": "edu_quality.public.py.application.after_save",
         "before_save": "edu_quality.public.py.application.before_save",
         "after_insert": "edu_quality.edu_quality.server_scripts.student_applicant.after_insert",
         "autoname": "edu_quality.public.py.application.autoname",
