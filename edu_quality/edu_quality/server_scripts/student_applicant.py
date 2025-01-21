@@ -41,6 +41,7 @@ def set_guardian_permissions(doc):
 
 def after_insert(doc,method=None):
     doc.form_hash = generate_hash(doc.name)
+    doc.save(ignnore_permissions=True)
     set_guardian_permissions(doc)
 
 def on_update(doc,method=None):
