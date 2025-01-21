@@ -43,6 +43,12 @@ def after_insert(doc,method=None):
     doc.form_hash = generate_hash(doc.name)
     doc.save(ignnore_permissions=True)
     set_guardian_permissions(doc)
+    try:
+        from nextai.funnel.custom_trigger import trigger_event
+        trigger_event(doc=doc, event_name="student_applicant_created")
+    except ImportError as e:
+        frappe.logger('student_applicant_creation').exception(e)
+
 
 def on_update(doc,method=None):
     set_guardian_permissions(doc)
