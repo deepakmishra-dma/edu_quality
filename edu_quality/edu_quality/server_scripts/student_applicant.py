@@ -41,7 +41,7 @@ def set_guardian_permissions(doc):
 
 def after_insert(doc,method=None):
     doc.form_hash = generate_hash(doc.name)
-    doc.save(ignnore_permissions=True)
+    doc.save(ignore_permissions=True)
     set_guardian_permissions(doc)
     try:
         from nextai.funnel.custom_trigger import trigger_event
