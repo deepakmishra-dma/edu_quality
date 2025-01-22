@@ -359,7 +359,7 @@ fixtures = [
                     "Undertaking OTP",
                     "Payment Link",
                     "Payment Link Remainder",
-                    "Guardian Creation",
+                    "Student Applicant Creation",
                 ],
             ]
         ],
