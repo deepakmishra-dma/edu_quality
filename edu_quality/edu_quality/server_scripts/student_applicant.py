@@ -44,8 +44,84 @@ def after_insert(doc,method=None):
     doc.save(ignnore_permissions=True)
     set_guardian_permissions(doc)
 
+def update_guardian_details(doc):
+    for guardian in doc.guardians:
+        guardian_doc = frappe.get_doc("Guardian", guardian.guardian)
+        if guardian.relation == 'Father':
+            guardian_doc.first_name = doc.fathers_first_name
+            guardian_doc.last_name = doc.fathers_last_name
+            guardian_doc.email_address = doc.fathers_email_id
+            guardian_doc.middle_name = doc.fathers_middle_name
+            name = doc.fathers_first_name + " " + doc.fathers_last_name
+            if name:
+                guardian_doc.guardian_name = name
+            guardian_doc.mobile_number = doc.fathers_mobile_number
+            guardian_doc.education = doc.fathers_education_qualification
+            guardian_doc.occupation = doc.fathers_profession 
+            guardian_doc.annual_income = doc.fathers_annual_income
+            guardian_doc.company_name = doc.fathers_office_name
+            guardian_doc.designation = doc.fathers_designation
+            guardian_doc.work_address = doc.fathers_office_address
+            guardian_doc.parent_status = doc.select_parent
+            guardian_doc.if_divorced = doc.parent_divorced
+            guardian_doc.address_line_1  = doc.address_line_1
+            guardian_doc.address_line_2  = doc.address_line_2
+            guardian_doc.city  = doc.city
+            guardian_doc.pincode  = doc.pincode
+            guardian_doc.save(ignore_permissions=True)
+        elif guardian.relation == 'Mother':
+            guardian_doc.first_name = doc.mothers_first_name
+            guardian_doc.last_name = doc.mothers_last_name
+            guardian_doc.email_address = doc.mothers_email_id
+            guardian_doc.middle_name = doc.mothers_middle_name
+            name = doc.mothers_first_name + " " + doc.mothers_last_name
+            if name:
+                guardian_doc.guardian_name = name
+            guardian_doc.mobile_number = doc.mothers_mobile_number
+            guardian_doc.education = doc.mothers_education_qualification
+            guardian_doc.occupation = doc.mothers_profession
+            guardian_doc.annual_income = doc.mothers_annual_income
+            guardian_doc.company_name = doc.mothers_office_name
+            guardian_doc.designation = doc.mothers_designation
+            guardian_doc.work_address = doc.mothers_office_address
+            guardian_doc.parent_status = doc.select_parent
+            guardian_doc.if_divorced = doc.parent_divorced
+            guardian_doc.address_line_1  = doc.address_line_1
+            guardian_doc.address_line_2  = doc.address_line_2
+            guardian_doc.city  = doc.city
+            guardian_doc.pincode  = doc.pincode
+            guardian_doc.save(ignore_permissions=True)
+        elif guardian.relation == 'Guardian':
+            guardian_doc.first_name = doc.guardians_first_name
+            guardian_doc.last_name = doc.guardians_last_name
+            guardian_doc.email_address = doc.guardians_email_id
+            guardian_doc.middle_name = doc.guardians_middle_name
+            name = doc.guardians_first_name + " " + doc.guardians_last_name
+            if name:
+                guardian_doc.guardian_name = name
+            guardian_doc.mobile_number = doc.guardians_mobile_number
+            guardian_doc.education = doc.guardians_education_qualification
+            guardian_doc.occupation = doc.guardians_profession
+            guardian_doc.annual_income = doc.guardians_annual_income
+            guardian_doc.company_name = doc.guardians_office_name
+            guardian_doc.designation = doc.guardians_designation
+            guardian_doc.work_address = doc.guardians_office_address
+            guardian_doc.parent_status = doc.select_parent
+            guardian_doc.if_divorced = doc.parent_divorced
+            guardian_doc.address_line_1  = doc.address_line_1
+            guardian_doc.address_line_2  = doc.address_line_2
+            guardian_doc.city  = doc.city
+            guardian_doc.pincode  = doc.pincode
+            guardian_doc.save(ignore_permissions=True)
+            
+            
+
+
+
+
 def on_update(doc,method=None):
     set_guardian_permissions(doc)
+    update_guardian_details(doc)
 
 
 def generate_hash(val):
