@@ -52,9 +52,9 @@ def after_insert(doc,method=None):
 
 def update_guardian_details(doc):
     try:
-        frappe.logger('update').exception('called')
+        mother_updated = 0 
+        guardian_updated = 0
         for guardian in doc.guardians:
-            frappe.logger('update').exception(guardian.relation)
             guardian_doc = frappe.get_doc("Guardian", guardian.guardian)
             if guardian.relation == 'Father':
                 frappe.logger('update').exception('father')
@@ -80,6 +80,7 @@ def update_guardian_details(doc):
                 guardian_doc.pincode  = doc.pincode
                 guardian_doc.save(ignore_permissions=True)
             elif guardian.relation == 'Mother':
+                mother_updated = 1
                 guardian_doc.first_name = doc.mother_first_name
                 guardian_doc.last_name = doc.mother_last_name
                 guardian_doc.email_address = doc.mother_email_id
@@ -102,11 +103,12 @@ def update_guardian_details(doc):
                 guardian_doc.pincode  = doc.pincode
                 guardian_doc.save(ignore_permissions=True)
             elif guardian.relation == 'Guardian':
+                guardian_updated = 1
                 guardian_doc.first_name = doc.guardian_first_name
                 guardian_doc.last_name = doc.guardian_last_name
                 guardian_doc.email_address = doc.guardian_email_id
                 guardian_doc.middle_name = doc.guardian_middle_name
-                name = doc.guardian_first_name + " " + doc.guardian_last_name
+                name = doc.guardian_first_name + " " + doc.guardian_last_name if doc.guardian_last_name else ""
                 if name:
                     guardian_doc.guardian_name = name
                 guardian_doc.mobile_number = doc.guardian_mobile_number
@@ -123,6 +125,62 @@ def update_guardian_details(doc):
                 guardian_doc.city  = doc.city
                 guardian_doc.pincode  = doc.pincode
                 guardian_doc.save(ignore_permissions=True)
+        if doc.mother_first_name and mother_updated == 0:
+            guardian_doc = frappe.new_doc("Guardian")
+            guardian_doc.first_name = doc.mother_first_name
+            guardian_doc.last_name = doc.mother_last_name
+            guardian_doc.email_address = doc.mother_email_id
+            guardian_doc.middle_name = doc.mother_middle_name
+            name = doc.mother_first_name + " " + doc.mother_last_name
+            if name:
+                guardian_doc.guardian_name = name
+            guardian_doc.mobile_number = doc.mother_mobile_number
+            guardian_doc.education = doc.mother_education_qualification
+            guardian_doc.occupation = doc.mother_profession
+            guardian_doc.annual_income = doc.mother_annual_income
+            guardian_doc.company_name = doc.mother_office_name
+            guardian_doc.designation = doc.mother_designation
+            guardian_doc.work_address = doc.mother_office_address
+            guardian_doc.parent_status = doc.select_parent
+            guardian_doc.if_divorced = doc.parent_divorced
+            guardian_doc.address_line_1  = doc.address_line_1
+            guardian_doc.address_line_2  = doc.address_line_2
+            guardian_doc.city  = doc.city
+            guardian_doc.pincode  = doc.pincode
+            guardian_doc.save(ignore_permissions=True)
+            doc.append('guardians', {
+                'guardian': guardian_doc.name,
+                'guardian_name': guardian_doc.guardian_name,
+                'relation': 'Mother'
+            })
+        if doc.guardian_first_name and guardian_updated == 0:
+            guardian_doc = frappe.new_doc("Guardian")
+            guardian_doc.first_name = doc.guardian_first_name
+            guardian_doc.last_name = doc.guardian_last_name
+            guardian_doc.email_address = doc.guardian_email_id
+            guardian_doc.middle_name = doc.guardian_middle_name
+            name = doc.guardian_first_name + " " + doc.guardian_last_name if doc.guardian_last_name else ""
+            if name:
+                guardian_doc.guardian_name = name
+            guardian_doc.mobile_number = doc.guardian_mobile_number
+            guardian_doc.education = doc.guardian_education_qualification
+            guardian_doc.occupation = doc.guardian_profession
+            guardian_doc.annual_income = doc.guardian_annual_income
+            guardian_doc.company_name = doc.guardian_office_name
+            guardian_doc.designation = doc.guardian_designation
+            guardian_doc.work_address = doc.guardian_office_address
+            guardian_doc.parent_status = doc.select_parent
+            guardian_doc.if_divorced = doc.parent_divorced
+            guardian_doc.address_line_1  = doc.address_line_1
+            guardian_doc.address_line_2  = doc.address_line_2
+            guardian_doc.city  = doc.city
+            guardian_doc.pincode  = doc.pincode
+            guardian_doc.save(ignore_permissions=True)
+            doc.append('guardians', {
+                'guardian': guardian_doc.name,
+                'guardian_name': guardian_doc.guardian_name,
+                'relation': 'Guardian'
+            })
     except Exception as e:
         frappe.logger('update').exception(e)            
             
