@@ -54,6 +54,7 @@ def update_guardian_details(doc):
     try:
         frappe.logger('update').exception('called')
         for guardian in doc.guardians:
+            frappe.logger('update').exception(guardian.relation)
             guardian_doc = frappe.get_doc("Guardian", guardian.guardian)
             if guardian.relation == 'Father':
                 frappe.logger('update').exception('father')
@@ -79,20 +80,20 @@ def update_guardian_details(doc):
                 guardian_doc.pincode  = doc.pincode
                 guardian_doc.save(ignore_permissions=True)
             elif guardian.relation == 'Mother':
-                guardian_doc.first_name = doc.mothers_first_name
-                guardian_doc.last_name = doc.mothers_last_name
-                guardian_doc.email_address = doc.mothers_email_id
-                guardian_doc.middle_name = doc.mothers_middle_name
-                name = doc.mothers_first_name + " " + doc.mothers_last_name
+                guardian_doc.first_name = doc.mother_first_name
+                guardian_doc.last_name = doc.mother_last_name
+                guardian_doc.email_address = doc.mother_email_id
+                guardian_doc.middle_name = doc.mother_middle_name
+                name = doc.mother_first_name + " " + doc.mother_last_name
                 if name:
                     guardian_doc.guardian_name = name
-                guardian_doc.mobile_number = doc.mothers_mobile_number
-                guardian_doc.education = doc.mothers_education_qualification
-                guardian_doc.occupation = doc.mothers_profession
-                guardian_doc.annual_income = doc.mothers_annual_income
-                guardian_doc.company_name = doc.mothers_office_name
-                guardian_doc.designation = doc.mothers_designation
-                guardian_doc.work_address = doc.mothers_office_address
+                guardian_doc.mobile_number = doc.mother_mobile_number
+                guardian_doc.education = doc.mother_education_qualification
+                guardian_doc.occupation = doc.mother_profession
+                guardian_doc.annual_income = doc.mother_annual_income
+                guardian_doc.company_name = doc.mother_office_name
+                guardian_doc.designation = doc.mother_designation
+                guardian_doc.work_address = doc.mother_office_address
                 guardian_doc.parent_status = doc.select_parent
                 guardian_doc.if_divorced = doc.parent_divorced
                 guardian_doc.address_line_1  = doc.address_line_1
@@ -101,20 +102,20 @@ def update_guardian_details(doc):
                 guardian_doc.pincode  = doc.pincode
                 guardian_doc.save(ignore_permissions=True)
             elif guardian.relation == 'Guardian':
-                guardian_doc.first_name = doc.guardians_first_name
-                guardian_doc.last_name = doc.guardians_last_name
-                guardian_doc.email_address = doc.guardians_email_id
-                guardian_doc.middle_name = doc.guardians_middle_name
-                name = doc.guardians_first_name + " " + doc.guardians_last_name
+                guardian_doc.first_name = doc.guardian_first_name
+                guardian_doc.last_name = doc.guardian_last_name
+                guardian_doc.email_address = doc.guardian_email_id
+                guardian_doc.middle_name = doc.guardian_middle_name
+                name = doc.guardian_first_name + " " + doc.guardian_last_name
                 if name:
                     guardian_doc.guardian_name = name
-                guardian_doc.mobile_number = doc.guardians_mobile_number
-                guardian_doc.education = doc.guardians_education_qualification
-                guardian_doc.occupation = doc.guardians_profession
-                guardian_doc.annual_income = doc.guardians_annual_income
-                guardian_doc.company_name = doc.guardians_office_name
-                guardian_doc.designation = doc.guardians_designation
-                guardian_doc.work_address = doc.guardians_office_address
+                guardian_doc.mobile_number = doc.guardian_mobile_number
+                guardian_doc.education = doc.guardian_education_qualification
+                guardian_doc.occupation = doc.guardian_profession
+                guardian_doc.annual_income = doc.guardian_annual_income
+                guardian_doc.company_name = doc.guardian_office_name
+                guardian_doc.designation = doc.guardian_designation
+                guardian_doc.work_address = doc.guardian_office_address
                 guardian_doc.parent_status = doc.select_parent
                 guardian_doc.if_divorced = doc.parent_divorced
                 guardian_doc.address_line_1  = doc.address_line_1
