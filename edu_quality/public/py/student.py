@@ -41,7 +41,10 @@ def autoname(doc, method=None):
         else:
             prefix = prefix + ref_id
         doc.name = prefix
+        doc.email_id = doc.name+"@walnutedu.in"
         doc.reference_number = doc.name[2:]
+
+
 
 def get_last_id(prefix):
     val = frappe.db.get_all("Student",[["name", "Like", prefix + "%"]],'name',order_by="name")
@@ -57,6 +60,7 @@ def get_last_id(prefix):
 
 def before_insert(doc, method=None):
     frappe.flags.in_import = True
+    doc.email_id = doc.name+"@walnutedu.in"
 
 
 def before_save(doc, method=None):
