@@ -11,10 +11,190 @@ from edu_quality.public.py.discount import (
 )
 
 from edu_quality.public.py.payment_request import update_payment_request_after_discount
+from frappe.auth import LoginManager
 
 
-def after_insert(doc, method=None):
-    pass
+
+@frappe.whitelist(allow_guest=True)
+def get_web_form(hash):
+    if frappe.db.exists("Student Applicant",{'form_hash':hash}):
+        student_applicant = frappe.db.get_value("Student Applicant",{'form_hash':hash},'name')
+        if frappe.db.exists("User Permission",{'allow':"Student Applicant",'for_value':student_applicant}):
+            user = frappe.db.get_value("User Permission",{'allow':"Student Applicant",'for_value':student_applicant},'user')
+            login_manager = LoginManager()
+            login_manager.login_as(user)
+            return frappe.utils.get_url() + "/walnut-school-student-application/" + student_applicant + "/edit"
+        frappe.throw("User Not set for this Application!")
+    frappe.throw("Application Not Found!")
+
+def set_guardian_permissions(doc):
+    for guardian in doc.guardians:
+        user = frappe.db.get_value("Guardian",guardian.guardian,"user")
+        if not user:
+            continue
+        if not frappe.db.exists("User Permission",{"user":user,"allow":"Student Applicant","for_value":doc.name}):
+            perm = frappe.new_doc("User Permission")
+            perm.user = user
+            perm.allow = "Student Applicant"
+            perm.for_value = doc.name
+            perm.insert(ignore_permissions=True)
+
+def after_insert(doc,method=None):
+    doc.form_hash = generate_hash(doc.name)
+    doc.save(ignore_permissions=True)
+    set_guardian_permissions(doc)
+    try:
+        from nextai.funnel.custom_trigger import trigger_event
+        trigger_event(doc=doc, event_name="student_applicant_created")
+    except ImportError as e:
+        frappe.logger('student_applicant_creation').exception(e)
+
+
+def update_guardian_details(doc):
+    try:
+        mother_updated = 0 
+        guardian_updated = 0
+        for guardian in doc.guardians:
+            guardian_doc = frappe.get_doc("Guardian", guardian.guardian)
+            if guardian.relation == 'Father':
+                frappe.logger('update').exception('father')
+                guardian_doc.first_name = doc.fathers_first_name
+                guardian_doc.last_name = doc.fathers_last_name
+                guardian_doc.email_address = doc.fathers_email_id
+                guardian_doc.middle_name = doc.fathers_middle_name
+                name = doc.fathers_first_name + " " + doc.fathers_last_name
+                if name:
+                    guardian_doc.guardian_name = name
+                guardian_doc.mobile_number = doc.fathers_mobile_number
+                guardian_doc.education = doc.fathers_education_qualification
+                guardian_doc.occupation = doc.fathers_profession 
+                guardian_doc.annual_income = doc.fathers_annual_income
+                guardian_doc.company_name = doc.fathers_office_name
+                guardian_doc.designation = doc.fathers_designation
+                guardian_doc.work_address = doc.fathers_office_address
+                guardian_doc.parent_status = doc.select_parent
+                guardian_doc.if_divorced = doc.parent_divorced
+                guardian_doc.address_line_1  = doc.address_line_1
+                guardian_doc.address_line_2  = doc.address_line_2
+                guardian_doc.city  = doc.city
+                guardian_doc.pincode  = doc.pincode
+                guardian_doc.save(ignore_permissions=True)
+            elif guardian.relation == 'Mother':
+                mother_updated = 1
+                guardian_doc.first_name = doc.mother_first_name
+                guardian_doc.last_name = doc.mother_last_name
+                guardian_doc.email_address = doc.mother_email_id
+                guardian_doc.middle_name = doc.mother_middle_name
+                name = doc.mother_first_name + " " + doc.mother_last_name
+                if name:
+                    guardian_doc.guardian_name = name
+                guardian_doc.mobile_number = doc.mother_mobile_number
+                guardian_doc.education = doc.mother_education_qualification
+                guardian_doc.occupation = doc.mother_profession
+                guardian_doc.annual_income = doc.mother_annual_income
+                guardian_doc.company_name = doc.mother_office_name
+                guardian_doc.designation = doc.mother_designation
+                guardian_doc.work_address = doc.mother_office_address
+                guardian_doc.parent_status = doc.select_parent
+                guardian_doc.if_divorced = doc.parent_divorced
+                guardian_doc.address_line_1  = doc.address_line_1
+                guardian_doc.address_line_2  = doc.address_line_2
+                guardian_doc.city  = doc.city
+                guardian_doc.pincode  = doc.pincode
+                guardian_doc.save(ignore_permissions=True)
+            elif guardian.relation == 'Guardian':
+                guardian_updated = 1
+                guardian_doc.first_name = doc.guardian_first_name
+                guardian_doc.last_name = doc.guardian_last_name
+                guardian_doc.email_address = doc.guardian_email_id
+                guardian_doc.middle_name = doc.guardian_middle_name
+                name = doc.guardian_first_name + " " + doc.guardian_last_name if doc.guardian_last_name else ""
+                if name:
+                    guardian_doc.guardian_name = name
+                guardian_doc.mobile_number = doc.guardian_mobile_number
+                guardian_doc.education = doc.guardian_education_qualification
+                guardian_doc.occupation = doc.guardian_profession
+                guardian_doc.annual_income = doc.guardian_annual_income
+                guardian_doc.company_name = doc.guardian_office_name
+                guardian_doc.designation = doc.guardian_designation
+                guardian_doc.work_address = doc.guardian_office_address
+                guardian_doc.parent_status = doc.select_parent
+                guardian_doc.if_divorced = doc.parent_divorced
+                guardian_doc.address_line_1  = doc.address_line_1
+                guardian_doc.address_line_2  = doc.address_line_2
+                guardian_doc.city  = doc.city
+                guardian_doc.pincode  = doc.pincode
+                guardian_doc.save(ignore_permissions=True)
+        if doc.mother_first_name and mother_updated == 0:
+            guardian_doc = frappe.new_doc("Guardian")
+            guardian_doc.first_name = doc.mother_first_name
+            guardian_doc.last_name = doc.mother_last_name
+            guardian_doc.email_address = doc.mother_email_id
+            guardian_doc.middle_name = doc.mother_middle_name
+            name = doc.mother_first_name + " " + doc.mother_last_name
+            if name:
+                guardian_doc.guardian_name = name
+            guardian_doc.mobile_number = doc.mother_mobile_number
+            guardian_doc.education = doc.mother_education_qualification
+            guardian_doc.occupation = doc.mother_profession
+            guardian_doc.annual_income = doc.mother_annual_income
+            guardian_doc.company_name = doc.mother_office_name
+            guardian_doc.designation = doc.mother_designation
+            guardian_doc.work_address = doc.mother_office_address
+            guardian_doc.parent_status = doc.select_parent
+            guardian_doc.if_divorced = doc.parent_divorced
+            guardian_doc.address_line_1  = doc.address_line_1
+            guardian_doc.address_line_2  = doc.address_line_2
+            guardian_doc.city  = doc.city
+            guardian_doc.pincode  = doc.pincode
+            guardian_doc.save(ignore_permissions=True)
+            doc.append('guardians', {
+                'guardian': guardian_doc.name,
+                'guardian_name': guardian_doc.guardian_name,
+                'relation': 'Mother'
+            })
+        if doc.guardian_first_name and guardian_updated == 0:
+            guardian_doc = frappe.new_doc("Guardian")
+            guardian_doc.first_name = doc.guardian_first_name
+            guardian_doc.last_name = doc.guardian_last_name
+            guardian_doc.email_address = doc.guardian_email_id
+            guardian_doc.middle_name = doc.guardian_middle_name
+            name = doc.guardian_first_name + " " + doc.guardian_last_name if doc.guardian_last_name else ""
+            if name:
+                guardian_doc.guardian_name = name
+            guardian_doc.mobile_number = doc.guardian_mobile_number
+            guardian_doc.education = doc.guardian_education_qualification
+            guardian_doc.occupation = doc.guardian_profession
+            guardian_doc.annual_income = doc.guardian_annual_income
+            guardian_doc.company_name = doc.guardian_office_name
+            guardian_doc.designation = doc.guardian_designation
+            guardian_doc.work_address = doc.guardian_office_address
+            guardian_doc.parent_status = doc.select_parent
+            guardian_doc.if_divorced = doc.parent_divorced
+            guardian_doc.address_line_1  = doc.address_line_1
+            guardian_doc.address_line_2  = doc.address_line_2
+            guardian_doc.city  = doc.city
+            guardian_doc.pincode  = doc.pincode
+            guardian_doc.save(ignore_permissions=True)
+            doc.append('guardians', {
+                'guardian': guardian_doc.name,
+                'guardian_name': guardian_doc.guardian_name,
+                'relation': 'Guardian'
+            })
+    except Exception as e:
+        frappe.logger('update').exception(e)            
+            
+
+
+
+
+def on_update(doc,method=None):
+    set_guardian_permissions(doc)
+    update_guardian_details(doc)
+
+
+def generate_hash(val):
+    return frappe.generate_hash(val, length=20)
 
 
 

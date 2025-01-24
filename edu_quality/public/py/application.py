@@ -19,6 +19,8 @@ from edu_quality.edu_quality.server_scripts.utils import (
 )
 from edu_quality.public.py.student import update_student
 
+from edu_quality.edu_quality.server_scripts.guardian import set_student_permissions
+
 
 def autoname(doc, method=None):
     if doc.school_code and doc.class_name:
@@ -27,6 +29,9 @@ def autoname(doc, method=None):
         naming_format = f"{school_code}-{class_name}-LD-"
         doc.name = make_autoname(naming_format + ".#####")
 
+
+
+    
 
 def before_save(doc, method=None):
     doc.fee_components = []
