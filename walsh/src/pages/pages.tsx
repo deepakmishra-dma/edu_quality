@@ -1,17 +1,16 @@
-import { Route, Routes, useNavigate } from "react-router-dom";
-import { Authenticated, useIsAuthenticated } from "@refinedev/core";
-import { Login } from "./login.tsx";
-import { Header } from "../components";
-import { NoticeList } from "./notices";
-import { NoticeDetails } from "./notices/details.tsx";
-import { ErrorComponent } from "@refinedev/mantine";
-import { AppShell } from "@mantine/core";
+import {Route, Routes, useNavigate} from "react-router-dom";
+import {Authenticated, useIsAuthenticated} from "@refinedev/core";
+import {Login} from "./login.tsx";
+import {Header} from "../components";
+import {NoticeList} from "./notices";
+import {NoticeDetails} from "./notices/details.tsx";
+import {ErrorComponent} from "@refinedev/mantine";
+import {AppShell} from "@mantine/core";
 import Navbar from "../components/organisms/navbar";
-import React, { useEffect } from "react";
+import React, {useEffect} from "react";
 import Cmap from "./cmap";
 import CmapList from "./cmap/list.tsx";
 import LeaveNote from "./leave-note.tsx";
-import { SchoolCalendar } from "./SchoolCalender.tsx";
 
 const Pages = () => {
   // const location = useLocation()
@@ -47,24 +46,23 @@ const Pages = () => {
         <Route path="/*" element={
           <Authenticated
             key="authenticated-outer"
-            fallback={<Login />}
+            fallback={<Login/>}
             v3LegacyAuthProviderCompatible
           >
-            <Header setNavbarOpen={setIsNavBarOpen} navbarOpen={isNavBarOpen} />
-            <Navbar isOpen={isNavBarOpen} setIsOpen={setIsNavBarOpen} />
+            <Header setNavbarOpen={setIsNavBarOpen} navbarOpen={isNavBarOpen}/>
+            <Navbar isOpen={isNavBarOpen} setIsOpen={setIsNavBarOpen}/>
             <Routes>
-              <Route path="/" element={<NoticeList />} />
-              <Route path="/stared" element={<NoticeList staredOnly />} />
-              <Route path="/archived" element={<NoticeList archivedOnly />} />
-              <Route path="/calender" element={<SchoolCalendar />} />
-              <Route path="/notice/:id" element={<NoticeDetails />} />
-              <Route path="/cmap" element={<Cmap />} />
-              <Route path="/cmap/list" element={<CmapList />} />
-              <Route path="/leave-note" element={<LeaveNote />} />
-              <Route path="*" element={<ErrorComponent />} />
+              <Route path="/" element={<NoticeList/>}/>
+              <Route path="/stared" element={<NoticeList staredOnly/>}/>
+              <Route path="/archived" element={<NoticeList archivedOnly/>}/>
+              <Route path="/notice/:id" element={<NoticeDetails/>}/>
+              <Route path="/cmap" element={<Cmap/>}/>
+              <Route path="/cmap/list" element={<CmapList/>}/>
+              <Route path="/leave-note" element={<LeaveNote/>}/>
+              <Route path="*" element={<ErrorComponent/>}/>
             </Routes>
           </Authenticated>
-        } />
+        }/>
       </Routes>
     </AppShell>
   );

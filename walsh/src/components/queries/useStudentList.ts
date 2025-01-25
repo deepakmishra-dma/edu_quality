@@ -1,10 +1,9 @@
-import { useCustom } from "@refinedev/core";
+import {useCustom} from "@refinedev/core";
 
 export interface Student {
   name: string
   first_name: string
   reference_number: string
-  school: string
 }
 
 const useStudentList = () => {
