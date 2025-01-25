@@ -5,7 +5,7 @@ from frappe.utils import today
 
 from edu_quality.api.google_admin import suspend_google_user, unsuspend_google_user
 from edu_quality.overrides import make_payment_request
-
+from edu_quality.edu_quality.public.py.application import create_student_account
 
 def autoname(doc, method=None):
     school_prefixes = {
@@ -41,6 +41,7 @@ def autoname(doc, method=None):
         else:
             prefix = prefix + ref_id
         doc.name = prefix
+        doc.student_email_id = doc.name + "@walnutedu.in"
         doc.reference_number = doc.name[2:]
 
 def get_last_id(prefix):
@@ -57,6 +58,11 @@ def get_last_id(prefix):
 
 def before_insert(doc, method=None):
     frappe.flags.in_import = True
+
+def after_insert(doc,method=None):
+    if doc.student_applicant:
+        applicant = frappe.get_doc("Student Applicant", doc.student_applicant)
+        create_student_account(doc,applicant)
 
 
 def before_save(doc, method=None):
