@@ -29,20 +29,11 @@ def autoname(doc, method=None):
         naming_format = f"{school_code}-{class_name}-LD-"
         doc.name = make_autoname(naming_format + ".#####")
 
-def set_guardian_permissions(doc):
-    for guardian in doc.guardians:
-        user = frappe.db.get_value("Guardian",guardian.guardian,"user")
-        if not frappe.db.exists("User Permission",{"user":user,"allow":"Student Applicant","for_value":doc.name}):
-            perm = frappe.new_doc("User Permission")
-            perm.user = user
-            perm.allow = "Student Applicant"
-            perm.for_value = doc.name
-            perm.insert(ignore_permissions=True)
 
 
+    
 
 def before_save(doc, method=None):
-    set_guardian_permissions(doc)
     doc.fee_components = []
     doc.application_fees = 0
     if frappe.db.exists("Application Fees List", {"class_name": doc.program}):
