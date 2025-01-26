@@ -1,16 +1,17 @@
-import {Box, Burger, Navbar as MantineNavbar, NavLink, Stack} from '@mantine/core';
-import React, {useEffect} from "react";
-import {IconArchive, IconCalendarOff, IconLogout, IconMessage, IconReload, IconStack2, IconStar} from "@tabler/icons";
-import {useLogout} from "@refinedev/core";
-import {useLocation, useNavigate} from "react-router-dom";
+import { Box, Burger, Navbar as MantineNavbar, NavLink, Stack } from '@mantine/core';
+
+import React, { useEffect } from "react";
+import { IconArchive, IconCalendarOff, IconLogout, IconMessage, IconReload, IconStack2, IconStar, IconCalendar } from "@tabler/icons";
+import { useLogout } from "@refinedev/core";
+import { useLocation, useNavigate } from "react-router-dom";
 
 interface NavbarProps {
   isOpen: boolean;
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-const Navbar: React.FC<NavbarProps> = ({setIsOpen, isOpen}) => {
-  const {mutate: logout} = useLogout()
+const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
+  const { mutate: logout } = useLogout()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -66,7 +67,7 @@ const Navbar: React.FC<NavbarProps> = ({setIsOpen, isOpen}) => {
               height: 36,
               width: 40,
               backgroundSize: 'cover',
-            }}/>
+            }} />
           </Box>
           <Stack
             onClick={() => setIsOpen(o => !o)}
@@ -82,30 +83,31 @@ const Navbar: React.FC<NavbarProps> = ({setIsOpen, isOpen}) => {
               marginLeft: 'auto',
               marginRight: 10
             }}>
-            <Burger opened={isOpen}/>
+            <Burger opened={isOpen} />
           </Stack>
         </Stack>
         {
           [
-            {label: 'Messages', icon: IconMessage, location: '/',},
-            {label: 'Curriculum Updates', icon: IconStack2, location: '/cmap',},
-            {label: 'Leave / Sick Note', icon: IconCalendarOff, location: '/leave-note',},
-            {label: 'Starred Messages', icon: IconStar, location: '/stared',},
-            {label: 'Archived Messages', icon: IconArchive, location: '/archived',},
+            { label: 'Messages', icon: IconMessage, location: '/', },
+            { label: 'Curriculum Updates', icon: IconStack2, location: '/cmap', },
+            { label: 'Leave / Sick Note', icon: IconCalendarOff, location: '/leave-note', },
+            { label: 'School Calender', icon: IconCalendar, location: '/calender', },
+            { label: 'Starred Messages', icon: IconStar, location: '/stared', },
+            { label: 'Archived Messages', icon: IconArchive, location: '/archived', },
             {
               label: 'Reload', icon: IconReload, onClick: () => {
                 window.location.reload()
               }
             },
-            {label: 'Logout', icon: IconLogout, onClick: () => logout()}
+            { label: 'Logout', icon: IconLogout, onClick: () => logout() }
           ].map(n => {
             return (
               <NavLink
                 key={n.label}
                 onClick={() => n.location ? changeLocation(n.location) : n?.onClick?.()}
-                sx={{margin: 5, boxSizing: 'border-box', maxWidth: '100%', borderBottom: '1px solid rgba(0,0,0,0.1)'}}
+                sx={{ margin: 5, boxSizing: 'border-box', maxWidth: '100%', borderBottom: '1px solid rgba(0,0,0,0.1)' }}
                 label={n.label}
-                icon={<n.icon size={35} stroke={1.5} color='#00b8ff'/>}
+                icon={<n.icon size={35} stroke={1.5} color='#00b8ff' />}
               />
             )
           })
