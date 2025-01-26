@@ -5,7 +5,7 @@ from frappe.utils import today
 
 from edu_quality.api.google_admin import suspend_google_user, unsuspend_google_user
 from edu_quality.overrides import make_payment_request
-from edu_quality.edu_quality.public.py.application import create_student_account
+from edu_quality.public.py.application import create_student_account
 
 def autoname(doc, method=None):
     school_prefixes = {
