@@ -5,7 +5,50 @@ from frappe.utils import today
 
 from edu_quality.api.google_admin import suspend_google_user, unsuspend_google_user
 from edu_quality.overrides import make_payment_request
-from edu_quality.public.py.application import create_student_account
+from edu_quality.api.google_admin import create_google_user, add_user_to_group
+
+def find_first_key_with_value(list_of_dicts, key, value):
+    for dictionary in list_of_dicts:
+        frappe.errprint(dictionary["email_address"])
+        if key in dictionary and dictionary[key]:
+            return dictionary[key]
+
+def get_phone_no_from_guardians(guardians):
+    guardians_names = [guardian.get("guardian") for guardian in guardians]
+    guardian_data = frappe.db.get_list(
+        "Guardian",
+        filters=[["name", "in", guardians_names]],
+        fields=["mobile_number", "email_address"],
+    )
+    mobile_number = find_first_key_with_value(guardian_data, "mobile_number", "")
+    email_address = find_first_key_with_value(guardian_data, "email_address", "")
+    return mobile_number, email_address
+
+def create_student_account(student, student_applicant):
+    google_service_settings = frappe.get_single("Google Service Account")
+
+    if google_service_settings.get("create_student_workspace"):
+        mobile_number, email_address = get_phone_no_from_guardians(
+            student_applicant.get("guardians")
+        )
+        email_key = student.get("name")
+        first_name = student_applicant.get("first_name")
+        last_name = student_applicant.get("last_name")
+        created_email = create_google_user(
+            google_service_settings.get("google_account_prefix", "") + email_key,
+            first_name,
+            last_name,
+            email_address,
+            mobile_number,
+        ).get("primaryEmail", "")
+
+        group_email = frappe.get_value('School', student.school, 'group_email')
+        if group_email:
+            add_user_to_group(created_email, group_email)
+
+        student.student_email_id = created_email
+        student.save()
+
 
 def autoname(doc, method=None):
     school_prefixes = {
