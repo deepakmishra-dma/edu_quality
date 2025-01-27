@@ -187,6 +187,7 @@ doc_events = {
     "Student": {
         "autoname": "edu_quality.public.py.student.autoname",
         "before_insert": "edu_quality.public.py.student.before_insert",
+        "after_insert": "edu_quality.public.py.student.after_insert",
         "before_save": "edu_quality.public.py.student.before_save",
         "on_update": "edu_quality.public.py.student.on_update",
     },
