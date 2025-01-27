@@ -43,33 +43,36 @@ def create_google_user(email_key, first_name, last_name, recovery_mail, phone_no
     except:
         exception = True
 
-    if exception:
-        new_user = {
-            "primaryEmail": f"{email_key}@walnutedu.in",
-            "name": {
-                "givenName": first_name,
-                "familyName": last_name,
-            },
-            # "recoveryPhone": add_indian_country_code(phone_no, True),
-            "password": "walnut@12345",
-            "changePasswordAtNextLogin": True,
-            "ipWhitelisted": False,
-            # "recoveryEmail": recovery_mail,
-            "orgUnitPath": f"/Walnut School at Wakad/Students",
-        }
-        if recovery_mail:
-            new_user["recoveryEmail"] = recovery_mail
+    try:
+        if exception:
+            new_user = {
+                "primaryEmail": f"{email_key}@walnutedu.in",
+                "name": {
+                    "givenName": first_name,
+                    "familyName": last_name,
+                },
+                # "recoveryPhone": add_indian_country_code(phone_no, True),
+                "password": "walnut@12345",
+                "changePasswordAtNextLogin": True,
+                "ipWhitelisted": False,
+                # "recoveryEmail": recovery_mail,
+                "orgUnitPath": f"/Walnut School at Wakad/Students",
+            }
+            if recovery_mail:
+                new_user["recoveryEmail"] = recovery_mail
 
-        if phone_no:
-            new_user["recoveryPhone"] = add_indian_country_code(phone_no, True)
+            if phone_no:
+                new_user["recoveryPhone"] = add_indian_country_code(phone_no, True)
 
-        return (
-            user_service.users()
-            .insert(
-                body=new_user,
+            return (
+                user_service.users()
+                .insert(
+                    body=new_user,
+                )
+                .execute()
             )
-            .execute()
-        )
+    except Exception as e:
+        frappe.log_error("Google Account Creation failed",str(frappe.get_traceback()))
     # frappe.log_error("google account created with" + str(existing_user))
     return existing_user
 
