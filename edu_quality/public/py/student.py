@@ -91,8 +91,8 @@ def autoname(doc, method=None):
         doc.name = prefix
         doc.student_email_id = doc.name + "@walnutedu.in"
         doc.reference_number = doc.name[2:]
-
-
+        
+        
 def get_last_id(prefix):
     val = frappe.db.get_all(
         "Student", [["name", "Like", prefix + "%"]], "name", order_by="name"
