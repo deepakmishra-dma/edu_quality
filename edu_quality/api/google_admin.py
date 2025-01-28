@@ -75,14 +75,16 @@ def create_google_user(email_key, first_name, last_name, recovery_mail, phone_no
 
             if phone_no:
                 new_user["recoveryPhone"] = add_indian_country_code(phone_no, True)
-
-            return (
+            frappe.log_error("account creating for ", str(new_user))
+            resp = (
                 user_service.users()
                 .insert(
                     body=new_user,
                 )
                 .execute()
             )
+            frappe.log_error("Account created for ", str(resp))
+            return resp
     except Exception as e:
         frappe.log_error("Google Account Creation failed", str(frappe.get_traceback()))
     # frappe.log_error("google account created with" + str(existing_user))
