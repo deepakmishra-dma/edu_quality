@@ -52,7 +52,9 @@ def create_google_user(email_key, first_name, last_name, recovery_mail, phone_no
             )
             .execute()
         )
+        frappe.log_error("Account get for  ", str(existing_user))
     except:
+        frappe.log_error("Correct exception")
         exception = True
 
     try:
