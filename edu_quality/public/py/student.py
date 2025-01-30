@@ -43,13 +43,15 @@ def create_student_account(student, student_applicant):
             last_name,
             email_address,
             mobile_number,
-        ).get("primaryEmail", "")
+        )
+        if created_email:
+            created_email=created_email.get("primaryEmail", "")
+        else:
+            created_email = student.student_email_id
 
         group_email = frappe.get_value("School", student.school, "group_email")
         if group_email:
             add_user_to_group(created_email, group_email)
-
-        student.student_email_id = created_email
         student.save()
 
 
