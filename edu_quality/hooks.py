@@ -133,7 +133,7 @@ permission_query_conditions = {
 # Override standard doctype classes
 
 override_doctype_class = {
-    "Notification Settings":"edu_quality.overrides.notification_settings.CustomNotificationSettings",
+    "Notification Settings":"edu_quality.edu_quality.overrides.notification_settings.CustomNotificationSettings",
     "Payment Request": "edu_quality.overrides.CustomPaymentRequest",
     "Fee Schedule": "edu_quality.public.py.fee_schedule.CustomFeeSchedule",
     "Program Enrollment": "edu_quality.public.py.enrollment_override.CustomProgramEnrollment",
