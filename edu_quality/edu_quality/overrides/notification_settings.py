@@ -5,7 +5,6 @@ from frappe.desk.doctype.notification_settings.notification_settings import Noti
 
 
 class CustomNotificationSettings(NotificationSettings):
-    
     def toggle_notifications(user: str, enable: bool = False):
         if not frappe.db.exists("Notification Settings",user):
             return 
