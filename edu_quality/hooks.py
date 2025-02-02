@@ -498,7 +498,8 @@ fixtures = [
 
 
 after_migrate = [
-    "edu_quality.public.py.utils.migrate"
+    "edu_quality.public.py.utils.migrate",
+    "edu_quality.edu_quality.server_scripts.after_migrate.after_migrate"
 ]
 
 website_route_rules = [
