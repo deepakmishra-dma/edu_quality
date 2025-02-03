@@ -89,7 +89,7 @@ def enqueued_specific_notice_emails(__args):
             student = frappe.get_cached_doc("Student", student_id)
             if not school_admin_bcc_email:
                 school = frappe.get_cached_doc("School", student.school)
-                school_admin_bcc_email = school.bcc_email_address
+                school_admin_bcc_email = school.email_address
             data = {
                 **student.as_dict(),
                 **row
@@ -261,7 +261,7 @@ def enqueued_generic_notice_emails(__args):
             guardian_email = get_guardian_emails(student.name)
             if not school_admin_bcc_email:
                 school = frappe.get_cached_doc("School", student.school)
-                school_admin_bcc_email = school.bcc_email_address
+                school_admin_bcc_email = school.email_address
             create_email(
                 recipients=[student_email] + guardian_email,
                 subject=notice_subject,
