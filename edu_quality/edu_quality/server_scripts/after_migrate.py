@@ -1,0 +1,63 @@
+import frappe 
+from frappe.utils import get_url
+
+def after_migrate():
+    site_url = get_url()
+    frappe.logger('migrate').exception(f"Site URL: {site_url}")
+    if not ("uat" in site_url or "test" in site_url):
+        return 
+    replace_emails() 
+    replace_account_credentials()
+
+def replace_emails():
+    data = frappe.db.get_all("Guardian", fields=["name","email_address"])
+    for guardian in data:
+        if guardian.email_address:
+            new_email = guardian.email_address.split("@")[0] + "@yopmail.com"
+            frappe.db.set_value("Guardian",guardian.name,{"email_address":new_email,"mobile_number":""})
+        else:
+            frappe.db.set_value("Guardian",guardian.name,"mobile_number","")
+    student = frappe.db.get_all("Student", fields=["name","student_email_id"])
+    for st in student:
+        new_email = st.student_email_id.split("@")[0] + "@yopmail.com"
+        frappe.db.set_value("Student",st.name,
+        {
+            "student_email_id":new_email,
+            "student_mobile_number":"",
+            "primary_contact":"",
+            "whatsapp_number":"",
+            })
+
+def replace_account_credentials():
+    frappe.db.set_single_value("Whatsapp Settings",{
+        "access_token": "",
+        "phone_number_id": "",
+        "business_account_id":"",
+        "app_id":"",
+        "webhook_verify_token":""
+    })
+    frappe.db.set_single_value("Google Drive",{
+        "enable": 0,
+        "backup_folder_name": "",
+        "frequency":"",
+        "email":"",
+        "send_email_for_successful_backup":0,
+        "file_backup":0,
+        "backup_folder_id":"",
+        "last_backup_on":""
+    })
+    frappe.db.set_single_value("Google Settings",{
+        "client_id":"",
+        "client_secret":"",
+        "api_key":"",
+        "enable":0
+    })
+    frappe.db.set_single_value("Google Service Account",{
+        "service_account_credentials_json":"",
+        "google_account_prefix":"uat",
+        "create_student_workspace":0,
+        "root_folder":"",
+        "class_photo_folder":"",
+        "products_folder":"",
+        "id_card_folder":""
+    })

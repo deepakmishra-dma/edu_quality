@@ -58,24 +58,26 @@ def enqueued_specific_notice_emails(__args):
     csv_file = __args.get("csv_file")
     subject = __args.get("subject")
     content = __args.get("notice")
-    bcc_email_groups = __args.get("bcc_email_groups")
 
     csv_file_path = frappe.get_site_path() + csv_file
     csv_text = open(csv_file_path, mode="r", encoding="utf-8-sig").read()
 
-    bcc_emails = []
-    if bcc_email_groups:
-        for bcc_email_group in bcc_email_groups:
-            bcc_emails = bcc_emails + [eg.email for eg in frappe.get_all(
-                "Email Group Member",
-                filters={"email_group": bcc_email_group},
-                fields=["email"]
-            )]
-        # remove duplicates from bcc_emails
-        bcc_emails = list(set(bcc_emails))
-
     csv_data = csv.DictReader(csv_text.splitlines())
     csv_data = list(csv_data)
+
+    school = csv_data[0].get("school")
+
+    bcc_email_group = frappe.get_value("School", school, 'bcc_email_address')
+
+    bcc_emails = []
+    if bcc_email_group:
+        bcc_emails = bcc_emails + [eg.email for eg in frappe.get_all(
+            "Email Group Member",
+            filters={"email_group": bcc_email_group},
+            fields=["email"]
+        )]
+        # remove duplicates from bcc_emails
+        bcc_emails = list(set(bcc_emails))
 
     success_ref_ids = []
     failure_ref_ids = []
@@ -197,20 +199,21 @@ def enqueued_specific_notice_docs(__args):
 def enqueued_generic_notice_emails(__args):
     subject = __args.get("subject")
     content = __args.get("notice")
-    bcc_email_groups = __args.get("bcc_email_groups")
     classes = __args.get("classes")
     divisions = __args.get("divisions")
     student_statuses = __args.get("student_statuses")
     academic_year = __args.get("academic_year")
+    school = __args.get("school")
+
+    bcc_email_group = frappe.get_value("School", school, 'bcc_email_address')
 
     bcc_emails = []
-    if bcc_email_groups:
-        for bcc_email_group in bcc_email_groups:
-            bcc_emails = bcc_emails + [eg.email for eg in frappe.get_all(
-                "Email Group Member",
-                filters={"email_group": bcc_email_group},
-                fields=["email"]
-            )]
+    if bcc_email_group:
+        bcc_emails = bcc_emails + [eg.email for eg in frappe.get_all(
+            "Email Group Member",
+            filters={"email_group": bcc_email_group},
+            fields=["email"]
+        )]
         # remove duplicates from bcc_emails
         bcc_emails = list(set(bcc_emails))
 
@@ -387,13 +390,18 @@ def enqueued_generic_notice_docs(__args):
     # enqueued_generic_notifications(notice_ids)
 
 
+def validate_school(csv_data):
+    school = csv_data[0].get("school")
+    for row in csv_data:
+        if row.get("school") != school:
+            raise frappe.exceptions.ValidationError("There are multiple schools in the CSV")
+
+
 def validate_args(**kwargs):
     has_csv = kwargs.get("has_csv")
     csv_file = kwargs.get("csv_file")
     subject = kwargs.get("subject")
     content = kwargs.get("notice")
-    send_emails = kwargs.get("send_emails")
-    bcc_email_groups = kwargs.get("bcc_email_groups")
     school = kwargs.get("school")
     classes = kwargs.get("classes")
     divisions = kwargs.get("divisions")
@@ -422,6 +430,9 @@ def validate_args(**kwargs):
 
             csv_data = csv.DictReader(csv_text.splitlines())
             csv_data = list(csv_data)
+
+            # verify csv data to check if there are multiple schools
+            validate_school(csv_data)
 
             un_matches = []
             student_ids = [row.get("ID") or row.get("id") or row.get("name") for row in csv_data]
@@ -469,10 +480,6 @@ def validate_args(**kwargs):
     if not content:
         raise frappe.exceptions.MandatoryError("Content is required")
 
-    if send_emails and bcc_email_groups:
-        for bcc_email_group in bcc_email_groups:
-            if not frappe.db.exists("Email Group", bcc_email_group):
-                raise frappe.exceptions.ValidationError(f"BCC Email Group {bcc_email_group} not found")
 
 
 @frappe.whitelist()
