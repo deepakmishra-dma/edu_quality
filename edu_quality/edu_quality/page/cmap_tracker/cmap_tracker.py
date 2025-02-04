@@ -147,14 +147,11 @@ def update(filters, cmap_data):
                 # Update existing teacher
 
                 if real_date and allow_edit:
-                    frappe.db.set_value(
-                        "CMAP Assignment", item.name, "real_date", real_date
-                    )
-        #             item.real_date = real_date
-        #             modified = True
+                    item.real_date = real_date
+                    modified = True
 
-        # if modified:
-        #     cmap.save(ignore_permissions=True)
+        if modified:
+            cmap.save(ignore_permissions=True)
 
     return
 
