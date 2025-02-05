@@ -153,6 +153,7 @@ def update_guardian_details(doc):
                 'guardian_name': guardian_doc.guardian_name,
                 'relation': 'Mother'
             })
+            doc.save(ignore_permissions=True)
         if doc.guardian_first_name and guardian_updated == 0:
             guardian_doc = frappe.new_doc("Guardian")
             guardian_doc.first_name = doc.guardian_first_name
@@ -181,6 +182,7 @@ def update_guardian_details(doc):
                 'guardian_name': guardian_doc.guardian_name,
                 'relation': 'Guardian'
             })
+            doc.save(ignore_permissions=True)
     except Exception as e:
         frappe.logger('update').exception(e)            
             

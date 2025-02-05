@@ -1,9 +1,12 @@
 import frappe
 from education.education.doctype.student.student import Student
-
+from frappe.auth import LoginManager
 
 class CustomStudent(Student):
     def validate_user(self):
+        current_user = frappe.session.user 
+        login_manager = LoginManager()
+        login_manager.login_as("Administrator")
         """Create a website user for student creation if not already exists"""
         if not frappe.db.get_single_value(
             "Education Settings", "user_creation_skip"
@@ -23,3 +26,4 @@ class CustomStudent(Student):
             student_user.save(ignore_permissions=True)
 
             self.user = student_user.name
+        login_manager.login_as(current_user)

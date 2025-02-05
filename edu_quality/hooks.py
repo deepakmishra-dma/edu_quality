@@ -187,6 +187,7 @@ doc_events = {
     "Student": {
         "autoname": "edu_quality.public.py.student.autoname",
         "before_insert": "edu_quality.public.py.student.before_insert",
+        "after_insert": "edu_quality.public.py.student.after_insert",
         "before_save": "edu_quality.public.py.student.before_save",
         "on_update": "edu_quality.public.py.student.on_update",
     },
@@ -498,7 +499,7 @@ fixtures = [
 
 after_migrate = [
     "edu_quality.public.py.utils.migrate",
-    "edu_quality.tasks.update_academic_year",
+    "edu_quality.edu_quality.server_scripts.after_migrate.after_migrate"
 ]
 
 website_route_rules = [
