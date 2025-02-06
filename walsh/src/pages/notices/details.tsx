@@ -1,4 +1,4 @@
-import { IResourceComponentsProps, useOne } from "@refinedev/core";
+import { useOne } from "@refinedev/core";
 import React, { useState } from "react";
 import { Box, Stack, Text } from "@mantine/core";
 import { useParams, useSearchParams } from "react-router-dom";
@@ -11,7 +11,8 @@ import { getStudentProfileColor } from "../../components/hooks/useStudentProfile
 import useMarkAsArchived from "../../components/queries/useMarkArchivedMutation.ts";
 import useMarkAsStared from "../../components/queries/useMarkStarMutation.ts";
 
-export const NoticeDetails: React.FC<IResourceComponentsProps> = () => {
+
+export const NoticeDetails: React.FC = () => {
   const params = useParams()
   const [queries] = useSearchParams()
   const [searchQuery,] = useState('');
@@ -19,9 +20,7 @@ export const NoticeDetails: React.FC<IResourceComponentsProps> = () => {
   const { mutateAsync: markAsArchived } = useMarkAsArchived()
 
 
-  const { data: list, refetch } = useNoticeList({
-
-  });
+  const { data: list, refetch } = useNoticeList({});
   const { data, isLoading } = useOne<Notice>({
     id: params?.id || "", queryOptions: {
       queryKey: ["details", "notices", params?.id, queries?.get("student")],
