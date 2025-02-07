@@ -91,7 +91,7 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
             { label: 'Messages', icon: IconMessage, location: '/', },
             { label: 'Curriculum Updates', icon: IconStack2, location: '/cmap', },
             { label: 'Leave / Sick Note', icon: IconCalendarOff, location: '/leave-note', },
-            { label: 'School Calender', icon: IconCalendar, location: '/calender', },
+            { label: 'School Calendar', icon: IconCalendar, location: '/calendar', },
             { label: 'Starred Messages', icon: IconStar, location: '/stared', },
             { label: 'Archived Messages', icon: IconArchive, location: '/archived', },
             {

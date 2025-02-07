@@ -44,6 +44,7 @@ def get_google_user_with_key(email_key):
 def create_google_user(email_key, first_name, last_name, recovery_mail, phone_no):
     user_service = get_google_admin_object()
     exception = False
+    existing_user = None
     try:
         existing_user = (
             user_service.users()

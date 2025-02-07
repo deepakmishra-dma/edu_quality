@@ -1,18 +1,18 @@
-import {useForm} from "@refinedev/mantine";
-import {LOGIN_FORM} from "../components/forms";
-import {Box, Button, Flex, Image, Stack, Text, TextInput,} from "@mantine/core";
-import {useEffect, useMemo, useState} from "react";
-import {OtpInput} from "../components";
-import {useLogin} from "@refinedev/core";
-import {IconReload} from "@tabler/icons";
+import { useForm } from "@refinedev/mantine";
+import { LOGIN_FORM } from "../components/forms";
+import { Box, Button, Flex, Image, Stack, Text, TextInput, } from "@mantine/core";
+import { useEffect, useMemo, useState } from "react";
+import { OtpInput } from "../components";
+import { useLogin } from "@refinedev/core";
+import { IconReload } from "@tabler/icons";
 
 export const Login = () => {
-  const {mutateAsync, isLoading} = useLogin();
+  const { mutateAsync, isLoading } = useLogin();
   const [mode, setMode] = useState<"main" | "otp">("main");
   const [errorMessage, setErrorMessage] = useState("");
   const [otpMessage, setOtpMessage] = useState("");
   const [sendingOtp, setSendingOtp] = useState(false);
-  const {getInputProps, values, setValues, onSubmit} =
+  const { getInputProps, values, setValues, onSubmit } =
     useForm(LOGIN_FORM);
 
   const handleSubmit = useMemo(
@@ -72,7 +72,7 @@ export const Login = () => {
     <>
       <Box sx={{
         height: '10%'
-      }}/>
+      }} />
       <Stack align="center" pt={50} mih={400} bg={"gray.0"} sx={{
         padding: 40
       }}>
@@ -101,11 +101,11 @@ export const Login = () => {
                 marginTop: 10,
                 marginBottom: 10
               }} align="center">
-                If you are already a parent of Walunt School <br/> Log in below
+                If you are already a parent of Walunt School <br /> Log in below
               </Text>
             ) : (
-               <Text size={"sm"}>Phone No: {values.mobile_number}</Text>
-             )}
+              <Text size={"sm"}>Phone No: {values.mobile_number}</Text>
+            )}
           </Stack>
           <Stack spacing={12}>
             {mode !== "otp" ? (
@@ -138,12 +138,12 @@ export const Login = () => {
                 }}
               />
             ) : (
-               <Flex justify="center" sx={{
-                 marginTop: 20
-               }}>
-                 <OtpInput style={{width: "100%"}} {...getInputProps("otp")} />
-               </Flex>
-             )}
+              <Flex justify="center" sx={{
+                marginTop: 20
+              }}>
+                <OtpInput style={{ width: "100%" }} {...getInputProps("otp")} />
+              </Flex>
+            )}
             {errorMessage && <Text color={"red"} size={"sm"} align={"center"}>{errorMessage}</Text>}
             {otpMessage && <Text color={"green"} size={"sm"} align={"center"}>{otpMessage}</Text>}
             <Button type="submit" sx={{
@@ -155,28 +155,7 @@ export const Login = () => {
             }}>
               {mode !== "otp" ? "Get OTP" : "Submit OTP"}
             </Button>
-            <Button
-              sx={{
-                border: "1px solid #03aaf1",
-                backgroundColor: "transparent",
-                marginTop: 25,
-                color: "#03aaf1",
-                ":hover": {
-                  backgroundColor: "#6dd2ff",
-                  color: "#fff",
-                },
-                ":active": {
-                  backgroundColor: "#6dd2ff",
-                  color: "#fff",
-                }
-              }}
-              onClick={e => {
-                e.preventDefault()
-                window.open('/student-application')
-              }}
-            >
-              New Student Admission ?
-            </Button>
+
             <Box sx={{
               textAlign: "center",
             }}>
@@ -199,7 +178,7 @@ export const Login = () => {
                   size={15}
                   style={{
                     marginLeft: 5
-                  }}/>
+                  }} />
               </Button>
             </Box>
             {mode === "otp" ? (
@@ -221,7 +200,7 @@ export const Login = () => {
       <Box pos="fixed" bottom={0} left={0} right={0} style={{
         pointerEvents: "none"
       }}>
-        <Image src={"/assets/edu_quality/walsh/images/walnut-bg-transparent.png"} w={"100%"}/>
+        <Image src={"/assets/edu_quality/walsh/images/walnut-bg-transparent.png"} w={"100%"} />
       </Box>
     </>
   );
