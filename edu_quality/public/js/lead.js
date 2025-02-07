@@ -70,7 +70,7 @@ frappe.ui.form.on("Lead", {
                 // })
             }, '', "Open in whatsapp ui")
 
-            frm.add_custom_button(__("Push To MGR"), function () {
+            frm.add_custom_button(__("Create Admission"), function () {
                 var errorKey = Object.keys(error_msg).find(error => frm.doc[error] === null || frm.doc[error] === undefined || frm.doc[error] === '')
                 if (String(frm.doc.fathers_phone).length != 10) {
                     frappe.msgprint({
@@ -97,9 +97,12 @@ frappe.ui.form.on("Lead", {
                             method: "edu_quality.api.student_application.create_student_application",
                             type: "POST",
                             args: { name: frm.docname },
-                            callback: () => {
+                            callback: (r) => {
                                 frm.disable_form()
                                 frm.disable_save()
+                                if(r.message){
+                                    window.open(r.message, '_blank');
+                                }
                             }
                         });
                     },
