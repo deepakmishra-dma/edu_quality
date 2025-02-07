@@ -38,7 +38,8 @@ def create_student_account(student, student_applicant):
         first_name = student_applicant.get("first_name")
         last_name = student_applicant.get("last_name")
         created_email = create_google_user(
-            google_service_settings.get("google_account_prefix", "") + email_key,
+            (google_service_settings.get("google_account_prefix", "") or "")
+            + email_key,
             first_name,
             last_name,
             email_address,
@@ -91,8 +92,8 @@ def autoname(doc, method=None):
         doc.name = prefix
         doc.student_email_id = doc.name + "@walnutedu.in"
         doc.reference_number = doc.name[2:]
-        
-        
+
+
 def get_last_id(prefix):
     val = frappe.db.get_all(
         "Student", [["name", "Like", prefix + "%"]], "name", order_by="name"
