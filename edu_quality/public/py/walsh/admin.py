@@ -390,6 +390,34 @@ def enqueued_generic_notice_docs(__args):
     # enqueued_generic_notifications(notice_ids)
 
 
+def send_generic_notification(variables, **kwargs):
+    """
+    Send a generic notification to students based on the supplied filters
+    Sending notification using dotted path in funnel
+    variables: data from previous node
+    kwargs: payload from exec dotted path node
+    """
+    class_name = variables.get("class_name")
+    subject = kwargs.get("subject")
+    content = kwargs.get("notice")
+    student_status = variables.get("status")
+    academic_year = variables.get("acad_year")
+    raw_html = kwargs.get("raw_html")
+    school = frappe.get_value('Program', class_name, 'school')
+    notice = frappe.get_doc({
+        "doctype": "School Notice",
+        "class": class_name,
+        "is_generic_notice": 1,
+        "school": school,
+        "subject": subject,
+        "student_status": student_status,
+        "notice": content,
+        'academic_year': academic_year,
+        "is_raw_html": 1 if raw_html else 0
+    }).insert(ignore_permissions=True)
+    send_notification(notice.student, notice.subject, notice.name)
+
+
 def validate_school(csv_data):
     school = csv_data[0].get("school")
     for row in csv_data:
