@@ -57,7 +57,7 @@ const Pages = () => {
               <Route path="/stared" element={<NoticeList staredOnly />} />
               <Route path="/archived" element={<NoticeList archivedOnly />} />
               <Route path="/calendar" element={<SchoolCalendar />} />
-              <Route path="/notice/:id" element={<NoticeDetails />} />
+              <Route path="/notice/:id" element={<NoticeDetails staredOnly archivedOnly />} />
               <Route path="/cmap" element={<Cmap />} />
               <Route path="/cmap/list" element={<CmapList />} />
               <Route path="/leave-note" element={<LeaveNote />} />
