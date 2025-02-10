@@ -1,8 +1,7 @@
-import { IResourceComponentsProps, useOne } from "@refinedev/core";
+import { useOne } from "@refinedev/core";
 import React, { } from "react";
 import { Box, Stack, Text } from "@mantine/core";
 import { useParams, useSearchParams } from "react-router-dom";
-// import {   } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
 import { IconCalendar } from "@tabler/icons";
 import useNoticeList, { Notice } from "../../components/queries/useNoticeList.ts";
@@ -11,16 +10,10 @@ import { getStudentProfileColor } from "../../components/hooks/useStudentProfile
 import useMarkAsArchived from "../../components/queries/useMarkArchivedMutation.ts";
 import useMarkAsStared from "../../components/queries/useMarkStarMutation.ts";
 
-interface StaredNoticeListProps extends IResourceComponentsProps {
-  staredOnly?: boolean
-  archivedOnly?: boolean
-}
-export const NoticeDetails: React.FC<StaredNoticeListProps> = ({ }) => {
+export const NoticeDetails: React.FC = () => {
   const params = useParams()
   const [queries] = useSearchParams()
   const navigate = useNavigate();
-
-  // const [searchQuery,] = useState('');
   const { mutateAsync: markAsStared } = useMarkAsStared()
   const { mutateAsync: markAsArchived } = useMarkAsArchived()
   const { refetch } = useNoticeList({});
@@ -29,15 +22,9 @@ export const NoticeDetails: React.FC<StaredNoticeListProps> = ({ }) => {
       queryKey: ["details", "notices", params?.id, queries?.get("student")],
     }
   });
-  console.log("list ", data)
-
-
 
   if (isLoading)
     return <Text align="center" color="dimmed" weight="bold" my={30}>Loading...</Text>
-
-
-
   return <Box>
     <Box sx={{
       backgroundColor: '#422e1a',
