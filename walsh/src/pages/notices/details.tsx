@@ -84,11 +84,16 @@ export const NoticeDetails: React.FC = () => {
             fill={data?.data?.is_stared ? getStudentProfileColor(data?.data?.student, data?.data?.message || []) : '#fdc426'}
             color={getStudentProfileColor(data?.data?.student, data?.data?.message || [])}
             stroke={1}
-            onClick={() => {
+
+            onClick={async () => {
               const noticeName = data?.data?.name ?? '';
-              markAsStared({ notice: noticeName, student: data?.data?.student, stared: !data?.data?.is_stared })
-                .then(() => refetch())
-              navigate("/")
+              try {
+                await markAsStared({ notice: noticeName, student: data?.data?.student, stared: !data?.data?.is_stared });
+                await refetch();
+                navigate("/");
+              } catch (error) {
+                console.error("Error marking as Stared:", error);
+              }
             }}
 
           />
@@ -102,12 +107,15 @@ export const NoticeDetails: React.FC = () => {
             color={data?.data?.is_archived ? "white" : getStudentProfileColor(data?.data?.student, data?.data?.message || [])}
             stroke={1}
             fill={data?.data?.is_archived ? getStudentProfileColor(data?.data?.student, data?.data?.message || []) : '#fdc426'}
-            onClick={() => {
+            onClick={async () => {
               const noticeName = data?.data?.name ?? '';
-              markAsArchived({ notice: noticeName, student: data?.data?.student, archived: !data?.data?.is_archived })
-                .then(() => refetch())
-              navigate("/")
-
+              try {
+                await markAsArchived({ notice: noticeName, student: data?.data?.student, archived: !data?.data?.is_archived });
+                await refetch();
+                navigate("/");
+              } catch (error) {
+                console.error("Error marking as archived:", error);
+              }
             }}
           />
 
