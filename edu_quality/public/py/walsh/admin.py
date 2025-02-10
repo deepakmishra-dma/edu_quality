@@ -402,8 +402,8 @@ def send_generic_notification(variables, **kwargs):
         doc = variables.get('doc')
         if doc.doctype == 'Payment Request':
             student = frappe.get_doc('Student', doc.party)
-        elif doc.doctype == 'Student':
-            student = doc
+        elif doc.doctype == 'Program Enrollment':
+            student = frappe.get_doc('Student', doc.student)
 
         subject = kwargs.get("subject")
         content = kwargs.get("notice")
