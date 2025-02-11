@@ -68,7 +68,7 @@ def enqueued_specific_notice_emails(__args):
 
     school = csv_data[0].get("school")
 
-    bcc_email_group = frappe.get_value("School", school, 'bcc_email_address')
+    bcc_email_group = frappe.get_value("School", school, 'bcc_email_group')
 
     bcc_emails = []
     if bcc_email_group:
@@ -206,7 +206,7 @@ def enqueued_generic_notice_emails(__args):
     academic_year = __args.get("academic_year")
     school = __args.get("school")
 
-    bcc_email_group = frappe.get_value("School", school, 'bcc_email_address')
+    bcc_email_group = frappe.get_value("School", school, 'bcc_email_group')
 
     bcc_emails = []
     if bcc_email_group:
