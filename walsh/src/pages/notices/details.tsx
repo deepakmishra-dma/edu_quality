@@ -1,27 +1,37 @@
 import { useOne } from "@refinedev/core";
-import React, { } from "react";
+import React, { useState } from "react";
 import { Box, Stack, Text } from "@mantine/core";
 import { useParams, useSearchParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { IconCalendar } from "@tabler/icons";
 import useNoticeList, { Notice } from "../../components/queries/useNoticeList.ts";
 import { IconArchive, IconStar } from "@tabler/icons";
-import { getStudentProfileColor } from "../../components/hooks/useStudentProfileColor.ts";
+import { getStudentIconColor } from "../../components/hooks/useStudentProfileColor.ts";
 import useMarkAsArchived from "../../components/queries/useMarkArchivedMutation.ts";
 import useMarkAsStared from "../../components/queries/useMarkStarMutation.ts";
 
 export const NoticeDetails: React.FC = () => {
+  const [, setIsArchivedOnly] = useState(false)
+  const [, setStaredOnly] = useState(false)
   const params = useParams()
   const [queries] = useSearchParams()
+  const noticeId = params?.id ?? "";
+  const studentId = queries?.get("student") ?? '';
   const navigate = useNavigate();
   const { mutateAsync: markAsStared } = useMarkAsStared()
   const { mutateAsync: markAsArchived } = useMarkAsArchived()
-  const { refetch } = useNoticeList({});
+  const { refetch, data: list } = useNoticeList({
+    archivedOnly: true,
+    staredOnly: true
+  });
   const { data, isLoading } = useOne<Notice>({
     id: params?.id || "", queryOptions: {
       queryKey: ["details", "notices", params?.id, queries?.get("student")],
     }
   });
+  console.log("list ", list?.data?.message?.find((i) => params?.id && i.name === params.id))
+  console.log("list ", list)
+  const listItem = list?.data?.message?.find((i) => params?.id && i.name === params.id);
 
   if (isLoading)
     return <Text align="center" color="dimmed" weight="bold" my={30}>Loading...</Text>
@@ -72,25 +82,28 @@ export const NoticeDetails: React.FC = () => {
           </span>
 
           <IconStar
+
             style={{
               marginTop: 5,
               position: "absolute",
               right: 45,
               borderRight: '1px solid #eee',
-              paddingRight: "5px"
+              paddingRight: "5px",
             }}
             size={35}
 
-            fill={data?.data?.is_stared ? getStudentProfileColor(data?.data?.student, data?.data?.message || []) : '#fdc426'}
-            color={getStudentProfileColor(data?.data?.student, data?.data?.message || [])}
+            fill={listItem?.is_stared ? getStudentIconColor(listItem?.student, listItem?.message || []) : 'white'}
+            color={getStudentIconColor(listItem?.student, listItem?.message || [])}
             stroke={1}
 
             onClick={async () => {
-              const noticeName = data?.data?.name ?? '';
+
               try {
-                await markAsStared({ notice: noticeName, student: data?.data?.student, stared: !data?.data?.is_stared });
+
+                await markAsStared({ notice: noticeId, student: studentId, stared: !listItem?.is_stared });
+                setStaredOnly(!listItem?.is_stared)
                 await refetch();
-                navigate("/");
+
               } catch (error) {
                 console.error("Error marking as Stared:", error);
               }
@@ -104,13 +117,14 @@ export const NoticeDetails: React.FC = () => {
               right: 8
             }}
             size={30}
-            color={data?.data?.is_archived ? "white" : getStudentProfileColor(data?.data?.student, data?.data?.message || [])}
+            color={listItem?.is_archived ? "white" : getStudentIconColor(listItem?.student, listItem?.message || [])}
             stroke={1}
-            fill={data?.data?.is_archived ? getStudentProfileColor(data?.data?.student, data?.data?.message || []) : '#fdc426'}
+            fill={listItem?.is_archived ? getStudentIconColor(listItem?.student, listItem?.message || []) : 'white'}
             onClick={async () => {
-              const noticeName = data?.data?.name ?? '';
+
               try {
-                await markAsArchived({ notice: noticeName, student: data?.data?.student, archived: !data?.data?.is_archived });
+                await markAsArchived({ notice: noticeId, student: studentId, archived: !listItem?.is_archived });
+                setIsArchivedOnly(!listItem?.is_archived);
                 await refetch();
                 navigate("/");
               } catch (error) {
