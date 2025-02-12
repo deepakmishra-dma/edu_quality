@@ -160,6 +160,7 @@ export const NoticeList: React.FC<StaredNoticeListProps> = ({ staredOnly, archiv
                 markAsStared({ notice: item.name, student: item.student, stared: !item.is_stared })
                   .then(() => refetch())
               }}
+
             />
             <IconArchive
               size={30}
