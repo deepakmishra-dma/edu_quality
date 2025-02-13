@@ -59,22 +59,22 @@ def get_all_cmaps(subject, unit, division):
     broadcast_names = [product.broadcast for product in all_products if product.broadcast]
     homework_names = [product.home_work for product in all_products if product.home_work]
     parentnote_names = [product.parent_note for product in all_products if product.parent_note]
-    cmap_material_names = broadcast_names + homework_names + parentnote_names
-    cmap_materials = frappe.get_all("Item CMAP Material", fields=["*"], filters={"name": ["in", cmap_material_names]})
+   
+    # cmap_materials = frappe.get_all("Item CMAP Material", fields=["*"], filters={"name": ["in", cmap_material_names]})
 
     for product in all_products:
         for item in all_items:
             if item.name == product.item:
                 product['item_data'] = item
-        for broadcast in cmap_materials:
-            if broadcast.name == product.broadcast:
-                product['broadcast_description'] = broadcast.description
-        for homework in cmap_materials:
+        for broadcast in broadcast_names:
+            if broadcast == product.broadcast:
+                product['broadcast_description'] = broadcast
+        for homework in homework_names:
             if homework.name == product.home_work:
-                product['homework_description'] = homework.description
-        for parentnote in cmap_materials:
+                product['homework_description'] = homework
+        for parentnote in parentnote_names:
             if parentnote.name == product.parent_note:
-                product['parentnote_description'] = parentnote.description
+                product['parentnote_description'] = parentnote
 
     for cmap in cmaps:
         cmap.products = []
