@@ -57,6 +57,7 @@ def create_or_get_contact(wa_phone_number, contact_name):
             "doctype": "Contact",
             "first_name": contact_name,
             "whatsapp_id": wa_phone_number,
+            "chatbot_disabled": True
         }).insert(ignore_permissions=True)
     return contact
 
