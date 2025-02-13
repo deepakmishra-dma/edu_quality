@@ -6,6 +6,7 @@ let cmapData = []
 let cmapUpdate = {}
 let globalPage = null
 let saveButtonAdded = false
+let isAdmin = false
 
 frappe.pages['cmap-tracker'].on_page_load = async function (wrapper) {
 
@@ -30,7 +31,7 @@ async function onLoad() {
 
 	el.addClass("cmap-tracker");
 	const [teachersData, acadYear, school] = await getTeachers()
-
+	isAdmin = !teachersData
 	const teacherFilter = !teachersData ? [{
 		label: 'Teacher',
 		fieldname: 'teacher',
@@ -151,20 +152,20 @@ function cmapDataPresent() {
 function updateCmap(cmapName, key, value) {
 	const cmap = cmapUpdate[cmapName]
 	if (cmap) {
-		cmap[key] = value
+		cmap[key] = !value ? null : value
 	}
 	else {
-		cmapUpdate[cmapName] = { [key]: value }
+		cmapUpdate[cmapName] = { [key]: !value ? null : value }
 	}
 }
 function changeRealDateOnSelect(e) {
 	const dataset = e.target.dataset
-
+	console.log(e.target.dataset, e.target.value,)
 	if (dataset.index && cmapData) {
 		const cmap = cmapData[dataset.index].name
 		cmapData[dataset.index].real_date = e.target.value
 		updateCmap(cmap, "real_date", e.target.value)
-
+		console.log(cmapData, cmapUpdate)
 	}
 	addSaveButton()
 }
@@ -320,7 +321,7 @@ function createRow(period_no, chapter_name, products, broadcast, parent_note, cl
 
 function createDatePicker(value, index) {
 
-	return `<input type="date" value=${value} data-index="${index}" max="${getMaxDate()}" />`
+	return `<input type="date" ${!isAdmin && value ? "disabled" : ""} value=${value} data-index="${index}" max="${getMaxDate()}" />`
 }
 
 async function saveTracker() {
@@ -337,6 +338,9 @@ async function saveTracker() {
 		indicator: 'green'
 	}, 5);
 	cmapUpdate = {}
+	await reInitCMAP()
+	await getCmap()
+	await setupDataTable()
 }
 
 function getMaxDate() {

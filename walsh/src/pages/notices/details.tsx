@@ -1,15 +1,23 @@
-import {IResourceComponentsProps, useOne} from "@refinedev/core";
-import React from "react";
-import {Box, Stack, Text} from "@mantine/core";
-import {useParams, useSearchParams} from "react-router-dom";
-import {IconCalendar} from "@tabler/icons";
-import {Notice} from "../../components/queries/useNoticeList.ts";
-// import {IconArchive, IconStar} from "@tabler/icons";
+import { useOne } from "@refinedev/core";
+import React, { } from "react";
+import { Box, Stack, Text } from "@mantine/core";
+import { useParams, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { IconCalendar } from "@tabler/icons";
+import useNoticeList, { Notice } from "../../components/queries/useNoticeList.ts";
+import { IconArchive, IconStar } from "@tabler/icons";
+import { getStudentProfileColor } from "../../components/hooks/useStudentProfileColor.ts";
+import useMarkAsArchived from "../../components/queries/useMarkArchivedMutation.ts";
+import useMarkAsStared from "../../components/queries/useMarkStarMutation.ts";
 
-export const NoticeDetails: React.FC<IResourceComponentsProps> = () => {
+export const NoticeDetails: React.FC = () => {
   const params = useParams()
   const [queries] = useSearchParams()
-  const {data, isLoading} = useOne<Notice>({
+  const navigate = useNavigate();
+  const { mutateAsync: markAsStared } = useMarkAsStared()
+  const { mutateAsync: markAsArchived } = useMarkAsArchived()
+  const { refetch } = useNoticeList({});
+  const { data, isLoading } = useOne<Notice>({
     id: params?.id || "", queryOptions: {
       queryKey: ["details", "notices", params?.id, queries?.get("student")],
     }
@@ -17,7 +25,6 @@ export const NoticeDetails: React.FC<IResourceComponentsProps> = () => {
 
   if (isLoading)
     return <Text align="center" color="dimmed" weight="bold" my={30}>Loading...</Text>
-
   return <Box>
     <Box sx={{
       backgroundColor: '#422e1a',
@@ -48,6 +55,7 @@ export const NoticeDetails: React.FC<IResourceComponentsProps> = () => {
           fontSize: 13,
           borderRight: '1px solid #eee'
         }}>{data?.data?.student_first_name}</Stack>
+
         <Stack align="center" justify="center" py={4} sx={{
           display: 'inline-flex',
           // justifyContent: 'center',
@@ -58,10 +66,59 @@ export const NoticeDetails: React.FC<IResourceComponentsProps> = () => {
           fontSize: 13,
           gap: 5
         }}>
-          <IconCalendar size={15}/>
-          <span style={{paddingTop: 5}}>
-                  {new Date(data?.data.creation).toLocaleDateString()?.replace(/\//g, '-') || '-'}
-                </span>
+          <IconCalendar size={15} />
+          <span style={{ paddingTop: 5 }}>
+            {new Date(data?.data.creation).toLocaleDateString()?.replace(/\//g, '-') || '-'}
+          </span>
+
+          <IconStar
+            style={{
+              marginTop: 5,
+              position: "absolute",
+              right: 45,
+              borderRight: '1px solid #eee',
+              paddingRight: "5px"
+            }}
+            size={35}
+
+            fill={data?.data?.is_stared ? getStudentProfileColor(data?.data?.student, data?.data?.message || []) : '#fdc426'}
+            color={getStudentProfileColor(data?.data?.student, data?.data?.message || [])}
+            stroke={1}
+
+            onClick={async () => {
+              const noticeName = data?.data?.name ?? '';
+              try {
+                await markAsStared({ notice: noticeName, student: data?.data?.student, stared: !data?.data?.is_stared });
+                await refetch();
+                navigate("/");
+              } catch (error) {
+                console.error("Error marking as Stared:", error);
+              }
+            }}
+
+          />
+          <IconArchive
+            style={{
+              marginTop: 5,
+              position: "absolute",
+              right: 8
+            }}
+            size={30}
+            color={data?.data?.is_archived ? "white" : getStudentProfileColor(data?.data?.student, data?.data?.message || [])}
+            stroke={1}
+            fill={data?.data?.is_archived ? getStudentProfileColor(data?.data?.student, data?.data?.message || []) : '#fdc426'}
+            onClick={async () => {
+              const noticeName = data?.data?.name ?? '';
+              try {
+                await markAsArchived({ notice: noticeName, student: data?.data?.student, archived: !data?.data?.is_archived });
+                await refetch();
+                navigate("/");
+              } catch (error) {
+                console.error("Error marking as archived:", error);
+              }
+            }}
+          />
+
         </Stack>
       </Stack>
     </Box>
@@ -72,13 +129,15 @@ export const NoticeDetails: React.FC<IResourceComponentsProps> = () => {
     }}>
       {
         data?.data?.is_raw_html ? <>
-          <div dangerouslySetInnerHTML={{__html: data?.data?.notice || ""}}></div>
+          <div dangerouslySetInnerHTML={{ __html: data?.data?.notice || "" }}></div>
         </> : <>
-          <link href="https://cdn.jsdelivr.net/npm/quill@2.0.0-beta.0/dist/quill.snow.css" rel="stylesheet"/>
-          <link href="https://cdn.jsdelivr.net/npm/quill@2.0.0-beta.0/dist/quill.bubble.css" rel="stylesheet"/>
-          <div className="ql-editor" dangerouslySetInnerHTML={{__html: data?.data?.notice || ""}}></div>
+          <link href="https://cdn.jsdelivr.net/npm/quill@2.0.0-beta.0/dist/quill.snow.css" rel="stylesheet" />
+          <link href="https://cdn.jsdelivr.net/npm/quill@2.0.0-beta.0/dist/quill.bubble.css" rel="stylesheet" />
+          <div className="ql-editor" dangerouslySetInnerHTML={{ __html: data?.data?.notice || "" }}></div>
         </>
       }
     </Box>
   </Box>
+
+
 };

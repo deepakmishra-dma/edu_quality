@@ -118,6 +118,14 @@ def is_defaulter(guardian_name, logout_if_defaulter=False):
         return True
     return False
 
+def get_guardian(guardian_number):
+    if frappe.db.exists("Guardian", {"mobile_number": guardian_number}):
+        guardian = frappe.get_cached_doc("Guardian", {"mobile_number": guardian_number})
+        return guardian
+    elif frappe.db.exists("Guardian", {"custom_secondary_mobile_number": guardian_number}):
+        guardian = frappe.get_cached_doc("Guardian", {"custom_secondary_mobile_number": guardian_number})
+        return guardian
+    return None
 
 @frappe.whitelist(allow_guest=True)
 def send_otp(phone_no):
@@ -132,14 +140,13 @@ def send_otp(phone_no):
     phone_with_country_code = "+" + str(wa_phone_no)
     guardian_number = remove_indian_country_code(phone_with_country_code)
 
-    if not frappe.db.exists("Guardian", {"mobile_number": guardian_number}):
+    guardian = get_guardian(guardian_number)
+    if not guardian:
         return {
             "error": True,
             "error_type": "guardian_not_found",
             "error_message": "Guardian Not Found"
         }
-
-    guardian = frappe.get_cached_doc("Guardian", {"mobile_number": guardian_number})
     if is_defaulter(guardian.name):
         return {
             "error": True,

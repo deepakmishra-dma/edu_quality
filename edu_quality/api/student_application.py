@@ -109,8 +109,8 @@ def create_student_application(**args):
             serialize_lead_to_application(lead_application)
         )
 
-        created_mgr_lead = upload_to_mgr(student_application)
-        student_application.lms_id = created_mgr_lead.get("ID")
+        # created_mgr_lead = upload_to_mgr(student_application)
+        # student_application.lms_id = created_mgr_lead.get("ID")
         # lead_application.lead_status = "Enrolled"
         frappe.db.set_value("Lead", lead_application.name, "status", "Enrolled")
         # lead_application.status = "Enrolled"
@@ -118,8 +118,11 @@ def create_student_application(**args):
         # lead_application.save()
         student_application.insert(ignore_permissions=True)
         student_application.fathers_mobile_number = lead_application.fathers_phone
-        frappe.msgprint(("Upload to MGR successful"))
-        return student_application
+        frappe.msgprint(("Created Student Application Successfully!"))
+        url = frappe.utils.get_url_to_form(
+            "Student Applicant", student_application.name
+        )
+        return url
 
     except Exception as e:
         frappe.msgprint(msg=str(e), title="Error", indicator="red")

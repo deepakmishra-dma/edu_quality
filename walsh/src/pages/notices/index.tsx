@@ -1,10 +1,10 @@
-import {IResourceComponentsProps} from "@refinedev/core";
-import React, {useMemo, useState} from "react";
-import {Box, Input, Stack, Text} from "@mantine/core";
-import {useNavigate} from "react-router-dom";
-import {IconArchive, IconCalendar, IconSearch, IconStar} from "@tabler/icons";
+import { IResourceComponentsProps } from "@refinedev/core";
+import React, { useMemo, useState } from "react";
+import { Box, Input, Stack, Text } from "@mantine/core";
+import { useNavigate } from "react-router-dom";
+import { IconArchive, IconCalendar, IconSearch, IconStar } from "@tabler/icons";
 import useStudentList from "../../components/queries/useStudentList.ts";
-import {getStudentProfileColor} from "../../components/hooks/useStudentProfileColor.ts";
+import { getStudentProfileColor } from "../../components/hooks/useStudentProfileColor.ts";
 import useMarkAsStared from "../../components/queries/useMarkStarMutation.ts";
 import useMarkAsArchived from "../../components/queries/useMarkArchivedMutation.ts";
 import useNoticeList from "../../components/queries/useNoticeList.ts";
@@ -14,13 +14,13 @@ interface StaredNoticeListProps extends IResourceComponentsProps {
   archivedOnly?: boolean
 }
 
-export const NoticeList: React.FC<StaredNoticeListProps> = ({staredOnly, archivedOnly}) => {
+export const NoticeList: React.FC<StaredNoticeListProps> = ({ staredOnly, archivedOnly }) => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-  const {data} = useStudentList()
-  const {mutateAsync: markAsStared} = useMarkAsStared()
-  const {mutateAsync: markAsArchived} = useMarkAsArchived()
-  const {data: list, isLoading, remove, refetch} = useNoticeList({
+  const { data } = useStudentList()
+  const { mutateAsync: markAsStared } = useMarkAsStared()
+  const { mutateAsync: markAsArchived } = useMarkAsArchived()
+  const { data: list, isLoading, remove, refetch } = useNoticeList({
     staredOnly,
     archivedOnly
   });
@@ -45,7 +45,7 @@ export const NoticeList: React.FC<StaredNoticeListProps> = ({staredOnly, archive
       <Input
         mx={5}
         onChange={(e) => setSearchQuery(e.target.value)}
-        value={searchQuery} placeholder="Search..." icon={<IconSearch/>}
+        value={searchQuery} placeholder="Search..." icon={<IconSearch />}
       />
     </Box>
     <Box p={2} sx={{
@@ -106,7 +106,7 @@ export const NoticeList: React.FC<StaredNoticeListProps> = ({staredOnly, archive
               // borderRadius: '5px',
               // color: '#888',
             }}>
-              <div dangerouslySetInnerHTML={{__html: item.notice || ""}}></div>
+              <div dangerouslySetInnerHTML={{ __html: item.notice || "" }}></div>
             </Box>
 
             <Stack h={35} sx={{
@@ -137,8 +137,8 @@ export const NoticeList: React.FC<StaredNoticeListProps> = ({staredOnly, archive
                 fontSize: 13,
                 gap: 5
               }}>
-                <IconCalendar size={15}/>
-                <span style={{paddingTop: 5}}>
+                <IconCalendar size={15} />
+                <span style={{ paddingTop: 5 }}>
                   {new Date(item.creation).toLocaleDateString()?.replace(/\//g, '-') || '-'}
                 </span>
               </Stack>
@@ -157,9 +157,10 @@ export const NoticeList: React.FC<StaredNoticeListProps> = ({staredOnly, archive
               color={getStudentProfileColor(item.student, data?.data?.message || [])}
               stroke={1}
               onClick={() => {
-                markAsStared({notice: item.name, student: item.student, stared: !item.is_stared})
+                markAsStared({ notice: item.name, student: item.student, stared: !item.is_stared })
                   .then(() => refetch())
               }}
+
             />
             <IconArchive
               size={30}
@@ -167,13 +168,13 @@ export const NoticeList: React.FC<StaredNoticeListProps> = ({staredOnly, archive
               stroke={1}
               fill={item.is_archived ? getStudentProfileColor(item.student, data?.data?.message || []) : 'white'}
               onClick={() => {
-                markAsArchived({notice: item.name, student: item.student, archived: !item.is_archived})
+                markAsArchived({ notice: item.name, student: item.student, archived: !item.is_archived })
                   .then(() => refetch())
               }}
             />
           </Box>
         </Stack>
       ))}
-    </Box>
-  </Box>
+    </Box >
+  </Box >
 };
