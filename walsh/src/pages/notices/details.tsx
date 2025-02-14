@@ -22,7 +22,11 @@ export const NoticeDetails: React.FC = () => {
   const { mutateAsync: markAsArchived } = useMarkAsArchived()
   const { refetch, data: list } = useNoticeList({
     archivedOnly: true,
-    staredOnly: true
+
+  });
+  const { data: listStared, refetch: starRefetch } = useNoticeList({
+    staredOnly: true,
+
   });
   const { data, isLoading } = useOne<Notice>({
     id: params?.id || "", queryOptions: {
@@ -31,6 +35,7 @@ export const NoticeDetails: React.FC = () => {
   });
 
   const listItem = list?.data?.message?.find((i) => params?.id && i.name === params.id);
+  const listStar = listStared?.data?.message?.find((i) => params?.id && i.name === params.id);
 
   if (isLoading)
     return <Text align="center" color="dimmed" weight="bold" my={30}>Loading...</Text>
@@ -91,17 +96,17 @@ export const NoticeDetails: React.FC = () => {
             }}
             size={35}
 
-            fill={listItem?.is_stared ? getStudentIconColor(listItem?.student, listItem?.message || []) : 'white'}
-            color={getStudentIconColor(listItem?.student, listItem?.message || [])}
+            fill={listStar?.is_stared ? getStudentIconColor(listStar?.student, listStar?.message || []) : 'white'}
+            color={getStudentIconColor(listStar?.student, listStar?.message || [])}
             stroke={1}
 
             onClick={async () => {
 
               try {
 
-                await markAsStared({ notice: noticeId, student: studentId, stared: !listItem?.is_stared });
-                setStaredOnly(!listItem?.is_stared)
-                await refetch();
+                await markAsStared({ notice: noticeId, student: studentId, stared: !listStar?.is_stared });
+                setStaredOnly(!listStar?.is_stared)
+                await starRefetch();
 
               } catch (error) {
                 console.error("Error marking as Stared:", error);
