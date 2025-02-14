@@ -29,8 +29,7 @@ export const NoticeDetails: React.FC = () => {
       queryKey: ["details", "notices", params?.id, queries?.get("student")],
     }
   });
-  console.log("list ", list?.data?.message?.find((i) => params?.id && i.name === params.id))
-  console.log("list ", list)
+
   const listItem = list?.data?.message?.find((i) => params?.id && i.name === params.id);
 
   if (isLoading)
