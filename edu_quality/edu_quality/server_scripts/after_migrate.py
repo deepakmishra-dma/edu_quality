@@ -8,6 +8,7 @@ def after_migrate():
         return 
     replace_emails() 
     replace_account_credentials()
+    remove_webhooks()
 
 def replace_emails():
     data = frappe.db.get_all("Guardian", fields=["name","email_address"])
@@ -61,3 +62,9 @@ def replace_account_credentials():
         "products_folder":"",
         "id_card_folder":""
     })
+
+
+def remove_webhooks():
+    webhooks = frappe.get_all("Webhook")
+    for webhook in webhooks:
+        frappe.delete_doc("Webhook", webhook.name)
