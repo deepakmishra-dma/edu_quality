@@ -189,7 +189,7 @@ def verify_otp(otp, phone_no, push_token=None, form_link=None):
         guardian_number = remove_indian_country_code(phone_with_country_code)
 
         if match_otp(wa_phone_no, otp):
-            guardian = frappe.get_cached_doc("Guardian", {"mobile_number": guardian_number})
+            guardian = get_guardian(guardian_number)
             user = frappe.get_cached_doc("User", guardian.user)
             login_manager = LoginManager()
             login_manager.login_as(user.name)
