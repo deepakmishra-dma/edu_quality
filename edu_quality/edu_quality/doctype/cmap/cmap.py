@@ -24,13 +24,13 @@ class CMAP(Document):
 
     def before_validate(self, method=None):
         frappe.errprint(self.products)
-        added_broadcasts = [product.get("broadcast") for product in self.products]
-        added_parent_notes = [product.get("parent_note") for product in self.products]
-        added_home_works = [product.get("home_work") for product in self.products]
+        added_broadcasts = [product.get("broadcast") for product in self.products] or []
+        added_parent_notes = [product.get("parent_note") for product in self.products] or []
+        added_home_works = [product.get("home_work") for product in self.products] or []
         added_material_required = [
             product.get("material_required") for product in self.products
-        ]
-        added_class_works = [product.get("class_work") for product in self.products]
+        ] or []
+        added_class_works = [product.get("class_work") for product in self.products] or []
         generate_text_from_unique_notes(
             self, "Broadcast", added_broadcasts, field="broadcast_text"
         )
@@ -89,17 +89,15 @@ def insert_cmap_assignees(self):
     self.table_vwbr = get_unique_cmap_assignees(self.table_vwbr)
 
 
-def generate_text_from_unique_notes(self, type, added_broadcasts=[], field=None):
-    if field == None:
+def generate_text_from_unique_notes(self, type, added_broadcasts, field):
+    if field is None:
         return
     if check_if_note_added_unique(type, added_broadcasts):
 
         setattr(
             self,
             field,
-            "\\n".join(
-                [item or "" for item in added_broadcasts]
-            ),
+            "\\n".join([item or "" for item in added_broadcasts]),
         )
 
 
