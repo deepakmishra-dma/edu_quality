@@ -24,13 +24,13 @@ class CMAP(Document):
 
     def before_validate(self, method=None):
         frappe.errprint(self.products)
-        added_broadcasts = [product.get("broadcast") for product in self.products]
-        added_parent_notes = [product.get("parent_note") for product in self.products]
-        added_home_works = [product.get("home_work") for product in self.products]
+        added_broadcasts = [product.get("broadcast") for product in self.products] or []
+        added_parent_notes = [product.get("parent_note") for product in self.products] or []
+        added_home_works = [product.get("home_work") for product in self.products] or []
         added_material_required = [
             product.get("material_required") for product in self.products
-        ]
-        added_class_works = [product.get("class_work") for product in self.products]
+        ] or []
+        added_class_works = [product.get("class_work") for product in self.products] or []
         generate_text_from_unique_notes(
             self, "Broadcast", added_broadcasts, field="broadcast_text"
         )
@@ -90,18 +90,14 @@ def insert_cmap_assignees(self):
 
 
 def generate_text_from_unique_notes(self, type, added_broadcasts, field):
+    if field is None:
+        return
     if check_if_note_added_unique(type, added_broadcasts):
-        frappe.errprint(added_broadcasts)
-        descriptions = frappe.db.get_list(
-            "Item CMAP Material",
-            filters=[["name", "in", added_broadcasts]],
-            fields=["description", "description"],
-            ignore_permissions=True,
-        )
+
         setattr(
             self,
             field,
-            "\\n".join([item.get("description", "") or "" for item in descriptions]),
+            "\\n".join([item or "" for item in added_broadcasts]),
         )
 
 
@@ -111,35 +107,15 @@ def check_if_note_added_unique(material_type, added_items):
     added_items = parse_json(added_items)
     frequency_counter = {}
     for item in added_items:
-        frequency_counter[item] = frequency_counter.get(item, 0) + 1
+        frequency_counter[item] = (frequency_counter.get(item, 0) or 0) + 1
 
-    cmap_materials = frappe.db.get_list(
-        "Item CMAP Material",
-        filters=[
-            ["material_type", "=", material_type],
-            ["name", "in", added_items],
-        ],
-        fields=[
-            "name",
-            "name",
-            "description",
-            "description",
-            "material_type",
-            "material_type",
-        ],
-        ignore_permissions=True,
-    )
-    frappe.errprint(cmap_materials)
     index_dict = {}
 
-    for i, item in enumerate(cmap_materials):
-        description = item["description"]
-        name = item["name"]
+    for description in added_items:
         if description in index_dict:
-            index_dict[description].append(name)
+            index_dict[description].append(description)
         else:
-            index_dict[description] = [name]
-    frappe.errprint(index_dict)
+            index_dict[description] = [description]
 
     for i in index_dict:
         for j in index_dict[i]:
@@ -209,14 +185,11 @@ def get_cmap_period_no(self):
 
 
 @frappe.whitelist()
-@frappe.validate_and_sanitize_search_inputs
-def get_unique_material_query(doctype, txt, searchfield, start, page_len, filters):
+def get_unique_material_query(filters):
+    filters = json.loads(filters) if isinstance(filters, str) else filters
     materials = frappe.db.get_list(
-        doctype=doctype,
+        doctype="Item CMAP Material",
         filters=filters,
-        start=start,
-        page_length=page_len,
-        as_list=True,
         ignore_permissions=True,
         fields=["name", "description"],
     )
@@ -315,3 +288,20 @@ def calculate_all_product_materials():
     cmaps = frappe.get_all("CMAP")
     for i in cmaps:
         frappe.enqueue(calculate_product_materials, name=i.get("name"), queue="long")
+
+
+# edu_quality.edu_quality.doctype.cmap.cmap.get_product_materials
+@frappe.whitelist()
+def get_product_materials(item_id):
+    item_doc = frappe.get_doc("Item", item_id, ignore_permissions=True)
+    result = {}
+
+    for material in item_doc.custom_additional_material:
+        material_type = material.get("material_type")
+        description = material.get("description")
+        if material_type not in result:
+            result[material_type] = [" ", description]
+        # unique only
+        elif result[material_type] and description not in result[material_type]:
+            result[material_type].append(description)
+    return result

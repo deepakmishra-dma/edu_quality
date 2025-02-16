@@ -28,11 +28,11 @@ def get_cmap(**filters):
             cmap_table.academic_year,
             cmap_table.period,
             cmap_table.plan_date,
-            cmap_table.broadcast_text.as_("broadcast"),
-            cmap_table.parent_notes.as_("parent_note"),
-            cmap_table.home_work,
-            cmap_table.class_work,
-            cmap_table.material_required,
+            # cmap_table.broadcast_text.as_("broadcast"),
+            # cmap_table.parent_notes.as_("parent_note"),
+            # cmap_table.home_work,
+            # cmap_table.class_work,
+            # cmap_table.material_required,
         )
     )
 
@@ -44,12 +44,12 @@ def get_cmap(**filters):
         .on(products_table.item == item_table.name)
         .select(
             filtered_cmap_query.name,
-            # products_table.broadcast,
+            products_table.broadcast,
             products_table.item.as_("item_code"),
-            # products_table.parent_note,
-            # products_table.class_work,
-            # products_table.material_required,
-            # products_table.home_work,
+            products_table.parent_note,
+            products_table.class_work,
+            products_table.material_required,
+            products_table.home_work,
             products_table.textbook,
             products_table.chapter,
             item_table.custom_product_url,
@@ -100,16 +100,16 @@ def cocatenate_cmap(data, products_data):
                 for i in product_hash[cmap_name]
             ]
 
-            # for type_material in [
-            #     "broadcast",
-            #     "home_work",
-            #     "parent_note",
-            #     "material_required",
-            #     "class_work",
-            # ]:
-            #     cmap[type_material] = find_first_non_empty_key(
-            #         product_hash[cmap_name], type_material
-            #     )
+            for type_material in [
+                "broadcast",
+                "home_work",
+                "parent_note",
+                "material_required",
+                "class_work",
+            ]:
+                cmap[type_material] = find_first_non_empty_key(
+                    product_hash[cmap_name], type_material
+                )
 
             cmap["chapter_name"] = ",".join(
                 set([i.get("chapter") for i in product_hash[cmap_name]])
