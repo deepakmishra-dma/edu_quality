@@ -89,20 +89,16 @@ def insert_cmap_assignees(self):
     self.table_vwbr = get_unique_cmap_assignees(self.table_vwbr)
 
 
-def generate_text_from_unique_notes(self, type, added_broadcasts, field):
-    if check_if_note_added_unique(type, added_broadcasts=[]):
-        frappe.errprint(added_broadcasts)
-        # descriptions = frappe.db.get_list(
-        #     "Item CMAP Material",
-        #     filters=[["name", "in", added_broadcasts]],
-        #     fields=["description", "description"],
-        #     ignore_permissions=True,
-        # )
+def generate_text_from_unique_notes(self, type, added_broadcasts=[], field=None):
+    if field == None:
+        return
+    if check_if_note_added_unique(type, added_broadcasts):
+
         setattr(
             self,
             field,
             "\\n".join(
-                [item.get("description", "") or "" for item in added_broadcasts]
+                [item or "" for item in added_broadcasts]
             ),
         )
 
@@ -113,35 +109,15 @@ def check_if_note_added_unique(material_type, added_items):
     added_items = parse_json(added_items)
     frequency_counter = {}
     for item in added_items:
-        frequency_counter[item] = frequency_counter.get(item, 0) + 1
+        frequency_counter[item] = (frequency_counter.get(item, 0) or 0) + 1
 
-    cmap_materials = frappe.db.get_list(
-        "Item CMAP Material",
-        filters=[
-            ["material_type", "=", material_type],
-            ["name", "in", added_items],
-        ],
-        fields=[
-            "name",
-            "name",
-            "description",
-            "description",
-            "material_type",
-            "material_type",
-        ],
-        ignore_permissions=True,
-    )
-    frappe.errprint(cmap_materials)
     index_dict = {}
 
-    for i, item in enumerate(cmap_materials):
-        description = item["description"]
-        name = item["name"]
+    for description in added_items:
         if description in index_dict:
-            index_dict[description].append(name)
+            index_dict[description].append(description)
         else:
-            index_dict[description] = [name]
-    frappe.errprint(index_dict)
+            index_dict[description] = [description]
 
     for i in index_dict:
         for j in index_dict[i]:
