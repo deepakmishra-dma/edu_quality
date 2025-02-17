@@ -189,7 +189,18 @@ def get_notice_by_id(id, student=None):
             "student": student_doc.name
         }
     elif school_notice_doc.student:
+        school_notice_status = (
+            frappe.get_value(
+                "School Notice Status",
+                {"notice": id, "user": user, "student": student},
+                ["is_read", "is_archived", "is_stared"],
+                as_dict=True,
+            )
+            or {}
+        )
+
         school_notice["student_first_name"] = frappe.db.get_value("Student", school_notice.student, "first_name")
+        school_notice = {**school_notice, **school_notice_status}
 
     try:
         create_or_update_notice_status(id, student, {"is_read": 1})

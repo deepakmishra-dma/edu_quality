@@ -55,48 +55,43 @@
    "columns": 1,
    "fetch_from": ".brand",
    "fieldname": "broadcast",
-   "fieldtype": "Link",
+   "fieldtype": "Select",
    "in_list_view": 1,
-   "label": "Broadcast",
-   "options": "Item CMAP Material"
+   "label": "Broadcast"
   },
   {
    "columns": 1,
    "fieldname": "parent_note",
-   "fieldtype": "Link",
+   "fieldtype": "Select",
    "in_list_view": 1,
-   "label": "Parent Note",
-   "options": "Item CMAP Material"
+   "label": "Parent Note"
   },
   {
    "columns": 1,
    "fieldname": "home_work",
-   "fieldtype": "Link",
+   "fieldtype": "Select",
    "in_list_view": 1,
-   "label": "Home Work",
-   "options": "Item CMAP Material"
+   "label": "Home Work"
   },
   {
    "columns": 1,
    "fieldname": "class_work",
-   "fieldtype": "Link",
+   "fieldtype": "Select",
    "in_list_view": 1,
-   "label": "Class Work",
-   "options": "Item CMAP Material"
+   "label": "Class Work"
   },
   {
    "columns": 1,
    "fieldname": "material_required",
-   "fieldtype": "Link",
+   "fieldtype": "Select",
    "in_list_view": 1,
-   "label": "Material Required",
-   "options": "Item CMAP Material"
+   "label": "Material Required"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2023-12-29 09:53:14.171645",
+ "modified": "2024-03-27 12:54:20.420650",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Item Detail",

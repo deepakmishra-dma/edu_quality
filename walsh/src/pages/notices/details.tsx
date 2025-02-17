@@ -1,5 +1,5 @@
 import { useOne } from "@refinedev/core";
-import React, { useState } from "react";
+import React, { } from "react";
 import { Box, Stack, Text } from "@mantine/core";
 import { useParams, useSearchParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
@@ -15,6 +15,7 @@ export const NoticeDetails: React.FC = () => {
   const [, setStaredOnly] = useState(false)
   const params = useParams()
   const [queries] = useSearchParams()
+
   const noticeId = params?.id ?? "";
   const studentId = queries?.get("student") ?? '';
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ export const NoticeDetails: React.FC = () => {
     staredOnly: true,
 
   });
+
   const { data, isLoading } = useOne<Notice>({
     id: params?.id || "", queryOptions: {
       queryKey: ["details", "notices", params?.id, queries?.get("student")],
@@ -92,6 +94,7 @@ export const NoticeDetails: React.FC = () => {
               position: "absolute",
               right: 45,
               borderRight: '1px solid #eee',
+
               paddingRight: "5px",
             }}
             size={35}
@@ -108,6 +111,7 @@ export const NoticeDetails: React.FC = () => {
                 setStaredOnly(!listStar?.is_stared)
                 await starRefetch();
 
+
               } catch (error) {
                 console.error("Error marking as Stared:", error);
               }
@@ -121,6 +125,7 @@ export const NoticeDetails: React.FC = () => {
               right: 8
             }}
             size={30}
+
             color={listItem?.is_archived ? "white" : getStudentIconColor(listItem?.student, listItem?.message || [])}
             stroke={1}
             fill={listItem?.is_archived ? getStudentIconColor(listItem?.student, listItem?.message || []) : 'white'}
@@ -129,6 +134,7 @@ export const NoticeDetails: React.FC = () => {
               try {
                 await markAsArchived({ notice: noticeId, student: studentId, archived: !listItem?.is_archived });
                 setIsArchivedOnly(!listItem?.is_archived);
+
                 await refetch();
                 navigate("/");
               } catch (error) {
@@ -139,6 +145,7 @@ export const NoticeDetails: React.FC = () => {
 
         </Stack>
       </Stack>
+
     </Box>
     <Box sx={{
       overflow: 'auto',
@@ -155,6 +162,7 @@ export const NoticeDetails: React.FC = () => {
         </>
       }
     </Box>
+
   </Box>
 
 
