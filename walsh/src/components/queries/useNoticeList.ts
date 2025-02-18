@@ -1,4 +1,4 @@
-import {BaseRecord, useCustom} from "@refinedev/core";
+import { BaseRecord, useCustom } from "@refinedev/core";
 
 export interface Notice extends BaseRecord {
   name: string;
