@@ -25,12 +25,16 @@ class CMAP(Document):
     def before_validate(self, method=None):
         frappe.errprint(self.products)
         added_broadcasts = [product.get("broadcast") for product in self.products] or []
-        added_parent_notes = [product.get("parent_note") for product in self.products] or []
+        added_parent_notes = [
+            product.get("parent_note") for product in self.products
+        ] or []
         added_home_works = [product.get("home_work") for product in self.products] or []
         added_material_required = [
             product.get("material_required") for product in self.products
         ] or []
-        added_class_works = [product.get("class_work") for product in self.products] or []
+        added_class_works = [
+            product.get("class_work") for product in self.products
+        ] or []
         generate_text_from_unique_notes(
             self, "Broadcast", added_broadcasts, field="broadcast_text"
         )
@@ -102,7 +106,7 @@ def generate_text_from_unique_notes(self, type, added_broadcasts, field):
 
 
 @frappe.whitelist()
-def check_if_note_added_unique(material_type, added_items):
+def check_if_note_added_unique(material_type, added_items=[]):
     flag = True
     added_items = parse_json(added_items)
     frequency_counter = {}
@@ -121,9 +125,7 @@ def check_if_note_added_unique(material_type, added_items):
         for j in index_dict[i]:
             if frequency_counter.get(j) > 1:
                 flag = False
-                frappe.msgprint(
-                    f"Description {i} or Doc is same for {material_type} doc named {','.join(index_dict.get(i))}"
-                )
+                frappe.msgprint(f"Description {i} or Doc is same for {material_type} ")
 
     return flag
 

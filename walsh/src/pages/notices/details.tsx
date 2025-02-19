@@ -1,5 +1,5 @@
 import { useOne } from "@refinedev/core";
-import React, { useState } from "react";
+import React from "react";
 import { Box, Stack, Text } from "@mantine/core";
 import { useParams, useSearchParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
@@ -11,8 +11,7 @@ import useMarkAsArchived from "../../components/queries/useMarkArchivedMutation.
 import useMarkAsStared from "../../components/queries/useMarkStarMutation.ts";
 
 export const NoticeDetails: React.FC = () => {
-  const [, setIsArchivedOnly] = useState(false)
-  const [, setStaredOnly] = useState(false)
+
   const params = useParams()
   const [queries] = useSearchParams()
 
@@ -108,7 +107,7 @@ export const NoticeDetails: React.FC = () => {
               try {
 
                 await markAsStared({ notice: noticeId, student: studentId, stared: !listStar?.is_stared });
-                setStaredOnly(!listStar?.is_stared)
+
                 await starRefetch();
 
 
@@ -133,8 +132,6 @@ export const NoticeDetails: React.FC = () => {
 
               try {
                 await markAsArchived({ notice: noticeId, student: studentId, archived: !listItem?.is_archived });
-                setIsArchivedOnly(!listItem?.is_archived);
-
                 await refetch();
                 navigate("/");
               } catch (error) {
