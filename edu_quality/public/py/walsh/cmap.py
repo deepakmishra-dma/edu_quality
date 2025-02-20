@@ -69,10 +69,10 @@ def get_all_cmaps(subject, unit, division):
             if broadcast == product.broadcast:
                 product['broadcast_description'] = broadcast
         for homework in homework_names:
-            if homework.name == product.home_work:
+            if homework == product.home_work:
                 product['homework_description'] = homework
         for parentnote in parentnote_names:
-            if parentnote.name == product.parent_note:
+            if parentnote == product.parent_note:
                 product['parentnote_description'] = parentnote
 
     for cmap in cmaps:

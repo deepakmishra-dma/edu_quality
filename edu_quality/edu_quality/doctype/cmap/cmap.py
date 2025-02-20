@@ -124,6 +124,8 @@ def check_if_note_added_unique(material_type, added_items=[]):
     for i in index_dict:
         for j in index_dict[i]:
             if frequency_counter.get(j) > 1:
+                if(i==None or not i):
+                    continue
                 flag = False
                 frappe.msgprint(f"Description {i} or Doc is same for {material_type} ")
 
