@@ -25,7 +25,11 @@ frappe.ui.form.on("Student Applicant", {
             },
             callback: function (r) {
                 frappe.msgprint("Enrolled Successfully");
+                if(r.message){
+                    window.open(r.message, '_blank');
+                }
                 location.reload();
+
             }
         });
     }
