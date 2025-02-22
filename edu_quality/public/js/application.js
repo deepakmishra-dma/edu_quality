@@ -5,9 +5,16 @@ frappe.ui.form.on("Student Applicant", {
         if (!frm.is_new() && frm.doc.application_status === "Applied") {
             frm.set_value("application_status", "Approved");
             frm.save_or_update();
-            frm.add_custom_button(__("Enroll"), function () {
-                frm.events.enroll(frm)
-            }).addClass("btn-primary");
+        }else if(frm.doc.application_status === "Approved"){
+            if (checkFields(frm)) {
+                frm.add_custom_button(__("Enroll"), function () {
+                    frm.events.enroll(frm)
+                }).addClass("btn-primary");
+            }else{
+                frm.add_custom_button(__("Enroll"), function () {
+                    frm.events.enroll(frm)
+                }).addClass("hidden");
+            }
         }
         frappe.realtime.on("enroll_student_progress", function (data) {
             if (data.progress) {
@@ -34,3 +41,11 @@ frappe.ui.form.on("Student Applicant", {
         });
     }
 });
+
+function checkFields(frm) {
+    if (frm.doc.school && frm.doc.program && frm.doc.academic_year && (frm.doc.batch_time || frm.doc.batch)) {
+        return true;
+    } else {
+        return false;
+    }
+}
