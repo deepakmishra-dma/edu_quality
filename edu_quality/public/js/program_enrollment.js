@@ -5,6 +5,9 @@ frappe.ui.form.on("Program Enrollment", {
             frm.add_custom_button(__("Create Fees"), function () {
                 frm.events.create_fees(frm)
             }).addClass("btn-primary");
+            frm.add_custom_button(__("Save"), function () {
+                frm.save()
+            }).addClass("btn-primary");
         }
         frm.set_query("payment_plan", function () {
             return {
@@ -17,9 +20,6 @@ frappe.ui.form.on("Program Enrollment", {
     },
 
     create_fees: function (frm) {
-        if(frm.doc.__unsaved){
-            frm.save();
-        }
         showPopup(frm);
     }
 });
@@ -39,7 +39,7 @@ function showPopup(frm){
                 fieldtype: 'Read Only',
                 label: __('School'),
                 fieldname: 'school',
-                default: frm.doc.school
+                default: frm.doc.custom_school
             },
             {
                 fieldtype: 'Read Only',
@@ -60,7 +60,7 @@ function showPopup(frm){
                 fieldtype: 'Read Only',
                 label: __('Batch'),
                 fieldname: 'batch',
-                default: frm.doc.batch
+                default: frm.doc.student_batch_name
             },
             {
                 fieldtype: 'Read Only',
