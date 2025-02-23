@@ -404,9 +404,17 @@ def create_fees(doc, method=None):
             )
         student.custom_school = doc.custom_school
         student.save()
+        update_lead_status(doc)
     except Exception as e:
         frappe.logger("fee").exception(e)
         frappe.throw(str(e))
+
+
+def update_lead_status(doc, method=None):
+    student_applicant = frappe.get_value("Student", doc.student, 'student_applicant')
+    if student_applicant:
+        lead = frappe.get_value('Student Applicant', student_applicant, 'lead')
+        frappe.set_value("Lead", lead, "status", "Enrolled")
 
 
 def append_program_enrollment(doc, method=None):

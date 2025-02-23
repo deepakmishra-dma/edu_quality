@@ -219,6 +219,9 @@ def enroll_student(source_name, email=None, refno=None, data=None,division=None)
     frappe.publish_realtime(
         "enroll_student_progress", {"progress": [2, 4]}, user=frappe.session.user
     )
+
+    frappe.set_value("Lead", student_applicant.lead, "status", "Enrollment Pending")
+
     url = frappe.utils.get_url_to_form(
             "Program Enrollment", program_enrollment.name
         )
