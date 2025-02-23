@@ -116,7 +116,7 @@ def create_student_application(**args):
         # lead_application.status = "Enrolled"
         # lead_application.flags.ignore_mandatory = True
         # lead_application.save()
-        student_application.custom_lead = lead_application.name
+        student_application.lead = lead_application.name
         student_application.insert(ignore_permissions=True)
         student_application.fathers_mobile_number = lead_application.fathers_phone
         frappe.msgprint(("Created Student Application Successfully!"))

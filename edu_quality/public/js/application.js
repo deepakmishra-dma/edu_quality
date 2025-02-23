@@ -43,7 +43,7 @@ frappe.ui.form.on("Student Applicant", {
 });
 
 function checkFields(frm) {
-    if (frm.doc.school && frm.doc.program && frm.doc.academic_year && (frm.doc.batch_time || frm.doc.batch)) {
+    if (frm.doc.school && frm.doc.program && frm.doc.academic_year && frm.doc.batch) {
         return true;
     } else {
         return false;
