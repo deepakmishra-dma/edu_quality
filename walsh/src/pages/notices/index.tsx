@@ -157,16 +157,21 @@ export const NoticeList: React.FC<StaredNoticeListProps> = ({ staredOnly, archiv
               color={getStudentProfileColor(item.student, data?.data?.message || [])}
               stroke={1}
               onClick={() => {
+                console.log("item index", item)
                 markAsStared({ notice: item.name, student: item.student, stared: !item.is_stared })
                   .then(() => refetch())
               }}
+
             />
+
             <IconArchive
               size={30}
               color={item.is_archived ? "white" : getStudentProfileColor(item.student, data?.data?.message || [])}
               stroke={1}
               fill={item.is_archived ? getStudentProfileColor(item.student, data?.data?.message || []) : 'white'}
               onClick={() => {
+                console.log("delete index", item)
+
                 markAsArchived({ notice: item.name, student: item.student, archived: !item.is_archived })
                   .then(() => refetch())
               }}

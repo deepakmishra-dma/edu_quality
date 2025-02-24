@@ -195,8 +195,10 @@ def update_stud_data(**data):
                 else {}
             )
         except Exception:
-            court_order={}
-            frappe.log_error("Error uploading student data court order",str(frappe.get_traceback()))
+            court_order = {}
+            frappe.log_error(
+                "Error uploading student data court order", str(frappe.get_traceback())
+            )
 
         try:
             image = (
@@ -211,9 +213,11 @@ def update_stud_data(**data):
                 else {}
             )
         except Exception:
-            image={}
-            frappe.log_error("Error uploading student data image",str(frappe.get_traceback()))
-        try:    
+            image = {}
+            frappe.log_error(
+                "Error uploading student data image", str(frappe.get_traceback())
+            )
+        try:
             birth_cert = (
                 save_file(
                     str(uuid.uuid4()),
@@ -226,8 +230,10 @@ def update_stud_data(**data):
                 else {}
             )
         except Exception:
-            birth_cert={}
-            frappe.log_error("Error uploading student data birth cert",str(frappe.get_traceback()))
+            birth_cert = {}
+            frappe.log_error(
+                "Error uploading student data birth cert", str(frappe.get_traceback())
+            )
 
         try:
             adhar_card_cert = (
@@ -242,8 +248,10 @@ def update_stud_data(**data):
                 else {}
             )
         except Exception:
-            adhar_card_cert={}
-            frappe.log_error("Error uploading student aadhaar card cert",str(frappe.get_traceback()))
+            adhar_card_cert = {}
+            frappe.log_error(
+                "Error uploading student aadhaar card cert", str(frappe.get_traceback())
+            )
 
         frappe.set_user(current_user)
         if not isStudent:
@@ -401,9 +409,15 @@ def update_stud_data(**data):
         existing_student_doc.stud_rte = data.get("stud_rte")
         existing_student_doc.is_rte = data.get("stud_rte")
         existing_student_doc.caste = data.get("other_caste") or data.get("caste")
-        existing_student_doc.religion = data.get("other_religion") or data.get("religion")
-        existing_student_doc.subcaste = data.get("other_subcaste") or data.get("subcaste")
-        existing_student_doc.sub_caste = data.get("other_subcaste") or data.get("subcaste")
+        existing_student_doc.religion = data.get("other_religion") or data.get(
+            "religion"
+        )
+        existing_student_doc.subcaste = data.get("other_subcaste") or data.get(
+            "subcaste"
+        )
+        existing_student_doc.sub_caste = data.get("other_subcaste") or data.get(
+            "subcaste"
+        )
         existing_student_doc.birth_place = data.get("b_city") or data.get("b_city")
         existing_student_doc.student_mobile_number = data.get("student_sms_no")
         existing_student_doc.student_is_existingstudent = int(
@@ -427,16 +441,18 @@ def update_stud_data(**data):
         existing_student_doc.custom_allergies = data.get("other_allergies") or data.get(
             "allergies"
         )
-        existing_student_doc.custom_mother_tongue = data.get("mother_tongue") or data.get(
-            "other_mother_tongue"
-        )
+        existing_student_doc.custom_mother_tongue = data.get(
+            "mother_tongue"
+        ) or data.get("other_mother_tongue")
         existing_student_doc.mother_tongue = data.get("mother_tongue") or data.get(
             "other_mother_tongue"
         )
-        existing_student_doc.custom_mother_tongue = data.get("mother_tongue") or data.get(
-            "other_mother_tongue"
+        existing_student_doc.custom_mother_tongue = data.get(
+            "mother_tongue"
+        ) or data.get("other_mother_tongue")
+        existing_student_doc.aadhaar_card_certificate = adhar_card_cert.get(
+            "file_url", ""
         )
-        existing_student_doc.aadhaar_card_certificate = adhar_card_cert.get("file_url", "")
         existing_student_doc.aadhar_card_cert = adhar_card_cert.get("file_url", "")
         existing_student_doc.birth_cert = birth_cert.get("file_url", "")
         existing_student_doc.image = image.get("file_url", "")
@@ -451,10 +467,13 @@ def update_stud_data(**data):
         frappe.logger("Student Debug").exception(data)
         frappe.logger("Student Debug").exception(ref_no)
         frappe.logger("Student Debug").exception(school_id)
-    
+
         return existing_student_doc
     except Exception:
-        frappe.log_error("Error updating student data",[str(frappe.get_traceback()),str(data)])
+        frappe.log_error(
+            "Error updating student data", [str(frappe.get_traceback()), str(data)]
+        )
+
 
 def default(obj):
     if isinstance(obj, (datetime.date, datetime.datetime)):
@@ -649,14 +668,14 @@ def append_father_guardian(doc, guardians, fathers_name):
 #  these ids coresspond to ids on wordpress location, select
 
 
-id_to_location_map_fb = {
-    "wakad": "Walnut School at Wakad",
-    "shivane": "Walnut School at Shivane",
-    "fursungi": "Walnut School at Fursungi",
-    "walnut school at wakad": "Walnut School at Wakad",
-    "walnut school at shivane": "Walnut School at Shivane",
-    "walnut school at fursungi": "Walnut School at Fursungi",
-}
+# id_to_location_map_fb = {
+#     "wakad": "Walnut School at Wakad",
+#     "shivane": "Walnut School at Shivane",
+#     "fursungi": "Walnut School at Fursungi",
+#     "walnut school at wakad": "Walnut School at Wakad",
+#     "walnut school at shivane": "Walnut School at Shivane",
+#     "walnut school at fursungi": "Walnut School at Fursungi",
+# }
 
 
 def get_existing_leads(first_name, fathers_phone):
@@ -691,6 +710,7 @@ def get_existing_leads(first_name, fathers_phone):
 
 
 def get_school(location):
+    return location
     return id_to_location_map_fb.get(str(location).lower(), "")
 
 
@@ -708,7 +728,7 @@ def get_class(school_name, class_name):
 def get_school_code(location):
     return frappe.db.get_value(
         "School",
-        {"name": id_to_location_map_fb.get(str(location).lower(), "")},
+        {"name": location},
         "prefix",
     )
 
@@ -848,7 +868,7 @@ def process_lead(source, lead, page_location, detail="", kwargs={}):
     if (
         source.lower() == "school"
         or source.lower() == "walkin"
-        or id_to_location_map_fb.get(str(source).lower(), None)
+        or get_school_code(location=source)
     ):
         lead.append("custom_lead_sub_status", {"sub_status": "Hot-School Visit Done"})
         insert_walk_in_date(lead)

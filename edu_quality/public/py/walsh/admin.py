@@ -4,6 +4,7 @@ import json
 import frappe
 import requests
 from frappe.core.doctype.communication.email import make as create_email
+from edu_quality.edu_quality.server_scripts.utils import current_academic_year
 
 
 def render_jinja(text, object):
@@ -67,7 +68,7 @@ def enqueued_specific_notice_emails(__args):
 
     school = csv_data[0].get("school")
 
-    bcc_email_group = frappe.get_value("School", school, 'bcc_email_address')
+    bcc_email_group = frappe.get_value("School", school, 'bcc_email_group')
 
     bcc_emails = []
     if bcc_email_group:
@@ -205,7 +206,7 @@ def enqueued_generic_notice_emails(__args):
     academic_year = __args.get("academic_year")
     school = __args.get("school")
 
-    bcc_email_group = frappe.get_value("School", school, 'bcc_email_address')
+    bcc_email_group = frappe.get_value("School", school, 'bcc_email_group')
 
     bcc_emails = []
     if bcc_email_group:
@@ -388,6 +389,41 @@ def enqueued_generic_notice_docs(__args):
                 notice_ids.append(notice.name)
     frappe.enqueue(enqueued_generic_notifications, queue="long", notice_ids=notice_ids)
     # enqueued_generic_notifications(notice_ids)
+
+
+def send_generic_notification(variables, **kwargs):
+    """
+    Send a generic notification to students based on the supplied filters
+    Sending notification using dotted path in funnel
+    variables: data from previous node
+    kwargs: payload from exec dotted path node
+    """
+    try:
+        doc = variables.get('doc')
+        if doc.doctype == 'Payment Request':
+            student = frappe.get_doc('Student', doc.party)
+        elif doc.doctype == 'Program Enrollment':
+            student = frappe.get_doc('Student', doc.student)
+
+        subject = kwargs.get("subject")
+        content = kwargs.get("notice")
+        raw_html = kwargs.get("raw_html")
+        academic_year = current_academic_year()
+
+        notice = frappe.get_doc({
+            "doctype": "School Notice",
+            "class": student.program,
+            "is_generic_notice": 1,
+            "school": student.school,
+            "subject": subject,
+            "student_status": student.student_status,
+            "notice": content,
+            'academic_year': academic_year,
+            "is_raw_html": 1 if raw_html else 0
+        }).insert(ignore_permissions=True)
+        send_notification(student.name, notice.subject, notice.name)
+    except Exception:
+        frappe.log_error('Push Notification', frappe.get_traceback())
 
 
 def validate_school(csv_data):
