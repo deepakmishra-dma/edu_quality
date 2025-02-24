@@ -191,10 +191,6 @@ doc_events = {
         "before_save": "edu_quality.public.py.student.before_save",
         "on_update": "edu_quality.public.py.student.on_update",
     },
-    "Custom Field": {"after_insert": "edu_quality.public.py.fixtures.custom_fields"},
-    "Custom DocPerm": {
-        "after_insert": "edu_quality.public.py.fixtures.custom_doc_perm"
-    },
     "Payment Entry": {
         "validate": "edu_quality.edu_quality.server_scripts.payment_entry.validate"
     },
@@ -324,177 +320,12 @@ scheduler_events = {
 # 	"edu_quality.auth.validate"
 # ]
 
-# fixtures = [
-#     {"dt": "Web Page"}
-
-# ]
-
 fixtures = [
-    {"dt": "Workflow"},
-    {"dt": "Workflow State"},
-    {"dt": "Workflow Action Master"},
-    {"dt": "Server Script", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
-    {"dt": "Property Setter", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
-    {"dt": "Client Script", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
-    {"dt": "DocType Layout"},
-    {"dt": "Translation"},
-    {"dt": "Lead Source"},
-    {"dt": "Student Batch Name"},
-    {"dt": "Custom Field", "filters": [["module", "=", "Edu Quality"]]},
-    {"dt": "Web Page"},
-    {"dt": "Accounting Dimension"},
-    {"dt": "Role"},
-    {"dt": "Custom DocPerm", "filters": [["module", "=", "Edu Quality"]]},
-    {"dt": "Program"},
-    {"dt": "Lead Sub Status"},
-    # {"dt": "School"},
-    {
-        "dt": "Funnel Node",
-        "filters": [
-            [
-                "name",
-                "in",
-                [
-                    "Student Referral",
-                    "Fee Receipt",
-                    "Undertaking OTP",
-                    "Payment Link",
-                    "Payment Link Remainder",
-                    "Student Applicant Creation",
-                ],
-            ]
-        ],
-    },
-    # {
-    #     "dt": "Print Format",
-    #     "filters": [
-    #         [
-    #             "name",
-    #             "in",
-    #             ["Printer Receipt", "Printer"],
-    #         ]
-    #     ],
-    # },
-    {"dt": "Workspace"},
-    {"dt": "Number Card"},
-    # {"dt": "Funnel"},
-    # {"dt": "Email Template"},
-    # {"dt": "Letter Head"},
-    # {"dt": "Class Type"},
-    {"dt": "Item Group"},
-    {"dt": "CRM Settings"},
-    {
-        "dt": "Workspace",
-        "filters": [
-            [
-                "name",
-                "in",
-                [
-                    "Home",
-                    "Walnut Accounts",
-                    "Student Management",
-                    "Fees Setup",
-                    "Walnut Analytics Dashboard",
-                    "HR",
-                    "Counsellor",
-                    "Content Creator",
-                    "Walnut Analytics Dashboard",
-                    "Coordinator",
-                    "Councellor",
-                    "Digital Academic",
-                    "Customer Care",
-                    "Teacher",
-                    "Principal",
-                    "System Admin",
-                    "Accounts Admin",
-                    "Vice-Principal",
-                    "CRM",
-                    "Selling",
-                    "Buying",
-                    "Website",
-                    "Tools",
-                    "Users",
-                    "Integrations",
-                    "Accounting",
-                    "Stock",
-                    "Assets",
-                    "Projects",
-                    "Support",
-                    "Quality",
-                    "Manufacturing",
-                    "ERPNext Integrations",
-                    "Build",
-                    "ERPNext Settings",
-                    "POS Awesome",
-                    "Fees Module",
-                    "Student CRM",
-                    "Accounts",
-                    "System Setup",
-                    "Printer",
-                    "Watchman",
-                    "School Admin",
-                    "Financial Reports",
-                    "Receivables",
-                    "Payables",
-                    "Education",
-                    "Website",
-                    "Tools",
-                    "Integrations",
-                    "Clerk",
-                    "Transporter"
-                ],
-            ]
-        ],
-    },
-    {
-        "dt": "Custom HTML Block",
-    },
-    {"dt": "Report", "filters": [["name", "in", "Generic Report"]]},
-    {
-        "dt": "Module Profile",
-        "filters": [
-            [
-                "name",
-                "in",
-                [
-                    "Councellor",
-                    "Content Creator",
-                    "Printer",
-                    "Watchman",
-                    "Clerk",
-                    "Principal",
-                    "Vice Principal",
-                    "HoD",
-                    "Teacher",
-                    "Instructor",
-                    "Transporter",
-                ],
-            ]
-        ],
-    },
-    {
-        "dt": "Role Profile",
-        "filters": [
-            [
-                "name",
-                "in",
-                [
-                    "Councellor",
-                    "Content Creator",
-                    "Printer",
-                    "Watchman",
-                    "Clerk",
-                    "Teacher",
-                    "Instructor",
-                    "Principal",
-                    "Vice Principal",
-                    "HoD",
-                    "Transporter",
-                ],
-            ]
-        ],
-    },
+    {"dt": "Custom DocPerm"}
+
 ]
+
+
 
 
 after_migrate = [
