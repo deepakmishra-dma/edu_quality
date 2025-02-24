@@ -219,7 +219,13 @@ def enroll_student(source_name, email=None, refno=None, data=None,division=None)
     frappe.publish_realtime(
         "enroll_student_progress", {"progress": [2, 4]}, user=frappe.session.user
     )
-    return program_enrollment
+
+    frappe.set_value("Lead", student_applicant.lead, "status", "Enrollment Pending")
+
+    url = frappe.utils.get_url_to_form(
+            "Program Enrollment", program_enrollment.name
+        )
+    return url
 
 def get_student_group_mgr(division,doc):
     program_id = frappe.get_value("Student Group",{'academic_year':doc.academic_year,'program':doc.program,'student_group_name':division})

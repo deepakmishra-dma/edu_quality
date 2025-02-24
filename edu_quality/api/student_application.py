@@ -112,10 +112,11 @@ def create_student_application(**args):
         # created_mgr_lead = upload_to_mgr(student_application)
         # student_application.lms_id = created_mgr_lead.get("ID")
         # lead_application.lead_status = "Enrolled"
-        frappe.db.set_value("Lead", lead_application.name, "status", "Enrolled")
+        frappe.db.set_value("Lead", lead_application.name, "status", "Applied")
         # lead_application.status = "Enrolled"
         # lead_application.flags.ignore_mandatory = True
         # lead_application.save()
+        student_application.lead = lead_application.name
         student_application.insert(ignore_permissions=True)
         student_application.fathers_mobile_number = lead_application.fathers_phone
         frappe.msgprint(("Created Student Application Successfully!"))
