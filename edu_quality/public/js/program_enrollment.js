@@ -71,6 +71,7 @@ function showPopup(frm){
         ],
         primary_action_label: __('Submit'),
         primary_action: async function() {
+            validateForm(frm, dialog);
             dialog.hide();
             frappe.call({
                 method: "frappe.client.submit",
@@ -88,4 +89,37 @@ function showPopup(frm){
         }
     });
     dialog.show();
+}
+
+
+function validateForm(frm, dialog) {
+    let missingFields = [];
+    if (!frm.doc.payment_plan) {
+        missingFields.push('Payment Plan');
+    }
+    if (!frm.doc.program) {
+        missingFields.push('Program');
+    }
+    if (!frm.doc.academic_year) {
+        missingFields.push('Academic Year');
+    }
+    if (!frm.doc.student_batch_name) {
+        missingFields.push('Student Batch');
+    }
+
+    if (missingFields.length > 0) {
+        dialog.hide();
+        frappe.msgprint({
+            title: __('Missing Fields'),
+            indicator: 'red',
+            message: __('Please fill the following fields: ') + missingFields.join(', '),
+            primary_action: {
+                'label': 'Close',
+                'action': function() {
+                    frappe.hide_msgprint();
+                }
+            }
+        });
+        throw new Error('Missing fields: ' + missingFields.join(', '));
+    }
 }

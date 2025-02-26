@@ -204,6 +204,9 @@ def enroll_student(source_name, email=None, refno=None, data=None,division=None)
     if student_applicant.custom_allergies:
         student.allergies = student_applicant.custom_allergies
     student.save()
+    payment_plan = frappe.get_value(
+        "Fee Schedule", student_applicant.fee_schedule, "payment_plan"
+    )
     # create_student_account(student, student_applicant)
     program_enrollment = frappe.new_doc("Program Enrollment")
     program_enrollment.student = student.name
@@ -214,6 +217,8 @@ def enroll_student(source_name, email=None, refno=None, data=None,division=None)
     program_enrollment.academic_year = student_applicant.academic_year
     program_enrollment.academic_term = student_applicant.academic_term
     program_enrollment.student_group = student_group
+    program_enrollment.student_batch_name = student_applicant.batch
+    program_enrollment.payment_plan = payment_plan
     program_enrollment.save()
     # program_enrollment.submit()
     frappe.publish_realtime(
