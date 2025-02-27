@@ -17,6 +17,12 @@ frappe.ui.form.on("Program Enrollment", {
                 }
             };
         });
+        frm.set_query("student_batch_name", function () {
+            return {
+                query: "edu_quality.edu_quality.server_scripts.utils.batch_filter",
+                filters: { 'program': frm.doc.program, 'academic_year': frm.doc.academic_year }
+            };
+        });
     },
 
     create_fees: function (frm) {
@@ -25,7 +31,7 @@ frappe.ui.form.on("Program Enrollment", {
 });
 
 
-function showPopup(frm){
+function showPopup(frm) {
     var dialog = new frappe.ui.Dialog({
         title: __('Fee Details'),
         fields: [
@@ -70,18 +76,18 @@ function showPopup(frm){
             },
         ],
         primary_action_label: __('Submit'),
-        primary_action: async function() {
+        primary_action: async function () {
             validateForm(frm, dialog);
             dialog.hide();
             frappe.call({
                 method: "frappe.client.submit",
                 args: {
-                      "doctype": frm.doc.doctype,
-                      "docname": frm.doc.name,
-                      "doc": frm.doc
+                    "doctype": frm.doc.doctype,
+                    "docname": frm.doc.name,
+                    "doc": frm.doc
                 },
                 callback: async function (r) {
-                    let res = await frappe.db.get_value("Fees", {"program_enrollment": frm.doc.name}, "name");
+                    let res = await frappe.db.get_value("Fees", { "program_enrollment": frm.doc.name }, "name");
                     let url = `/app/fees/${res.message.name}`;
                     window.open(url, '_blank');
                 }
@@ -115,7 +121,7 @@ function validateForm(frm, dialog) {
             message: __('Please fill the following fields: ') + missingFields.join(', '),
             primary_action: {
                 'label': 'Close',
-                'action': function() {
+                'action': function () {
                     frappe.hide_msgprint();
                 }
             }

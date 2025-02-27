@@ -69,7 +69,8 @@ frappe.ui.form.on("Lead", {
                 }
                 // })
             }, '', "Open in whatsapp ui")
-            if(frm.doc.status !="Applied" && frm.doc.status !="Enrolled" && frm.doc.status !="Enrollment Pending"){
+            if (frm.doc.status != "Applied" && frm.doc.status != "Enrolled" && frm.doc.status != "Enrollment Pending") {
+                frm.set_df_property('status', 'read_only', 0);
                 frm.add_custom_button(__("Create Admission"), function () {
                     var errorKey = Object.keys(error_msg).find(error => frm.doc[error] === null || frm.doc[error] === undefined || frm.doc[error] === '')
                     if (String(frm.doc.fathers_phone).length != 10) {
@@ -100,7 +101,7 @@ frappe.ui.form.on("Lead", {
                                 callback: (r) => {
                                     frm.disable_form()
                                     frm.disable_save()
-                                    if(r.message){
+                                    if (r.message) {
                                         window.open(r.message, '_blank');
                                     }
                                 }
@@ -111,6 +112,8 @@ frappe.ui.form.on("Lead", {
                     });
 
                 })
+            } else if (frm.doc.status === "Applied" || frm.doc.status === "Enrolled" || frm.doc.status === "Enrollment Pending") {
+                frm.set_df_property('status', 'read_only', 1);
             }
             $('.inner-group-button[data-label="Create"]').remove()
         }, 10)
