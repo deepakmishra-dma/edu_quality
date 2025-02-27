@@ -11,6 +11,21 @@
   },
   {
    "card": "Lead to Enrolled"
+  },
+  {
+   "card": "Today's Applied Leads"
+  },
+  {
+   "card": "Today's Enrolled Leads"
+  },
+  {
+   "card": "Today's Enrollment Pending Leads"
+  },
+  {
+   "card": "Today's Deposits Paid"
+  },
+  {
+   "card": "Today's Fees Paid"
   }
  ],
  "charts": [
@@ -46,7 +61,7 @@
  "idx": 0,
  "is_default": 0,
  "is_standard": 1,
- "modified": "2023-10-03 20:05:54.449617",
+ "modified": "2024-03-29 17:22:23.563869",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Walnut Analytics Dashboard",
