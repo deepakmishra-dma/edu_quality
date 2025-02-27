@@ -54,8 +54,10 @@ def get_all_cmaps(subject, unit, division):
 
     cmap_names = [cmap.name for cmap in cmaps]
     all_products = frappe.get_all("Item Detail", filters={"parent": ["in", cmap_names]}, fields=["*"])
+    valid_item_groups = frappe.get_all("Item Group",filters={"custom_hide_in_walsh":0},fields=["*"])
+    item_group_names = [p.name for p in valid_item_groups]
     item_names = [p.item for p in all_products]
-    all_items = frappe.get_all("Item", fields=["*"], filters={"name": ["in", item_names]})
+    all_items = frappe.get_all("Item", fields=["*"], filters={"name": ["in", item_names],"item_group":["in",item_group_names],"custom_hide_in_walsh":0})
     broadcast_names = [product.broadcast for product in all_products if product.broadcast]
     homework_names = [product.home_work for product in all_products if product.home_work]
     parentnote_names = [product.parent_note for product in all_products if product.parent_note]
