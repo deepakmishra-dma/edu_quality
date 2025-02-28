@@ -9,6 +9,17 @@ def after_migrate():
     replace_emails() 
     replace_account_credentials()
     remove_webhooks()
+    add_guardian_groups()
+
+def add_guardian_groups():
+    parents = frappe.db.get_all("Student Guardian",{'parenttype':"Student"},"guardian")
+    for parent in parents:
+        email = frappe.db.get_value("Guardian",parent.guardian,"email_address")
+        if email and not frappe.db.exists("Email Group Member",{"email_group":"All Parents","email":email}):
+                doc = frappe.new_doc("Email Group Member")
+                doc.email_group = "All Parents"
+                doc.email = email
+                doc.save(ignore_permissions=True)
 
 def replace_emails():
     #guardian email/phone
@@ -48,6 +59,7 @@ def replace_emails():
             "fathers_email":father_new,
             "mothers_email":mother_new
         })
+
     
 
 def replace_account_credentials():
