@@ -11,6 +11,7 @@ def after_migrate():
     remove_webhooks()
 
 def replace_emails():
+    #guardian email/phone
     data = frappe.db.get_all("Guardian", fields=["name","email_address"])
     for guardian in data:
         if guardian.email_address:
@@ -18,6 +19,9 @@ def replace_emails():
             frappe.db.set_value("Guardian",guardian.name,{"email_address":new_email,"mobile_number":""})
         else:
             frappe.db.set_value("Guardian",guardian.name,"mobile_number","")
+    
+
+    #student email/phone
     student = frappe.db.get_all("Student", fields=["name","student_email_id"])
     for st in student:
         new_email = st.student_email_id.split("@")[0] + "@yopmail.com"
@@ -28,6 +32,21 @@ def replace_emails():
             "primary_contact":"",
             "whatsapp_number":"",
             })
+    
+    #lead email/phone
+    leads = frappe.db.get_all("Lead", fields=["name","fathers_phone","mothers_phone","fathers_email","mothers_email"])
+    for lead in leads:
+        if lead.fathers_email:
+            father_new = lead.fathers_email.split("@")[0] + "@yopmail.com"
+        if lead.mothers_email:
+            mother_new = lead.mothers_email.split("@")[0] + "@yopmail.com"
+        frappe.db.set_value("Lead",lead.name,{
+            "fathers_phone":"",
+            "mothers_phone":"",
+            "fathers_email":father_new,
+            "mothers_email":mother_new
+        })
+    
 
 def replace_account_credentials():
     frappe.db.set_single_value("Whatsapp Settings",{
