@@ -36,6 +36,8 @@ def replace_emails():
     #lead email/phone
     leads = frappe.db.get_all("Lead", fields=["name","fathers_phone","mothers_phone","fathers_email","mothers_email"])
     for lead in leads:
+        father_new = ""
+        mother_new = ""
         if lead.fathers_email:
             father_new = lead.fathers_email.split("@")[0] + "@yopmail.com"
         if lead.mothers_email:
