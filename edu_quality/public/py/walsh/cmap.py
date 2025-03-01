@@ -5,13 +5,17 @@ import frappe
 def get_students():
     user = frappe.session.user
     guardian = frappe.get_cached_doc("Guardian", {"user": user})
-    students = frappe.get_all("Student", filters={"guardian": guardian.name}, fields=["*"])
+    students = frappe.get_all(
+        "Student", filters={"guardian": guardian.name}, fields=["*"]
+    )
     return students
 
 
 @frappe.whitelist()
 def get_student_class_details(student):
-    current_yr = frappe.db.get_value("Academic Year", {'custom_current_academic_year': 1})
+    current_yr = frappe.db.get_value(
+        "Academic Year", {"custom_current_academic_year": 1}
+    )
     program_enrollments = frappe.get_all(
         "Program Enrollment",
         filters={"student": student, "academic_year": current_yr},
@@ -23,23 +27,18 @@ def get_student_class_details(student):
     program = program_enrollments[0]["program"]
     program_data = frappe.get_cached_doc("Program", program)
     class_type = frappe.get_cached_doc("Class Type", program_data.program_name)
-    division = frappe.get_cached_doc("Student Group", program_enrollments[0]["student_group"])
+    division = frappe.get_cached_doc(
+        "Student Group", program_enrollments[0]["student_group"]
+    )
 
-    return {
-        "division": division,
-        "program": program_data,
-        "class": class_type
-    }
+    return {"division": division, "program": program_data, "class": class_type}
 
 
 @frappe.whitelist()
 def get_all_cmaps(subject, unit, division):
-    values = {
-        'subject': subject,
-        'unit': unit,
-        "division": division
-    }
-    cmaps = frappe.db.sql('''
+    values = {"subject": subject, "unit": unit, "division": division}
+    cmaps = frappe.db.sql(
+        """
         select *,
          (select real_date from `tabCMAP Assignment` ta where division = %(division)s and real_date <= CURDATE() and
           ta.parent = c.name limit 1)          as real_date         from `tabCMAP` as c
@@ -50,37 +49,64 @@ def get_all_cmaps(subject, unit, division):
             division = %(division)s and ta2.parent = c.name
         )
         order by real_date desc
-        ''', as_dict=1, values=values)
+        """,
+        as_dict=1,
+        values=values,
+    )
 
     cmap_names = [cmap.name for cmap in cmaps]
-    all_products = frappe.get_all("Item Detail", filters={"parent": ["in", cmap_names]}, fields=["*"])
-    valid_item_groups = frappe.get_all("Item Group",filters={"custom_hide_in_walsh":0},fields=["*"])
+    all_products = frappe.get_all(
+        "Item Detail", filters={"parent": ["in", cmap_names]}, fields=["*"]
+    )
+    valid_item_groups = frappe.get_all(
+        "Item Group", filters={"custom_hide_in_walsh": 0}, fields=["*"]
+    )
     item_group_names = [p.name for p in valid_item_groups]
     item_names = [p.item for p in all_products]
-    all_items = frappe.get_all("Item", fields=["*"], filters={"name": ["in", item_names],"item_group":["in",item_group_names],"custom_hide_in_walsh":0})
-    broadcast_names = [product.broadcast for product in all_products if product.broadcast]
-    homework_names = [product.home_work for product in all_products if product.home_work]
-    parentnote_names = [product.parent_note for product in all_products if product.parent_note]
+    all_items = frappe.get_all(
+        "Item",
+        fields=["*"],
+        filters={
+            "name": ["in", item_names],
+            "item_group": ["in", item_group_names],
+            "custom_hide_in_walsh": 0,
+        },
+    )
+    broadcast_names = [
+        product.broadcast for product in all_products if product.broadcast
+    ]
+    homework_names = [
+        product.home_work for product in all_products if product.home_work
+    ]
+    parentnote_names = [
+        product.parent_note for product in all_products if product.parent_note
+    ]
     # cmap_materials = frappe.get_all("Item CMAP Material", fields=["*"], filters={"name": ["in", cmap_material_names]})
 
     for product in all_products:
         for item in all_items:
             if item.name == product.item:
-                product['item_data'] = item
+                product["item_data"] = item
         for broadcast in broadcast_names:
             if broadcast == product.broadcast:
-                product['broadcast_description'] = broadcast
+                product["broadcast_description"] = broadcast
         for homework in homework_names:
             if homework == product.home_work:
-                product['homework_description'] = homework
+                product["homework_description"] = homework
         for parentnote in parentnote_names:
             if parentnote == product.parent_note:
-                product['parentnote_description'] = parentnote
+                product["parentnote_description"] = parentnote
+
+    item_hash = {}
+    for item in all_items:
+        name = item.name
+        if name not in item_hash:
+            item_hash[name] = item
 
     for cmap in cmaps:
         cmap.products = []
         for product in all_products:
-            if product.parent == cmap.name:
+            if product.parent == cmap.name and product.item in item_hash:
                 cmap.products.append(product)
 
     return cmaps
