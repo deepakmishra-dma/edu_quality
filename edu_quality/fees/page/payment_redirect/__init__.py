@@ -71,6 +71,17 @@ def get_payment_details(**kwargs):
     payment_request = frappe.get_value("Payment Request",{'payment_hash': kwargs.get('doc')})
     payment_request = frappe.get_doc("Payment Request",payment_request)
     if payment_request.docstatus == 2:
+        if frappe.db.exists("Payment Request",{
+            "reference_name":payment_request.reference_name,
+            "payment_term":payment_request.payment_term,
+            "status":"Initiated"
+            }):
+                request = frappe.db.get_value("Payment Request",{
+                "reference_name":payment_request.reference_name,
+                "payment_term":payment_request.payment_term,
+                "status":"Initiated"
+                },"payment_hash")
+                return {'redirect': frappe.utils.get_url()+"/payment?payment_request="+request}
         return frappe.throw("The payment link is invalidated or cancelled! Please check email for new link or contact the school!")
     fees = frappe.get_doc(payment_request.reference_doctype, payment_request.reference_name)
     breakup = []

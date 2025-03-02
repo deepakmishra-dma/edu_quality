@@ -305,11 +305,11 @@ function createRow(period_no, chapter_name, products, broadcast, parent_note, cl
 	<td >${period_no}</td>
 	<td colspan="2">${chapter_name}</td>
 	<td>${products}</td>
-	<td  data-toggle="tooltip" data-placement="top" title="${broadcast}"><i class="fa fa-file" aria-hidden="true"></i></td>
-	<td data-toggle="tooltip" data-placement="top" title="${parent_note}"><i class="fa fa-file" aria-hidden="true"></i></td>
-	<td  data-toggle="tooltip" data-placement="top" title="${class_work}"><i class="fa fa-file" aria-hidden="true"></i></td>
-	<td  data-toggle="tooltip" data-placement="top" title="${home_work}"><i class="fa fa-file" aria-hidden="true"></i></td>
-<td data-toggle="tooltip" data-placement="top" title="${material_required}"><i class="fa fa-file" aria-hidden="true"></i></td>
+	<td  data-toggle="tooltip" data-placement="top"${broadcast ? `style="color: var(--dt-primary-color);"` : ""} title="${broadcast}"><i class="fa fa-file" aria-hidden="true"></i></td>
+	<td data-toggle="tooltip" data-placement="top"${parent_note ? `style="color: var(--dt-primary-color);"` : ""} title="${parent_note}"><i class="fa fa-file" aria-hidden="true"></i></td>
+	<td  data-toggle="tooltip" data-placement="top"${class_work ? `style="color: var(--dt-primary-color);"` : ""} title="${class_work}"><i class="fa fa-file" aria-hidden="true"></i></td>
+	<td  data-toggle="tooltip" data-placement="top"${home_work ? `style="color: var(--dt-primary-color);"` : ""} title="${home_work}"><i class="fa fa-file" aria-hidden="true"></i></td>
+<td data-toggle="tooltip" data-placement="top"${material_required ? `style="color: var(--dt-primary-color);"` : ""} title="${material_required}"><i class="fa fa-file" aria-hidden="true"></i></td>
 
 	<td>${plan_date || "No Date"}</td>
 	<td class="real-date-cell">${createDatePicker(real_date, index)}</td>
