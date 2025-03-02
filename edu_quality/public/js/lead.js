@@ -69,48 +69,52 @@ frappe.ui.form.on("Lead", {
                 }
                 // })
             }, '', "Open in whatsapp ui")
-
-            frm.add_custom_button(__("Create Admission"), function () {
-                var errorKey = Object.keys(error_msg).find(error => frm.doc[error] === null || frm.doc[error] === undefined || frm.doc[error] === '')
-                if (String(frm.doc.fathers_phone).length != 10) {
-                    frappe.msgprint({
-                        message: __("Fathers Phone Number format is invalid, Please check the spacing is according to standard phone number spacing or none at all, and country code shouldn't be there for Indian numbers only for foreign numbers. and please make sure the number is 10 digits only before pushing to MGR"),
-                        indicator: "red",
-                        title: __("Incorrect Field")
-                    });
-                    return
-                }
-                if (errorKey) {
-                    frappe.msgprint({
-                        title: __('Error'),
-                        message: __(error_msg[errorKey]),
-                        indicator: 'red'
-                    });
-                    return
-                }
-                frappe.call({
-                    method: "frappe.desk.form.save.savedocs",
-                    args: { doc: frm.doc, action: 'Save' },
-                    callback: function (r) {
-                        $(document).trigger("save", [frm.doc]);
-                        frappe.call({
-                            method: "edu_quality.api.student_application.create_student_application",
-                            type: "POST",
-                            args: { name: frm.docname },
-                            callback: (r) => {
-                                frm.disable_form()
-                                frm.disable_save()
-                                if(r.message){
-                                    window.open(r.message, '_blank');
-                                }
-                            }
+            if (frm.doc.status != "Applied" && frm.doc.status != "Enrolled" && frm.doc.status != "Enrollment Pending") {
+                frm.set_df_property('status', 'read_only', 0);
+                frm.add_custom_button(__("Create Admission"), function () {
+                    var errorKey = Object.keys(error_msg).find(error => frm.doc[error] === null || frm.doc[error] === undefined || frm.doc[error] === '')
+                    if (String(frm.doc.fathers_phone).length != 10) {
+                        frappe.msgprint({
+                            message: __("Fathers Phone Number format is invalid, Please check the spacing is according to standard phone number spacing or none at all, and country code shouldn't be there for Indian numbers only for foreign numbers. and please make sure the number is 10 digits only before pushing to MGR"),
+                            indicator: "red",
+                            title: __("Incorrect Field")
                         });
-                    },
-                    error: function (r) {
-                    },
-                });
+                        return
+                    }
+                    if (errorKey) {
+                        frappe.msgprint({
+                            title: __('Error'),
+                            message: __(error_msg[errorKey]),
+                            indicator: 'red'
+                        });
+                        return
+                    }
+                    frappe.call({
+                        method: "frappe.desk.form.save.savedocs",
+                        args: { doc: frm.doc, action: 'Save' },
+                        callback: function (r) {
+                            $(document).trigger("save", [frm.doc]);
+                            frappe.call({
+                                method: "edu_quality.api.student_application.create_student_application",
+                                type: "POST",
+                                args: { name: frm.docname },
+                                callback: (r) => {
+                                    frm.disable_form()
+                                    frm.disable_save()
+                                    if (r.message) {
+                                        window.open(r.message, '_blank');
+                                    }
+                                }
+                            });
+                        },
+                        error: function (r) {
+                        },
+                    });
 
-            })
+                })
+            } else if (frm.doc.status === "Applied" || frm.doc.status === "Enrolled" || frm.doc.status === "Enrollment Pending") {
+                frm.set_df_property('status', 'read_only', 1);
+            }
             $('.inner-group-button[data-label="Create"]').remove()
         }, 10)
 
