@@ -144,7 +144,7 @@ def send_otp(phone_no):
 
     guardian = get_guardian(guardian_number)
     email = guardian.email_address
-   
+    user =  guardian.user
     if not guardian:
         return {
             "error": True,
@@ -167,14 +167,14 @@ def send_otp(phone_no):
     otp = create_otp(wa_phone_no)
     send_otp_to_whatsapp(wa_phone_no, otp)
     send_otp_to_sms(phone_with_country_code, otp)
-    send_otp_to_email(email, otp)
+    send_otp_to_email(email, otp, user)
 
     return {
         "success": True,
         "message": "Otp Sent To +" + str(wa_phone_no),
     }
 
-def send_otp_to_email(email, otp):
+def send_otp_to_email(email, otp, user):
     try:
         if not email:
             return
@@ -182,7 +182,7 @@ def send_otp_to_email(email, otp):
         email_template = frappe.get_doc("Email Template", template_name)
         content = frappe.render_template(email_template.get("response_html") or email_template.get("response"), {"otp":otp})
         email_args = {
-                "recipients": [email],
+                "recipients": [email, user],
                 "subject": email_template.get("subject"),
                 "message": content
             }
