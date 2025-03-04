@@ -48,12 +48,9 @@ frappe.ui.form.on("Student Applicant", {
                 "source_name": frm.docname
             },
             callback: function (r) {
-                frappe.msgprint("Enrolled Successfully");
-                if(r.message){
-                    window.open(r.message, '_blank');
+                if (r.message) {
+                    window.location.href = r.message;
                 }
-                location.reload();
-
             }
         });
     }
