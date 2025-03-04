@@ -1,11 +1,13 @@
 frappe.ui.form.on("Student Applicant", {
 
     onload: function (frm) {
+        handleBatchVisibility(frm);
         frm.remove_custom_button("Approve", "Actions")
         frm.remove_custom_button("Enroll")
     },
 
     refresh: function (frm) {
+        handleBatchVisibility(frm);
         frm.remove_custom_button("Approve", "Actions")
         frm.remove_custom_button("Enroll")
         if (!frm.is_new() && frm.doc.application_status === "Applied") {
@@ -55,6 +57,18 @@ frappe.ui.form.on("Student Applicant", {
         });
     }
 });
+
+
+async function handleBatchVisibility(frm) {
+    let student = await frappe.db.get_value("Student", { "student_applicant": frm.doc.name }, "name");
+    let pe = await frappe.db.get_value("Program Enrollment", { "student": student.message.name }, "name");
+    if (pe.message.name) {
+        frm.set_df_property("batch", "read_only", 1);
+    }else{
+        frm.set_df_property("batch", "read_only", 0);
+    }
+}
+
 
 function checkFields(frm) {
     if (frm.doc.school && frm.doc.program && frm.doc.academic_year && frm.doc.batch) {
