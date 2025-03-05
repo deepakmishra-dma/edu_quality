@@ -102,7 +102,7 @@ frappe.ui.form.on("Lead", {
                                     frm.disable_form()
                                     frm.disable_save()
                                     if (r.message) {
-                                        window.open(r.message, '_blank');
+                                        window.location.href = r.message;
                                     }
                                 }
                             });
