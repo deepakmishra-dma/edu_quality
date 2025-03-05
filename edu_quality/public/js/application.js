@@ -2,6 +2,7 @@ frappe.ui.form.on("Student Applicant", {
 
     onload: function (frm) {
         handleBatchVisibility(frm);
+        $('.primary-action').prop('hidden', true);
     },
 
     refresh: function (frm) {
@@ -49,6 +50,9 @@ frappe.ui.form.on("Student Applicant", {
                 }
             }
         });
+    },
+    batch: function (frm) {
+        frm.save_or_update();
     }
 });
 
