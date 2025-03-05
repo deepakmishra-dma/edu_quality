@@ -7,12 +7,14 @@ from frappe.query_builder.functions import Count
 from frappe.utils import parse_json
 import json
 from edu_quality.public.py.utils import check_admin_roles
+import string
+import random
 
 # edu_quality.edu_quality.doctype.cmap.cmap
 
 
 class CMAP(Document):
-    def autoname(self, method=None):
+    def name_func(self):
         course_short_code = frappe.db.get_value(
             "Course", self.subject, "custom_short_code"
         )
@@ -21,9 +23,13 @@ class CMAP(Document):
             "Class Type", self.get("class"), "short_code"
         )
         self.name = f"{self.academic_year}-{course_short_code}{class_sortcode}{self.unit}{self.period}"
+        return self.name
+
+    def autoname(self, method=None):
+        self.name_func()
 
     def before_validate(self, method=None):
-        frappe.errprint(self.products)
+
         added_broadcasts = [product.get("broadcast") for product in self.products] or []
         added_parent_notes = [
             product.get("parent_note") for product in self.products
@@ -58,6 +64,16 @@ class CMAP(Document):
 
     def after_insert(self, method=None):
         insert_cmap_assignees(self)
+
+    def on_update(self, method=None):
+        old_doc = self.get_doc_before_save()
+        if (
+            old_doc
+            and (self.reserved_for_portion_circular
+            != old_doc.reserved_for_portion_circular
+            or self.period != old_doc.period)
+        ):
+            frappe.rename_doc("CMAP", old_doc.name, self.name_func())
 
 
 def insert_cmap_assignees(self):
@@ -124,7 +140,7 @@ def check_if_note_added_unique(material_type, added_items=[]):
     for i in index_dict:
         for j in index_dict[i]:
             if frequency_counter.get(j) > 1:
-                if(i==None or not i):
+                if i == None or not i:
                     continue
                 flag = False
                 frappe.msgprint(f"Description {i} or Doc is same for {material_type} ")
@@ -177,12 +193,13 @@ def get_cmap_period_no(self):
             "subject": self.get("subject"),
             "academic_year": self.get("academic_year"),
             "class": self.get("class"),
+            "reserved_for_portion_circular": 0,
         },
         fields=["MAX(period)"],
     )
 
     max_period = max_period_list[0].get("MAX(period)", 0)
-    if not self.get("period") and not max_period:
+    if not self.get("period") and not max_period or isinstance(max_period, str):
         return 1
     elif str(self.get("period")) == max_period or not self.get("period"):
         return int(max_period) + 1
@@ -309,3 +326,8 @@ def get_product_materials(item_id):
         elif result[material_type] and description not in result[material_type]:
             result[material_type].append(description)
     return result
+
+
+@frappe.whitelist()
+def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
+    return "".join(random.choice(chars) for _ in range(size))
