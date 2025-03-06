@@ -148,6 +148,9 @@ override_doctype_class = {
 # Hook on document methods and events
 
 doc_events = {
+    "HD Ticket":{
+        "after_insert": "edu_quality.edu_quality.server_scripts.hd_ticket.after_insert",
+    },
     "Guardian": {
         "before_insert": "edu_quality.edu_quality.server_scripts.guardian.before_insert",
         "on_update": "edu_quality.edu_quality.server_scripts.guardian.on_update",
