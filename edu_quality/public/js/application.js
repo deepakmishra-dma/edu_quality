@@ -13,18 +13,18 @@ frappe.ui.form.on("Student Applicant", {
             frm.save_or_update();
         } else if (frm.doc.application_status === "Approved") {
             frm.add_custom_button(__("Enroll"), function () {
-                frappe.confirm('Are you sure you want to proceed?',
+                frappe.confirm('Have you checked all the data filled in by the parent in the admission form?',
                     () => {
-                        frappe.show_alert({
-                            message: __('Student Enrolling...'),
-                            indicator: 'green'
-                        });
                         if (checkFields(frm)) {
+                            frappe.show_alert({
+                                message: __('Enrolling Student...'),
+                                indicator: 'green'
+                            });
                             frm.events.enroll(frm)
                         }
                     }, () => {
                         frappe.show_alert({
-                            message: __('Action Cancelled'),
+                            message: __('Student Enrollment Cancelled...'),
                             indicator: 'orange'
                         });
                     })
