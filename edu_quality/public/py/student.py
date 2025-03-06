@@ -162,10 +162,7 @@ def comment_on_possible_dropout(doc, old_doc):
 def get_reference(program):
     if not frappe.db.get_value(
         "Academic Year",
-        [
-            ["Academic Year", "year_start_date", "<=", today()],
-            ["Academic Year", "year_end_date", ">=", today()],
-        ],
+        {"custom_current_academic_year": 1},
         "rolled_over",
     ):
         current_program = frappe.get_doc("Program", program)
