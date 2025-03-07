@@ -13,6 +13,9 @@ frappe.ui.form.on("Student Applicant", {
             frm.save_or_update();
         } else if (frm.doc.application_status === "Approved") {
             frm.add_custom_button(__("Enroll"), function () {
+                if (frm.doc.__unsaved) {
+                    frm.save_or_update();
+                }
                 frappe.confirm('Have you checked all the data filled in by the parent in the admission form?',
                     () => {
                         if (checkFields(frm)) {
