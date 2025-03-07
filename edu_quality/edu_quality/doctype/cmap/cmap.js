@@ -1,15 +1,18 @@
 // Copyright (c) 2023, Hybrowlabs Technologies and contributors
 // For license information, please see license.txt
-async function getPeriodNo(frm) {
+async function getPeriodNo(frm, ignoreExistingValue = false) {
     if (!frm.doc.subject || !frm.doc.class || !frm.doc.academic_year) return
-    if (frm.doc.__islocal) {
+    if (frm.doc.__islocal || ignoreExistingValue) {
+        if (ignoreExistingValue) {
+            frm.set_value('period', '')
+        }
         frappe.call({
             method: "edu_quality.edu_quality.doctype.cmap.cmap.get_cmap_period_no",
             args: {
                 self: frm.doc
             }, callback: function (r) {
                 // frm.set_value('custom_sheet_number', r.message)
-                if (!frm.doc.period)
+                if (ignoreExistingValue || !frm.doc.period)
                     frm.set_value('period', r.message)
             }
         })
@@ -20,7 +23,7 @@ async function getPeriodNo(frm) {
 async function getNoteQuery(cur_frm, fieldName, fieldGroup, options, item) {
     const field = frappe.meta.get_docfield("Item Detail", fieldName, item)
     field.options = options || [];
-    console.log(field, 'adad', item, 'd')
+
     cur_frm.refresh_field("products")
 }
 function updateNoteQuery(cur_frm, res, row_name) {
@@ -44,7 +47,7 @@ async function setupNotesColumns(cur_frm) {
     const EXISTING_ROWS_IN_CHILD_TABLE = cur_frm.fields_dict["products"].grid.grid_rows
 
     for (row in EXISTING_ROWS_IN_CHILD_TABLE) {
-        console.log(row)
+
         const item = frappe.model.get_value("Item Detail", EXISTING_ROWS_IN_CHILD_TABLE[row].doc.name, "item")
         const res = await getProductMaterials(item)
         updateNoteQuery(cur_frm, res?.message, EXISTING_ROWS_IN_CHILD_TABLE[row].doc.name)
@@ -84,7 +87,7 @@ async function checkNotes(type, frm, materialType) {
             "added_items": broadcastItems
         },
         callback: function (r) {
-            console.log(r.message)
+
         }
     });
 
@@ -199,6 +202,12 @@ frappe.ui.form.on("CMAP", {
         getPeriodNo(frm)
         texbookQuery(frm)
     }
+    , reserved_for_portion_circular: (frm) => {
+        if (!frm.doc.reserved_for_portion_circular) {
+            return getPeriodNo(frm, true)
+        }
+        getRandomString(frm)
+    }
 
 
 });
@@ -242,3 +251,17 @@ frappe.ui.form.on("Item Detail", {
         });
     }
 })
+
+async function getRandomString(frm) {
+    if (!frm.doc.reserved_for_portion_circular) return
+
+    frappe.call({
+        method: "edu_quality.edu_quality.doctype.cmap.cmap.id_generator",
+        callback: function (r) {
+            frm.set_value('period', r.message)
+        }
+    })
+
+
+
+}
