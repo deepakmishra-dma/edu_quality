@@ -47,7 +47,7 @@ def get_guardian_info(raised_by):
         
             if matching_students:
                 for student_data in matching_students:
-                    student_details = f"Name: {student_data.get('first_name')},\nSchool: {student_data.get('school')},\nClass: {student_data.get('program')},Division: {student_data.get('custom_division')},\nReference Number: {student_data.get('reference_number')},\nStudent Status: {student_data.get('student_status')},\nPrimary Contact: {student_data.get('student_mobile_number')} \n\n"
+                    student_details = f"\n\nName: {student_data.get('first_name')},\nSchool: {student_data.get('school')},\nClass: {student_data.get('program')},\nDivision: {student_data.get('custom_division')},\nReference Number: {student_data.get('reference_number')},\nStudent Status: {student_data.get('student_status')},\nPrimary Contact: {student_data.get('student_mobile_number')} \n\n"
                     students_info.append(student_details)
 
     return students_info
@@ -72,7 +72,7 @@ def after_insert(doc, method=None):
             ticket_url = frappe.utils.get_url_to_form("HD Ticket", ticket['name'])
         
             # Constructing previous ticket details with URL
-            previous_ticket_details = f"\n\nTicket ID: {ticket['name']}, Subject: {ticket['subject']}, Creation Time: {ticket['creation']}, URL: {ticket_url}"
+            previous_ticket_details = f"\n\n<a href={ticket_url}>Ticket ID: {ticket['name']}</a>, \nSubject: {ticket['subject']}, \nCreation Time: {ticket['creation']}, \nURL:"
             previous_tickets_info.append(previous_ticket_details)
     
         # Update HD Ticket with previous ticket details
