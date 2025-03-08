@@ -1,6 +1,6 @@
 # Copyright (c) 2024, Hybrowlabs Technologies and contributors
 # For license information, please see license.txt
-
+from frappe.query_builder.functions import Count, GROUP_CONCAT, Concat
 import frappe
 
 
@@ -59,41 +59,56 @@ def get_columns():
 
 
 def get_data(filters):
-    print(filters)
     division = filters.get("division")
     unit = filters.get("unit")
 
     cmap_assig_table = frappe.qb.DocType("CMAP Assignment")
     cmap_table = frappe.qb.DocType("CMAP")
-
+    item_table = frappe.qb.DocType("Item")
     item_detail_table = frappe.qb.DocType("Item Detail")
-    frappe.errprint(division)
-    frappe.errprint(unit)
+
     all_assigned_cmap = (
-        frappe.qb.from_(cmap_assig_table)
-        .inner_join(cmap_table)
+        frappe.qb.from_(cmap_table)
+        .inner_join(cmap_assig_table)
         .on(cmap_assig_table.parent == cmap_table.name)
-        .where((cmap_assig_table.division == division) & (cmap_table.unit == unit))
+        .where((cmap_assig_table["division"] == division) & (cmap_table.unit == unit))
         .select(
             cmap_table.name.as_("cmap_name"),
-            cmap_assig_table.division,
             cmap_table.subject,
             cmap_table.reserved_for_portion_circular,
-            cmap_assig_table.real_date,
         )
     )
-    frappe.errprint("test")
-    frappe.errprint(all_assigned_cmap.run(as_dict=True))
+    item_groups = frappe.db.get_all(
+        "Item Group", filters={"custom_hide_in_walsh": 0}, fields=["name"]
+    )
+    item_group_names = [i.get("name") for i in item_groups]
     find_filtered_cmap = (
         frappe.qb.from_(all_assigned_cmap)
         .left_join(item_detail_table)
         .on(item_detail_table.parent == all_assigned_cmap.cmap_name)
+        .inner_join(item_table)
+        .on(item_detail_table.item == item_table.name)
         .where(
             (all_assigned_cmap.reserved_for_portion_circular == 1)
-            | (item_detail_table.item_group == "For Portion Circular")
+            & (item_detail_table.item_group.isin(item_group_names))
+            & (item_table.custom_hide_in_walsh == 0)
         )
-        .orderby(all_assigned_cmap.real_date, frappe.qb.asc)
-    ).select("*")
+        .groupby(
+            all_assigned_cmap.subject,
+            item_detail_table.chapter,
+            item_detail_table.item_group,
+        )
+    ).select(
+        all_assigned_cmap.cmap_name,
+        all_assigned_cmap.subject,
+        all_assigned_cmap.reserved_for_portion_circular,
+        item_detail_table.chapter,
+        item_detail_table.textbook,
+        item_detail_table.item_group,
+        Count(item_detail_table.item).as_("count"),
+        GROUP_CONCAT(item_detail_table.item).as_("item_names"),
+        GROUP_CONCAT(item_table.custom_product_url).as_("item_urls"),
+    )
 
     return find_filtered_cmap.run(as_dict=True)
 
