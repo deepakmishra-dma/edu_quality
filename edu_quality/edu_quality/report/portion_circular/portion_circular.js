@@ -7,7 +7,7 @@ frappe.query_reports["Portion Circular"] = {
 			"fieldname": "division",
 			"fieldtype": "Link",
 			"options": "Student Group",
-			"label": "Student Group"
+			"label": "Division"
 		}, {
 			"fieldname": "unit",
 			"label": __("Unit"),
