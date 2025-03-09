@@ -72,7 +72,7 @@ def after_insert(doc, method=None):
             ticket_url = frappe.utils.get_url_to_form("HD Ticket", ticket['name'])
         
             # Constructing previous ticket details with URL
-            previous_ticket_details = f"\n\n<a href={ticket_url}>Ticket ID: {ticket['name']}</a><br>, \n\n <b>Subject: {ticket['subject']}</b></n><br>, \n\n<b>Creation Time: {ticket['creation']}</b> <br>\n\n"
+            previous_ticket_details = f"\n\n<a href={ticket_url}>Ticket ID: {ticket['name']}</a><br>, \n\n <b>Subject: {ticket['subject']}</b><br>, \n\n<b>Creation Time: {ticket['creation']}</b> <br>\n\n"
             previous_tickets_info.append(previous_ticket_details)
     
         # Update HD Ticket with previous ticket details
