@@ -22,6 +22,7 @@ def get_cmap(**filters):
             & (cmap_table.subject == filters.get("subject"))
             & (cmap_table.unit == filters.get("unit"))
             & (cmap_table["class"] == filters.get("class"))
+            & (cmap_table.reserved_for_portion_circular == 0)
         )
         .select(
             cmap_table.name,
