@@ -117,13 +117,14 @@ def before_insert(doc, method=None):
 
 def set_student_status(doc):
     if frappe.db.get_value("Academic Year",{'custom_current_academic_year':1},'rolled_over'):
-        doc.student_status = "Current student"
+        frappe.db.set_value("Student", doc.name, "student_status", "Current student")
 
 def after_insert(doc, method=None):
     if doc.student_applicant:
         applicant = frappe.get_doc("Student Applicant", doc.student_applicant)
         create_student_account(doc, applicant)
     set_student_status(doc)
+    doc.reload()
 
 
 def before_save(doc, method=None):
