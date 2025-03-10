@@ -115,11 +115,15 @@ def before_insert(doc, method=None):
     frappe.flags.in_import = True
 
 
+def set_student_status(doc):
+    if frappe.db.get_value("Academic Year",{'custom_current_academic_year':1},'rolled_over'):
+        doc.student_status = "Current student"
+
 def after_insert(doc, method=None):
     if doc.student_applicant:
         applicant = frappe.get_doc("Student Applicant", doc.student_applicant)
-        frappe.log_error("Student after insert called")
         create_student_account(doc, applicant)
+    set_student_status(doc)
 
 
 def before_save(doc, method=None):
