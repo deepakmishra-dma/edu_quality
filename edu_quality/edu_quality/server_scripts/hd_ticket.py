@@ -81,7 +81,9 @@ def after_insert(doc, method=None):
     students_info, fees_info, payment_schedule_info, payment_entry_info = get_student_info(raised_by)
 
     # Get guardian information
-    students_info += get_guardian_info(raised_by)
+    # students_info += get_guardian_info(raised_by)
+    if not students_info:
+        students_info, fees_info, payment_schedule_info, payment_entry_info = get_guardian_info(raised_by)
 
     # Fetching previous tickets raised by the user
     previous_tickets_info = []
