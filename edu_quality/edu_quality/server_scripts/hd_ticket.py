@@ -75,6 +75,7 @@ def get_guardian_info(raised_by):
 
 
 def get_details(raised_by):
+    students = []
     if frappe.db.exists("Student",{'user': raised_by}):
         students = [frappe.db.get_value("Student", filters={'user': raised_by})]
     elif frappe.db.exists('Guardian',{'email_address': raised_by}):
