@@ -1,15 +1,16 @@
 import frappe 
 from frappe.core.doctype.communication.email import make
 
-def get_student_info(raised_by):
+def student_info(students):
     students_info = []
     fees_info = []
     payment_schedule_info = []
     payment_entry_info = []
 
-    students = frappe.get_all('Student', filters={'user': raised_by}, fields=['name', 'first_name', 'school', 'program', 'custom_division', 'reference_number', 'student_status', 'student_mobile_number'])
+    # students = frappe.get_all('Student', filters={'user': raised_by}, fields=['name', 'first_name', 'school', 'program', 'custom_division', 'reference_number', 'student_status', 'student_mobile_number'])
     if students:
-        for student_data in students:
+        for student in students:
+            student_data = frappe.db.get_value('Student', student, ['first_name','school', 'program', 'custom_division','reference_number','student_status','student_mobile_number'])
             student_details = f"<b>Name: {student_data.get('first_name')}</b>,<br>\nSchool: {student_data.get('school')},<br>\nClass: {student_data.get('program')},<br>Division: {student_data.get('custom_division')},<br>\nReference Number: {student_data.get('reference_number')},<br>\nStudent Status: {student_data.get('student_status')},<br>\nPrimary Contact: {student_data.get('student_mobile_number')} <br><br>\n\n"
             students_info.append(f"<br><b>{student_details}</b><br>")
 
@@ -73,21 +74,25 @@ def get_guardian_info(raised_by):
     return students_info, fees_info, payment_schedule_info, payment_entry_info
 
 
+def get_details(raised_by):
+    if frappe.db.exists("Student",filters={'user': raised_by}):
+        students = [frappe.db.get_value("Student", filters={'user': raised_by})]
+    elif frappe.db.exists('Guardian', filters={'email_address': raised_by}):
+        students = frappe.db.get_all("Student Guardian", filters={'guardian': frappe.db.get_value('Guardian', filters={'email_address': raised_by})}, fields=['parent'])
+        students = [student['parent'] for student in students]
+
+    return student_info(students)
+
+
+
 def after_insert(doc, method=None):
     text = ''
-    raised_by = doc.raised_by
-
-    # Get student information
-    students_info, fees_info, payment_schedule_info, payment_entry_info = get_student_info(raised_by)
-
-    # Get guardian information
-    # students_info += get_guardian_info(raised_by)
-    if not students_info:
-        students_info, fees_info, payment_schedule_info, payment_entry_info = get_guardian_info(raised_by)
+    
+    students_info, fees_info, payment_schedule_info, payment_entry_info = get_details(doc.raised_by)
 
     # Fetching previous tickets raised by the user
     previous_tickets_info = []
-    previous_tickets = frappe.get_all('HD Ticket', filters={'raised_by': raised_by}, fields=['name', 'subject', 'creation'])
+    previous_tickets = frappe.get_all('HD Ticket', filters={'raised_by': doc.raised_by}, fields=['name', 'subject', 'creation'])
     if previous_tickets:
         for ticket in previous_tickets:
             # Fetching ticket URL
