@@ -11,65 +11,26 @@ def student_info(students):
     if students:
         for student in students:
             student_data = frappe.db.get_value('Student', student, ['first_name','school', 'program', 'custom_division','reference_number','student_status','student_mobile_number'])
-            student_details = f"<b>Name: {student_data.get('first_name')}</b>,<br>\nSchool: {student_data.get('school')},<br>\nClass: {student_data.get('program')},<br>Division: {student_data.get('custom_division')},<br>\nReference Number: {student_data.get('reference_number')},<br>\nStudent Status: {student_data.get('student_status')},<br>\nPrimary Contact: {student_data.get('student_mobile_number')} <br><br>\n\n"
+            student_details = f"<b>Name: {student_data.first_name}</b>,<br>\nSchool: {student_data.school},<br>\nClass: {student_data.program},<br>Division: {student_data.custom_division},<br>\nReference Number: {student_data.reference_number},<br>\nStudent Status: {student_data.student_status},<br>\nPrimary Contact: {student_data.student_mobile_number} <br><br>\n\n"
             students_info.append(f"<br><b>{student_details}</b><br>")
 
 
             fees_record = frappe.get_all('Fees', filters={'student': student_data.name}, fields=['name', 'fee_schedule', 'fee_structure', 'payment_plan'])
             if fees_record:
-                fees_info.append(f"<br><br>\n\nFees Information for {student_data.get('first_name')}:\n</b>")
+                fees_info.append(f"<br><br>\n\nFees Information for {student_data.first_name}:\n</b>")
                 for fee_data in fees_record:
-                    fees_info.append(f"\n\n<br><b>Fee Schedule: {fee_data.get('fee_schedule')}</b>,<br>\n<b>Fee Structure: {fee_data.get('fee_structure')}</b>,<br>\n<b>Payment Plan: {fee_data.get('payment_plan')}</b>\n<br>")
+                    fees_info.append(f"\n\n<br><b>Fee Schedule: {fee_data.fee_schedule}</b>,<br>\n<b>Fee Structure: {fee_data.fee_structure}</b>,<br>\n<b>Payment Plan: {fee_data.payment_plan}</b>\n<br>")
                     
                     payment_schedules = frappe.get_all('Payment Schedule', filters={'parent': fee_data['name']}, fields=['payment_term', 'description', 'due_date', 'discount', 'payment_amount', 'outstanding'])
                     formatted_payment_schedule = "\n".join([f"payment_term: {entry['payment_term']}\ndescription: {entry['description']}\ndue_date: {entry['due_date']}\ndiscount: {entry['discount']}\npayment_amount: {entry['payment_amount']}\noutstanding: {entry['outstanding']}" for entry in payment_schedules])
-                    payment_schedule_info.append(f"\n<br><b>Payment Schedule for {student_data.get('first_name')}:\n{formatted_payment_schedule}</b>\n\n<br>")
+                    payment_schedule_info.append(f"\n<br><b>Payment Schedule for {student_data.first_name}:\n{formatted_payment_schedule}</b>\n\n<br>")
 
             payment_entries = frappe.get_all('Payment Entry', filters={'party': student_data['name']}, fields=['name'])
             if payment_entries:
-                payment_entry_info.append(f"<br>\n\nPayment Entries for {student_data.get('first_name')}:\n<br>")
+                payment_entry_info.append(f"<br>\n\nPayment Entries for {student_data.first_name}:\n<br>")
                 for entry in payment_entries:
-                    payment_entry_url = frappe.utils.get_url_to_form("Payment Entry", entry.get('name'))
-                    payment_entry_info.append(f"\n<b><br>Payment Entry ID: {entry.get('name')}</b>\n\n,<br> URL: <a><b> href={payment_entry_url}>Link</b></a><br>")
-
-    return students_info, fees_info, payment_schedule_info, payment_entry_info
-
-
-def get_guardian_info(raised_by):
-    students_info = []
-    fees_info = []
-    payment_schedule_info = []
-    payment_entry_info = []
-
-    guardians = frappe.get_all('Guardian', filters={'email_address': raised_by}, fields=['name', 'first_name', 'last_name', 'mobile_number'])
-    if guardians:
-        for guardian_data in guardians:
-            guardian_name = guardian_data.get('name')
-            matching_students = []
-            student_guardians = frappe.get_all('Student Guardian', filters={'guardian': guardian_name}, fields=['parent'])
-            if student_guardians:
-                matching_students = frappe.get_all('Student', filters={'name': ('in', [sg['parent'] for sg in student_guardians])}, fields=['name', 'first_name','school', 'program', 'custom_division', 'reference_number', 'student_status', 'student_mobile_number'])
-        
-            if matching_students:
-                for student_data in matching_students:
-                    student_details = f"<b>\n\nName: {student_data.get('first_name')},<br>\nSchool: {student_data.get('school')},<br>\nClass: {student_data.get('program')},<br>\nDivision: {student_data.get('custom_division')},<br>\nReference Number: {student_data.get('reference_number')},<br>\nStudent Status: {student_data.get('student_status')},<br>\nPrimary Contact: {student_data.get('student_mobile_number')} \n\n</b>"
-                    students_info.append(student_details)
-                    fees_record = frappe.get_all('Fees', filters={'student': student_data.name}, fields=['name', 'fee_schedule', 'fee_structure', 'payment_plan'])
-                    if fees_record:
-                        fees_info.append(f"<br><br>\n\nFees Information for {student_data.get('first_name')}:\n</b>")
-                        for fee_data in fees_record:
-                            fees_info.append(f"\n\n<br><b>Fee Schedule: {fee_data.get('fee_schedule')}</b>,<br>\n<b>Fee Structure: {fee_data.get('fee_structure')}</b>,<br>\n<b>Payment Plan: {fee_data.get('payment_plan')}</b>\n<br>")
-                            
-                            payment_schedules = frappe.get_all('Payment Schedule', filters={'parent': fee_data['name']}, fields=['payment_term', 'description', 'due_date', 'discount', 'payment_amount', 'outstanding'])
-                            formatted_payment_schedule = "\n".join([f"payment_term: {entry['payment_term']}\ndescription: {entry['description']}\ndue_date: {entry['due_date']}\ndiscount: {entry['discount']}\npayment_amount: {entry['payment_amount']}\noutstanding: {entry['outstanding']}" for entry in payment_schedules])
-                            payment_schedule_info.append(f"\n<br><b>Payment Schedule for {student_data.get('first_name')}:\n{formatted_payment_schedule}</b>\n\n<br>")
-
-                    payment_entries = frappe.get_all('Payment Entry', filters={'party': student_data['name']}, fields=['name'])
-                    if payment_entries:
-                        payment_entry_info.append(f"<br>\n\nPayment Entries for {student_data.get('first_name')}:\n<br>")
-                        for entry in payment_entries:
-                            payment_entry_url = frappe.utils.get_url_to_form("Payment Entry", entry.get('name'))
-                            payment_entry_info.append(f"\n<b><br>Payment Entry ID: {entry.get('name')}</b>\n\n,<br> URL: <a><b> href={payment_entry_url}>Link</b></a><br>")
+                    payment_entry_url = frappe.utils.get_url_to_form("Payment Entry", entry.name)
+                    payment_entry_info.append(f"\n<b><br>Payment Entry ID: {entry.name}</b>\n\n,<br> URL: <a><b> href={payment_entry_url}>Link</b></a><br>")
 
     return students_info, fees_info, payment_schedule_info, payment_entry_info
 
