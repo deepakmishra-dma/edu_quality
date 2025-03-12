@@ -12,6 +12,7 @@ import Cmap from "./cmap";
 import CmapList from "./cmap/list.tsx";
 import LeaveNote from "./leave-note.tsx";
 import { SchoolCalendar } from "./SchoolCalendar.tsx";
+import { BonafideCertificate } from "./BonafideCertificate.tsx";
 
 const Pages = () => {
   // const location = useLocation()
@@ -57,6 +58,7 @@ const Pages = () => {
               <Route path="/stared" element={<NoticeList staredOnly />} />
               <Route path="/archived" element={<NoticeList archivedOnly />} />
               <Route path="/calendar" element={<SchoolCalendar />} />
+              <Route path="/bonafide" element={<BonafideCertificate />} />
               <Route path="/notice/:id" element={<NoticeDetails />} />
               <Route path="/cmap" element={<Cmap />} />
               <Route path="/cmap/list" element={<CmapList />} />

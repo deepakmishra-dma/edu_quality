@@ -17,7 +17,8 @@
   "section_break_goux",
   "subject",
   "is_raw_html",
-  "notice"
+  "notice",
+  "test"
  ],
  "fields": [
   {
@@ -109,11 +110,16 @@
    "fieldtype": "Check",
    "label": "Is Raw Html",
    "read_only": 1
+  },
+  {
+   "fieldname": "test",
+   "fieldtype": "Data",
+   "label": "Test"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-22 13:30:33.739767",
+ "modified": "2024-03-29 16:18:36.756274",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "School Notice",

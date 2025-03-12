@@ -1,7 +1,7 @@
 import { Box, Burger, Navbar as MantineNavbar, NavLink, Stack } from '@mantine/core';
 
 import React, { useEffect } from "react";
-import { IconArchive, IconCalendarOff, IconLogout, IconMessage, IconReload, IconStack2, IconStar, IconCalendar } from "@tabler/icons";
+import { IconArchive, IconCalendarOff, IconLogout, IconMessage, IconReload, IconStack2, IconStar, IconCalendar, IconPrinter } from "@tabler/icons";
 import { useLogout } from "@refinedev/core";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -94,6 +94,7 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
             { label: 'School Calendar', icon: IconCalendar, location: '/calendar', },
             { label: 'Starred Messages', icon: IconStar, location: '/stared', },
             { label: 'Archived Messages', icon: IconArchive, location: '/archived', },
+            { label: 'Request Bonafide Certificate', icon: IconPrinter, location: '/bonafide', },
             {
               label: 'Reload', icon: IconReload, onClick: () => {
                 window.location.reload()
