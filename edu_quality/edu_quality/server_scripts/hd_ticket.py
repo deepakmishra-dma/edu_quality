@@ -32,8 +32,8 @@ def student_info(students):
                     payment_entry_url = frappe.utils.get_url_to_form("Payment Entry", entry.name)
                     payment_entry_info.append(f"\n<b><br>Payment Entry ID: {entry.name}</b>\n\n,<br> URL: <a><b> href={payment_entry_url}>Link</b></a><br>")
 
-    return students_info, fees_info, payment_schedule_info, payment_entry_info
-
+    full_text = "\n\n".join(students_info + fees_info + payment_schedule_info + payment_entry_info)
+    return full_text
 
 def get_details(raised_by):
     students = []
@@ -50,7 +50,7 @@ def get_details(raised_by):
 def after_insert(doc, method=None):
     text = ''
     
-    students_info, fees_info, payment_schedule_info, payment_entry_info = get_details(doc.raised_by)
+    full_text = get_details(doc.raised_by)
 
     # Fetching previous tickets raised by the user
     previous_tickets_info = []
@@ -71,7 +71,7 @@ def after_insert(doc, method=None):
         frappe.msgprint("No previous tickets found for the same user.")
 
     # Combining all information and adding it as a comment to the HD Ticket
-    full_text = "\n\n".join(students_info + fees_info + payment_schedule_info + payment_entry_info + previous_tickets_info)
+    full_text = "\n\n".join(previous_tickets_info)
     if full_text:
         make(doctype="HD Ticket", name=doc.name, subject="Student Information", content=full_text)
     doc.reload()
