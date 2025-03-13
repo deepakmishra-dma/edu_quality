@@ -94,7 +94,11 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
             { label: 'School Calendar', icon: IconCalendar, location: '/calendar', },
             { label: 'Starred Messages', icon: IconStar, location: '/stared', },
             { label: 'Archived Messages', icon: IconArchive, location: '/archived', },
+
+            // { label: 'Portion Circular', icon: IconArchive, location: '/portion-circular', },
+
             { label: 'Request Bonafide Certificate', icon: IconPrinter, location: '/bonafide', },
+
             {
               label: 'Reload', icon: IconReload, onClick: () => {
                 window.location.reload()
