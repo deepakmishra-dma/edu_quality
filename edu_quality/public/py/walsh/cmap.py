@@ -117,7 +117,7 @@ def get_all_cmaps(subject, unit, division):
 def get_portion_circulars(unit, division):
    
 
-    payload = {"unit": unit, "divison": division}
+    payload = {"unit": unit, "division": division}
     data = get_data(payload)
     subject_hash = {}
 

@@ -106,10 +106,9 @@ def get_data(filters):
         item_detail_table.textbook,
         item_detail_table.item_group,
         Count(item_detail_table.item).as_("count"),
-        GROUP_CONCAT(item_detail_table.item).as_("item_names"),
-        GROUP_CONCAT(item_table.custom_product_url).as_("item_urls"),
+        GROUP_CONCAT(item_detail_table.item).distinct().as_("item_names"),
+        GROUP_CONCAT(item_table.custom_product_url).distinct().as_("item_urls"),
     )
-
     return find_filtered_cmap.run(as_dict=True)
 
 
