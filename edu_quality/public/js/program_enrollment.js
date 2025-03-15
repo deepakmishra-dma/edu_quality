@@ -1,6 +1,8 @@
 frappe.ui.form.on("Program Enrollment", {
     refresh: function (frm) {
         if (!frm.is_new() && frm.doc.docstatus === 0) {
+            frm.dashboard.clear_comment()
+            frm.dashboard.add_comment(__('Please click Save and then click Create Fees'), 'blue');
             $('.primary-action').prop('hidden', true);
             frm.add_custom_button(__("Create Fees"), function () {
                 frm.events.create_fees(frm)
