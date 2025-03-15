@@ -115,11 +115,16 @@ def before_insert(doc, method=None):
     frappe.flags.in_import = True
 
 
+def set_student_status(doc):
+    if frappe.db.get_value("Academic Year",{'custom_current_academic_year':1},'rolled_over'):
+        frappe.db.set_value("Student", doc.name, "student_status", "Current student")
+
 def after_insert(doc, method=None):
     if doc.student_applicant:
         applicant = frappe.get_doc("Student Applicant", doc.student_applicant)
-        frappe.log_error("Student after insert called")
         create_student_account(doc, applicant)
+    set_student_status(doc)
+    doc.reload()
 
 
 def before_save(doc, method=None):
@@ -162,10 +167,7 @@ def comment_on_possible_dropout(doc, old_doc):
 def get_reference(program):
     if not frappe.db.get_value(
         "Academic Year",
-        [
-            ["Academic Year", "year_start_date", "<=", today()],
-            ["Academic Year", "year_end_date", ">=", today()],
-        ],
+        {"custom_current_academic_year": 1},
         "rolled_over",
     ):
         current_program = frappe.get_doc("Program", program)

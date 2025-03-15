@@ -11,7 +11,7 @@
  "is_standard": "Yes",
  "json": "{}",
  "letter_head": "Default letter head",
- "modified": "2024-02-21 21:02:01.360095",
+ "modified": "2024-04-03 17:34:06.180360",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Fees Defaulter Report",
@@ -33,9 +33,6 @@
   },
   {
    "role": "Walnut Admin"
-  },
-  {
-   "role": "Councellor"
   },
   {
    "role": "Councellor"

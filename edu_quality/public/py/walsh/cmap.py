@@ -1,4 +1,5 @@
 import frappe
+from edu_quality.edu_quality.report.portion_circular.portion_circular import get_data
 
 
 @frappe.whitelist()
@@ -47,7 +48,7 @@ def get_all_cmaps(subject, unit, division):
         and name in (
             select parent from `tabCMAP Assignment` ta2 where real_date <= CURDATE() and
             division = %(division)s and ta2.parent = c.name
-        )
+        ) and reserved_for_portion_circular = 0
         order by real_date desc
         """,
         as_dict=1,
@@ -110,3 +111,42 @@ def get_all_cmaps(subject, unit, division):
                 cmap.products.append(product)
 
     return cmaps
+
+
+@frappe.whitelist(allow_guest=True)
+def get_portion_circulars(unit, division):
+   
+
+    payload = {"unit": unit, "division": division}
+    data = get_data(payload)
+    subject_hash = {}
+
+    for i in data:
+        subject = i["subject"]
+        textbook = i["textbook"]
+        chapter = i["chapter"]
+        item_names = i["item_names"].split(",") or []
+        item_urls = i["item_urls"].split(",") or []
+        i["products"] = []
+        for item_name_idx in range(len(item_names)):
+            product = {
+                "name": item_names[item_name_idx],
+                "url": item_urls[item_name_idx],
+            }
+            i["products"].append(product)
+
+        if subject not in subject_hash:
+            subject_hash[subject] = {textbook: {chapter: [i]}}
+
+        elif textbook not in subject_hash[subject]:
+            subject_hash[subject][textbook] = {chapter: [i]}
+
+        elif chapter not in subject_hash[subject][textbook]:
+
+            subject_hash[subject][textbook][chapter] = [i]
+
+        else:
+
+            subject_hash[subject][textbook][chapter].append(i)
+
+    return subject_hash

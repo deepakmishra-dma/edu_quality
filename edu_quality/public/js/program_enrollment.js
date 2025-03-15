@@ -89,7 +89,7 @@ function showPopup(frm) {
                 callback: async function (r) {
                     let res = await frappe.db.get_value("Fees", { "program_enrollment": frm.doc.name }, "name");
                     let url = `/app/fees/${res.message.name}`;
-                    window.open(url, '_blank');
+                    window.location.href = url;
                 }
             })
         }
