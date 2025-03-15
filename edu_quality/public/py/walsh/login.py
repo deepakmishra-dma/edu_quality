@@ -143,14 +143,14 @@ def send_otp(phone_no):
     guardian_number = remove_indian_country_code(phone_with_country_code)
 
     guardian = get_guardian(guardian_number)
-    email = guardian.email_address
-    user =  guardian.user
     if not guardian:
         return {
             "error": True,
             "error_type": "guardian_not_found",
             "error_message": "Guardian Not Found"
         }
+    email = guardian.email_address
+    user =  guardian.user
     if is_defaulter(guardian.name):
         return {
             "error": True,
