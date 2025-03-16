@@ -266,6 +266,10 @@ scheduler_events = {
 # override_whitelisted_methods = {
 # 	"frappe.desk.doctype.event.event.get_events": "edu_quality.event.get_events"
 # }
+
+override_whitelisted_methods = {
+    "helpdesk.helpdesk.doctype.hd_ticket.api.get_one": "edu_quality.edu_quality.server_scripts.hd_ticket.get_one"
+}
 #
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,
