@@ -13,8 +13,9 @@ def manual_payment(fee,term,data,payment_mode):
             filters = {'reference_name':fee,'payment_term':term,'docstatus':1}
         frappe.logger("man1").exception(filters)
         if frappe.db.exists("Payment Request",filters=filters):
-            frappe.enqueue(set_as_paid,queue='long',filters=filters,data=data,payment_mode=payment_mode)
+            frappe.enqueue(set_as_paid,queue='short',filters=filters,data=data,payment_mode=payment_mode)
             frappe.response["message"] = "Manual Payment Received Successfully"
+            return
         frappe.response["message"] = "Error Occured"
     except Exception as e:
         frappe.logger('manual').exception(e)
