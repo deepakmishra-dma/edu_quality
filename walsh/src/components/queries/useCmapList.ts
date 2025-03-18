@@ -13,6 +13,7 @@ export interface Cmap {
     parentnote_description: string
     home_work: string
     item: string
+    hide_in_walsh:boolean;
     item_data: {
       custom_product_url: string
     }

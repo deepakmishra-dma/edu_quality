@@ -96,7 +96,7 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
             { label: 'Archived Messages', icon: IconArchive, location: '/archived', },
 
 
-            // { label: 'Portion Circular', icon: IconArchive, location: '/portion-circular', },
+            { label: 'Portion Circular', icon: IconArchive, location: '/portion-circular', },
 
             { label: 'Request Bonafide Certificate', icon: IconPrinter, location: '/bonafide', },
 

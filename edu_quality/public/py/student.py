@@ -37,6 +37,7 @@ def create_student_account(student, student_applicant):
         email_key = student.get("name")
         first_name = student_applicant.get("first_name")
         last_name = student_applicant.get("last_name")
+        school = student.get("school","Walnut School at Wakad")
         created_email = create_google_user(
             (google_service_settings.get("google_account_prefix", "") or "")
             + email_key,
@@ -44,9 +45,10 @@ def create_student_account(student, student_applicant):
             last_name,
             email_address,
             mobile_number,
+            school,
         )
         if created_email:
-            created_email=created_email.get("primaryEmail", "")
+            created_email = created_email.get("primaryEmail", "")
         else:
             created_email = student.student_email_id
 
@@ -116,8 +118,11 @@ def before_insert(doc, method=None):
 
 
 def set_student_status(doc):
-    if frappe.db.get_value("Academic Year",{'custom_current_academic_year':1},'rolled_over'):
+    if frappe.db.get_value(
+        "Academic Year", {"custom_current_academic_year": 1}, "rolled_over"
+    ):
         frappe.db.set_value("Student", doc.name, "student_status", "Current student")
+
 
 def after_insert(doc, method=None):
     if doc.student_applicant:

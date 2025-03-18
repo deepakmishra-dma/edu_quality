@@ -89,8 +89,7 @@ def get_data(filters):
         .inner_join(item_table)
         .on(item_detail_table.item == item_table.name)
         .where(
-            (all_assigned_cmap.reserved_for_portion_circular == 1)
-            & (item_detail_table.item_group.isin(item_group_names))
+            (item_detail_table.item_group.isin(item_group_names))
             & (item_table.custom_hide_in_walsh == 0)
         )
         .groupby(

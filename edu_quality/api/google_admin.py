@@ -6,6 +6,8 @@ from googleapiclient.errors import HttpError
 import os
 import secrets
 from edu_quality.public.py.utils import add_indian_country_code
+import re
+
 
 PASSWORD_LENGTH = 12
 
@@ -41,7 +43,10 @@ def get_google_user_with_key(email_key):
     )
 
 
-def create_google_user(email_key, first_name, last_name, recovery_mail, phone_no):
+@frappe.whitelist(allow_guest=True)
+def create_google_user(
+    email_key, first_name, last_name, recovery_mail, phone_no, school
+):
     user_service = get_google_admin_object()
     exception = False
     existing_user = None
@@ -71,9 +76,16 @@ def create_google_user(email_key, first_name, last_name, recovery_mail, phone_no
                 "changePasswordAtNextLogin": True,
                 "ipWhitelisted": False,
                 # "recoveryEmail": recovery_mail,
-                "orgUnitPath": f"/Walnut School at Wakad/Students",
+                "orgUnitPath": f"/{school}/Students",
             }
+
             if recovery_mail:
+                recovery_mail = (str(recovery_mail) or "feedback@walnutedu.in").strip().lower()
+                # only matches lower case emails
+                email_pattern = r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"
+                match = re.match(email_pattern, recovery_mail)
+                if not match:
+                    recovery_mail = "feedback@walnutedu.in"
                 new_user["recoveryEmail"] = recovery_mail
 
             if phone_no:
@@ -89,7 +101,21 @@ def create_google_user(email_key, first_name, last_name, recovery_mail, phone_no
             frappe.log_error("Account created for ", str(resp))
             return resp
     except Exception as e:
-        frappe.log_error("Google Account Creation failed", str(frappe.get_traceback()))
+        frappe.log_error(
+            "Google Account Creation failed",
+            str(
+                [
+                    frappe.get_traceback(),
+                    "variables",
+                    email_key,
+                    first_name,
+                    last_name,
+                    recovery_mail,
+                    phone_no,
+                    school,
+                ]
+            ),
+        )
     # frappe.log_error("google account created with" + str(existing_user))
     return existing_user
 

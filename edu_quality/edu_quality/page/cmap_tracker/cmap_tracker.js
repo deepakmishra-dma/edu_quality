@@ -264,8 +264,17 @@ function createTable(data) {
 	const thead = document.createElement('thead')
 	const tbody = document.createElement('tbody')
 	const headerRow = document.createElement('tr');
-
-	headers.forEach(header => {
+	const teacherHeader = { textContent: 'Teacher' };
+	const divisionHeader = { textContent: 'Division' };
+	const filters = getFilters()
+	let localHeaders = headers
+	if (!filters.teachers) {
+		localHeaders = [...localHeaders, teacherHeader]
+	}
+	if (!filters.division) {
+		localHeaders = [...localHeaders, divisionHeader]
+	}
+	localHeaders.forEach(header => {
 		const headerCell = document.createElement('th');
 		headerCell.textContent = header.textContent;
 		if (header.className) {
@@ -300,7 +309,7 @@ function generateProductList(products) {
 }
 function createRow(period_no, chapter_name, products, broadcast, parent_note, class_work, home_work, material_required, division, teacher, plan_date, real_date, first_row, rowSpan, index) {
 
-
+	const filters = getFilters()
 	return `<tr>
 	<td >${period_no}</td>
 	<td colspan="2">${chapter_name}</td>
@@ -313,15 +322,18 @@ function createRow(period_no, chapter_name, products, broadcast, parent_note, cl
 
 	<td>${plan_date || "No Date"}</td>
 	<td class="real-date-cell">${createDatePicker(real_date, index)}</td>
-  </tr>
-		`
+	${!filters.teacher ? `<td>${teacher || "No Teacher"}</td>` : ""}
+${!filters.division ? `<td>${division || "No Division"}</td>` : ""}
+
+  </tr >
+	`
 
 
 }
 
 function createDatePicker(value, index) {
 
-	return `<input type="date" ${!isAdmin && value ? "disabled" : ""} value=${value} data-index="${index}" max="${getMaxDate()}" />`
+	return `< input type = "date" ${!isAdmin && value ? "disabled" : ""} value = ${value} data - index="${index}" max = "${getMaxDate()}" /> `
 }
 
 async function saveTracker() {
@@ -348,5 +360,5 @@ function getMaxDate() {
 	const day = today.getDate();
 	const month = today.getMonth() + 1; // Months are zero-based
 	const year = today.getFullYear();
-	return `${year}-${month.toString().padStart(2, '0')}-${day}`
+	return `${year} -${month.toString().padStart(2, '0')} -${day} `
 }
