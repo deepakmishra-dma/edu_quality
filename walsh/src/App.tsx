@@ -1,19 +1,19 @@
-import {Refine} from "@refinedev/core";
-import {DevtoolsProvider} from "@refinedev/devtools";
-import {RefineKbar, RefineKbarProvider} from "@refinedev/kbar";
+import { Refine } from "@refinedev/core";
+import { DevtoolsProvider } from "@refinedev/devtools";
+import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 
-import {useNotificationProvider,} from "@refinedev/mantine";
+import { useNotificationProvider, } from "@refinedev/mantine";
 
-import {ColorScheme, ColorSchemeProvider, Global, MantineProvider,} from "@mantine/core";
-import {useLocalStorage} from "@mantine/hooks";
-import {NotificationsProvider} from "@mantine/notifications";
+import { ColorScheme, ColorSchemeProvider, Global, MantineProvider, } from "@mantine/core";
+import { useLocalStorage } from "@mantine/hooks";
+import { NotificationsProvider } from "@mantine/notifications";
 import routerBindings, {
   DocumentTitleHandler,
   UnsavedChangesNotifier,
 } from "@refinedev/react-router-v6";
-import {useTranslation} from "react-i18next";
-import {BrowserRouter} from "react-router-dom";
-import {authProvider} from "./providers/auth";
+import { useTranslation } from "react-i18next";
+import { BrowserRouter } from "react-router-dom";
+import { authProvider } from "./providers/auth";
 import "./index.css";
 import theme from "./config/theme.ts";
 import provider from "./providers/data";
@@ -26,7 +26,7 @@ function App() {
     defaultValue: "light",
     getInitialValueInEffect: true,
   });
-  const {t, i18n} = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const toggleColorScheme = (value?: ColorScheme) =>
     setColorScheme(value || (colorScheme === "dark" ? "light" : "dark"));
@@ -50,7 +50,7 @@ function App() {
             withNormalizeCSS
             withGlobalStyles
           >
-            <Global styles={{body: {WebkitFontSmoothing: "auto"}}}/>
+            <Global styles={{ body: { WebkitFontSmoothing: "auto" } }} />
             <NotificationsProvider position="top-right">
               <DevtoolsProvider>
                 <Refine
@@ -76,10 +76,10 @@ function App() {
                     projectId: "QlcuD4-yeUftx-Pd8nc4",
                   }}
                 >
-                  <Pages/>
-                  <RefineKbar/>
-                  <UnsavedChangesNotifier/>
-                  <DocumentTitleHandler/>
+                  <Pages />
+                  <RefineKbar />
+                  <UnsavedChangesNotifier />
+                  <DocumentTitleHandler />
                 </Refine>
               </DevtoolsProvider>
             </NotificationsProvider>

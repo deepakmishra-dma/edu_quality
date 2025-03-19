@@ -4,6 +4,9 @@ import useStudentList from "../components/queries/useStudentList";
 import useClassDetails from "../components/queries/useClassDetails";
 import useStudentProfileColor from "../components/hooks/useStudentProfileColor";
 import { useSearchParams } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 export const BonafideCertificate = () => {
     const [selectedStudent, setSelectedStudent] = useState<string>('')
     const [selectedSubject, setSelectedSubject] = useState<string>('')
@@ -39,12 +42,14 @@ export const BonafideCertificate = () => {
             .then((message) => {
                 if (message) {
                     console.log("success ", message);
-                    // Other actions on success
+
                 } else if (message) {
                     console.log("error-message ", message);
                     // Handle error message
                 } else {
                     console.log("Unexpected response format:", message);
+
+
                 }
 
             })
@@ -52,7 +57,7 @@ export const BonafideCertificate = () => {
             .finally(() => {
                 // setSendingOtp(false)
             })
-        console.log("resp ", selectedStudent)
+
     };
     const unitOptions = useMemo(() => {
         return [...Array(4)].map((_, i) => ({
@@ -82,6 +87,12 @@ export const BonafideCertificate = () => {
             setSelectedUnit(unitNames[0])
         }
     }, [selectedUnit, unitOptions]);
+    const showToastMessage = () => {
+        toast.success("Please Check Your Email!", {
+            position: "top-right"
+        });
+    };
+
     return (
         <>
             <Box>
@@ -162,8 +173,13 @@ export const BonafideCertificate = () => {
                                 borderRadius: 10,
                                 backgroundColor: studentProfileColor,
                             }}
-                            onClick={requestBonafide}
+                            onClick={() => {
+                                requestBonafide()
+                                showToastMessage()
+                            }
+                            }
                         >Request Bonofide</Button>
+                        <ToastContainer />
                     </Box>
                 </Box>
             </Box>
