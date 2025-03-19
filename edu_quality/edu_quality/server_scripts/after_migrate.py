@@ -9,7 +9,7 @@ def after_migrate():
     replace_emails() 
     replace_account_credentials()
     remove_webhooks()
-    add_guardian_groups()
+    # add_guardian_groups()
 
 def add_guardian_groups():
     parents = frappe.db.get_all("Student Guardian",{'parenttype':"Student"},"guardian")

@@ -1,12 +1,11 @@
 var error_msg = {
-    "academic_year": "Academic Year is required before pushing to MGR",
-    "center": "School is required before pushing to MGR",
-    "first_name": "First name is required before pushing to MGR",
-    "fathers_phone": "Father's phone number is required before pushing to MGR",
-    "class": "Class is required before pushing to MGR",
-    "fathers_email": "father's email id is required before pushing to MGR",
-    "gender": "Gender is required before pushing to MGR",
-
+    "academic_year": "Academic Year is required before proceeding ahead",
+    "center": "School is required before proceeding ahead",
+    "first_name": "First name is required before proceeding ahead",
+    "fathers_phone": "Father's phone number is required before proceeding ahead",
+    "class": "Class is required before proceeding ahead",
+    "fathers_email": "father's email id is required before proceeding ahead",
+    "gender": "Gender is required before proceeding ahead",
 }
 
 var subStatuses = {
@@ -102,7 +101,7 @@ frappe.ui.form.on("Lead", {
                                     frm.disable_form()
                                     frm.disable_save()
                                     if (r.message) {
-                                        window.open(r.message, '_blank');
+                                        window.location.href = r.message;
                                     }
                                 }
                             });

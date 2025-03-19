@@ -9,6 +9,8 @@ from nextai.whatsapp_business_api_integration.doctype.whatsapp_message.whatsapp_
 from edu_quality.public.py.utils import remove_indian_country_code
 
 
+#comment
+
 def format_wa_phone_no(phone_no):
     if not phone_no:
         return False
@@ -130,6 +132,7 @@ def get_guardian(guardian_number):
 
 @frappe.whitelist(allow_guest=True)
 def send_otp(phone_no):
+  
     wa_phone_no = format_wa_phone_no(phone_no)
     if not wa_phone_no:
         return {
@@ -148,6 +151,8 @@ def send_otp(phone_no):
             "error_type": "guardian_not_found",
             "error_message": "Guardian Not Found"
         }
+    email = guardian.email_address
+    user =  guardian.user
     if is_defaulter(guardian.name):
         return {
             "error": True,
@@ -164,11 +169,36 @@ def send_otp(phone_no):
     otp = create_otp(wa_phone_no)
     send_otp_to_whatsapp(wa_phone_no, otp)
     send_otp_to_sms(phone_with_country_code, otp)
+    send_otp_to_email(email, otp, user)
 
     return {
         "success": True,
         "message": "Otp Sent To +" + str(wa_phone_no),
     }
+
+def send_otp_to_email(email, otp, user):
+    try:
+        if not email:
+            return
+        template_name = "Walsh Email OTP"
+        email_template = frappe.get_doc("Email Template", template_name)
+        content = frappe.render_template(email_template.get("response_html") or email_template.get("response"), {"otp":otp})
+        email_args = {
+                "recipients": [email, user],
+                "subject": email_template.get("subject"),
+                "message": content
+            }
+        frappe.sendmail(**email_args)
+    except Exception as e:
+        frappe.log_error("Error sending lead generation email", str(e))
+        return None
+    
+    
+    
+
+    
+
+    
 
 
 def get_student_form(doc):
