@@ -9,6 +9,8 @@ from nextai.whatsapp_business_api_integration.doctype.whatsapp_message.whatsapp_
 from edu_quality.public.py.utils import remove_indian_country_code
 
 
+#comment
+
 def format_wa_phone_no(phone_no):
     if not phone_no:
         return False
