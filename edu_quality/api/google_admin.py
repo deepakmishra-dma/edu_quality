@@ -78,15 +78,12 @@ def create_google_user(
                 # "recoveryEmail": recovery_mail,
                 "orgUnitPath": f"/{school}/Students",
             }
-
-            if recovery_mail:
-                recovery_mail = (str(recovery_mail) or "feedback@walnutedu.in").strip().lower()
-                # only matches lower case emails
-                email_pattern = r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"
-                match = re.match(email_pattern, recovery_mail)
-                if not match:
-                    recovery_mail = "feedback@walnutedu.in"
-                new_user["recoveryEmail"] = recovery_mail
+            recovery_mail = (str(recovery_mail) or "feedback@walnutedu.in").strip().lower()
+            email_pattern = r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"
+            match = re.match(email_pattern, recovery_mail)
+            if not match:
+                recovery_mail = "feedback@walnutedu.in"
+            new_user["recoveryEmail"] = recovery_mail
 
             if phone_no:
                 new_user["recoveryPhone"] = add_indian_country_code(phone_no, True)
