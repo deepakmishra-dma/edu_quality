@@ -13,6 +13,8 @@ import CmapList from "./cmap/list.tsx";
 import LeaveNote from "./leave-note.tsx";
 import { SchoolCalendar } from "./SchoolCalendar.tsx";
 import { BonafideCertificate } from "./BonafideCertificate.tsx";
+import PortionCircular from "./portion-circular/index.tsx";
+import PortionCircularList from "./portion-circular/list.tsx";
 
 const Pages = () => {
   // const location = useLocation()
@@ -47,28 +49,39 @@ const Pages = () => {
       }}
     >
       <Routes>
-        <Route path="/*" element={
-          <Authenticated
-            key="authenticated-outer"
-            fallback={<Login />}
-            v3LegacyAuthProviderCompatible
-          >
-            <Header setNavbarOpen={setIsNavBarOpen} navbarOpen={isNavBarOpen} />
-            <Navbar isOpen={isNavBarOpen} setIsOpen={setIsNavBarOpen} />
-            <Routes>
-              <Route path="/" element={<NoticeList />} />
-              <Route path="/stared" element={<NoticeList staredOnly />} />
-              <Route path="/archived" element={<NoticeList archivedOnly />} />
-              <Route path="/calendar" element={<SchoolCalendar />} />
-              <Route path="/bonafide" element={<BonafideCertificate />} />
-              <Route path="/notice/:id" element={<NoticeDetails />} />
-              <Route path="/cmap" element={<Cmap />} />
-              <Route path="/cmap/list" element={<CmapList />} />
-              <Route path="/leave-note" element={<LeaveNote />} />
-              <Route path="*" element={<ErrorComponent />} />
-            </Routes>
-          </Authenticated>
-        } />
+        <Route
+          path="/*"
+          element={
+            <Authenticated
+              key="authenticated-outer"
+              fallback={<Login />}
+              v3LegacyAuthProviderCompatible
+            >
+              <Header
+                setNavbarOpen={setIsNavBarOpen}
+                navbarOpen={isNavBarOpen}
+              />
+              <Navbar isOpen={isNavBarOpen} setIsOpen={setIsNavBarOpen} />
+              <Routes>
+                <Route path="/" element={<NoticeList />} />
+                <Route path="/stared" element={<NoticeList staredOnly />} />
+                <Route path="/archived" element={<NoticeList archivedOnly />} />
+                <Route path="/calendar" element={<SchoolCalendar />} />
+                <Route path="/bonafide" element={<BonafideCertificate />} />
+                <Route path="/notice/:id" element={<NoticeDetails />} />
+                <Route path="/cmap" element={<Cmap />} />
+                <Route path="/cmap/list" element={<CmapList />} />
+                <Route path="/portion-circular" element={<PortionCircular />} />
+                <Route
+                  path="/portion-circular/list"
+                  element={<PortionCircularList />}
+                />
+                <Route path="/leave-note" element={<LeaveNote />} />
+                <Route path="*" element={<ErrorComponent />} />
+              </Routes>
+            </Authenticated>
+          }
+        />
       </Routes>
     </AppShell>
   );

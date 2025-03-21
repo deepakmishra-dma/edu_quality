@@ -47,7 +47,7 @@ frappe.ui.form.on("Lead", {
         }
         frm.set_intro(`
         <p class="text-dark my-0">
-            Pushing to MGR requires these fields:<ul><li>Academic Year</li><li> School</li><li>First Name</li><li>Date of Birth</li><li>Fathers Phone</li><li>Class</li><li>Fathers Email</li><li>Gender</li>
+            These fields are required before proceeding ahead:<ul><li>Academic Year</li><li> School</li><li>First Name</li><li>Date of Birth</li><li>Fathers Phone</li><li>Class</li><li>Fathers Email</li><li>Gender</li>
       
       `, 'orange')
         setTimeout(() => {
@@ -74,7 +74,7 @@ frappe.ui.form.on("Lead", {
                     var errorKey = Object.keys(error_msg).find(error => frm.doc[error] === null || frm.doc[error] === undefined || frm.doc[error] === '')
                     if (String(frm.doc.fathers_phone).length != 10) {
                         frappe.msgprint({
-                            message: __("Fathers Phone Number format is invalid, Please check the spacing is according to standard phone number spacing or none at all, and country code shouldn't be there for Indian numbers only for foreign numbers. and please make sure the number is 10 digits only before pushing to MGR"),
+                            message: __("Fathers Phone Number format is invalid, Please check the spacing is according to standard phone number spacing or none at all, and country code shouldn't be there for Indian numbers only for foreign numbers. and please make sure the number is 10 digits only before proceeding ahead"),
                             indicator: "red",
                             title: __("Incorrect Field")
                         });
@@ -126,7 +126,7 @@ frappe.ui.form.on("Lead", {
         const re = /^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/
         if (!re.test(temp_fathers_phone)) {
             frappe.msgprint({
-                message: __("Fathers Phone Number format is invalid, Please check the spacing is according to standard phone number spacing or none at all, and country code shouldn't be there for Indian numbers only for foreign numbers. and please make sure the number is 10 digits only before pushing to MGR"),
+                message: __("Fathers Phone Number format is invalid, Please check the spacing is according to standard phone number spacing or none at all, and country code shouldn't be there for Indian numbers only for foreign numbers. and please make sure the number is 10 digits only before proceeding ahead"),
                 indicator: "red",
                 title: __("Incorrect Field")
             });

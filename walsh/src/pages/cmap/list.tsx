@@ -260,6 +260,7 @@ const CmapList = () => {
                 borderTop: '1px solid #ccc',
               }}>
                 {products.map((product, i) => {
+                  if(product?.hide_in_walsh) return null
                   const fileType = fileTypes[product?.item_group as keyof typeof fileTypes] || fileTypes.default
                   return <Box
                     key={i}

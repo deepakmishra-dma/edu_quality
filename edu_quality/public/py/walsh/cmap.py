@@ -87,6 +87,7 @@ def get_all_cmaps(subject, unit, division):
     for product in all_products:
         for item in all_items:
             if item.name == product.item:
+                product["hide_in_walsh"] = bool(item.custom_hide_in_walsh) or item.item_group not in item_group_names
                 product["item_data"] = item
         for broadcast in broadcast_names:
             if broadcast == product.broadcast:
@@ -98,16 +99,11 @@ def get_all_cmaps(subject, unit, division):
             if parentnote == product.parent_note:
                 product["parentnote_description"] = parentnote
 
-    item_hash = {}
-    for item in all_items:
-        name = item.name
-        if name not in item_hash:
-            item_hash[name] = item
 
     for cmap in cmaps:
         cmap.products = []
         for product in all_products:
-            if product.parent == cmap.name and product.item in item_hash:
+            if product.parent == cmap.name:
                 cmap.products.append(product)
 
     return cmaps

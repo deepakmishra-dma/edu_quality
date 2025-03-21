@@ -9,6 +9,8 @@ from nextai.whatsapp_business_api_integration.doctype.whatsapp_message.whatsapp_
 from edu_quality.public.py.utils import remove_indian_country_code
 
 
+#comment
+
 def format_wa_phone_no(phone_no):
     if not phone_no:
         return False
@@ -167,14 +169,14 @@ def send_otp(phone_no):
     otp = create_otp(wa_phone_no)
     send_otp_to_whatsapp(wa_phone_no, otp)
     send_otp_to_sms(phone_with_country_code, otp)
-    send_otp_to_email(email, otp, user)
+    send_otp_to_email(email, otp)
 
     return {
         "success": True,
         "message": "Otp Sent To +" + str(wa_phone_no),
     }
 
-def send_otp_to_email(email, otp, user):
+def send_otp_to_email(email, otp):
     try:
         if not email:
             return
@@ -182,7 +184,7 @@ def send_otp_to_email(email, otp, user):
         email_template = frappe.get_doc("Email Template", template_name)
         content = frappe.render_template(email_template.get("response_html") or email_template.get("response"), {"otp":otp})
         email_args = {
-                "recipients": [email, user],
+                "recipients": [email],
                 "subject": email_template.get("subject"),
                 "message": content
             }
