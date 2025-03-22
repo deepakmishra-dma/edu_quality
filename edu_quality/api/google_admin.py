@@ -43,7 +43,7 @@ def get_google_user_with_key(email_key):
     )
 
 
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=True)
 def create_google_user(
     email_key, first_name, last_name, recovery_mail, phone_no, school
 ):
@@ -85,8 +85,8 @@ def create_google_user(
                 recovery_mail = "feedback@walnutedu.in"
             new_user["recoveryEmail"] = recovery_mail
 
-            if phone_no:
-                new_user["recoveryPhone"] = add_indian_country_code(phone_no, True)
+            # if phone_no:
+            #     new_user["recoveryPhone"] = add_indian_country_code(phone_no, True)
             frappe.log_error("account creating for ", str(new_user))
             resp = (
                 user_service.users()
