@@ -43,7 +43,7 @@ def get_google_user_with_key(email_key):
     )
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist()
 def create_google_user(
     email_key, first_name, last_name, recovery_mail, phone_no, school
 ):
