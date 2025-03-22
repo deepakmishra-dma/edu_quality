@@ -77,9 +77,9 @@ export const Header: React.FC<HeaderProps> = ({ setNavbarOpen }) => {
             : /^\/cmap\/list$/.test(location.pathname)
             ? "Curriculum Updates"
             : /^\/portion-circular\/list$/.test(location.pathname)
-            ? "Portion Circular"
+            ? "Portion"
             : /^\/portion-circular$/.test(location.pathname)
-            ? "Portion Circular"
+            ? "Portion"
             : ""}
         </Box>
       </Stack>

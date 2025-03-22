@@ -12,15 +12,32 @@ const PortionCircularList = () => {
   const student = searchParams.get("student") || "";
 
   const { data: classDetails } = useClassDetails(student);
-  const { data: circularList } = usePortionCircularList(
+  const {
+    data: circularList,
+    error,
+    isLoading,
+  } = usePortionCircularList(
     unit,
     classDetails?.data?.message?.division?.name || ""
   );
   const studentProfileColor = useStudentProfileColor(student);
 
-  if (circularList?.data?.message == undefined) {
-    return null;
+  if (circularList?.data?.message == undefined || error) {
+    return (
+      <Text align="center" color="dimmed" weight="bold" my={30}>
+        {isLoading ? "Loading..." : "Something Went Wrong"}
+      </Text>
+    );
   }
+
+  if (Object.keys(circularList?.data?.message).length == 0) {
+    return (
+      <Text align="center" color="dimmed" weight="bold" my={30}>
+        {isLoading ? "Loading..." : "No Portion Found"}
+      </Text>
+    );
+  }
+
   const circulars = circularList?.data?.message;
 
   return (

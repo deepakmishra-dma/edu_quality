@@ -60,7 +60,7 @@ async function onLoad() {
 			fieldtype: 'Link',
 			default: acadYear || '',
 			options: "Academic Year",
-			change: () => filterOnChange(filtersRef.fields_dict.academic_year)
+			// change: () => filterOnChange(filtersRef.fields_dict.academic_year)
 		},
 		{
 			label: 'School',
@@ -69,7 +69,7 @@ async function onLoad() {
 			default: school || '',
 			options: "School",
 			readonly: parseInt(!!school),
-			change: () => filterOnChange(filtersRef.fields_dict.school)
+			// change: () => filterOnChange(filtersRef.fields_dict.school)
 		},
 		{
 			label: 'Class',
@@ -77,7 +77,7 @@ async function onLoad() {
 			fieldtype: 'Link',
 			options: "Class Type",
 
-			change: () => filterOnChange(filtersRef.fields_dict.class)
+			// change: () => filterOnChange(filtersRef.fields_dict.class)
 		},
 		{
 			label: 'Division',
@@ -94,14 +94,14 @@ async function onLoad() {
 
 				}
 			},
-			change: () => filterOnChange(filtersRef.fields_dict.division)
+			// change: () => filterOnChange(filtersRef.fields_dict.division)
 		},
 		{
 			label: 'Subject',
 			fieldname: 'subject',
 			fieldtype: 'Link',
 			options: "Course",
-			change: () => filterOnChange(filtersRef.fields_dict.subject)
+			// change: () => filterOnChange(filtersRef.fields_dict.subject)
 		},
 		...teacherFilter,
 		{
@@ -109,7 +109,14 @@ async function onLoad() {
 			fieldname: 'unit',
 			fieldtype: 'Select',
 			options: ["1", "2", "3", "4"],
-			change: () => filterOnChange(filtersRef.fields_dict.unit)
+			// change: () => filterOnChange(filtersRef.fields_dict.unit)
+		},
+		{
+			label: 'Submit',
+			fieldname: 'submitbtn',
+			fieldtype: 'Button',
+
+			click: () => filterOnChange()
 		},
 	])
 
@@ -332,8 +339,7 @@ ${!filters.division ? `<td>${division || "No Division"}</td>` : ""}
 }
 
 function createDatePicker(value, index) {
-
-	return `< input type = "date" ${!isAdmin && value ? "disabled" : ""} value = ${value} data - index="${index}" max = "${getMaxDate()}" /> `
+	return `<input type="date" ${!isAdmin && value ? "disabled" : ""} value = ${value} data-index="${index}" max ="${getMaxDate()}" />`
 }
 
 async function saveTracker() {
