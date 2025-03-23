@@ -1,20 +1,17 @@
 import frappe 
 import requests
 
+from edu_quality.walmiki.apis.utils import get_headers, log_request
 
-headers = {
-  'Content-Type': 'application/json',
-  'Authorization': 'Basic dmlrYXM6MTIzNA=='
-}
 
 @frappe.whitelist()
 def upsert(doctype,docname,url):
     try:
         if frappe.db.exists(doctype,docname):
             doc = frappe.get_doc(doctype,docname)
-            frappe.logger('walmiki').exception(doc.as_json())
             payload = doc.as_json()
-            response = requests.request("POST", url, headers=headers, json=payload)
+            response = requests.request("POST", url, headers=get_headers(), json=payload)
+            log_request(url,payload,response)
             return response.json()
         frappe.throw("Document Does Not Exist!")
     except Exception as e:
@@ -33,7 +30,7 @@ def bulk_upsert(doctype,url):
                 document = frappe.get_doc(doctype,doc.name)
                 data.append(document.as_dict())
             payload = {"data":data}
-            response = requests.request("POST", url, headers=headers, data=payload)
+            response = requests.request("POST", url, headers=get_headers(), data=payload)
             return response.json()
     except Exception as e:
         frappe.logger("walmiki").exception(e)
