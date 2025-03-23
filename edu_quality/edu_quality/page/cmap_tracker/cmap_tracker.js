@@ -7,6 +7,7 @@ let cmapUpdate = {}
 let globalPage = null
 let saveButtonAdded = false
 let isAdmin = false
+let isCmapFetching = false
 
 frappe.pages['cmap-tracker'].on_page_load = async function (wrapper) {
 
@@ -60,6 +61,7 @@ async function onLoad() {
 			fieldtype: 'Link',
 			default: acadYear || '',
 			options: "Academic Year",
+			reqd: 1,
 			// change: () => filterOnChange(filtersRef.fields_dict.academic_year)
 		},
 		{
@@ -67,6 +69,7 @@ async function onLoad() {
 			fieldname: 'school',
 			fieldtype: 'Link',
 			default: school || '',
+			reqd: 1,
 			options: "School",
 			readonly: parseInt(!!school),
 			// change: () => filterOnChange(filtersRef.fields_dict.school)
@@ -75,6 +78,7 @@ async function onLoad() {
 			label: 'Class',
 			fieldname: 'class',
 			fieldtype: 'Link',
+			reqd: 1,
 			options: "Class Type",
 
 			// change: () => filterOnChange(filtersRef.fields_dict.class)
@@ -100,13 +104,13 @@ async function onLoad() {
 			label: 'Subject',
 			fieldname: 'subject',
 			fieldtype: 'Link',
-			options: "Course",
+			options: "Course", reqd: 1,
 			// change: () => filterOnChange(filtersRef.fields_dict.subject)
 		},
 		...teacherFilter,
 		{
 			label: 'Unit',
-			fieldname: 'unit',
+			fieldname: 'unit', reqd: 1,
 			fieldtype: 'Select',
 			options: ["1", "2", "3", "4"],
 			// change: () => filterOnChange(filtersRef.fields_dict.unit)
@@ -197,13 +201,24 @@ async function getTeachers() {
 }
 async function getCmap() {
 	const filters = getFilters()
-	tempData = await frappe.call({
-		method: 'edu_quality.edu_quality.page.cmap_tracker.cmap_tracker.get_cmap',
-		args: filters
-	})
-	cmapData = tempData?.message || []
+	if (isCmapFetching) {
+		return
+	}
+	try {
+		isCmapFetching = true
+		setupLoader()
+		tempData = await frappe.call({
+			method: 'edu_quality.edu_quality.page.cmap_tracker.cmap_tracker.get_cmap',
+			args: filters
+		})
+		cmapData = tempData?.message || []
 
-	await setupDataTable()
+		await setupDataTable()
+	} catch (e) {
+
+	} finally {
+		isCmapFetching = false
+	}
 }
 
 
@@ -227,6 +242,12 @@ async function setupDataTable() {
 		$('[data-toggle="tooltip"]').tooltip({ trigger: 'hover focus click manual' })
 
 	})
+
+}
+
+function setupLoader() {
+	const container = document.getElementById('report-table-container')
+	container.innerHTML = "<div style='margin-top:12px;margin-bottom:12px; font-size:18px;font-weight:500; padding-left:18px;'>Loading...</div>"
 
 }
 
