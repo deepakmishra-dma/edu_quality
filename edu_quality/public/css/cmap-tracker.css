@@ -70,3 +70,7 @@ td {
 .cmap-tracker .products-list a {
   color: var(--dt-primary-color);
 }
+
+.cmap-tracker [data-fieldname="submitbtn"] {
+  margin-top: 12px;
+}

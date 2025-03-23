@@ -85,8 +85,8 @@ def create_google_user(
                 recovery_mail = "feedback@walnutedu.in"
             new_user["recoveryEmail"] = recovery_mail
 
-            if phone_no:
-                new_user["recoveryPhone"] = add_indian_country_code(phone_no, True)
+            # if phone_no:
+            #     new_user["recoveryPhone"] = add_indian_country_code(phone_no, True)
             frappe.log_error("account creating for ", str(new_user))
             resp = (
                 user_service.users()

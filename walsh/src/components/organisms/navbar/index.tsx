@@ -126,7 +126,7 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
                 location: "/cmap",
               },
               {
-                label: "Portion Circular",
+                label: "Portion",
                 icon: IconArchive,
                 location: "/portion-circular",
               },
