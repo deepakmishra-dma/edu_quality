@@ -1,6 +1,8 @@
 # Copyright (c) 2024, Hybrowlabs Technologies and contributors
 # For license information, please see license.txt
+
 from frappe.query_builder.functions import Count, GROUP_CONCAT, Concat
+from frappe.query_builder import Order, Case
 import frappe
 
 
@@ -76,6 +78,7 @@ def get_data(filters):
             cmap_table.name.as_("cmap_name"),
             cmap_table.subject,
             cmap_table.reserved_for_portion_circular,
+            cmap_assig_table.real_date,
         )
     )
     item_groups = frappe.db.get_all(
@@ -97,6 +100,7 @@ def get_data(filters):
             item_detail_table.chapter,
             item_detail_table.item_group,
         )
+        .orderby(all_assigned_cmap.subject, Order.asc)
     ).select(
         all_assigned_cmap.cmap_name,
         all_assigned_cmap.subject,
@@ -106,7 +110,17 @@ def get_data(filters):
         item_detail_table.item_group,
         Count(item_detail_table.item).distinct().as_("count"),
         GROUP_CONCAT(item_detail_table.item).distinct().as_("item_names"),
-        GROUP_CONCAT(item_table.custom_product_url).distinct().as_("item_urls"),
+        GROUP_CONCAT(
+            Case()
+            .when(
+                (all_assigned_cmap.reserved_for_portion_circular == 0)
+                & (all_assigned_cmap.real_date.isnull()),
+                "",
+            )
+            .else_(item_table.custom_product_url)
+        )
+        .distinct()
+        .as_("item_urls"),
     )
 
     return find_filtered_cmap.run(as_dict=True)

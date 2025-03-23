@@ -250,13 +250,17 @@ const Chapter = ({
               <td colSpan={3}>
                 {item.products?.map((product) => (
                   <>
-                    <a
-                      href={product.url}
-                      style={{ fontSize: 12 }}
-                      target="__blank"
-                    >
-                      {product.name}
-                    </a>{" "}
+                    {product.url ? (
+                      <a
+                        href={product.url}
+                        style={{ fontSize: 12 }}
+                        target="__blank"
+                      >
+                        {product.name}
+                      </a>
+                    ) : (
+                      <Text style={{ fontSize: 12 }}>{product.name}</Text>
+                    )}
                   </>
                 ))}
               </td>
