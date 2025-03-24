@@ -128,7 +128,11 @@ def get_portion_circulars(unit, division):
         for item_name_idx in range(len(item_names)):
             product = {
                 "name": item_names[item_name_idx],
-                "url": item_urls[item_name_idx] or None,
+                "url": (
+                    None
+                    if item_urls[item_name_idx] == item_names[item_name_idx]
+                    else item_urls[item_name_idx] or None
+                ),
             }
             i["products"].append(product)
 

@@ -115,7 +115,7 @@ def get_data(filters):
             .when(
                 (all_assigned_cmap.reserved_for_portion_circular == 0)
                 & (all_assigned_cmap.real_date.isnull()),
-                "",
+                item_detail_table.item,
             )
             .else_(item_table.custom_product_url)
         )
