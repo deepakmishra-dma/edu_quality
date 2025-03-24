@@ -222,7 +222,7 @@ const PortionCircular = () => {
                 );
             }}
           >
-            Show Portion Circular
+            Show Portion
           </Button>
         </Box>
       </Box>
