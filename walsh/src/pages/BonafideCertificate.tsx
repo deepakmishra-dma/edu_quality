@@ -178,7 +178,7 @@ export const BonafideCertificate = () => {
                                 showToastMessage()
                             }
                             }
-                        >Request Bonofide</Button>
+                        >Request Bonafide</Button>
                         <ToastContainer />
                     </Box>
                 </Box>
