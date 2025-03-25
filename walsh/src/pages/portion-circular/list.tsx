@@ -260,7 +260,7 @@ const Chapter = ({
                       </a>
                     ) : (
                       <Text style={{ fontSize: 12 }}>{product.name}</Text>
-                    )}
+                    )}{" "}
                   </>
                 ))}
               </td>
