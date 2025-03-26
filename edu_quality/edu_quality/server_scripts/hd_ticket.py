@@ -296,6 +296,6 @@ def after_insert(doc,method=None):
     # Combining all information and adding it as a comment to the HD Ticket
     full_text = "\n\n".join(students_info + fees_info + payment_schedule_info + payment_entry_info + previous_tickets_info)
     if full_text:
-        make(doctype="HD Ticket", name=doc.name, subject="Student Information", content=full_text)
+        make(doctype="HD Ticket", name=doc.name, subject="Student Information", content=full_text,communication_type="Communication")
     doc.reload()
 
