@@ -1,22 +1,18 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "format:BNF-{reference_number}-{####}",
+ "autoname": "format:BNF-{student}-{##}",
  "creation": "2024-04-04 19:00:01.672658",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "reference_number",
+  "student",
   "bonafide_pdf",
   "column_break_xnei",
-  "school"
+  "school",
+  "academic_year"
  ],
  "fields": [
-  {
-   "fieldname": "reference_number",
-   "fieldtype": "Data",
-   "label": "Reference number"
-  },
   {
    "fieldname": "bonafide_pdf",
    "fieldtype": "Attach",
@@ -31,11 +27,23 @@
    "fieldtype": "Link",
    "label": "School",
    "options": "School"
+  },
+  {
+   "fieldname": "academic_year",
+   "fieldtype": "Link",
+   "label": "Academic Year",
+   "options": "Academic Year"
+  },
+  {
+   "fieldname": "student",
+   "fieldtype": "Link",
+   "label": "Student",
+   "options": "Student"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-04-04 19:04:46.431766",
+ "modified": "2024-04-07 18:32:49.366001",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Bonafide Certificate",
