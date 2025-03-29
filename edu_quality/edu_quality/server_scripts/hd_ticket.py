@@ -113,6 +113,8 @@ def get_communications(ticket: str):
     if "Guardian" in roles:
         comm = []
         for c in communications:
+            if c.sender and frappe.session.user in c.sender:
+                comm.append(c)
             if c.recipients and frappe.session.user in c.recipients:
                 comm.append(c)
         communications = comm
