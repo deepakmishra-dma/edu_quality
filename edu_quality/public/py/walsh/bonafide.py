@@ -15,8 +15,10 @@ def send_bonafide(student_id):
         pdf_url = frappe.utils.get_url(bonafide_pdf)
         return pdf_url
     else:
+        student = frappe.get_doc("Student", student_id)
+
         pdf_content = frappe.get_print(
-            "Student", student_id, print_format="Bonafide Certificate"
+            "Student", student_id, print_format="Bonafide Certificate", as_pdf=True
         )
         acad_year = current_academic_year()
 
@@ -25,6 +27,7 @@ def send_bonafide(student_id):
                 "doctype": "Bonafide Certificate",
                 "student": student_id,
                 "academic_year": acad_year,
+                "school": student.school,
             }
         )
         doc.insert()
@@ -35,12 +38,12 @@ def send_bonafide(student_id):
             dt="Bonafide Certificate",
             dn=doc.name,
             df="bonafide_pdf",
-            folder="bonafide_certificates"
         )
+        if not doc.bonafide_pdf:
+            doc.bonafide_pdf = saved_file.file_url
+            doc.save()
 
-        guardians = frappe.get_value("Student", student_id, "guardians")
-
-        guardian_email = [i.guardian_name for i in guardians]
+        guardian_email = [i.guardian_name for i in student.guardians]
         guardian = frappe.get_all(
             doctype="Guardian",
             fields=["email_address"],
@@ -52,7 +55,14 @@ def send_bonafide(student_id):
             recipients=recipients,
             subject="Bonafide Certificate",
             message="Please find attached Bonafide Certificate",
-            attachments=[saved_file.file_url],
+            attachments=[
+                frappe.attach_print(
+                    "Student",
+                    student_id,
+                    print_format="Bonafide Certificate",
+                    file_name=f"{student_id}",
+                )
+            ],
         )
         pdf_url = frappe.utils.get_url(saved_file.file_url)
         return pdf_url
