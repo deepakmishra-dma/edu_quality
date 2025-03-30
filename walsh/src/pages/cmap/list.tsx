@@ -183,7 +183,7 @@ const CmapList = () => {
                   width: '100%',
                   // fontSize: 15,
                 }}>
-                  {cmapTitle}
+                  {cmapTitle?.split(" - ")?.at(-1) ||cmapTitle}
                 </Text>
                 <Box mah={isOpen ? undefined : '4em'} sx={{
                   overflow: 'hidden',
