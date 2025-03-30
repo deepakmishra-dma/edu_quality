@@ -15,13 +15,13 @@ def get_columns():
         },
         {
             "fieldname": "real_date",
-            "label": "Program",
+            "label": "Real Date",
             "fieldtype": "Date",
             "width": 200,
         },
         {
             "fieldname": "division",
-            "label": "School",
+            "label": "Division",
             "fieldtype": "Link",
             "options": "School",
             "width": 200,
