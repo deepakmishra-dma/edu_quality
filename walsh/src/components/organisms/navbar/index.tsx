@@ -16,7 +16,7 @@ import {
   IconStack2,
   IconStar,
   IconCalendar,
-  IconPrinter,
+  // IconPrinter,
 } from "@tabler/icons";
 import { useLogout } from "@refinedev/core";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -149,11 +149,11 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
             location: "/archived",
           },
 
-          {
-            label: "Request Bonafide Certificate",
-            icon: IconPrinter,
-            location: "/bonafide",
-          },
+          // {
+          //   label: "Request Bonafide Certificate",
+          //   icon: IconPrinter,
+          //   location: "/bonafide",
+          // },
 
           {
             label: "Reload",
