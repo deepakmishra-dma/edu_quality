@@ -35,10 +35,10 @@ function updateNoteQuery(cur_frm, res, row_name) {
             )
         })
     }
-
+  
     return groups.forEach(array => {
         getNoteQuery(cur_frm, array[0], array[1],
-            res?.[array[1]], row_name
+            [...(res?.[array[1]] || [])], row_name
         )
     })
 }
