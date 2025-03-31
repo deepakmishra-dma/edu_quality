@@ -5,5 +5,5 @@
 from frappe.model.document import Document
 
 
-class EmployeeEmailGroup(Document):
+class ChildEmailGroup(Document):
 	pass
