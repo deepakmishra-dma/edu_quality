@@ -87,6 +87,10 @@ def get_all_cmaps(subject, unit, division):
     for product in all_products:
         for item in all_items:
             if item.name == product.item:
+                product["hide_in_walsh"] = (
+                    bool(item.custom_hide_in_walsh)
+                    or item.item_group not in item_group_names
+                )
                 product["item_data"] = item
         for broadcast in broadcast_names:
             if broadcast == product.broadcast:
@@ -98,16 +102,10 @@ def get_all_cmaps(subject, unit, division):
             if parentnote == product.parent_note:
                 product["parentnote_description"] = parentnote
 
-    item_hash = {}
-    for item in all_items:
-        name = item.name
-        if name not in item_hash:
-            item_hash[name] = item
-
     for cmap in cmaps:
         cmap.products = []
         for product in all_products:
-            if product.parent == cmap.name and product.item in item_hash:
+            if product.parent == cmap.name:
                 cmap.products.append(product)
 
     return cmaps
@@ -115,7 +113,6 @@ def get_all_cmaps(subject, unit, division):
 
 @frappe.whitelist(allow_guest=True)
 def get_portion_circulars(unit, division):
-   
 
     payload = {"unit": unit, "division": division}
     data = get_data(payload)
@@ -131,7 +128,11 @@ def get_portion_circulars(unit, division):
         for item_name_idx in range(len(item_names)):
             product = {
                 "name": item_names[item_name_idx],
-                "url": item_urls[item_name_idx],
+                "url": (
+                    None
+                    if item_urls[item_name_idx] == item_names[item_name_idx]
+                    else item_urls[item_name_idx] or None
+                ),
             }
             i["products"].append(product)
 

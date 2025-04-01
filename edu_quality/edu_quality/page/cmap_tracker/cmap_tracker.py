@@ -14,6 +14,12 @@ def get_cmap(**filters):
     products_table = frappe.qb.DocType("Item Detail")
     item_table = frappe.qb.DocType("Item")
     teacher = calculate_teacher_value(filters.get("teacher"))
+    user_roles = frappe.get_roles(frappe.session.user)
+    if (
+        check_admin_roles(user_roles, ["Principal", "Vice Principal", "HoD"])
+        and not teacher
+    ):
+        teacher = "ALL"
 
     filtered_cmap_query = (
         frappe.qb.from_(cmap_table)
@@ -58,25 +64,32 @@ def get_cmap(**filters):
     )
 
     products_data = filtered_cmap_product_query.run(as_dict=True)
-
     filtered_assigned_query = (
         frappe.qb.from_(filtered_cmap_query)
         .inner_join(cmap_assign_table)
         .on(filtered_cmap_query.name == cmap_assign_table.parent)
-        .where(
-            (cmap_assign_table.teacher == teacher)
-            & (cmap_assign_table.division == filters.get("division"))
-        )
-        .orderby(Cast(filtered_cmap_query.period, "UNSIGNED"), Order.asc)
-        .select(
-            filtered_cmap_query.star,
-            cmap_assign_table.teacher,
-            cmap_assign_table.school,
-            cmap_assign_table.division,
-            cmap_assign_table.real_date,
-        )
     )
+    div_condition = cmap_assign_table.division == filters.get("division")
+    
+    if(not filters.get('division')):
+        div_condition = cmap_assign_table.division.isnotnull()
+    
+    if teacher != "ALL":
+        filtered_assigned_query = filtered_assigned_query.where(
+            (cmap_assign_table.teacher == teacher) & (div_condition)
+        )
+    else:
+        filtered_assigned_query.where((div_condition))
 
+    filtered_assigned_query = filtered_assigned_query.orderby(
+        Cast(filtered_cmap_query.period, "UNSIGNED"), Order.asc
+    ).select(
+        filtered_cmap_query.star,
+        cmap_assign_table.teacher,
+        cmap_assign_table.school,
+        cmap_assign_table.division,
+        cmap_assign_table.real_date,
+    )
     return cocatenate_cmap(filtered_assigned_query.run(as_dict=True), products_data)
 
 

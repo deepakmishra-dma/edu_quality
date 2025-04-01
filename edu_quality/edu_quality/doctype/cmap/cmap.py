@@ -321,7 +321,7 @@ def get_product_materials(item_id):
         material_type = material.get("material_type")
         description = material.get("description")
         if material_type not in result:
-            result[material_type] = [" ", description]
+            result[material_type] = [None, description]
         # unique only
         elif result[material_type] and description not in result[material_type]:
             result[material_type].append(description)

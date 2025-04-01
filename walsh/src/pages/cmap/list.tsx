@@ -183,7 +183,7 @@ const CmapList = () => {
                   width: '100%',
                   // fontSize: 15,
                 }}>
-                  {cmapTitle}
+                  {cmapTitle?.split(" - ")?.at(-1) ||cmapTitle}
                 </Text>
                 <Box mah={isOpen ? undefined : '4em'} sx={{
                   overflow: 'hidden',
@@ -260,6 +260,7 @@ const CmapList = () => {
                 borderTop: '1px solid #ccc',
               }}>
                 {products.map((product, i) => {
+                  if(product?.hide_in_walsh) return null
                   const fileType = fileTypes[product?.item_group as keyof typeof fileTypes] || fileTypes.default
                   return <Box
                     key={i}
