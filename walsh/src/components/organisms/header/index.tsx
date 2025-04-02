@@ -65,22 +65,24 @@ export const Header: React.FC<HeaderProps> = ({ setNavbarOpen }) => {
           {location.pathname === "/"
             ? "Notices"
             : location.pathname === "/archived"
-            ? "Archived Messages"
-            : location.pathname === "/stared"
-            ? "Starred Messages"
-            : location.pathname === "/leave-note"
-            ? "Leave / Sick Note"
-            : /^\/notice\/([0-9a-f]+)$/.test(location.pathname)
-            ? ""
-            : /^\/cmap$/.test(location.pathname)
-            ? "Curriculum Updates"
-            : /^\/cmap\/list$/.test(location.pathname)
-            ? "Curriculum Updates"
-            : /^\/portion-circular\/list$/.test(location.pathname)
-            ? "Portion"
-            : /^\/portion-circular$/.test(location.pathname)
-            ? "Portion"
-            : ""}
+              ? "Archived Messages"
+              : location.pathname === "/calendar"
+                ? "School Calender"
+                : location.pathname === "/stared"
+                  ? "Starred Messages"
+                  : location.pathname === "/leave-note"
+                    ? "Absent / Sick Note"
+                    : /^\/notice\/([0-9a-f]+)$/.test(location.pathname)
+                      ? ""
+                      : /^\/cmap$/.test(location.pathname)
+                        ? "Curriculum Updates"
+                        : /^\/cmap\/list$/.test(location.pathname)
+                          ? "Curriculum Updates"
+                          : /^\/portion-circular\/list$/.test(location.pathname)
+                            ? "Portion"
+                            : /^\/portion-circular$/.test(location.pathname)
+                              ? "Portion"
+                              : ""}
         </Box>
       </Stack>
     </MantineHeader>
