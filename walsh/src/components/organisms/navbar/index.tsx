@@ -138,6 +138,11 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
             location: "/leave-note",
           },
           {
+            label: "Early Pick Up",
+            icon: IconCalendarOff,
+            location: "/early-pickup",
+          },
+          {
             label: "School Calendar",
             icon: IconCalendar,
             location: "/calendar",
