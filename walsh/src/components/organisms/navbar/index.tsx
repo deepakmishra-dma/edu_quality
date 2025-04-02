@@ -16,8 +16,10 @@ import {
   IconStack2,
   IconStar,
   IconCalendar,
+
   // IconPrinter,
 } from "@tabler/icons";
+import { IconPick } from '@tabler/icons-react';
 import { useLogout } from "@refinedev/core";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -139,7 +141,7 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
           },
           {
             label: "Early Pick Up",
-            icon: IconCalendarOff,
+            icon: IconPick,
             location: "/early-pickup",
           },
           {
