@@ -132,49 +132,56 @@ def get_guardian(guardian_number):
 
 @frappe.whitelist(allow_guest=True)
 def send_otp(phone_no):
-  
-    wa_phone_no = format_wa_phone_no(phone_no)
-    if not wa_phone_no:
-        return {
-            "error": True,
-            "error_type": "invalid_phone_number",
-            "error_message": "Invalid Phone Number"
-        }
+    try:
+        wa_phone_no = format_wa_phone_no(phone_no)
+        if not wa_phone_no:
+            return {
+                "error": True,
+                "error_type": "invalid_phone_number",
+                "error_message": "Invalid Phone Number"
+            }
 
-    phone_with_country_code = "+" + str(wa_phone_no)
-    guardian_number = remove_indian_country_code(phone_with_country_code)
+        phone_with_country_code = "+" + str(wa_phone_no)
+        guardian_number = remove_indian_country_code(phone_with_country_code)
 
-    guardian = get_guardian(guardian_number)
-    if not guardian:
-        return {
-            "error": True,
-            "error_type": "guardian_not_found",
-            "error_message": "Guardian Not Found"
-        }
-    email = guardian.email_address
-    user =  guardian.user
-    if is_defaulter(guardian.name):
-        return {
-            "error": True,
-            "error_type": "defaulter",
-            "error_message": "Your login is disabled"
-        }
-    if not frappe.db.exists("User", guardian.user):
-        return {
-            "error": True,
-            "error_type": "user_not_found",
-            "error_message": "User Not Found"
-        }
+        guardian = get_guardian(guardian_number)
+        if not guardian:
+            return {
+                "error": True,
+                "error_type": "guardian_not_found",
+                "error_message": "Guardian Not Found"
+            }
+        email = guardian.email_address
+        user =  guardian.user
+        if is_defaulter(guardian.name):
+            return {
+                "error": True,
+                "error_type": "defaulter",
+                "error_message": "Your login is disabled"
+            }
+        if not frappe.db.exists("User", guardian.user):
+            return {
+                "error": True,
+                "error_type": "user_not_found",
+                "error_message": "User Not Found"
+            }
 
-    otp = create_otp(wa_phone_no)
-    send_otp_to_whatsapp(wa_phone_no, otp)
-    send_otp_to_sms(phone_with_country_code, otp)
-    send_otp_to_email(email, otp)
+        otp = create_otp(wa_phone_no)
+        send_otp_to_whatsapp(wa_phone_no, otp)
+        send_otp_to_sms(phone_with_country_code, otp)
+        send_otp_to_email(email, otp)
 
-    return {
-        "success": True,
-        "message": "Otp Sent To +" + str(wa_phone_no),
-    }
+        return {
+            "success": True,
+            "message": "Otp Sent To +" + str(wa_phone_no),
+        }
+    except Exception as e:
+        frappe.logger("otp").exception(e)
+        return {
+                "error": True,
+                "error_type": "Something Went Wrong",
+                "error_message": str(e)
+            }
 
 def send_otp_to_email(email, otp):
     try:
