@@ -109,16 +109,14 @@ def remove_push_notification_token(push_token=None, remove_all=False):
 
 
 def is_defaulter(guardian_name, logout_if_defaulter=False):
-    students = frappe.get_all("Student", filters={
-        "guardian": guardian_name,
-        "student_status": "Defaulter"
-    }, fields=["*"])
-    if len(students) > 0:
-        if logout_if_defaulter:
-            remove_push_notification_token(remove_all=True)
-            login_manager = LoginManager()
-            login_manager.logout()
-        return True
+    students = frappe.db.get_all("Student Guardian",{'guardian': guardian_name, 'parenttype': "Student"}, "parent")
+    for student in students:
+        if frappe.db.get_value("Student", {'name': student.parent},"is_defaulter"):
+            if logout_if_defaulter:
+                remove_push_notification_token(remove_all=True)
+                login_manager = LoginManager()
+                login_manager.logout()
+            return True
     return False
 
 def get_guardian(guardian_number):
@@ -151,8 +149,7 @@ def send_otp(phone_no):
                 "error_type": "guardian_not_found",
                 "error_message": "Guardian Not Found"
             }
-        email = guardian.email_address
-        user =  guardian.user
+        frappe.logger("otp").exception(is_defaulter(guardian.name))
         if is_defaulter(guardian.name):
             return {
                 "error": True,
@@ -169,7 +166,8 @@ def send_otp(phone_no):
         otp = create_otp(wa_phone_no)
         send_otp_to_whatsapp(wa_phone_no, otp)
         send_otp_to_sms(phone_with_country_code, otp)
-        send_otp_to_email(email, otp)
+        frappe.logger("otp").exception('sms sent')
+        send_otp_to_email(guardian.email_address, otp)
 
         return {
             "success": True,
