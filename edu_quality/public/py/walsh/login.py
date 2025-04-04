@@ -111,7 +111,7 @@ def remove_push_notification_token(push_token=None, remove_all=False):
 def is_defaulter(guardian_name, logout_if_defaulter=False):
     students = frappe.db.get_all("Student Guardian",{'guardian': guardian_name, 'parenttype': "Student"}, "parent")
     for student in students:
-        if frappe.db.get_value("Student", {'name': student.parent},"status") == "Defaulter":
+        if frappe.db.get_value("Student", {'name': student.parent},"student_status") == "Defaulter":
             if logout_if_defaulter:
                 remove_push_notification_token(remove_all=True)
                 login_manager = LoginManager()
