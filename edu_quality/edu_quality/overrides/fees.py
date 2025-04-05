@@ -334,10 +334,10 @@ def get_fee_advance_entries(fees):
              
         
     entries = []
-    for i in student_entries.values():
-        entries.append(i)
-    for j in fee_entries.values():
-        entries.append(j)
+    # for i in student_entries.values(): #financial rollover
+    #     entries.append(i)
+    # for j in fee_entries.values():
+    #     entries.append(j)
 
     return entries, fee_advance
 
