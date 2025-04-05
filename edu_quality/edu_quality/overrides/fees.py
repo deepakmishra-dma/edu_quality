@@ -170,8 +170,11 @@ class CustomFees(Fees):
             student_entries = {}
             fee_entries = {}
             for component in self.components:
-                receivable_account, income_account,cost_center = frappe.db.get_value("Company", component.custom_company,["default_receivable_account","default_income_account","cost_center"])
+                receivable_account, sales,cost_center,deposit_account = frappe.db.get_value("Company", component.custom_company,["default_receivable_account","default_income_account","cost_center","default_deposit_account"])
                 if receivable_account in student_entries:
+                    income_account = sales 
+                    if "deposit" in str(component.fees_category).lower():
+                        income_account = deposit_account
                     student_entries[receivable_account].debit += component.amount
                     student_entries[receivable_account].debit_in_account_currency += component.amount
                     fee_entries[income_account].credit += component.amount 
