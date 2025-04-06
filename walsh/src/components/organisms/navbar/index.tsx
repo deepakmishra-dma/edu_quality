@@ -130,6 +130,12 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
                 icon: IconArchive,
                 location: "/portion-circular",
               },
+              
+              {
+                label: "Weekly Updates",
+                icon: IconArchive,
+                location: "/date-circular",
+              },
             ],
           },
           {

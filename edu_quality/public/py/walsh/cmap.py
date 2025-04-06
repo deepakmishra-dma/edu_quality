@@ -1,5 +1,6 @@
 import frappe
 from edu_quality.edu_quality.report.portion_circular.portion_circular import get_data
+from datetime import datetime
 
 
 @frappe.whitelist()
@@ -36,17 +37,23 @@ def get_student_class_details(student):
 
 
 @frappe.whitelist()
-def get_all_cmaps(subject, unit, division):
-    values = {"subject": subject, "unit": unit, "division": division}
+def get_all_cmap_in_range(date, division):
+
+    if not date or not division:
+        return []
+
+    begin_date, end_date = list(map(lambda x: x.strip(), date.split(",")))
+
+    values = {"begin_date": begin_date, "division": division, "end_date": end_date}
+    print(values, "bro")
+
     cmaps = frappe.db.sql(
         """
         select *,
-         (select real_date from `tabCMAP Assignment` ta where division = %(division)s and real_date <= CURDATE() and
+         (select real_date from `tabCMAP Assignment` ta where division = %(division)s and real_date between %(begin_date)s and %(end_date)s and
           ta.parent = c.name limit 1)          as real_date         from `tabCMAP` as c
-        where subject = %(subject)s
-        and unit = %(unit)s
-        and name in (
-            select parent from `tabCMAP Assignment` ta2 where real_date <= CURDATE() and
+        where name in (
+            select parent from `tabCMAP Assignment` ta2 where real_date between %(begin_date)s and %(end_date)s and
             division = %(division)s and ta2.parent = c.name
         ) and reserved_for_portion_circular = 0
         order by real_date desc
@@ -54,7 +61,22 @@ def get_all_cmaps(subject, unit, division):
         as_dict=1,
         values=values,
     )
+    print(cmaps, "sda")
+    modified_cmaps = generate_cmap_data_from_query(cmaps)
+    result_hash = {}
+    for cmap in modified_cmaps:
+        subject = cmap.get("subject")
+        unit = cmap.get("unit")
+        if subject not in result_hash:
+            result_hash[subject] = {unit: [cmap]}
+        elif unit not in result_hash[subject]:
+            subject_hash[subject][unit] = [cmap]
+        elif unit in result_hash[subject]:
+            subject_hash[subject][unit].append(cmap)
+    return result_hash
 
+
+def generate_cmap_data_from_query(cmaps):
     cmap_names = [cmap.name for cmap in cmaps]
     all_products = frappe.get_all(
         "Item Detail", filters={"parent": ["in", cmap_names]}, fields=["*"]
@@ -109,6 +131,29 @@ def get_all_cmaps(subject, unit, division):
                 cmap.products.append(product)
 
     return cmaps
+
+
+@frappe.whitelist()
+def get_all_cmaps(subject, unit, division):
+    values = {"subject": subject, "unit": unit, "division": division}
+    cmaps = frappe.db.sql(
+        """
+        select *,
+         (select real_date from `tabCMAP Assignment` ta where division = %(division)s and real_date <= CURDATE() and
+          ta.parent = c.name limit 1)          as real_date         from `tabCMAP` as c
+        where subject = %(subject)s
+        and unit = %(unit)s
+        and name in (
+            select parent from `tabCMAP Assignment` ta2 where real_date <= CURDATE() and
+            division = %(division)s and ta2.parent = c.name
+        ) and reserved_for_portion_circular = 0
+        order by real_date desc
+        """,
+        as_dict=1,
+        values=values,
+    )
+
+    return generate_cmap_data_from_query(cmaps)
 
 
 @frappe.whitelist(allow_guest=True)
