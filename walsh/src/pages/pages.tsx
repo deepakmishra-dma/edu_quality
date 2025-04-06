@@ -15,6 +15,8 @@ import { SchoolCalendar } from "./SchoolCalendar.tsx";
 import { BonafideCertificate } from "./BonafideCertificate.tsx";
 import PortionCircular from "./portion-circular/index.tsx";
 import PortionCircularList from "./portion-circular/list.tsx";
+import DateCmap from "./date-circular/index.tsx";
+import CmapDateList from "./date-circular/list.tsx";
 
 const Pages = () => {
   // const location = useLocation()
@@ -76,6 +78,8 @@ const Pages = () => {
                   path="/portion-circular/list"
                   element={<PortionCircularList />}
                 />
+                   <Route path="/date-circular" element={<DateCmap />} />
+                <Route path="/date-circular/list" element={<CmapDateList />} />
                 <Route path="/leave-note" element={<LeaveNote />} />
                 <Route path="*" element={<ErrorComponent />} />
               </Routes>

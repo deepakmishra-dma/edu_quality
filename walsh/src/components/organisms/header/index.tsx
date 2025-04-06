@@ -80,6 +80,10 @@ export const Header: React.FC<HeaderProps> = ({ setNavbarOpen }) => {
             ? "Portion"
             : /^\/portion-circular$/.test(location.pathname)
             ? "Portion"
+            : /^\/date-circular$/.test(location.pathname)
+            ? "Weekly Updates"
+            : /^\/date-circular\/list$/.test(location.pathname)
+            ? "Weekly Updates"
             : ""}
         </Box>
       </Stack>
