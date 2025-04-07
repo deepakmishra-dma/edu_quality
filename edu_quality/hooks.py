@@ -220,6 +220,9 @@ doc_events = {
         "before_save": "edu_quality.overrides_hooks.purchase_receipt.before_save",
         "before_validate": "edu_quality.overrides_hooks.purchase_order.before_validate",
     },
+    "Employee": {
+        "after_insert": "edu_quality.edu_quality.server_scripts.employee.after_insert",
+    },
 }
 
 # Scheduled Tasks

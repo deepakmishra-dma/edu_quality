@@ -45,7 +45,11 @@ const CmapDateList = () => {
 
   const { data: studentsList } = useStudentList();
   const { data: classDetails } = useClassDetails(student);
-  const { data: cmapList, isLoading } = useWeeklyCmapList(
+  const {
+    data: cmapList,
+    isLoading,
+    error,
+  } = useWeeklyCmapList(
     classDetails?.data?.message?.division?.name || "",
     date
   );
@@ -56,8 +60,20 @@ const CmapDateList = () => {
     (s) => s.name === searchParams.get("student")
   )?.first_name;
 
-  if (!cmapList) {
-    return null;
+  if (cmapList?.data?.message == undefined || error) {
+    return (
+      <Text align="center" color="dimmed" weight="bold" my={30}>
+        {isLoading ? "Loading..." : "Something Went Wrong"}
+      </Text>
+    );
+  }
+
+  if (Object.keys(cmapList?.data?.message).length == 0) {
+    return (
+      <Text align="center" color="dimmed" weight="bold" my={30}>
+        {isLoading ? "Loading..." : "No Weekly Update Found"}
+      </Text>
+    );
   }
 
   return (
