@@ -70,9 +70,9 @@ def get_all_cmap_in_range(date, division):
         if subject not in result_hash:
             result_hash[subject] = {unit: [cmap]}
         elif unit not in result_hash[subject]:
-            subject_hash[subject][unit] = [cmap]
+            result_hash[subject][unit] = [cmap]
         elif unit in result_hash[subject]:
-            subject_hash[subject][unit].append(cmap)
+            result_hash[subject][unit].append(cmap)
     return result_hash
 
 
