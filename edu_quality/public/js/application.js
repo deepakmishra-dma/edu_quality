@@ -6,6 +6,31 @@ frappe.ui.form.on("Student Applicant", {
     },
 
     refresh: function (frm) {
+        if (!frm.is_new() && frm.doc.application_status !== "Admitted") {
+
+            frm.add_custom_button(__("Send Web Form Link"), function () {
+                frappe.confirm('Are you sure you want to send Web Form Link?',
+                    () => {
+                       frappe.call({
+                           method: "edu_quality.edu_quality.server_scripts.student_applicant.send_web_form_link",
+                           args: {
+                               student_applicant: frm.doc.name
+                           },
+                           callback: function (r) {
+                               frappe.show_alert({
+                                   message: __('Web Form Link Sent...'),
+                                   indicator: 'green'
+                               });
+                           }
+                       })
+                    }, () => {
+                        
+                    })
+            }).addClass("btn-primary");
+        }
+
+
+
         frm.remove_custom_button("Approve", "Actions")
         frm.remove_custom_button("Enroll")
         if (!frm.is_new() && frm.doc.application_status === "Applied") {
