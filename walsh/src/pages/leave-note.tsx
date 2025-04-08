@@ -1,11 +1,11 @@
-import {Box, Button, Radio, Stack, Sx, Text, Textarea} from "@mantine/core";
-import {useEffect, useMemo, useState} from "react";
-import {useSearchParams} from "react-router-dom";
+import { Box, Button, Radio, Stack, Sx, Text, Textarea } from "@mantine/core";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import useStudentList from "../components/queries/useStudentList.ts";
 import useClassDetails from "../components/queries/useClassDetails.ts";
 import useStudentProfileColor from "../components/hooks/useStudentProfileColor.ts";
-import {IconList} from "@tabler/icons";
-import {DatePicker} from "@mantine/dates";
+import { IconList } from "@tabler/icons";
+import { DatePicker } from "@mantine/dates";
 import useLeaveNote from "../components/queries/useLeaveNoteMutation.ts";
 
 const styling: { [key: string]: (color: string) => Sx } = {
@@ -48,15 +48,15 @@ const LeaveNote = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const searchedStudent = searchParams.get('student')
 
-  const {data: studentsList} = useStudentList()
-  const {data: classDetails} = useClassDetails(selectedStudent)
+  const { data: studentsList } = useStudentList()
+  const { data: classDetails } = useClassDetails(selectedStudent)
 
   const students = useMemo(() => studentsList?.data?.message || [], [studentsList?.data])
 
   useEffect(() => {
     if (selectedStudent) {
       searchParams.set('student', selectedStudent || '')
-      setSearchParams(searchParams, {replace: true})
+      setSearchParams(searchParams, { replace: true })
     }
   }, [selectedStudent])
 
@@ -119,7 +119,7 @@ const LeaveNote = () => {
       setSuccess(false)
   }, [selectedStudent]);
 
-  const {mutateAsync, isLoading} = useLeaveNote()
+  const { mutateAsync, isLoading } = useLeaveNote()
 
   const clearForm = () => {
     setSelectedSubject('')
@@ -163,7 +163,7 @@ const LeaveNote = () => {
             <Box sx={{
               marginTop: isSelected ? 4 : 5,
               borderBottom: isSelected ? '2px solid ' + studentProfileColor : '1px solid #0005'
-            }}/>
+            }} />
           </Box>
         })}
       </Stack>
@@ -216,7 +216,7 @@ const LeaveNote = () => {
                 sx={{
                   textAlign: 'center',
                 }}>
-                {["Leave Note", "Sick Note"].map((label, i) =>
+                {["Absent Note", "Sick Note"].map((label, i) =>
                   <Radio
                     key={i} value={label.toLowerCase().split(" ")[0]}
                     label={label}
@@ -249,7 +249,7 @@ const LeaveNote = () => {
                   setFromDate(date)
                 }}
                 sx={styling.dateSelect(studentProfileColor)}
-                icon={<IconList color={studentProfileColor} stroke={1}/>}
+                icon={<IconList color={studentProfileColor} stroke={1} />}
               />
               <DatePicker
                 placeholder="Pick date"
@@ -260,7 +260,7 @@ const LeaveNote = () => {
                   setToDate(date)
                 }}
                 sx={styling.dateSelect(studentProfileColor)}
-                icon={<IconList color={studentProfileColor} stroke={1}/>}
+                icon={<IconList color={studentProfileColor} stroke={1} />}
               />
               <Textarea
                 placeholder="Your Note"

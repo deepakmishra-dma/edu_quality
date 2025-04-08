@@ -139,7 +139,7 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
             ],
           },
           {
-            label: "Leave / Sick Note",
+            label: "Absent Note",
             icon: IconCalendarOff,
             location: "/leave-note",
           },
