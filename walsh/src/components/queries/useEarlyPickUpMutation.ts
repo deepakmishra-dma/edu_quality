@@ -1,25 +1,26 @@
 import { useCustomMutation } from "@refinedev/core";
 import { useCallback } from "react";
 
-interface LeaveNoteVariables {
+interface EarlyPickUpNoteVariables {
     note: string,
-    status: 'sick' | 'leave',
+    status: 'early_pickup',
     student: string,
-    dates: string[]
+    dates: string[],
+    time: string,
 }
 
 const useEarlyPickUpMutation = () => {
     const { mutate, mutateAsync, ...mutationObjs } = useCustomMutation({
         mutationOptions: {}
     })
-    const mutationFunction = useCallback((variables: LeaveNoteVariables) => {
+    const mutationFunction = useCallback((variables: EarlyPickUpNoteVariables) => {
         return mutate({
             url: '/api/method/edu_quality.public.py.walsh.leave.add_early_pick_up',
             method: 'post',
             values: variables
         })
     }, [mutate])
-    const mutationAsyncFunction = useCallback((variables: LeaveNoteVariables) => {
+    const mutationAsyncFunction = useCallback((variables: EarlyPickUpNoteVariables) => {
         return mutateAsync({
             url: '/api/method/edu_quality.public.py.walsh.leave.add_early_pick_up',
             method: 'post',

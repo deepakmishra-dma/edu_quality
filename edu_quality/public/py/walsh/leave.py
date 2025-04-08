@@ -12,10 +12,11 @@ def add_leave_note(note, status, student, dates):
         "message": "Note Saved",
     }
 
+
 @frappe.whitelist()
-def add_early_pick_up(note, status, student, dates):
+def add_early_pick_up(note, status, student, dates, time):
     for date in dates:
-        mark_entry(student, "early_pick_up" + status, note, date)
+        mark_entry(student, status, note, date, time)
     return {
         "success": True,
         "message": "Note Saved",

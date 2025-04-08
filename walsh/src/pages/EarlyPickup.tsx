@@ -8,7 +8,6 @@ import { IconList } from "@tabler/icons";
 import { DatePicker } from "@mantine/dates";
 import useEarlyPickUpMutation from "../components/queries/useEarlyPickUpMutation.ts";
 
-
 const styling: { [key: string]: (color: string) => Sx } = {
     dateSelect: (color: string) => ({
         margin: 10,
@@ -45,13 +44,16 @@ const EarlyPickup = () => {
     const [note, setNote] = useState<string>('')
     const [sickLeave, setSickLeave] = useState<'sick' | 'leave'>('sick')
     const [success, setSuccess] = useState(false)
-
     const [searchParams, setSearchParams] = useSearchParams()
     const searchedStudent = searchParams.get('student')
 
     const { data: studentsList } = useStudentList()
     const { data: classDetails } = useClassDetails(selectedStudent)
+    const [selectedTime, setSelectedTime] = useState('');
 
+    const handleTimeChange = (event: any) => {
+        setSelectedTime(event.target.value);
+    };
     const students = useMemo(() => studentsList?.data?.message || [], [studentsList?.data])
 
     useEffect(() => {
@@ -60,6 +62,7 @@ const EarlyPickup = () => {
             setSearchParams(searchParams, { replace: true })
         }
     }, [selectedStudent])
+
 
 
     // useEffect(() => {
@@ -130,6 +133,7 @@ const EarlyPickup = () => {
         setNote('')
         setSickLeave('sick')
     }
+
 
     return (
         <Box>
@@ -217,12 +221,25 @@ const EarlyPickup = () => {
                                 placeholder="Pick date"
                                 label="Date"
                                 value={fromDate}
-                                onChange={(date) => {
+                                onChange={(date: any) => {
                                     setFromDate(date)
                                 }}
                                 sx={styling.dateSelect(studentProfileColor)}
                                 icon={<IconList color={studentProfileColor} stroke={1} />}
                             />
+                            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", paddingLeft: "0.7rem", cursor: "pointer", }}
+
+                            >
+                                <label htmlFor="time" style={{ color: studentProfileColor }}>Time:</label>
+                                <input
+                                    type="time"
+                                    id="time"
+                                    style={{ outline: "none", width: "98%", padding: "0.5rem", borderRadius: "5px", border: "1px solid gray", cursor: "pointer" }}
+                                    name="time"
+                                    value={selectedTime}
+                                    onChange={handleTimeChange}
+                                />
+                            </div>
 
                             <Textarea
                                 placeholder="Your Note"
@@ -272,10 +289,13 @@ const EarlyPickup = () => {
                                         student: selectedStudent,
                                         dates: dates,
                                         note: note,
-                                        status: sickLeave
+                                        status: "early_pickup",
+                                        time: selectedTime
                                     }).then(() => {
+                                        setSelectedTime("")
                                         clearForm();
                                         setSuccess(true)
+
                                     })
                                 }}
                             >Save</Button>
