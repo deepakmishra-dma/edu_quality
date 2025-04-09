@@ -219,6 +219,7 @@ const EarlyPickup = () => {
                             }}>For earlier than usual pick up from the school, please enter the following details</Text>
                             <DatePicker
                                 placeholder="Pick date"
+                                withAsterisk
                                 label="Date"
                                 value={fromDate}
                                 onChange={(date: any) => {
@@ -230,7 +231,7 @@ const EarlyPickup = () => {
                             <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", paddingLeft: "0.7rem", cursor: "pointer", }}
 
                             >
-                                <label htmlFor="time" style={{ color: studentProfileColor }}>Time:</label>
+                                <label htmlFor="time" style={{ color: studentProfileColor }}>Time <span style={{ color: "red" }}>*</span></label>
                                 <input
                                     type="time"
                                     id="time"
@@ -246,7 +247,7 @@ const EarlyPickup = () => {
                                 label="Your Note"
                                 value={note}
                                 onChange={(event) => setNote(event.currentTarget.value)}
-                                withAsterisk
+
                                 sx={{
                                     margin: 10,
                                     textAlign: 'left',
