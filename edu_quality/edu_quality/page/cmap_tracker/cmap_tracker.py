@@ -4,6 +4,7 @@ from edu_quality.public.py.utils import check_admin_roles, check_roles
 from frappe.query_builder import Order
 from frappe.query_builder.functions import Cast
 from edu_quality.edu_quality.server_scripts.utils import current_academic_year
+import frappe.utils
 
 
 # edu_quality.edu_quality.page.cmap_tracker.cmap_tracker.get_cmap
@@ -149,6 +150,7 @@ def update(filters, cmap_data):
         updated_data = cmap_data.get(cmap_name)
         division = filters.get("division")
         real_date = updated_data.get("real_date")
+        real_date_updated_on = frappe.utils.get_datetime()
 
         for item in cmap.table_vwbr:
             allow_edit = is_admin or (not item.real_date)
@@ -164,6 +166,8 @@ def update(filters, cmap_data):
                     frappe.db.set_value(
                         "CMAP Assignment", item.name, "real_date", real_date
                     )
+                    # Updating the Real Date for CMAP Consolidated Notification..
+                    frappe.db.set_value('CMAP Assignment',item.name,"real_date_updated_on",real_date_updated_on)
         #             item.real_date = real_date
         #             modified = True
 

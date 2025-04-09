@@ -252,6 +252,7 @@ frappe.ui.form.on("Item Detail", {
     }
 })
 
+
 async function getRandomString(frm) {
     if (!frm.doc.reserved_for_portion_circular) return
 

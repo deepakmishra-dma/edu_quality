@@ -10,6 +10,8 @@ from edu_quality.public.py.utils import check_admin_roles
 import string
 import random
 
+import frappe.utils
+
 # edu_quality.edu_quality.doctype.cmap.cmap
 
 
@@ -27,6 +29,18 @@ class CMAP(Document):
 
     def autoname(self, method=None):
         self.name_func()
+        
+    def before_save(self):
+        doc_before_save = frappe.get_doc(self.doctype, self.name)
+        for original_child in doc_before_save.table_vwbr:    
+            for child in self.table_vwbr:
+                if  child.name == original_child.name and child.real_date and not original_child.get('real_date'):
+                    child.real_date_updated_on = frappe.utils.now_datetime()
+                    break
+                elif child.name == original_child.name and original_child.get('real_date') and child.real_date and frappe.utils.getdate(child.real_date) != frappe.utils.getdate(original_child.get("real_date")):
+                    child.real_date_updated_on = frappe.utils.now_datetime()
+                    break
+                
 
     def before_validate(self, method=None):
 
