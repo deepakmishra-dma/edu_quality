@@ -70,6 +70,8 @@ export const Header: React.FC<HeaderProps> = ({ setNavbarOpen }) => {
             ? "School Calender"
             : location.pathname === "/stared"
             ? "Starred Messages"
+            : location.pathname === "/early-pickup"
+            ? "Early Pick Up"
             : location.pathname === "/leave-note"
             ? "Absent / Sick Note"
             : /^\/notice\/([0-9a-f]+)$/.test(location.pathname)
