@@ -476,4 +476,11 @@ def referal_discount(doc, method=None):
                 
             
    
-    
+@frappe.whitelist()
+def send_web_form_link(student_applicant):
+    doc = frappe.get_doc("Student Applicant", student_applicant)
+    try:
+        from nextai.funnel.custom_trigger import trigger_event
+        trigger_event(doc=doc, event_name="student_applicant_created")
+    except Exception as e:
+        frappe.throw("Chatnext is not installed")
