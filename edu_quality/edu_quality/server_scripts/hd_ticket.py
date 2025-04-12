@@ -110,7 +110,7 @@ def get_communications(ticket: str):
         .run(as_dict=True)
     )
     roles = frappe.get_roles()
-    if "Guardian" in roles:
+    if "Guardian" in roles or 'Student' in roles:
         comm = []
         for c in communications:
             if c.sender and frappe.session.user in c.sender:
