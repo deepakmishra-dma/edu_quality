@@ -111,7 +111,11 @@ def get_communications(ticket: str):
     )
     roles = frappe.get_roles()
     if "Guardian" in roles:
-        communications = [c for c in communications if frappe.session.user in c.recipients]
+        comm = []
+        for c in communications:
+            if c.recipients and frappe.session.user in c.recipients:
+                comm.append(c)
+        communications = comm
     for c in communications:
         c.attachments = get_attachments("Communication", c.name)
         c.user = get_user_info_for_avatar(c.sender)
