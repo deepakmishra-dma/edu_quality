@@ -28,7 +28,7 @@ def get_guardian_emails(student):
     return guardian_emails
 
 
-def send_notification(student_id, subject, notice_id):
+def send_notification(student_id, subject, notice_id="",cmap=False):
     student_guardians = frappe.get_all(
         "Student Guardian",
         filters={'parent': student_id, 'parenttype': 'Student'},
@@ -45,12 +45,21 @@ def send_notification(student_id, subject, notice_id):
             )
             for push_token in push_tokens:
                 url = "https://exp.host/--/api/v2/push/send"
-                payload = json.dumps({
-                    "to": push_token.get("token"),
-                    "title": subject + " - " + student_id,
-                    "data": {"url_path": f"/notice/{notice_id}?student={student_id}"},
-                    # "body": json.dumps({"url_path": f"/notice/{notice_id}?student={student_id}"})
-                })
+                payload = {}
+                if cmap:
+                        payload = json.dumps({
+                        "to": push_token.get("token"),
+                        "title": subject + " - " + student_id,
+                        "data": {"url_path": f"/notice/{notice_id}?student={student_id}"},
+                        # "body": json.dumps({"url_path": f"/notice/{notice_id}?student={student_id}"})
+                    })
+                else:  
+                    payload = json.dumps({
+                        "to": push_token.get("token"),
+                        "title": subject + " - " + student_id,
+                        "data": {"url_path": f"/notice/{notice_id}?student={student_id}"},
+                        # "body": json.dumps({"url_path": f"/notice/{notice_id}?student={student_id}"})
+                    })
                 headers = {"Content-Type": "application/json"}
                 requests.request("POST", url, headers=headers, data=payload)
 
