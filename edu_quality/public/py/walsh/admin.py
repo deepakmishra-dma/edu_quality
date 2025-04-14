@@ -51,6 +51,7 @@ def send_notification(student_id, subject, notice_id="",cmap=False):
                         "to": push_token.get("token"),
                         "title": subject + " - " + student_id,
                         "data": {"url_path": f"/walsh/cmap"},
+
                         # "body": json.dumps({"url_path": f"/notice/{notice_id}?student={student_id}"})
                     })
                 else:  

@@ -339,6 +339,7 @@ def get_product_materials(item_id):
         # unique only
         elif result[material_type] and description not in result[material_type]:
             result[material_type].append(description)
+                   
     return result
 
 

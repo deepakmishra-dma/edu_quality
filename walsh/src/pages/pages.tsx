@@ -15,6 +15,10 @@ import { SchoolCalendar } from "./SchoolCalendar.tsx";
 import { BonafideCertificate } from "./BonafideCertificate.tsx";
 import PortionCircular from "./portion-circular/index.tsx";
 import PortionCircularList from "./portion-circular/list.tsx";
+import DateCmap from "./date-circular/index.tsx";
+import CmapDateList from "./date-circular/list.tsx";
+import EarlyPickup from "./EarlyPickup.tsx";
+
 
 const Pages = () => {
   // const location = useLocation()
@@ -68,6 +72,7 @@ const Pages = () => {
                 <Route path="/archived" element={<NoticeList archivedOnly />} />
                 <Route path="/calendar" element={<SchoolCalendar />} />
                 <Route path="/bonafide" element={<BonafideCertificate />} />
+                <Route path="/early-pickup" element={<EarlyPickup />} />
                 <Route path="/notice/:id" element={<NoticeDetails />} />
                 <Route path="/cmap" element={<Cmap />} />
                 <Route path="/cmap/list" element={<CmapList />} />
@@ -76,6 +81,8 @@ const Pages = () => {
                   path="/portion-circular/list"
                   element={<PortionCircularList />}
                 />
+                   <Route path="/date-circular" element={<DateCmap />} />
+                <Route path="/date-circular/list" element={<CmapDateList />} />
                 <Route path="/leave-note" element={<LeaveNote />} />
                 <Route path="*" element={<ErrorComponent />} />
               </Routes>

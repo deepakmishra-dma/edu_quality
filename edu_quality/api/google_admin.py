@@ -45,7 +45,7 @@ def get_google_user_with_key(email_key):
 
 @frappe.whitelist()
 def create_google_user(
-    email_key, first_name, last_name, recovery_mail, phone_no, school
+    email_key, first_name, last_name, recovery_mail, phone_no, school, org_unit_path=None
 ):
     user_service = get_google_admin_object()
     exception = False
@@ -76,7 +76,7 @@ def create_google_user(
                 "changePasswordAtNextLogin": True,
                 "ipWhitelisted": False,
                 # "recoveryEmail": recovery_mail,
-                "orgUnitPath": f"/{school}/Students",
+                "orgUnitPath": org_unit_path or f"/{school}/Students",
             }
             recovery_mail = (str(recovery_mail) or "feedback@walnutedu.in").strip().lower()
             email_pattern = r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"
