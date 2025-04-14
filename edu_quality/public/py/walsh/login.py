@@ -266,7 +266,7 @@ def register_push_notice(**kwargs):
 
 @frappe.whitelist()
 def logout(push_token=None):
-    remove_push_notification_token(push_token)
+    remove_push_notification_token(push_token,True)
     login_manager = LoginManager()
     login_manager.logout()
     return {
