@@ -232,7 +232,10 @@ scheduler_events = {
         "edu_quality.api.student_application.get_and_schedule_pending_walkouts",
         "edu_quality.overrides_hooks.item.upload_all_imported_to_drive",
     ],
-    "cron": {"0 * * * *": ["edu_quality.tasks.cron"]},
+    "cron": {
+        "0 * * * *": ["edu_quality.tasks.cron"],
+        "0 19 * * *":["edu_quality.tasks.send_bulk_notification_cmap_to_guardian"]
+    },
     "daily": [
         "edu_quality.tasks.time_based",
         "edu_quality.tasks.create_payment_request_before_due_date",
