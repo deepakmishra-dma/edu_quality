@@ -165,16 +165,41 @@ class CustomFees(Fees):
 
     def get_company_splits(self):
         try:
+            entries = []
             fee_advance_entries, fee_advance = get_fee_advance_entries(self)
             update_componant(self, fee_advance)
             student_entries = {}
             fee_entries = {}
             for component in self.components:
                 receivable_account, sales,cost_center,deposit_account = frappe.db.get_value("Company", component.custom_company,["default_receivable_account","default_income_account","cost_center","default_deposit_account"])
-                if receivable_account in student_entries:
-                    income_account = sales 
-                    if "deposit" in str(component.fees_category).lower():
-                        income_account = deposit_account
+                income_account = sales
+                if "deposit" in str(component.fees_category).lower():
+                        entries.append(self.get_gl_dict(
+                                                {
+                                                    "company": component.custom_company,
+                                                    "account": receivable_account,
+                                                    "party_type": "Student",
+                                                    "party": self.student,
+                                                    "against": deposit_account,
+                                                    "debit": component.amount,
+                                                    "debit_in_account_currency": component.amount,
+                                                    "against_voucher": self.name,
+                                                    "against_voucher_type": self.doctype
+                                                },
+                                                item=self,
+                                            ))
+                        entries.append(self.get_gl_dict(
+                                        {
+                                            "company": component.custom_company,
+                                            "account": deposit_account,
+                                            "against": self.student,
+                                            "credit": component.amount,
+                                            "credit_in_account_currency": component.amount,
+                                            "cost_center": cost_center
+                                        },
+                                        item=self,
+                                    ))
+                if income_account in student_entries: 
                     student_entries[receivable_account].debit += component.amount
                     student_entries[receivable_account].debit_in_account_currency += component.amount
                     fee_entries[income_account].credit += component.amount 
@@ -205,7 +230,6 @@ class CustomFees(Fees):
                                     },
                                     item=self,
                                 ))
-            entries = []
             for i in student_entries.values():
                 if int(i.get("debit")) == 0 and int(i.get("credit")) == 0:
                     continue
