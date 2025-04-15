@@ -208,39 +208,7 @@ const LeaveNote = () => {
                 color: studentProfileColor
               }}>Note is saved successfully</Text>
             </> : <>
-              <Radio.Group
-                value={sickLeave}
-                onChange={(a: 'sick' | 'leave') => {
-                  setSickLeave(a)
-                }}
-                sx={{
-                  textAlign: 'center',
-                }}>
-                {["Absent Note", "Sick Note"].map((label, i) =>
-                  <Radio
-                    key={i} value={label.toLowerCase().split(" ")[0]}
-                    label={label}
-                    sx={{
-                      margin: 10,
-                      color: studentProfileColor,
-                      cursor: 'pointer',
-                      '&[data-checked="true"]': {
-                        '.mantine-Radio-radio': {
-                          backgroundColor: studentProfileColor,
-                          borderColor: studentProfileColor,
-                        },
-                      },
-                      '.mantine-Radio-radio': {
-                        cursor: 'pointer',
-                      },
-                      ".mantine-Radio-label": {
-                        color: studentProfileColor,
-                        cursor: 'pointer',
-                      }
-                    }}
-                  />
-                )}
-              </Radio.Group>
+
               <DatePicker
                 placeholder="Pick date"
                 label="From"
