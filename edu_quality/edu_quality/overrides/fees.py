@@ -199,7 +199,7 @@ class CustomFees(Fees):
                                         },
                                         item=self,
                                     ))
-                if income_account in student_entries: 
+                if receivable_account in student_entries: 
                     student_entries[receivable_account].debit += component.amount
                     student_entries[receivable_account].debit_in_account_currency += component.amount
                     fee_entries[income_account].credit += component.amount 
