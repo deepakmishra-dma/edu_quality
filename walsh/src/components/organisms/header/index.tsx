@@ -65,30 +65,32 @@ export const Header: React.FC<HeaderProps> = ({ setNavbarOpen }) => {
           {location.pathname === "/"
             ? "Notices"
             : location.pathname === "/archived"
-              ? "Archived Messages"
-              : location.pathname === "/calendar"
-                ? "School Calender"
-                : location.pathname === "/stared"
-                  ? "Starred Messages"
-                  : location.pathname === "/early-pickup"
-                    ? "Early Pick Up"
-                    : location.pathname === "/leave-note"
-                      ? "Absent Note"
-                      : /^\/notice\/([0-9a-f]+)$/.test(location.pathname)
-                        ? ""
-                        : /^\/cmap$/.test(location.pathname)
-                          ? "Curriculum Updates"
-                          : /^\/cmap\/list$/.test(location.pathname)
-                            ? "Curriculum Updates"
-                            : /^\/portion-circular\/list$/.test(location.pathname)
-                              ? "Portion"
-                              : /^\/portion-circular$/.test(location.pathname)
-                                ? "Portion"
-                                : /^\/date-circular$/.test(location.pathname)
-                                  ? "Weekly Updates"
-                                  : /^\/date-circular\/list$/.test(location.pathname)
-                                    ? "Weekly Updates"
-                                    : ""}
+            ? "Archived Messages"
+            : location.pathname === "/calendar"
+            ? "School Calender"
+            : location.pathname === "/stared"
+            ? "Starred Messages"
+            : location.pathname === "/early-pickup"
+            ? "Early Pick Up"
+            : location.pathname === "/leave-note"
+            ? "Absent Note"
+            : /^\/notice\/([0-9a-f]+)$/.test(location.pathname)
+            ? ""
+            : /^\/cmap$/.test(location.pathname)
+            ? "Curriculum Updates"
+            : /^\/cmap\/list$/.test(location.pathname)
+            ? "Curriculum Updates"
+            : /^\/portion-circular\/list$/.test(location.pathname)
+            ? "Portion"
+            : /^\/portion-circular$/.test(location.pathname)
+            ? "Portion"
+            : /^\/date-circular$/.test(location.pathname)
+            ? "Weekly Updates"
+            : /^\/date-circular\/list$/.test(location.pathname)
+            ? "Weekly Updates"
+            : /^\/result/.test(location.pathname)
+            ? "Result"
+            : ""}
         </Box>
       </Stack>
     </MantineHeader>

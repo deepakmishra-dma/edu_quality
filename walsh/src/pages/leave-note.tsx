@@ -1,4 +1,4 @@
-import { Box, Button, Radio, Stack, Sx, Text, Textarea } from "@mantine/core";
+import { Box, Button, Stack, Sx, Text, Textarea } from "@mantine/core";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import useStudentList from "../components/queries/useStudentList.ts";

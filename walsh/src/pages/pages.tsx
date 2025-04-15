@@ -18,7 +18,7 @@ import PortionCircularList from "./portion-circular/list.tsx";
 import DateCmap from "./date-circular/index.tsx";
 import CmapDateList from "./date-circular/list.tsx";
 import EarlyPickup from "./EarlyPickup.tsx";
-
+import Result from "./result.tsx";
 
 const Pages = () => {
   // const location = useLocation()
@@ -81,7 +81,8 @@ const Pages = () => {
                   path="/portion-circular/list"
                   element={<PortionCircularList />}
                 />
-                   <Route path="/date-circular" element={<DateCmap />} />
+                <Route path="/result" element={<Result />} />
+                <Route path="/date-circular" element={<DateCmap />} />
                 <Route path="/date-circular/list" element={<CmapDateList />} />
                 <Route path="/leave-note" element={<LeaveNote />} />
                 <Route path="*" element={<ErrorComponent />} />
