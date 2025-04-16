@@ -173,6 +173,7 @@ doc_events = {
         ],
         "on_trash": "edu_quality.public.py.fee.remove_program_enrollment",
         "on_update_after_submit": "edu_quality.public.py.fee.update_program_enrollment",
+        "on_cancel": "edu_quality.edu_quality.server_scripts.program_enrollment.on_cancel",
     },
     "Contact": {
         "before_validate": "edu_quality.overrides_hooks.contact.before_validate"
