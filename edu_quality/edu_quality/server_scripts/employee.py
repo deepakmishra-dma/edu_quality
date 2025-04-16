@@ -1,8 +1,8 @@
+import re
 import frappe
 import requests
-from random import randint
 from frappe.utils import today
-from edu_quality.api.google_admin import add_user_to_group, create_google_user
+from edu_quality.api.google_admin import add_user_to_group, get_google_admin_object
 
 
 def after_insert(doc, method=None):
@@ -22,7 +22,7 @@ def after_insert(doc, method=None):
     # Add to relevant groups on google workspace
 
     # Get the google group email
-    group_email = get_google_group_info(doc.designation, info_type="group_email")
+    group_email = get_google_group_info(doc, info_type="group_email")
     if group_email:
         add_user_to_group(doc.company_email, group_email=group_email)
 
@@ -110,10 +110,9 @@ def create_google_user_account(doc):
     """
     org_unit_path = get_google_group_info(doc)
     org_unit_path = f"/{doc.branch}/{org_unit_path}" if org_unit_path else None
-    rno = randint(100, 999)
-    email_key = doc.employee_name.lower().strip().replace(" ", ".") + f"{rno}"
+    email_key = doc.employee_name.lower().strip().replace(" ", ".")
     # Create a Google User
-    res = create_google_user(
+    company_email = create_employee_google_user(
         email_key,
         doc.first_name,
         doc.last_name,
@@ -122,7 +121,7 @@ def create_google_user_account(doc):
         doc.branch,
         org_unit_path=org_unit_path,
     )
-    doc.company_email = res.get("primaryEmail")
+    doc.company_email = company_email
     doc.save()
     doc.reload()
 
@@ -158,3 +157,61 @@ def create_user(emp):
     emp.user_id = user.name
     emp.save()
     emp.reload()
+
+
+def create_employee_google_user(
+    email_key, first_name, last_name, recovery_mail, phone_no, school, org_unit_path=None
+):
+    user_service = get_google_admin_object()
+    
+    existing_user = None
+    for i in range(4):
+        existing_user = get_existing_google_user(email_key)
+        if not existing_user:
+            break
+        email_key += str(i)
+
+    company_email = f"{email_key}@walnutedu.in"
+    
+    if not existing_user:
+        recovery_mail = (str(recovery_mail) or "feedback@walnutedu.in").strip().lower()
+        email_pattern = r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"
+        recovery_mail = "feedback@walnutedu.in" if not re.match(email_pattern, recovery_mail) else recovery_mail
+        
+        new_user = {
+            "primaryEmail": company_email,
+            "name": {
+                "givenName": first_name,
+                "familyName": last_name,
+            },
+            "password": "walnut@12345",
+            "changePasswordAtNextLogin": True,
+            "ipWhitelisted": False,
+            "recoveryEmail": recovery_mail,
+            "orgUnitPath": org_unit_path or f"/{school}/Students",
+        }
+        
+        frappe.log_error("account creating for ", str(new_user))
+        resp = (
+            user_service.users()
+            .insert(
+                body=new_user,
+            )
+            .execute()
+        )
+        frappe.log_error("Account created for ", str(resp))
+        return company_email
+
+
+def get_existing_google_user(email_key):
+    user_service = get_google_admin_object()
+    try:
+        return (
+            user_service.users()
+            .get(
+                userKey=f"{email_key}@walnutedu.in",
+            )
+            .execute()
+        )
+    except:
+        return None
