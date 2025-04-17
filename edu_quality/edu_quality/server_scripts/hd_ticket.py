@@ -227,8 +227,8 @@ def after_insert(doc,method=None):
             student_details = f"<br><br><b>Name: {student_data.get('first_name')}</b>,<br>\nSchool: {student_data.get('school')},<br>\n Class: {student_data.get('program')},<br>\nDivision: {student_data.get('custom_division')},\n<br>Reference Number: {student_data.get('reference_number')},<br>\nStudent Status: {student_data.get('student_status')},<br>\nPrimary Contact: {student_data.get('student_mobile_number')} <br><br>\n\n"
             students_info.append(f"<br>student_details")
             student_reference_number = student_data.get('reference_number')
-            
-            fees_record = frappe.get_all('Fees', filters={'student_reference_number': student_reference_number}, fields=['name', 'fee_schedule', 'fee_structure', 'payment_plan'])
+            student_class = student_data.get('program')
+            fees_record = frappe.get_all('Fees', filters={'student_reference_number': student_reference_number, 'program': student_class}, fields=['name', 'fee_schedule', 'fee_structure', 'payment_plan'])
             if fees_record:
                 fees_info.append(f"<br><br>\n\n<b>Fees Information for {student_data.get('first_name')}:</b>\n")
                 for fee_data in fees_record:
@@ -244,7 +244,7 @@ def after_insert(doc,method=None):
                 payment_entry_info.append(f"\n\n<br><b>Payment Entries for {student_data.get('first_name')}:</b><br>\n")
                 for entry in payment_entries:
                     payment_entry_url = frappe.utils.get_url_to_form("Payment Entry", entry.get('name'))
-                    payment_entry_info.append(f"\n<br><br><b>Payment Entry ID:{entry.get('name')}<b>, URL:<a href={payment_entry_url}</a><br><br>")
+                    payment_entry_info.append(f"\n<br><br><b>Payment Entry ID:{entry.get('name')}<b>, URL:<a href='{payment_entry_url}'>Link</a><br><br>")
 
     guardians = frappe.get_all('Guardian', filters={'email_address': doc.raised_by}, fields=['name', 'first_name', 'last_name', 'mobile_number'])
     if guardians:
@@ -261,7 +261,8 @@ def after_insert(doc,method=None):
                     students_info.append(student_details)
                 
                     student_reference_number = student_data.get('reference_number')
-                    fees_record = frappe.get_all('Fees', filters={'student_reference_number': student_reference_number}, fields=['name', 'fee_schedule', 'fee_structure', 'payment_plan'])
+                    student_class = student_data.get('program')
+                    fees_record = frappe.get_all('Fees', filters={'student_reference_number': student_reference_number, 'program': student_class}, fields=['name', 'fee_schedule', 'fee_structure', 'payment_plan'])
                 
                     if fees_record:
                         fees_info.append(f"\n<br><br><b>Fees Information for {student_data.get('first_name')}:</b>\n")
@@ -279,7 +280,7 @@ def after_insert(doc,method=None):
                         payment_entry_info.append(f"\n\n<br><br><b>Payment Entries for {student_data.get('first_name')}:</b>\n")
                         for entry in payment_entries:
                             payment_entry_url = frappe.utils.get_url_to_form("Payment Entry", entry.get('name'))
-                            payment_entry_info.append(f"\n<br><br><b>Payment Entry ID:{entry.get('name')}<b>, URL:<a href={payment_entry_url}</a><br><br>")
+                            payment_entry_info.append(f"\n<br><br><b>Payment Entry ID:{entry.get('name')}<b>, URL:<a href='{payment_entry_url}'>Link</a><br><br>")
 
     # Fetching previous tickets raised by the user
     previous_tickets = frappe.get_all('HD Ticket', filters={'raised_by': doc.raised_by}, fields=['name', 'subject'])
