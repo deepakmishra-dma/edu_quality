@@ -19,7 +19,11 @@ const DateCmap = () => {
   const searchedStudent = searchParams.get("student");
 
   const { data: studentsList } = useStudentList();
-  const { data: classDetails } = useClassDetails(selectedStudent);
+  const {
+    data: classDetails,
+    error: classError,
+    isFetching: classLoading,
+  } = useClassDetails(selectedStudent);
 
   const students = useMemo(
     () => studentsList?.data?.message || [],
@@ -55,7 +59,12 @@ const DateCmap = () => {
   // }, [selectedSubject, subjectOptions]);
 
   const studentProfileColor = useStudentProfileColor(selectedStudent);
-
+  const notEnrolledInProgram =
+    classLoading ||
+    classError ||
+    !classDetails?.data?.message ||
+    Object.keys(classDetails?.data?.message).length == 0;
+    
   return (
     <Box>
       <Stack
@@ -105,115 +114,121 @@ const DateCmap = () => {
           );
         })}
       </Stack>
-      <Box
-        sx={{
-          border: "1px solid " + studentProfileColor + "77",
-          margin: 30,
-          borderRadius: 10,
-        }}
-      >
-        <Stack
-          sx={{
-            borderBottom: "1px solid " + studentProfileColor + "77",
-            padding: "5px 10px",
-            backgroundColor: studentProfileColor + "22",
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <Text
-            sx={{
-              color: studentProfileColor,
-              fontWeight: "bold",
-            }}
-          >
-            {classDetails?.data?.message?.program.program_name} -{" "}
-            {classDetails?.data?.message?.division.student_group_name}
-          </Text>
-          {students.find((student) => student.name === selectedStudent)
-            ?.reference_number && (
-            <Text
-              sx={{
-                borderRadius: 50,
-                backgroundColor: studentProfileColor + "22",
-                padding: "1px 5px",
-                fontSize: 10,
-                display: "inline-block",
-                height: "1.4em",
-                lineHeight: 1.4,
-                color: studentProfileColor,
-                fontWeight: "bold",
-                letterSpacing: 0.5,
-                textTransform: "uppercase",
-              }}
-            >
-              {
-                students.find((student) => student.name === selectedStudent)
-                  ?.reference_number
-              }
-            </Text>
-          )}
-        </Stack>
+      {notEnrolledInProgram ? (
+        <Text align="center" color="dimmed" weight="bold" my={30}>
+          {classLoading ? "Loading..." : "Not Enrolled in program"}
+        </Text>
+      ) : (
         <Box
           sx={{
-            textAlign: "center",
+            border: "1px solid " + studentProfileColor + "77",
+            margin: 30,
+            borderRadius: 10,
           }}
         >
-          <DateRangePicker
-            value={selectedDateRange}
-            color={studentProfileColor}
-            onChange={(value) => setselectedDateRange(value)}
+          <Stack
             sx={{
-              margin: 10,
-              ".mantine-Select-dropdown": {
-                '.mantine-Select-item[data-hovered="true"]': {
-                  backgroundColor: studentProfileColor,
-                },
-              },
-              ".mantine-Select-input": {
-                color: studentProfileColor,
-                ":active": {
-                  borderColor: studentProfileColor,
-                },
-                ":focus": {
-                  borderColor: studentProfileColor,
-                },
-              },
-              borderRadius: 10,
-              borderColor: studentProfileColor,
-            }}
-            icon={<IconCalendar color={studentProfileColor} stroke={1} />}
-          />
-
-          <Button
-            sx={{
-              marginBottom: 10,
-              marginTop: 10,
-              borderRadius: 10,
-              backgroundColor: studentProfileColor,
-            }}
-            onClick={() => {
-              if (selectedDateRange?.every(Boolean))
-                navigate(
-                  `/date-circular/list?date=${encodeURIComponent(
-                    selectedDateRange
-                      ?.map((value) => {
-                        if (value) {
-                          return format(value, "yyyy-MM-dd");
-                        }
-                        return "";
-                      })
-                      .join(",") || ""
-                  )}
-                  &student=${encodeURIComponent(selectedStudent || "")}`
-                );
+              borderBottom: "1px solid " + studentProfileColor + "77",
+              padding: "5px 10px",
+              backgroundColor: studentProfileColor + "22",
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
             }}
           >
-            Show Curriculum
-          </Button>
+            <Text
+              sx={{
+                color: studentProfileColor,
+                fontWeight: "bold",
+              }}
+            >
+              {classDetails?.data?.message?.program?.program_name} -{" "}
+              {classDetails?.data?.message?.division?.student_group_name}
+            </Text>
+            {students.find((student) => student.name === selectedStudent)
+              ?.reference_number && (
+              <Text
+                sx={{
+                  borderRadius: 50,
+                  backgroundColor: studentProfileColor + "22",
+                  padding: "1px 5px",
+                  fontSize: 10,
+                  display: "inline-block",
+                  height: "1.4em",
+                  lineHeight: 1.4,
+                  color: studentProfileColor,
+                  fontWeight: "bold",
+                  letterSpacing: 0.5,
+                  textTransform: "uppercase",
+                }}
+              >
+                {
+                  students.find((student) => student.name === selectedStudent)
+                    ?.reference_number
+                }
+              </Text>
+            )}
+          </Stack>
+          <Box
+            sx={{
+              textAlign: "center",
+            }}
+          >
+            <DateRangePicker
+              value={selectedDateRange}
+              color={studentProfileColor}
+              onChange={(value) => setselectedDateRange(value)}
+              sx={{
+                margin: 10,
+                ".mantine-Select-dropdown": {
+                  '.mantine-Select-item[data-hovered="true"]': {
+                    backgroundColor: studentProfileColor,
+                  },
+                },
+                ".mantine-Select-input": {
+                  color: studentProfileColor,
+                  ":active": {
+                    borderColor: studentProfileColor,
+                  },
+                  ":focus": {
+                    borderColor: studentProfileColor,
+                  },
+                },
+                borderRadius: 10,
+                borderColor: studentProfileColor,
+              }}
+              icon={<IconCalendar color={studentProfileColor} stroke={1} />}
+            />
+
+            <Button
+              sx={{
+                marginBottom: 10,
+                marginTop: 10,
+                borderRadius: 10,
+                backgroundColor: studentProfileColor,
+              }}
+              onClick={() => {
+                if (selectedDateRange?.every(Boolean))
+                  navigate(
+                    `/date-circular/list?date=${encodeURIComponent(
+                      selectedDateRange
+                        ?.map((value) => {
+                          if (value) {
+                            return format(value, "yyyy-MM-dd");
+                          }
+                          return "";
+                        })
+                        .join(",") || ""
+                    )}
+                  &student=${encodeURIComponent(selectedStudent || "")}`
+                  );
+              }}
+            >
+              Show Curriculum
+            </Button>
+          </Box>
         </Box>
-      </Box>
+      )}
     </Box>
   );
 };

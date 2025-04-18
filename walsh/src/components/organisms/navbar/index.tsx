@@ -16,7 +16,7 @@ import {
   IconStack2,
   IconStar,
   IconCalendar,
-  IconFileDescription,
+  // IconFileDescription,
   // IconPrinter,
 } from "@tabler/icons";
 import { IconClock } from "@tabler/icons-react";
@@ -161,11 +161,11 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
             icon: IconArchive,
             location: "/archived",
           },
-          {
-            label: "Result",
-            icon: IconFileDescription,
-            location: "/result",
-          },
+          // {
+          //   label: "Result",
+          //   icon: IconFileDescription,
+          //   location: "/result",
+          // },
           // {
           //   label: "Request Bonafide Certificate",
           //   icon: IconPrinter,
