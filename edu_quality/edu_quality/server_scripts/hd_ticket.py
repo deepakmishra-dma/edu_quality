@@ -253,11 +253,11 @@ def after_insert(doc,method=None):
             matching_students = []
             student_guardians = frappe.get_all('Student Guardian', filters={'guardian': guardian_name}, fields=['parent'])
             if student_guardians:
-                matching_students = frappe.get_all('Student', filters={'name': ('in', [sg['parent'] for sg in student_guardians])}, fields=['name', 'first_name','school', 'program', 'custom_division', 'reference_number', 'student_status', 'student_mobile_number'])
-        
+                matching_students = frappe.get_all('Student', filters={'name': ('in', [sg['parent'] for sg in student_guardians])}, 				fields=['name', 'first_name','school', 'program', 'custom_division', 'reference_number', 'student_status', 					'student_mobile_number'])
+
             if matching_students:
                 for student_data in matching_students:
-                    student_details = f"<br><br><b>Name: {student_data.get('first_name')}</b>,\n<br>School: {student_data.get('school')},\n<br>Class: {student_data.get('program')},<br>Division: {student_data.get('custom_division')},\n<br>Reference Number: {student_data.get('reference_number')},\n<br>Student Status: {student_data.get('student_status')},\n<br>Primary Contact: {student_data.get('student_mobile_number')} \n\n"
+                    student_details = f"Name: {student_data.get('first_name')},\nSchool: {student_data.get('school')},\nClass: 						{student_data.get('program')},Division: {student_data.get('custom_division')},\nReference Number: 					{student_data.get('reference_number')},\nStudent Status: {student_data.get('student_status')},\nPrimary 				Contact: {student_data.get('student_mobile_number')} \n\n"
                     students_info.append(student_details)
                 
                     student_reference_number = student_data.get('reference_number')
@@ -305,4 +305,7 @@ def after_insert(doc,method=None):
     if full_text:
         make(doctype="HD Ticket", name=doc.name, subject="Student Information", content=full_text,communication_type="Communication")
     doc.reload()
+    if doc.description:
+        make(doctype="HD Ticket", name=doc.name, subject="Student Information", content=doc.description,communication_type="Communication")
+
 
