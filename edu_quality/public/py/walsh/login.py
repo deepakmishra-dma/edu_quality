@@ -65,9 +65,12 @@ def create_or_get_contact(wa_phone_number, contact_name):
 
 
 def send_otp_to_whatsapp(wa_phone_no, otp):
-    contact = create_or_get_contact(wa_phone_no, "walsh:" + str(wa_phone_no))
-    template_data = [{"type": "text", "text": f"{otp}"}]
-    send_templated_message(contact.name, "walsh_new_adm_login", json.dumps(template_data))
+    try:
+        contact = create_or_get_contact(wa_phone_no, "walsh:" + str(wa_phone_no))
+        template_data = [{"type": "text", "text": f"{otp}"}]
+        send_templated_message(contact.name, "walsh_new_adm_login", json.dumps(template_data))
+    except Exception as e:
+        pass
 
 
 def send_otp_to_sms(full_phone_no, otp):
