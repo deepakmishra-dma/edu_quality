@@ -1,5 +1,7 @@
 import frappe
 from datetime import datetime
+from frappe.core.doctype.communication.email import make
+
 
 
 def cron():
@@ -77,3 +79,26 @@ def update_academic_year():
     frappe.enqueue(
         "edu_quality.edu_quality.server_scripts.utils.update_academic_year",
     )
+
+
+def hourly():
+    add_ticket_comment() 
+
+
+def add_ticket_comment():
+    query = """
+            SELECT name, description
+                    FROM `tabHD Ticket`
+                    WHERE description IS NOT NULL
+                    AND EXISTS (
+                        SELECT 1
+                        FROM `tabCommunication`
+                        WHERE reference_doctype = 'HD Ticket'
+                        AND reference_name = `tabHD Ticket`.name
+                    )
+                    LIMIT 2500;
+            """
+    tickets = frappe.db.sql(query, as_dict=True)
+    for ticket in ticket:
+        make(doctype="HD Ticket", name=ticket.name, subject="Student Information", content=ticket.description,communication_type="Communication")
+

@@ -230,6 +230,9 @@ scheduler_events = {
         "edu_quality.overrides_hooks.item.upload_all_imported_to_drive",
     ],
     "cron": {"0 * * * *": ["edu_quality.tasks.cron"]},
+    "hourly": [
+        edu_quality.tasks.hourly,
+    ]
     "daily": [
         "edu_quality.tasks.time_based",
         "edu_quality.tasks.create_payment_request_before_due_date",
