@@ -231,7 +231,7 @@ scheduler_events = {
     ],
     "cron": {"0 * * * *": ["edu_quality.tasks.cron"]},
     "hourly": [
-        edu_quality.tasks.hourly,
+        "edu_quality.tasks.hourly",
     ],
     "daily": [
         "edu_quality.tasks.time_based",
