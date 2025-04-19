@@ -99,6 +99,6 @@ def add_ticket_comment():
                     LIMIT 2500;
             """
     tickets = frappe.db.sql(query, as_dict=True)
-    for ticket in ticket:
+    for ticket in tickets:
         make(doctype="HD Ticket", name=ticket.name, subject="Student Information", content=ticket.description,communication_type="Communication")
 
