@@ -27,7 +27,25 @@ def get_columns():
             "options": "School",
             "width": 200,
         },
-
+        {
+            "fieldname": "subject",
+            "label": "Subject",
+            "fieldtype": "Link",
+            "options": "Course",
+            "width": 200,
+        },
+        {
+            "fieldname": "period",
+            "label": "Period",
+            "fieldtype": "Data",
+            "width": 200,
+        },
+        {
+            "fieldname": "unit",
+            "label": "Unit",
+            "fieldtype": "Data",
+            "width": 200,
+        },
     ]
     return columns
 
