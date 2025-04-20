@@ -27,27 +27,7 @@ def get_columns():
             "options": "School",
             "width": 200,
         },
-        {
-            "fieldname": "subject",
-            "label": "Subject",
-            "fieldtype": "Link",
-            "options": "Course",
-            "width": 200,
-        },
-         {
-            "fieldname": "period",
-            "label": "Period",
-            "fieldtype": "Data",
-        
-            "width": 200,
-        },
-         {
-            "fieldname": "unit",
-            "label": "Unit",
-            "fieldtype": "Data",
-       
-            "width": 200,
-        },
+
     ]
     return columns
 
@@ -78,7 +58,12 @@ def get_data(filters):
             (cmap_table.academic_year == academic_year)
             & (cmap_assign_table.school == school)
         )
-        .select(cmap_assign_table.division)
+        .select(
+            cmap_assign_table.division,
+            cmap_table.subject,
+            cmap_table.period,
+            cmap_table.unit,
+        )
     )
 
     final_query = (
