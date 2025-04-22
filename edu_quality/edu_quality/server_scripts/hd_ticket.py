@@ -305,7 +305,5 @@ def after_insert(doc,method=None):
     if full_text:
         make(doctype="HD Ticket", name=doc.name, subject="Student Information", content=full_text,communication_type="Communication")
     doc.reload()
-    if doc.description:
-        make(doctype="HD Ticket", name=doc.name, subject="Student Information", content=doc.description,communication_type="Communication")
 
 
