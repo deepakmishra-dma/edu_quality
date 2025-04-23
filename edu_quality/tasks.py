@@ -142,7 +142,7 @@ def send_bulk_notification_cmap_to_guardian():
     cmaps_assignees = frappe.db.sql(sql_query,{ 'academic_year' : current_academic_year,'last_day_7pm':last_day_7pm,'today_7pm':today_7pm},as_dict=1)
     for rec in cmaps_assignees:
         student_ids = get_student_ids_by_division(rec.get('division'))
-        rec['student_ids'] = student_ids
+        rec['student_ids'] = list(set(student_ids))
         notification_handler(rec)
  
 
