@@ -356,7 +356,7 @@ const EarlyPickup = () => {
                     backgroundColor: studentProfileColor,
                   }}
                   onClick={() => {
-                    if (!fromDate || !note || !sickLeave) return;
+                    if (!fromDate || !sickLeave) return;
                     const dates = [];
                     const from = new Date(fromDate);
                     const to = new Date(from);
