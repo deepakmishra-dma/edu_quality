@@ -14,7 +14,7 @@ def add_leave_note(note, status, student, dates):
 
 
 @frappe.whitelist()
-def add_early_pick_up(note, status, student, dates, time):
+def add_early_pick_up(status, student, dates, time, note=None):
     for date in dates:
         mark_entry(student, status, note, date, time)
     return {
