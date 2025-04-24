@@ -1,4 +1,5 @@
 from helpdesk.helpdesk.doctype.hd_ticket.hd_ticket import HDTicket
+import frappe
 
 
 class CustomHDTicket(HDTicket):
