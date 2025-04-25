@@ -11,6 +11,9 @@ from edu_quality.public.py.discount import (
 )
 
 from edu_quality.public.py.payment_request import update_payment_request_after_discount
+from edu_quality.common.utils.notification.notification import (
+    create_notification_log_for_counselor,
+)
 from frappe.auth import LoginManager
 
 
@@ -199,6 +202,7 @@ def update_guardian_details(doc):
 def on_update(doc,method=None):
     set_guardian_permissions(doc)
     update_guardian_details(doc)
+    send_completion_notification(doc)
 
 
 def generate_hash(val):
@@ -490,3 +494,13 @@ def send_web_form_link(student_applicant):
         trigger_event(doc=doc, event_name="student_applicant_created")
     except Exception as e:
         frappe.throw("Chatnext is not installed")
+
+
+def send_completion_notification(doc):
+    if "Guardian" in frappe.get_roles(frappe.session.user):
+        try:
+            from nextai.funnel.custom_trigger import trigger_event
+            trigger_event(doc=doc, event_name="student_applicant_completion")
+        except Exception as e:
+            frappe.throw("Chatnext is not installed")
+        create_notification_log_for_counselor(doc)
