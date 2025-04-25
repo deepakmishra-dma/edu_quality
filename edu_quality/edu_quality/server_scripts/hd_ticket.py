@@ -225,7 +225,7 @@ def after_insert(doc,method=None):
     if students:
         for student_data in students:
             student_details = f"<br><br><b>Name: {student_data.get('first_name')}</b>,<br>\nSchool: {student_data.get('school')},<br>\n Class: {student_data.get('program')},<br>\nDivision: {student_data.get('custom_division')},\n<br>Reference Number: {student_data.get('reference_number')},<br>\nStudent Status: {student_data.get('student_status')},<br>\nPrimary Contact: {student_data.get('student_mobile_number')} <br><br>\n\n"
-            students_info.append(f"<br>student_details")
+            students_info.append("student_details")
             student_reference_number = student_data.get('reference_number')
             student_class = student_data.get('program')
             fees_record = frappe.get_all('Fees', filters={'student_reference_number': student_reference_number, 'program': student_class}, fields=['name', 'fee_schedule', 'fee_structure', 'payment_plan'])
