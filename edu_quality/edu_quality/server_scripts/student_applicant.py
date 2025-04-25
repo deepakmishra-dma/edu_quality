@@ -78,6 +78,8 @@ def update_guardian_details(doc):
                 guardian_doc.address_line_2  = doc.address_line_2
                 guardian_doc.city  = doc.city
                 guardian_doc.pincode  = doc.pincode
+                guardian_doc.facebook_handle = doc.custom_fathers_facebook_handle
+                guardian_doc.instagram_handle = doc.custom_fathers_instagram_handle
                 guardian_doc.save(ignore_permissions=True)
             elif guardian.relation == 'Mother':
                 mother_updated = 1
@@ -101,6 +103,8 @@ def update_guardian_details(doc):
                 guardian_doc.address_line_2  = doc.address_line_2
                 guardian_doc.city  = doc.city
                 guardian_doc.pincode  = doc.pincode
+                guardian_doc.facebook_handle = doc.custom_mothers_facebook_handle
+                guardian_doc.instagram_handle = doc.custom_mothers_instagram_handle
                 guardian_doc.save(ignore_permissions=True)
             elif guardian.relation == 'Guardian':
                 guardian_updated = 1
@@ -147,6 +151,8 @@ def update_guardian_details(doc):
             guardian_doc.address_line_2  = doc.address_line_2
             guardian_doc.city  = doc.city
             guardian_doc.pincode  = doc.pincode
+            guardian_doc.facebook_handle = doc.custom_mothers_facebook_handle
+            guardian_doc.instagram_handle = doc.custom_mothers_instagram_handle
             guardian_doc.save(ignore_permissions=True)
             doc.append('guardians', {
                 'guardian': guardian_doc.name,
