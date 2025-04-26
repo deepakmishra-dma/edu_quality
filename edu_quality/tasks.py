@@ -1,7 +1,8 @@
 import frappe
 from datetime import datetime,timedelta
 from edu_quality.public.py.walsh.admin import send_notification
-
+import requests
+import json
 
 
 def cron():
@@ -147,10 +148,42 @@ def send_bulk_notification_cmap_to_guardian():
  
 
 def notification_handler(division_data):
-    for student in division_data.get('student_ids'):
-        send_notification(student_id=student,subject="Time to check your curriculum updates! :)")    
-              
+    # for student in division_data.get('student_ids'):
+    #     send_notification(student_id=student,subject="Time to check your curriculum updates! :)") 
+    student_ids = tuple(division_data.get('student_ids'))
+    guardian_details = frappe.db.sql("""
+        SELECT gs.guardian as name,g.user from `tabStudent Guardian` gs INNER JOIN `tabGuardian` g
+        ON g.name = gs.guardian
+        where gs.parent IN %(students)s
+    """, {'students': student_ids},as_dict=1)
     
+    final_guardian_list = {}
     
-     
-    
+    if len(guardian_details) > 0:
+        for i in guardian_details:
+            if i.name not in final_guardian_list:
+                final_guardian_list[i.name] = i
+                
+    if final_guardian_list:
+        for guardian_name, guardian_data in final_guardian_list.items():
+            send_notification_custom(subject="Time to check your curriculum updates! :)", guardian=guardian_data)
+
+
+def send_notification_custom(subject, guardian):
+    user = guardian.get("user")
+    if user:
+        push_tokens = frappe.get_all(
+            "Mobile Push Token",
+            filters={"user_id": user},
+            fields=["token"]
+        )
+        for push_token in push_tokens:
+            url = "https://exp.host/--/api/v2/push/send"               
+            payload = json.dumps({
+            "to": push_token.get("token"),
+            "title": subject,
+            "data": {"url_path": f"/cmap/"},
+            # "body": json.dumps({"url_path": f"/notice/{notice_id}?student={student_id}"})
+            })
+            headers = {"Content-Type": "application/json"}
+            requests.request("POST", url, headers=headers, data=payload)    
