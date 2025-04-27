@@ -121,6 +121,7 @@ def get_datetime_range():
 def send_bulk_notification_cmap_to_guardian():
     current_academic_year = frappe.db.get_value('Academic Year',filters={'custom_current_academic_year': 1})
     last_day_7pm, today_7pm = get_datetime_range()
+    print(last_day_7pm,today_7pm)
     sql_query = """
         SELECT
             cmapa.parent,
@@ -141,34 +142,37 @@ def send_bulk_notification_cmap_to_guardian():
             AND cmap.academic_year = %(academic_year)s
     """
     cmaps_assignees = frappe.db.sql(sql_query,{ 'academic_year' : current_academic_year,'last_day_7pm':last_day_7pm,'today_7pm':today_7pm},as_dict=1)
+    all_student_list = []
     for rec in cmaps_assignees:
         student_ids = get_student_ids_by_division(rec.get('division'))
         rec['student_ids'] = list(set(student_ids))
-        notification_handler(rec)
+        all_student_list.extend(rec['student_ids'])
+    notification_handler(list(set(all_student_list)))
  
 
-def notification_handler(division_data):
+def notification_handler(student_data):
     # for student in division_data.get('student_ids'):
     #     send_notification(student_id=student,subject="Time to check your curriculum updates! :)") 
-    student_ids = tuple(division_data.get('student_ids'))
-    guardian_details = frappe.db.sql(
-        """SELECT gs.guardian as name, g.user
-        FROM `tabStudent Guardian` gs
-        INNER JOIN `tabGuardian` g ON g.name = gs.guardian
-        WHERE gs.parent IN %(students)s""", 
-        {'students': student_ids}, as_dict=1)
-
-    
-    final_guardian_list = {}
-    
-    if len(guardian_details) > 0:
-        for i in guardian_details:
-            if i.name not in final_guardian_list:
-                final_guardian_list[i.name] = i
-                
-    if final_guardian_list:
-        for guardian_name, guardian_data in final_guardian_list.items():
-            send_notification_custom(subject="Time to check your curriculum updates! :)", guardian=guardian_data)
+    student_ids = tuple(student_data)
+    if len(student_ids):
+        guardian_details = frappe.db.sql(
+            """SELECT gs.guardian as name, g.user
+            FROM `tabStudent Guardian` gs
+            INNER JOIN `tabGuardian` g ON g.name = gs.guardian
+            WHERE gs.parent IN %(students)s """, 
+            {'students': student_ids}, as_dict=1)
+        print(guardian_details)
+        
+        final_guardian_list = {}
+        
+        if len(guardian_details) > 0:
+            for i in guardian_details:
+                if i.name not in final_guardian_list:
+                    final_guardian_list[i.name] = i
+                    
+        if final_guardian_list:
+            for guardian_name, guardian_data in final_guardian_list.items():
+                send_notification_custom(subject="Time to check your curriculum updates! :)", guardian=guardian_data)
 
 
 def send_notification_custom(subject, guardian):
