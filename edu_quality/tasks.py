@@ -151,11 +151,13 @@ def notification_handler(division_data):
     # for student in division_data.get('student_ids'):
     #     send_notification(student_id=student,subject="Time to check your curriculum updates! :)") 
     student_ids = tuple(division_data.get('student_ids'))
-    guardian_details = frappe.db.sql("""
-        SELECT gs.guardian as name,g.user from `tabStudent Guardian` gs INNER JOIN `tabGuardian` g
-        ON g.name = gs.guardian
-        where gs.parent IN %(students)s
-    """, {'students': student_ids},as_dict=1)
+    guardian_details = frappe.db.sql(
+        """SELECT gs.guardian as name, g.user
+        FROM `tabStudent Guardian` gs
+        INNER JOIN `tabGuardian` g ON g.name = gs.guardian
+        WHERE gs.parent IN %(students)s""", 
+        {'students': student_ids}, as_dict=1)
+
     
     final_guardian_list = {}
     
