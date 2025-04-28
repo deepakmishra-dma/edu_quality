@@ -189,7 +189,6 @@ def get_undertaking_template(doc=None, is_deposit=False, fee=None):
         class_name, academic_year, student, school = frappe.get_value(
             doctype, docname, ["program", "academic_year", "student","custom_school"]
         )
-    frappe.logger("ss").exception(school)
     if not frappe.get_value("School", school,"custom_require_otp_for_accepting_rules_and_regulations"):
         return None
     status = is_old_student(student, academic_year)
@@ -240,7 +239,7 @@ def get_submitted_undertaking(payment_request):
     student = payment_request.party
     doctype = payment_request.reference_doctype
     docname = payment_request.reference_name
-    payment_term = payment_request.reference_doctype
+    payment_term = payment_request.payment_term
     if doctype == "Fees":
         class_name, school = frappe.get_value("Fees", docname, ["program","custom_school"])
     elif doctype == "Fee Advance":
