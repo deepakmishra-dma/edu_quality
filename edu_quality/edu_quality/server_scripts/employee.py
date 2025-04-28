@@ -153,6 +153,9 @@ def create_user(emp):
             "bio": emp.bio,
         }
     )
+    user.append("roles", {
+        "role": emp.role
+    })
     user.insert()
     emp.user_id = user.name
     emp.save()
