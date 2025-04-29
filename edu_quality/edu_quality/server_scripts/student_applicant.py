@@ -498,6 +498,7 @@ def send_web_form_link(student_applicant):
 
 def send_completion_notification(doc):
     if "Guardian" in frappe.get_roles(frappe.session.user):
+        doc.is_saved = 1
         try:
             from nextai.funnel.custom_trigger import trigger_event
             trigger_event(doc=doc, event_name="student_applicant_completion")
