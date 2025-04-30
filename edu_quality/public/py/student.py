@@ -193,6 +193,7 @@ def get_reference(program):
 
 
 def update_student_group(p_e_doc, fee_structure=None):
+    return
     try:
         student_group = frappe.get_value(
             "Program Enrollment", {"name": p_e_doc, "docstatus": 1}, "student_group"
