@@ -70,7 +70,8 @@ def get_breakup(fees,term):
 def get_payment_details(**kwargs):
     payment_request = frappe.get_value("Payment Request",{'payment_hash': kwargs.get('doc')})
     payment_request = frappe.get_doc("Payment Request",payment_request)
-    if payment_request.docstatus == 2:
+
+    if payment_request.docstatus == 2: #cancelled to intitated redirect
         if frappe.db.exists("Payment Request",{
             "reference_name":payment_request.reference_name,
             "payment_term":payment_request.payment_term,
@@ -83,6 +84,11 @@ def get_payment_details(**kwargs):
                 },"payment_hash")
                 return {'redirect': frappe.utils.get_url()+"/payment?payment_request="+request}
         return frappe.throw("The payment link is invalidated or cancelled! Please check email for new link or contact the school!")
+
+    #redirect to deposit if present
+    if frappe.db.exists("Payment Request",[["Payment Request","status","=","Initiated"],["Payment Request","payment_term","is","not set"],["Payment Request","reference_name","=",payment_request.reference_name]]):
+        request = frappe.db.get_value("Payment Request",filters=[["Payment Request","status","=","Initiated"],["Payment Request","payment_term","is","not set"],["Payment Request","reference_name","=",payment_request.reference_name]],field=["payment_hash"])
+        return {'redirect': frappe.utils.get_url()+"/payment?payment_request="+request}
     fees = frappe.get_doc(payment_request.reference_doctype, payment_request.reference_name)
     breakup = []
     if payment_request.payment_term:
