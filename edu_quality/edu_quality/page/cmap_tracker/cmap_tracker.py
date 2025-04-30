@@ -84,7 +84,7 @@ def get_cmap(**filters):
             (cmap_assign_table.teacher == teacher) & div_condition
         )
     else:
-        filtered_assigned_query.where(div_condition)
+        filtered_assigned_query = filtered_assigned_query.where(div_condition)
 
     filtered_assigned_query = filtered_assigned_query.orderby(
         Cast(filtered_cmap_query.period, "UNSIGNED"), Order.asc
