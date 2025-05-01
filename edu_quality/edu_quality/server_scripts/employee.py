@@ -218,3 +218,16 @@ def get_existing_google_user(email_key):
         )
     except:
         return None
+    
+    
+@frappe.whitelist()
+def migrate_employee_data(employee, new_employee):
+    """
+    Migrate the employee data from one employee to another
+    """
+    employee = frappe.get_doc("Employee", employee)
+    new_employee = frappe.get_doc("Employee", new_employee)
+    employee.is_migrated = 1
+    employee.save()
+    # Add logic to migrate the data here
+    frappe.response["message"] = "Employee data migrated successfully"

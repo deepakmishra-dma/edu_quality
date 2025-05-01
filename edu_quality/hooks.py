@@ -46,6 +46,7 @@ doctype_js = {
     "Instructor": "public/js/instructor.js",
     "Payment Request": "public/js/payment_request.js",
     "Program Enrollment": "public/js/program_enrollment.js",
+    "Employee": "public/js/employee.js",
 }
 doctype_list_js = {
     "Student Applicant": "public/js/list/student_applicant_list.js",
