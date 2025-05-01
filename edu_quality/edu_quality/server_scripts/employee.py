@@ -138,6 +138,8 @@ def create_user(emp):
 
     first_name = employee_name[0]
 
+    username = emp.company_email.split("@")[0]
+
     user = frappe.new_doc("User")
     user.update(
         {
@@ -151,8 +153,12 @@ def create_user(emp):
             "birth_date": emp.date_of_birth,
             "phone": emp.cell_number,
             "bio": emp.bio,
+            "username": username,
         }
     )
+    user.append("roles", {
+        "role": emp.role
+    })
     user.insert()
     emp.user_id = user.name
     emp.save()
@@ -160,7 +166,7 @@ def create_user(emp):
 
 
 def create_employee_google_user(
-    email_key, first_name, last_name, recovery_mail, phone_no, school, org_unit_path=None
+    email_key, first_name, last_name, recovery_mail, org_unit_path=None
 ):
     user_service = get_google_admin_object()
     
@@ -188,7 +194,7 @@ def create_employee_google_user(
             "changePasswordAtNextLogin": True,
             "ipWhitelisted": False,
             "recoveryEmail": recovery_mail,
-            "orgUnitPath": org_unit_path or f"/{school}/Students",
+            "orgUnitPath": org_unit_path,
         }
         
         frappe.log_error("account creating for ", str(new_user))
@@ -215,3 +221,16 @@ def get_existing_google_user(email_key):
         )
     except:
         return None
+    
+    
+@frappe.whitelist()
+def migrate_employee_data(employee, new_employee):
+    """
+    Migrate the employee data from one employee to another
+    """
+    employee = frappe.get_doc("Employee", employee)
+    new_employee = frappe.get_doc("Employee", new_employee)
+    employee.is_migrated = 1
+    employee.save()
+    # Add logic to migrate the data here
+    frappe.response["message"] = "Employee data migrated successfully"
