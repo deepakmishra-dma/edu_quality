@@ -138,6 +138,8 @@ def create_user(emp):
 
     first_name = employee_name[0]
 
+    username = emp.company_email.split("@")[0]
+
     user = frappe.new_doc("User")
     user.update(
         {
@@ -151,6 +153,7 @@ def create_user(emp):
             "birth_date": emp.date_of_birth,
             "phone": emp.cell_number,
             "bio": emp.bio,
+            "username": username,
         }
     )
     user.append("roles", {
@@ -163,7 +166,7 @@ def create_user(emp):
 
 
 def create_employee_google_user(
-    email_key, first_name, last_name, recovery_mail, phone_no, school, org_unit_path=None
+    email_key, first_name, last_name, recovery_mail, org_unit_path=None
 ):
     user_service = get_google_admin_object()
     
@@ -191,7 +194,7 @@ def create_employee_google_user(
             "changePasswordAtNextLogin": True,
             "ipWhitelisted": False,
             "recoveryEmail": recovery_mail,
-            "orgUnitPath": org_unit_path or f"/{school}/Students",
+            "orgUnitPath": org_unit_path,
         }
         
         frappe.log_error("account creating for ", str(new_user))
