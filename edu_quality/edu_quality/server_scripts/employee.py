@@ -117,8 +117,6 @@ def create_google_user_account(doc):
         doc.first_name,
         doc.last_name,
         doc.personal_email,
-        doc.cell_number,
-        doc.branch,
         org_unit_path=org_unit_path,
     )
     doc.company_email = company_email
