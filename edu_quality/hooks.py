@@ -224,6 +224,7 @@ doc_events = {
     },
     "Employee": {
         "after_insert": "edu_quality.edu_quality.server_scripts.employee.after_insert",
+        "on_update": "edu_quality.edu_quality.server_scripts.employee.on_update",
     },
     "Student Group": {
         "on_update": "edu_quality.overrides_hooks.student_group.on_update",
