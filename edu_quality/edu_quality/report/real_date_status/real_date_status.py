@@ -57,20 +57,26 @@ def get_data(filters):
     class_type = filters.get("class")
     subject = filters.get("subject")
     school = filters.get("school")
-
+    show_blank = filters.get("show_blank")
     if not academic_year:
         return []
+
+    condition_query = (
+        (cmap_table.academic_year == academic_year)
+        & (cmap_assign_table.school == school)
+        & (cmap_table["class"] == class_type)
+        & (cmap_table.subject == subject)
+        & (cmap_table.reserved_for_portion_circular == 0)
+    )
+
+    if not show_blank:
+        condition_query = condition_query & cmap_assign_table.real_date.isnotnull()
 
     cmap_query = (
         frappe.qb.from_(cmap_table)
         .inner_join(cmap_assign_table)
         .on(cmap_assign_table.parent == cmap_table.name)
-        .where(
-            (cmap_table.academic_year == academic_year)
-            & (cmap_assign_table.school == school)
-            & (cmap_table["class"] == class_type)
-            & (cmap_table.subject == subject)
-        )
+        .where(condition_query)
         .select(
             cmap_assign_table.real_date,
             cmap_assign_table.teacher,
