@@ -5,5 +5,5 @@
 from frappe.tests.utils import FrappeTestCase
 
 
-class TestBirthdayCelebration(FrappeTestCase):
+class TestBirthdayCard(FrappeTestCase):
 	pass
