@@ -40,6 +40,10 @@ def after_insert(doc, method=None):
         )
 
 
+def on_update(doc, method=None):
+    add_to_email_group(doc)
+
+
 def create_employee_in_greathr(doc):
     """
     Create an employee in Greythr
@@ -78,6 +82,7 @@ def add_to_email_group(doc):
     """
     Add the employee to the email group in ERPNext
     """
+    remove_from_email_group(doc)
     for eg in doc.email_groups:
         email_group = frappe.get_doc(
             {
@@ -89,14 +94,21 @@ def add_to_email_group(doc):
         email_group.insert(ignore_permissions=True)
 
 
+def remove_from_email_group(doc):
+    """
+    Remove the employee from the email group in ERPNext
+    """
+    groups = frappe.get_all("Email Group Member", filters={"email": doc.company_email})
+    for group in groups:
+        frappe.delete_doc("Email Group Member", group.name, ignore_permissions=True)
+
+
 def get_google_group_info(doc, info_type="org_unit_path"):
     """
     Get the google group information based on the info_type
     """
     school = frappe.get_doc("School", doc.branch)
-    group = next(
-        (g for g in school.google_groups if g.role == doc.designation), None
-    )
+    group = next((g for g in school.google_groups if g.role == doc.designation), None)
     return (
         (group.group_email if info_type == "group_email" else group.org_unit_path)
         if group
@@ -154,9 +166,7 @@ def create_user(emp):
             "username": username,
         }
     )
-    user.append("roles", {
-        "role": emp.role
-    })
+    user.append("roles", {"role": emp.role})
     user.insert()
     emp.user_id = user.name
     emp.save()
@@ -167,7 +177,7 @@ def create_employee_google_user(
     email_key, first_name, last_name, recovery_mail, org_unit_path=None
 ):
     user_service = get_google_admin_object()
-    
+
     existing_user = None
     for i in range(4):
         existing_user = get_existing_google_user(email_key)
@@ -176,12 +186,16 @@ def create_employee_google_user(
         email_key += str(i)
 
     company_email = f"{email_key}@walnutedu.in"
-    
+
     if not existing_user:
         recovery_mail = (str(recovery_mail) or "feedback@walnutedu.in").strip().lower()
         email_pattern = r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"
-        recovery_mail = "feedback@walnutedu.in" if not re.match(email_pattern, recovery_mail) else recovery_mail
-        
+        recovery_mail = (
+            "feedback@walnutedu.in"
+            if not re.match(email_pattern, recovery_mail)
+            else recovery_mail
+        )
+
         new_user = {
             "primaryEmail": company_email,
             "name": {
@@ -194,7 +208,7 @@ def create_employee_google_user(
             "recoveryEmail": recovery_mail,
             "orgUnitPath": org_unit_path,
         }
-        
+
         frappe.log_error("account creating for ", str(new_user))
         resp = (
             user_service.users()
@@ -219,8 +233,8 @@ def get_existing_google_user(email_key):
         )
     except:
         return None
-    
-    
+
+
 @frappe.whitelist()
 def migrate_employee_data(employee, new_employee):
     """

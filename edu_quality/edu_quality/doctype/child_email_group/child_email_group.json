@@ -17,6 +17,7 @@
   {
    "fieldname": "email_group",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Email Group",
    "options": "Email Group"
   }
@@ -24,7 +25,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-04-08 16:56:30.920923",
+ "modified": "2024-04-17 12:52:32.556188",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Child Email Group",
