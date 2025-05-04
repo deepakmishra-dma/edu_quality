@@ -86,7 +86,7 @@ def get_payment_details(**kwargs):
         return frappe.throw("The payment link is invalidated or cancelled! Please check email for new link or contact the school!")
 
     #redirect to deposit if present
-    if frappe.db.exists("Payment Request",[["Payment Request","status","=","Initiated"],["Payment Request","payment_term","is","not set"],["Payment Request","reference_name","=",payment_request.reference_name]]):
+    if payment_request.payment_term and frappe.db.exists("Payment Request",[["Payment Request","status","=","Initiated"],["Payment Request","payment_term","is","not set"],["Payment Request","reference_name","=",payment_request.reference_name]]):
         request = frappe.db.get_value("Payment Request",[["Payment Request","status","=","Initiated"],["Payment Request","payment_term","is","not set"],["Payment Request","reference_name","=",payment_request.reference_name]],"payment_hash")
         return {'redirect': frappe.utils.get_url()+"/payment?payment_request="+request}
     fees = frappe.get_doc(payment_request.reference_doctype, payment_request.reference_name)
