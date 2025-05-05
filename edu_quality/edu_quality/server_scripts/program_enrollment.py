@@ -10,3 +10,15 @@ def validate_rollover(doc,method=None):
         if not count<len(division.students):
             frappe.throw(
 				_("""Cannot enroll more than {0} students for this student group."""))
+    
+
+def on_cancel(doc,method=None):
+    division = frappe.get_doc("Student Group",doc.student_group)
+    to_remove = [
+            d
+            for d in division.students
+            if d.student == doc.student
+        ]
+    for d in to_remove:
+        division.remove(d)
+    division.save()

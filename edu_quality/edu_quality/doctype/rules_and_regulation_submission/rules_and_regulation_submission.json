@@ -11,6 +11,7 @@
   "reference_no",
   "student",
   "program",
+  "payment_term",
   "fathers_name",
   "mothers_name",
   "submitted_with_response",
@@ -31,7 +32,6 @@
    "options": "Student"
   },
   {
-   "fetch_from": "",
    "fieldname": "fathers_name",
    "fieldtype": "Data",
    "label": "Father's Name"
@@ -53,7 +53,6 @@
    "label": "Reference No"
   },
   {
-   "fetch_from": "",
    "fieldname": "mothers_name",
    "fieldtype": "Data",
    "label": "Mother's Name"
@@ -99,11 +98,16 @@
    "fieldtype": "Link",
    "label": "Class",
    "options": "Program"
+  },
+  {
+   "fieldname": "payment_term",
+   "fieldtype": "Data",
+   "label": "Payment Term"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-11-28 20:06:51.321253",
+ "modified": "2024-04-15 19:22:17.474610",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Rules and Regulation Submission",

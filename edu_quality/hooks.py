@@ -46,6 +46,7 @@ doctype_js = {
     "Instructor": "public/js/instructor.js",
     "Payment Request": "public/js/payment_request.js",
     "Program Enrollment": "public/js/program_enrollment.js",
+    "Employee": "public/js/employee.js",
 }
 doctype_list_js = {
     "Student Applicant": "public/js/list/student_applicant_list.js",
@@ -174,6 +175,7 @@ doc_events = {
         ],
         "on_trash": "edu_quality.public.py.fee.remove_program_enrollment",
         "on_update_after_submit": "edu_quality.public.py.fee.update_program_enrollment",
+        "on_cancel": "edu_quality.edu_quality.server_scripts.program_enrollment.on_cancel",
     },
     "Contact": {
         "before_validate": "edu_quality.overrides_hooks.contact.before_validate"
@@ -221,6 +223,13 @@ doc_events = {
         "before_save": "edu_quality.overrides_hooks.purchase_receipt.before_save",
         "before_validate": "edu_quality.overrides_hooks.purchase_order.before_validate",
     },
+    "Employee": {
+        "after_insert": "edu_quality.edu_quality.server_scripts.employee.after_insert",
+        "on_update": "edu_quality.edu_quality.server_scripts.employee.on_update",
+    },
+    "Student Group": {
+        "on_update": "edu_quality.overrides_hooks.student_group.on_update",
+    }
 }
 
 # Scheduled Tasks
@@ -230,10 +239,10 @@ scheduler_events = {
         "edu_quality.api.student_application.get_and_schedule_pending_walkouts",
         "edu_quality.overrides_hooks.item.upload_all_imported_to_drive",
     ],
-    "cron": {"0 * * * *": ["edu_quality.tasks.cron"]},
-    "hourly": [
-        "edu_quality.tasks.hourly",
-    ],
+    "cron": {
+        "0 * * * *": ["edu_quality.tasks.cron"],
+        "0 19 * * *":["edu_quality.tasks.send_bulk_notification_cmap_to_guardian"]
+    },
     "daily": [
         "edu_quality.tasks.time_based",
         "edu_quality.tasks.create_payment_request_before_due_date",

@@ -27,6 +27,25 @@ def get_columns():
             "options": "School",
             "width": 200,
         },
+        {
+            "fieldname": "subject",
+            "label": "Subject",
+            "fieldtype": "Link",
+            "options": "Course",
+            "width": 200,
+        },
+        {
+            "fieldname": "period",
+            "label": "Period",
+            "fieldtype": "Data",
+            "width": 200,
+        },
+        {
+            "fieldname": "unit",
+            "label": "Unit",
+            "fieldtype": "Data",
+            "width": 200,
+        },
     ]
     return columns
 
@@ -57,7 +76,12 @@ def get_data(filters):
             (cmap_table.academic_year == academic_year)
             & (cmap_assign_table.school == school)
         )
-        .select(cmap_assign_table.division)
+        .select(
+            cmap_assign_table.division,
+            cmap_table.subject,
+            cmap_table.period,
+            cmap_table.unit,
+        )
     )
 
     final_query = (
@@ -65,7 +89,14 @@ def get_data(filters):
         .left_join(cmap_query)
         .on(query.name == cmap_query.division)
         .where(cmap_query.division.isnull())
-    ).select(query.name.as_("division"), query.program, query.custom_school)
+    ).select(
+        query.name.as_("division"),
+        query.program,
+        query.custom_school,
+        cmap_query.subject,
+        cmap_query.period,
+        cmap_query.unit,
+    )
 
     frappe.errprint(final_query)
     return final_query.run(as_dict=True)

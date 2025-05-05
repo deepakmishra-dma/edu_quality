@@ -1,7 +1,9 @@
 import frappe
-from datetime import datetime
+from datetime import datetime,timedelta
+from edu_quality.public.py.walsh.admin import send_notification
+import requests
+import json
 from frappe.core.doctype.communication.email import make
-
 
 
 def cron():
@@ -79,6 +81,118 @@ def update_academic_year():
     frappe.enqueue(
         "edu_quality.edu_quality.server_scripts.utils.update_academic_year",
     )
+    
+def get_student_ids_by_division(division):
+    sql_query = """
+        SELECT
+            d.name AS id,
+            stud.student AS student
+        FROM
+            `tabStudent Group` AS d
+        INNER JOIN
+            `tabStudent Group Student` AS stud
+        ON
+            stud.parent = d.name
+        WHERE
+            stud.active = 1
+            AND d.name = %(division)s
+    """
+    student_list = frappe.db.sql(sql_query, {'division': division}, as_dict=True)
+    
+    if student_list:  # Check if student_list is not empty
+        return [student.get('student') for student in student_list]
+    
+    return []
+
+
+def get_datetime_range():
+    # Get current date and time in IST
+    current_time = frappe.utils.now_datetime()
+
+    # Calculate last day 7 PM in IST
+    last_day_7pm = (current_time.replace(hour=19, minute=0, second=0, microsecond=0) - timedelta(days=1)).replace(tzinfo=None)
+
+    # Calculate today 7 PM in IST
+    today_7pm = (current_time.replace(hour=19, minute=0, second=0, microsecond=0)).replace(tzinfo=None)
+
+    return last_day_7pm, today_7pm
+
+@frappe.whitelist()
+def send_bulk_notification_cmap_to_guardian():
+    current_academic_year = frappe.db.get_value('Academic Year',filters={'custom_current_academic_year': 1})
+    last_day_7pm, today_7pm = get_datetime_range()
+    print(last_day_7pm,today_7pm)
+    sql_query = """
+        SELECT
+            cmapa.parent,
+            cmapa.school,
+            cmapa.division,
+            cmapa.real_date,
+            cmapa.teacher,
+            cmap.academic_year,
+            cmap.subject
+        FROM
+            `tabCMAP Assignment` cmapa
+        INNER JOIN
+            `tabCMAP` cmap
+        ON
+            cmap.name = cmapa.parent
+        WHERE
+            cmapa.real_date_updated_on BETWEEN %(last_day_7pm)s AND %(today_7pm)s
+            AND cmap.academic_year = %(academic_year)s
+    """
+    cmaps_assignees = frappe.db.sql(sql_query,{ 'academic_year' : current_academic_year,'last_day_7pm':last_day_7pm,'today_7pm':today_7pm},as_dict=1)
+    all_student_list = []
+    for rec in cmaps_assignees:
+        student_ids = get_student_ids_by_division(rec.get('division'))
+        rec['student_ids'] = list(set(student_ids))
+        all_student_list.extend(rec['student_ids'])
+    notification_handler(list(set(all_student_list)))
+ 
+
+def notification_handler(student_data):
+    # for student in division_data.get('student_ids'):
+    #     send_notification(student_id=student,subject="Time to check your curriculum updates! :)") 
+    student_ids = tuple(student_data)
+    if len(student_ids):
+        guardian_details = frappe.db.sql(
+            """SELECT gs.guardian as name, g.user
+            FROM `tabStudent Guardian` gs
+            INNER JOIN `tabGuardian` g ON g.name = gs.guardian
+            WHERE gs.parent IN %(students)s """, 
+            {'students': student_ids}, as_dict=1)
+        print(guardian_details)
+        
+        final_guardian_list = {}
+        
+        if len(guardian_details) > 0:
+            for i in guardian_details:
+                if i.name not in final_guardian_list:
+                    final_guardian_list[i.name] = i
+                    
+        if final_guardian_list:
+            for guardian_name, guardian_data in final_guardian_list.items():
+                send_notification_custom(subject="Time to check your curriculum updates! :)", guardian=guardian_data)
+
+
+def send_notification_custom(subject, guardian):
+    user = guardian.get("user")
+    if user:
+        push_tokens = frappe.get_all(
+            "Mobile Push Token",
+            filters={"user_id": user},
+            fields=["token"]
+        )
+        for push_token in push_tokens:
+            url = "https://exp.host/--/api/v2/push/send"               
+            payload = json.dumps({
+            "to": push_token.get("token"),
+            "title": subject,
+            "data": {"url_path": f"/cmap/"},
+            # "body": json.dumps({"url_path": f"/notice/{notice_id}?student={student_id}"})
+            })
+            headers = {"Content-Type": "application/json"}
+            requests.request("POST", url, headers=headers, data=payload)    
 
 
 def hourly():
@@ -86,6 +200,7 @@ def hourly():
 
 
 def add_ticket_comment():
+    return
     query = """
             SELECT name, description
                     FROM `tabHD Ticket`
@@ -101,4 +216,3 @@ def add_ticket_comment():
     tickets = frappe.db.sql(query, as_dict=True)
     for ticket in tickets:
         make(doctype="HD Ticket", name=ticket.name, subject="Student Information", content=ticket.description,communication_type="Communication")
-

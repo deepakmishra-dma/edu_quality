@@ -139,7 +139,9 @@ function appendUrl(frm) {
 }
 frappe.ui.form.on("Item", {
     refresh: function (frm) {
-        console.log(frm, 'hha')
+
+
+
         appendUrl(frm)
         uploadFileButton(frm)
         getLinkedSubject(frm)
@@ -147,7 +149,9 @@ frappe.ui.form.on("Item", {
         // queryTextbook(frm)
         queryTopic(frm)
 
-        if (!frm.doc.__islocal)
+        if (!frm.doc.__islocal) {
+            frm.disable_save()
+            frm.page.set_primary_action(__('Save'), () => customSaveHandler(frm));
             frappe.call({
                 method: "edu_quality.overrides_hooks.item.get_qr_code",
                 args: {
@@ -157,6 +161,8 @@ frappe.ui.form.on("Item", {
             `
                 }
             })
+        }
+
         frm.get_field('custom_view_worksheet_header').onclick = function () {
             if (frm.doc.__islocal) {
                 frappe.msgprint({
@@ -265,4 +271,50 @@ function getClassSubject(frm) {
     });
 
 
+}
+
+function customSaveHandler(frm) {
+
+    // Your custom logic here
+    // For example, you can display a message
+    let d = new frappe.ui.Dialog({
+        title: 'Reason',
+        fields: [
+            {
+                label: 'Reason for Change(min 10 characters)',
+                fieldname: 'comment',
+                fieldtype: 'Text',
+                onchange: (event) => {
+                    if (event.target.value.length >= 10) {
+                        d.$wrapper.find(".btn-primary").prop('disabled', false)
+                    }
+                    else {
+                        d.$wrapper.find(".btn-primary").prop('disabled', true)
+                    }
+                }
+            },
+
+        ],
+        size: 'small', // small, large, extra-large 
+        primary_action_label: 'Comment and Save',
+        async primary_action(values) {
+            if (!values.comment) return
+
+            await frappe.call({
+                "method": "frappe.desk.form.utils.add_comment",
+                "args": {
+                    reference_doctype: frm.doctype,
+                    reference_name: frm.docname,
+                    content: values.comment,
+                    comment_email: frappe.session.user,
+                    comment_by: frappe.session.user_fullname,
+                }
+            });
+            d.hide();
+            frm.save("Save")
+
+        }
+    });
+    d.$wrapper.find(".btn-primary").prop('disabled', true)
+    d.show();
 }

@@ -16,8 +16,10 @@ import {
   IconStack2,
   IconStar,
   IconCalendar,
-  // IconPrinter,
+  // IconFileDescription,
+  IconPrinter,
 } from "@tabler/icons";
+import { IconClock } from "@tabler/icons-react";
 import { useLogout } from "@refinedev/core";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -130,12 +132,23 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
                 icon: IconArchive,
                 location: "/portion-circular",
               },
+
+              {
+                label: "Weekly Updates",
+                icon: IconArchive,
+                location: "/date-circular",
+              },
             ],
           },
           {
-            label: "Leave / Sick Note",
+            label: "Absent Note",
             icon: IconCalendarOff,
             location: "/leave-note",
+          },
+          {
+            label: "Early Pick Up",
+            icon: IconClock,
+            location: "/early-pickup",
           },
           {
             label: "School Calendar",
@@ -148,12 +161,16 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
             icon: IconArchive,
             location: "/archived",
           },
-
           // {
-          //   label: "Request Bonafide Certificate",
-          //   icon: IconPrinter,
-          //   location: "/bonafide",
+          //   label: "Result",
+          //   icon: IconFileDescription,
+          //   location: "/result",
           // },
+          {
+            label: "Request Bonafide Certificate",
+            icon: IconPrinter,
+            location: "/bonafide",
+          },
 
           {
             label: "Reload",
