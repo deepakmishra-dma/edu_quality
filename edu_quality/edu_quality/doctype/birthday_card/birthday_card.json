@@ -1,18 +1,18 @@
 {
  "actions": [],
- "autoname": "format:{student}-{academic_year}",
+ "autoname": "format:{program_enrollment}",
  "creation": "2024-04-11 15:17:00.074406",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
   "details_section",
   "program_enrollment",
-  "birth_date",
+  "date_of_birth",
   "student",
   "academic_year",
   "amended_from",
-  "class",
-  "division",
+  "program",
+  "student_group",
   "greeting_email_template",
   "birthday_email_template",
   "birthday_photos_drive_link",
@@ -53,21 +53,8 @@
    "fieldname": "program_enrollment",
    "fieldtype": "Link",
    "label": "Program Enrollment",
-   "options": "Program Enrollment"
-  },
-  {
-   "fetch_from": "program_enrollment.program",
-   "fieldname": "class",
-   "fieldtype": "Link",
-   "label": "Class",
-   "options": "Program"
-  },
-  {
-   "fetch_from": "program_enrollment.student_group",
-   "fieldname": "division",
-   "fieldtype": "Link",
-   "label": "Division",
-   "options": "Student Group"
+   "options": "Program Enrollment",
+   "unique": 1
   },
   {
    "fieldname": "greeting_email_template",
@@ -87,12 +74,6 @@
    "label": "Birthday Photos Drive Link"
   },
   {
-   "fetch_from": "student.date_of_birth",
-   "fieldname": "birth_date",
-   "fieldtype": "Date",
-   "label": "Birth Date"
-  },
-  {
    "fieldname": "traits",
    "fieldtype": "Table",
    "label": "Traits",
@@ -102,11 +83,31 @@
    "fieldname": "form_hash",
    "fieldtype": "Data",
    "label": "Form Hash"
+  },
+  {
+   "fetch_from": "program_enrollment.program",
+   "fieldname": "program",
+   "fieldtype": "Link",
+   "label": "Class",
+   "options": "Program"
+  },
+  {
+   "fetch_from": "program_enrollment.student_group",
+   "fieldname": "student_group",
+   "fieldtype": "Link",
+   "label": "Division",
+   "options": "Student Group"
+  },
+  {
+   "fetch_from": "student.date_of_birth",
+   "fieldname": "date_of_birth",
+   "fieldtype": "Date",
+   "label": "Date of Birth"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-04-17 10:30:05.960392",
+ "modified": "2024-04-18 02:43:38.589886",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Birthday Card",
