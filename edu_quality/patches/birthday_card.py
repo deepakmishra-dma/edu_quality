@@ -1,8 +1,7 @@
-
-
 import frappe
+from edu_quality.edu_quality.server_scripts.utils import current_academic_year
 all_program_enrollments = frappe.db.get_all(
-    "Program Enrollment", {"academic_year": "2024-2025"}
+    "Program Enrollment", {"academic_year": current_academic_year()}
 )
 
 for i in all_program_enrollments:

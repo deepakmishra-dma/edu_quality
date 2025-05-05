@@ -1,7 +1,9 @@
 import frappe
 from datetime import datetime,timedelta
 from edu_quality.public.py.walsh.admin import send_notification
+from edu_quality.edu_quality.server_scripts.utils import current_academic_year
 import requests
+
 import json
 
 
@@ -193,3 +195,31 @@ def send_notification_custom(subject, guardian):
             })
             headers = {"Content-Type": "application/json"}
             requests.request("POST", url, headers=headers, data=payload)    
+
+@frappe.whitelist()
+def schedule_birthday_greeting(schedule_now=False):
+    if not schedule_now and not frappe.db.get_single_value(
+        "MGR Settings", "enable_birthday_greeting_scheduler"
+    ):
+        return None
+    academic_year = current_academic_year()
+    all_birthdays = frappe.db.sql(
+        """
+  SELECT * 
+FROM `tabBirthday Card`
+WHERE 
+    MONTH(CONVERT_TZ(date_of_birth, 'UTC', 'Asia/Kolkata')) = MONTH(CONVERT_TZ(NOW(), 'UTC', 'Asia/Kolkata'))
+    AND DAY(CONVERT_TZ(date_of_birth, 'UTC', 'Asia/Kolkata')) = DAY(CONVERT_TZ(NOW(), 'UTC', 'Asia/Kolkata')) AND academic_year = %(academic_year)s
+""",
+        as_dict=True,
+        values={"academic_year":academic_year}
+    )
+
+    for birthday in all_birthdays:
+        try:
+            from nextai.funnel.custom_trigger import trigger_event
+
+            birthday_doc = frappe.get_doc("Birthday Card", birthday)
+            trigger_event(doc=birthday_doc, event_name="birthday_greeting")
+        except Exception as e:
+            frappe.logger("Birthday Card").exception(e)
