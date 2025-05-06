@@ -44,7 +44,7 @@ function uploadFileButton(frm) {
             });
             return
         }
-        if (frm.doc.custom_is_cmap) {
+        if (!frm.doc.custom_is_cmap) {
             frappe.msgprint({
                 message: __("Can only upload file if item is of type cmap"),
                 indicator: "red",
@@ -192,7 +192,7 @@ frappe.ui.form.on("Item", {
                 });
                 return
             }
-            if (frm.doc.custom_is_cmap) {
+            if (!frm.doc.custom_is_cmap) {
                 frappe.msgprint({
                     message: __("Can only see worksheet Header if item is of type cmap"),
                     indicator: "red",
