@@ -45,10 +45,8 @@ def name(self):
             return self.item_code
 
         current_item_group = frappe.get_doc("Item Group", self.get("item_group"))
-        if current_item_group.get("parent_item_group") != "CMAP":
-            return self.item_code
-        
-        if not self.custom_is_cmap:
+
+        if not self.get("custom_is_cmap"):
             return self.item_code
 
         short_code = current_item_group.custom_group_code
@@ -73,7 +71,7 @@ def name(self):
 
 
 def autoname(self, method=None):
-    if self.custom_is_cmap:
+    if self.get("custom_is_cmap"):
         self.item_code = name(self)
     self.name = self.item_code
     self.item_name = self.item_code
@@ -85,12 +83,9 @@ def calculate_sheet_number(self):
     if not self.get("item_group"):
         return
 
-    current_item_group = frappe.get_doc("Item Group", self.get("item_group"))
-    if current_item_group.get("parent_item_group") != "CMAP":
+    if not self.get("custom_is_cmap"):
         return
-    if not self.custom_is_cmap:
-        return
-    
+
     sheet_number = 1
     list_topics = frappe.db.get_list(
         "Item",
