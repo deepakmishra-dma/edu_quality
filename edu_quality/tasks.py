@@ -5,6 +5,7 @@ from edu_quality.edu_quality.server_scripts.utils import current_academic_year
 import requests
 
 import json
+from frappe.core.doctype.communication.email import make
 
 
 def cron():
@@ -82,7 +83,6 @@ def update_academic_year():
     frappe.enqueue(
         "edu_quality.edu_quality.server_scripts.utils.update_academic_year",
     )
-    
     
 def get_student_ids_by_division(division):
     sql_query = """
@@ -195,6 +195,29 @@ def send_notification_custom(subject, guardian):
             })
             headers = {"Content-Type": "application/json"}
             requests.request("POST", url, headers=headers, data=payload)    
+
+
+def hourly():
+    add_ticket_comment() 
+
+
+def add_ticket_comment():
+    return
+    query = """
+            SELECT name, description
+                    FROM `tabHD Ticket`
+                    WHERE description IS NOT NULL
+                    AND EXISTS (
+                        SELECT 1
+                        FROM `tabCommunication`
+                        WHERE reference_doctype = 'HD Ticket'
+                        AND reference_name = `tabHD Ticket`.name
+                    )
+                    LIMIT 2500;
+            """
+    tickets = frappe.db.sql(query, as_dict=True)
+    for ticket in tickets:
+        make(doctype="HD Ticket", name=ticket.name, subject="Student Information", content=ticket.description,communication_type="Communication")
 
 @frappe.whitelist()
 def schedule_birthday_greeting(schedule_now=False):

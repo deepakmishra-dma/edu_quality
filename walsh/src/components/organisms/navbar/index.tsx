@@ -17,7 +17,7 @@ import {
   IconStar,
   IconCalendar,
   // IconFileDescription,
-  // IconPrinter,
+  IconPrinter,
 } from "@tabler/icons";
 import { IconClock } from "@tabler/icons-react";
 import { useLogout } from "@refinedev/core";
@@ -166,11 +166,11 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
           //   icon: IconFileDescription,
           //   location: "/result",
           // },
-          // {
-          //   label: "Request Bonafide Certificate",
-          //   icon: IconPrinter,
-          //   location: "/bonafide",
-          // },
+          {
+            label: "Request Bonafide Certificate",
+            icon: IconPrinter,
+            location: "/bonafide",
+          },
 
           {
             label: "Reload",
