@@ -921,3 +921,6 @@ def update_program_enrollment(doc, method):
             doc.student
         )
     )
+
+def create_birthday_card(self,method=None):
+    frappe.get_doc({"doctype":"Birthday Card","program_enrollment":self.name}).insert(ignore_permissions=True)

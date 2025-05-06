@@ -150,7 +150,7 @@ override_doctype_class = {
 # Hook on document methods and events
 
 doc_events = {
-    "HD Ticket":{
+    "HD Ticket": {
         "after_insert": "edu_quality.edu_quality.server_scripts.hd_ticket.after_insert",
     },
     "Guardian": {
@@ -172,6 +172,7 @@ doc_events = {
         "after_insert": [
             "edu_quality.public.py.fee.append_program_enrollment",
             "edu_quality.public.py.fee.create_id_card",
+            "edu_quality.public.py.fee.create_birthday_card",
         ],
         "on_trash": "edu_quality.public.py.fee.remove_program_enrollment",
         "on_update_after_submit": "edu_quality.public.py.fee.update_program_enrollment",
@@ -229,7 +230,7 @@ doc_events = {
     },
     "Student Group": {
         "on_update": "edu_quality.overrides_hooks.student_group.on_update",
-    }
+    },
 }
 
 # Scheduled Tasks
@@ -241,7 +242,8 @@ scheduler_events = {
     ],
     "cron": {
         "0 * * * *": ["edu_quality.tasks.cron"],
-        "0 19 * * *":["edu_quality.tasks.send_bulk_notification_cmap_to_guardian"]
+        "0 19 * * *": ["edu_quality.tasks.send_bulk_notification_cmap_to_guardian"],
+        "0 6 * * *": ["edu_quality.tasks.schedule_birthday_greeting"],
     },
     "daily": [
         "edu_quality.tasks.time_based",
@@ -341,17 +343,12 @@ override_whitelisted_methods = {
 # 	"edu_quality.auth.validate"
 # ]
 
-fixtures = [
-    {"dt": "Custom DocPerm"}
-
-]
-
-
+fixtures = [{"dt": "Custom DocPerm"}]
 
 
 after_migrate = [
     "edu_quality.public.py.utils.migrate",
-    "edu_quality.edu_quality.server_scripts.after_migrate.after_migrate"
+    "edu_quality.edu_quality.server_scripts.after_migrate.after_migrate",
 ]
 
 website_route_rules = [
