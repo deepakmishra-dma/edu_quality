@@ -93,7 +93,7 @@ function uploadFileButton(frm) {
                         console.error('Error:', error);
                     });
                 } else {
-                    frappe.msgprint(__('Please upload only PDF or PowerPoint (PPSX) files.'));
+                    frappe.msgprint(__(`Please upload only ${allowed_extensions?.map((ext) => `.${ext}`).join(",")} files.`));
                 }
             }
         };
