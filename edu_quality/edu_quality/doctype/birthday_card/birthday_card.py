@@ -5,6 +5,8 @@ import frappe
 from frappe.model.document import Document
 from edu_quality.edu_quality.server_scripts.student_applicant import generate_hash
 from frappe.auth import LoginManager
+from edu_quality.public.py.walsh.admin import render_jinja, send_notification
+import json
 
 
 class BirthdayCard(Document):
@@ -71,5 +73,6 @@ def set_guardian_permissions(doc):
             perm.allow = "Birthday Card"
             perm.for_value = doc.name
             perm.insert(ignore_permissions=True)
+
 
 
