@@ -29,7 +29,11 @@ class CustomFees(Fees):
 
     def update_split(self):
         generate_split_payment(self,update=1)
-
+        
+    def on_cancel(self):
+		self.ignore_linked_doctypes = ("GL Entry", "Payment Ledger Entry","Journal Entry")
+		make_reverse_gl_entries(voucher_type=self.doctype, voucher_no=self.name)
+		# frappe.db.set(self, 'status', 'Cancelled')
 
     def make_gl_entries(self):
         if not self.grand_total:
