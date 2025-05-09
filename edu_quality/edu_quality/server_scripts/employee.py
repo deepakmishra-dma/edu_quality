@@ -17,8 +17,6 @@ def after_insert(doc, method=None):
     create_google_user_account(doc)
     # Create User in Frappe/ERPNext
     create_user(doc)
-    # Create an Employee in Greythr
-    create_employee_in_greathr(doc)
     # Add to relevant groups on google workspace
 
     # Get the google group email
@@ -42,40 +40,6 @@ def after_insert(doc, method=None):
 
 def on_update(doc, method=None):
     add_to_email_group(doc)
-
-
-def create_employee_in_greathr(doc):
-    """
-    Create an employee in Greythr
-    """
-    try:
-        url = "https://api.greythr.com/employee/v2/employees"
-
-        payload = {
-            "employeeNo": doc.name,
-            "name": doc.first_name,
-            "firstName": doc.first_name,
-            "middleName": doc.middle_name,
-            "lastName": doc.last_name,
-            "email": doc.company_email,
-            "dateOfBirth": doc.date_of_birth,
-            "dateOfJoin": today(),
-            "gender": doc.gender,
-            "mobile": doc.cell_number,
-            "personalEmail": doc.personal_email,
-            "officialMobile": doc.cell_number,
-        }
-        headers = {
-            "ACCESS-TOKEN": "74ae0195-dd19-4d7c-948f-46dc592d888b",
-            "x-greythr-domain": "uniqueeducational.greythr.com",
-        }
-
-        response = requests.post(url, headers=headers, data=payload)
-        response.raise_for_status()
-    except:
-        frappe.log_error(
-            f"Error while creating employee in Greythr", frappe.get_traceback()
-        )
 
 
 def add_to_email_group(doc):
