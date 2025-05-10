@@ -11,7 +11,9 @@ def after_insert(doc, method=None):
     4. Send Communication mails to the user
     """
     create_employee_workspace = frappe.get_value("Google Service Account", None, "create_employee_workspace")
-    if int(create_employee_workspace):
+    if isinstance(create_employee_workspace, str):
+        create_employee_workspace = int(create_employee_workspace)
+    if create_employee_workspace:
         # Create a Google User
         create_google_user_account(doc)
         # Get the google group email
