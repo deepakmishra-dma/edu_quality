@@ -1,5 +1,6 @@
 import re
 import frappe
+from frappe.utils.data import cint
 from edu_quality.api.google_admin import add_user_to_group, get_google_admin_object
 
 
@@ -11,9 +12,7 @@ def after_insert(doc, method=None):
     4. Send Communication mails to the user
     """
     create_employee_workspace = frappe.get_value("Google Service Account", None, "create_employee_workspace")
-    if isinstance(create_employee_workspace, str):
-        create_employee_workspace = int(create_employee_workspace)
-    if create_employee_workspace:
+    if cint(create_employee_workspace):
         # Create a Google User
         create_google_user_account(doc)
         # Get the google group email
@@ -128,6 +127,7 @@ def create_user(emp):
             "phone": emp.cell_number,
             "bio": emp.bio,
             "username": username,
+            "send_welcome_email": 0,
         }
     )
     user.append("roles", {"role": emp.role})
