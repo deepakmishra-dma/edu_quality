@@ -26,14 +26,14 @@ def get_calender_events(school):
         calendar_id = frappe.get_value("School", school, "calendar_id")
         # Get events from the primary calendar
         now = datetime.now()
-        start_of_month = datetime(now.year, now.month, 1).isoformat() + 'Z'
-        end_of_month = datetime(now.year, now.month + 1, 1).isoformat() + 'Z'
+        year_start = datetime(now.year, 4, 1).isoformat() + 'Z'
+        year_end = datetime(now.year + 1, 3, 31).isoformat() + 'Z'   
         # Get events within the current month
         service = get_google_service_object()
         events_result = service.events().list(
             calendarId=calendar_id,
-            timeMin=start_of_month,
-            timeMax=end_of_month,
+            timeMin=year_start,
+            timeMax=year_end,
             singleEvents=True,
             orderBy='startTime'
         ).execute()
