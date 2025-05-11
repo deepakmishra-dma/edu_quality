@@ -3,7 +3,7 @@ import erpnext
 from education.education.doctype.fees.fees import Fees
 from erpnext.accounts.utils import get_account_currency, get_fiscal_years, validate_fiscal_year
 from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
-	get_accounting_dimensions,
+    get_accounting_dimensions,
 )
 from frappe.utils import (
     add_days,
@@ -31,9 +31,9 @@ class CustomFees(Fees):
         generate_split_payment(self,update=1)
         
     def on_cancel(self):
-		self.ignore_linked_doctypes = ("GL Entry", "Payment Ledger Entry","Journal Entry")
-		make_reverse_gl_entries(voucher_type=self.doctype, voucher_no=self.name)
-		# frappe.db.set(self, 'status', 'Cancelled')
+        self.ignore_linked_doctypes = ("GL Entry", "Payment Ledger Entry","Journal Entry")
+        make_reverse_gl_entries(voucher_type=self.doctype, voucher_no=self.name)
+        # frappe.db.set(self, 'status', 'Cancelled')
 
     def make_gl_entries(self):
         if not self.grand_total:
@@ -284,36 +284,36 @@ def update_fee_components(doc):
 
 @erpnext.allow_regional
 def update_gl_dict_with_regional_fields(doc, gl_dict):
-	pass
+    pass
 
 def set_balance_in_account_currency(
-	gl_dict, account_currency=None, conversion_rate=None, company_currency=None
+    gl_dict, account_currency=None, conversion_rate=None, company_currency=None
 ):
-	if (not conversion_rate) and (account_currency != company_currency):
-		frappe.throw(
-			_("Account: {0} with currency: {1} can not be selected").format(
-				gl_dict.account, account_currency
-			)
-		)
+    if (not conversion_rate) and (account_currency != company_currency):
+        frappe.throw(
+            _("Account: {0} with currency: {1} can not be selected").format(
+                gl_dict.account, account_currency
+            )
+        )
 
-	gl_dict["account_currency"] = (
-		company_currency if account_currency == company_currency else account_currency
-	)
+    gl_dict["account_currency"] = (
+        company_currency if account_currency == company_currency else account_currency
+    )
 
-	# set debit/credit in account currency if not provided
-	if flt(gl_dict.debit) and not flt(gl_dict.debit_in_account_currency):
-		gl_dict.debit_in_account_currency = (
-			gl_dict.debit
-			if account_currency == company_currency
-			else flt(gl_dict.debit / conversion_rate, 2)
-		)
+    # set debit/credit in account currency if not provided
+    if flt(gl_dict.debit) and not flt(gl_dict.debit_in_account_currency):
+        gl_dict.debit_in_account_currency = (
+            gl_dict.debit
+            if account_currency == company_currency
+            else flt(gl_dict.debit / conversion_rate, 2)
+        )
 
-	if flt(gl_dict.credit) and not flt(gl_dict.credit_in_account_currency):
-		gl_dict.credit_in_account_currency = (
-			gl_dict.credit
-			if account_currency == company_currency
-			else flt(gl_dict.credit / conversion_rate, 2)
-		)
+    if flt(gl_dict.credit) and not flt(gl_dict.credit_in_account_currency):
+        gl_dict.credit_in_account_currency = (
+            gl_dict.credit
+            if account_currency == company_currency
+            else flt(gl_dict.credit / conversion_rate, 2)
+        )
           
 
 def get_fee_advance_entries(fees):
