@@ -287,6 +287,5 @@ WHERE
 
             if student_doc.student_status in valid_student_statuses:
                 trigger_event(doc=birthday_doc, event_name="birthday_greeting")
-    
         except Exception as e:
             frappe.logger("Birthday Card").exception(e)

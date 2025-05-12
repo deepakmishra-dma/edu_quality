@@ -2,6 +2,7 @@ import frappe
 from frappe.utils.data import getdate, nowdate
 from edu_quality.api.google_admin import suspend_google_user
 
+
 def execute(filters=None):
     columns, data = [], []
     columns = get_columns()
@@ -216,7 +217,7 @@ def payment_reminder(data):
                     "reference_name": row.get("fees"),
                     "docstatus": 1,
                     "status": ["!=", "Paid"],
-                    "payment_term": row.get('payment_term')
+                    "payment_term": row.get("payment_term"),
                 },
             )
             trigger_event(doc=payment_request, event_name="payment_link_remainder")
@@ -244,16 +245,26 @@ def send_payment_reminder(data):
 def mark_student_as_defaulter(data):
     try:
         for row in data:
-            stud_doc = frappe.get_doc("Student",{"reference_number": row.get("refno"), "school": row.get("school")},"student_email_id")
-            # stud_doc.student_status = "Defaulter"
-            # stud_doc.save()
-            frappe.db.set_value(
+            student_email = frappe.db.get_value(
                 "Student",
                 {"reference_number": row.get("refno"), "school": row.get("school")},
-                "student_status",
-                "Defaulter",
+                "student_email_id",
             )
-            suspend_google_user(stud_doc)
+            
+            # stud_doc.student_status = "Defaulter"
+            # stud_doc.save()
+            try:
+                
+                suspend_google_user(student_email)
+                frappe.db.set_value(
+                    "Student",
+                    {"reference_number": row.get("refno"), "school": row.get("school")},
+                    "student_status",
+                    "Defaulter",
+                )
+            except Exception as e:
+                frappe.logger("mark_student_as_defaulter").exception(e)
+                pass
     except Exception as e:
         frappe.logger("mark_student_as_defaulter").exception(e)
 
