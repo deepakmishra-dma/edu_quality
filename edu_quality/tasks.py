@@ -90,8 +90,7 @@ def update_academic_year():
 
 
 def get_student_ids_by_division(division):
-    sql_query = """
-        SELECT
+    sql_query = """SELECT
             d.name AS id,
             stud.student AS student
         FROM
@@ -102,10 +101,9 @@ def get_student_ids_by_division(division):
             stud.parent = d.name
         WHERE
             stud.active = 1
-            AND d.name = %(division)s
-    """
-    student_list = frappe.db.sql(sql_query, {"division": division}, as_dict=True)
-
+            AND d.name = %(division)s"""
+    student_list = frappe.db.sql(sql_query, {'division': division}, as_dict=True)
+    
     if student_list:  # Check if student_list is not empty
         return [student.get("student") for student in student_list]
 
