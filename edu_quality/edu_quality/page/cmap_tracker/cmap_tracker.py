@@ -70,17 +70,21 @@ def get_cmap(**filters):
         .inner_join(cmap_assign_table)
         .on(filtered_cmap_query.name == cmap_assign_table.parent)
     )
-    div_condition = cmap_assign_table.division == filters.get("division")
-    
-    if(not filters.get('division')):
-        div_condition = cmap_assign_table.division.isnotnull()
-    
+    div_condition = (cmap_assign_table.division == filters.get("division")) & (
+        cmap_assign_table.school == filters.get("school")
+    )
+
+    if not filters.get("division"):
+        div_condition = (cmap_assign_table.division.isnotnull()) & (
+            cmap_assign_table.school == filters.get("school")
+        )
+
     if teacher != "ALL":
         filtered_assigned_query = filtered_assigned_query.where(
-            (cmap_assign_table.teacher == teacher) & (div_condition)
+            (cmap_assign_table.teacher == teacher) & div_condition
         )
     else:
-        filtered_assigned_query.where((div_condition))
+        filtered_assigned_query = filtered_assigned_query.where(div_condition)
 
     filtered_assigned_query = filtered_assigned_query.orderby(
         Cast(filtered_cmap_query.period, "UNSIGNED"), Order.asc
@@ -167,7 +171,12 @@ def update(filters, cmap_data):
                         "CMAP Assignment", item.name, "real_date", real_date
                     )
                     # Updating the Real Date for CMAP Consolidated Notification..
-                    frappe.db.set_value('CMAP Assignment',item.name,"real_date_updated_on",real_date_updated_on)
+                    frappe.db.set_value(
+                        "CMAP Assignment",
+                        item.name,
+                        "real_date_updated_on",
+                        real_date_updated_on,
+                    )
         #             item.real_date = real_date
         #             modified = True
 

@@ -2,7 +2,7 @@ import { useCustomMutation } from "@refinedev/core";
 import { useCallback } from "react";
 
 interface EarlyPickUpNoteVariables {
-    note: string,
+    note?: string,
     status: 'early_pickup',
     student: string,
     dates: string[],

@@ -1,0 +1,133 @@
+{
+ "actions": [],
+ "autoname": "format:{program_enrollment}",
+ "creation": "2024-04-11 15:17:00.074406",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "details_section",
+  "program_enrollment",
+  "date_of_birth",
+  "student",
+  "academic_year",
+  "amended_from",
+  "program",
+  "student_group",
+  "greeting_email_template",
+  "birthday_email_template",
+  "birthday_photos_drive_link",
+  "form_hash",
+  "traits"
+ ],
+ "fields": [
+  {
+   "fieldname": "details_section",
+   "fieldtype": "Section Break",
+   "label": "Details"
+  },
+  {
+   "fetch_from": "program_enrollment.student",
+   "fieldname": "student",
+   "fieldtype": "Link",
+   "label": "Student",
+   "options": "Student"
+  },
+  {
+   "fetch_from": "program_enrollment.academic_year",
+   "fieldname": "academic_year",
+   "fieldtype": "Link",
+   "label": "Academic Year",
+   "options": "Academic Year"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Birthday Card",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "program_enrollment",
+   "fieldtype": "Link",
+   "label": "Program Enrollment",
+   "options": "Program Enrollment",
+   "unique": 1
+  },
+  {
+   "fieldname": "greeting_email_template",
+   "fieldtype": "Link",
+   "label": "Greeting Email Template",
+   "options": "Email Template"
+  },
+  {
+   "fieldname": "birthday_email_template",
+   "fieldtype": "Link",
+   "label": "Birthday Email Template",
+   "options": "Email Template"
+  },
+  {
+   "fieldname": "birthday_photos_drive_link",
+   "fieldtype": "Data",
+   "label": "Birthday Photos Drive Link"
+  },
+  {
+   "fieldname": "traits",
+   "fieldtype": "Table",
+   "label": "Traits",
+   "options": "Birthday Card Trait"
+  },
+  {
+   "fieldname": "form_hash",
+   "fieldtype": "Data",
+   "label": "Form Hash"
+  },
+  {
+   "fetch_from": "program_enrollment.program",
+   "fieldname": "program",
+   "fieldtype": "Link",
+   "label": "Class",
+   "options": "Program"
+  },
+  {
+   "fetch_from": "program_enrollment.student_group",
+   "fieldname": "student_group",
+   "fieldtype": "Link",
+   "label": "Division",
+   "options": "Student Group"
+  },
+  {
+   "fetch_from": "student.date_of_birth",
+   "fieldname": "date_of_birth",
+   "fieldtype": "Date",
+   "label": "Date of Birth"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-04-18 02:43:38.589886",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "Birthday Card",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

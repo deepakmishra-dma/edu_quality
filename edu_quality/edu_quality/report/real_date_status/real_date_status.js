@@ -27,5 +27,6 @@ frappe.query_reports["Real Date Status"] = {
 			"options": "Course",
 			"label": "Subject",
 		},
+		{ "fieldname": "show_blank", "default": 1, "fieldtype": "Check", "label": "Show Blank" },
 	]
 };

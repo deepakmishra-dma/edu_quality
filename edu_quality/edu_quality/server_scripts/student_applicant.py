@@ -11,6 +11,9 @@ from edu_quality.public.py.discount import (
 )
 
 from edu_quality.public.py.payment_request import update_payment_request_after_discount
+from edu_quality.common.utils.notification.notification import (
+    create_notification_log_for_counselor,
+)
 from frappe.auth import LoginManager
 
 
@@ -78,6 +81,8 @@ def update_guardian_details(doc):
                 guardian_doc.address_line_2  = doc.address_line_2
                 guardian_doc.city  = doc.city
                 guardian_doc.pincode  = doc.pincode
+                guardian_doc.facebook_handle = doc.custom_fathers_facebook_handle
+                guardian_doc.instagram_handle = doc.custom_fathers_instagram_handle
                 guardian_doc.save(ignore_permissions=True)
             elif guardian.relation == 'Mother':
                 mother_updated = 1
@@ -101,6 +106,8 @@ def update_guardian_details(doc):
                 guardian_doc.address_line_2  = doc.address_line_2
                 guardian_doc.city  = doc.city
                 guardian_doc.pincode  = doc.pincode
+                guardian_doc.facebook_handle = doc.custom_mothers_facebook_handle
+                guardian_doc.instagram_handle = doc.custom_mothers_instagram_handle
                 guardian_doc.save(ignore_permissions=True)
             elif guardian.relation == 'Guardian':
                 guardian_updated = 1
@@ -147,6 +154,8 @@ def update_guardian_details(doc):
             guardian_doc.address_line_2  = doc.address_line_2
             guardian_doc.city  = doc.city
             guardian_doc.pincode  = doc.pincode
+            guardian_doc.facebook_handle = doc.custom_mothers_facebook_handle
+            guardian_doc.instagram_handle = doc.custom_mothers_instagram_handle
             guardian_doc.save(ignore_permissions=True)
             doc.append('guardians', {
                 'guardian': guardian_doc.name,
@@ -193,6 +202,7 @@ def update_guardian_details(doc):
 def on_update(doc,method=None):
     set_guardian_permissions(doc)
     update_guardian_details(doc)
+    send_completion_notification(doc)
 
 
 def generate_hash(val):
@@ -484,3 +494,14 @@ def send_web_form_link(student_applicant):
         trigger_event(doc=doc, event_name="student_applicant_created")
     except Exception as e:
         frappe.throw("Chatnext is not installed")
+
+
+def send_completion_notification(doc):
+    if "Guardian" in frappe.get_roles(frappe.session.user):
+        doc.is_saved = 1
+        try:
+            from nextai.funnel.custom_trigger import trigger_event
+            trigger_event(doc=doc, event_name="student_applicant_completion")
+        except Exception as e:
+            frappe.throw("Chatnext is not installed")
+        create_notification_log_for_counselor(doc)
