@@ -141,6 +141,7 @@ override_doctype_class = {
     "Student": "edu_quality.edu_quality.overrides.student.CustomStudent",
     "Payment Entry": "edu_quality.edu_quality.overrides.payment_entry.CustomPaymentEntry",
     "Lead": "edu_quality.public.py.lead.CustomLead",
+    "Instructor":"edu_quality.edu_quality.overrides.instructor.CustomInstructor",
 }
 
 # Document Events
