@@ -166,30 +166,8 @@ frappe.ui.form.on('Fee Advance', {
 				{ fieldname: "reference_number", fieldtype: "Data", in_list_view: 1, label: "Reference Number", reqd: 1 }
 			];
 
-			let check = false;
 			let html_content = ``;
 			let pdf_url = '';
-			let is_rules_and_re = 0;
-			let hide_check_reg = 1;
-			frappe.call({
-                method: "edu_quality.edu_quality.server_scripts.manual_payment.get_unpaid_terms",
-                type: "POST",
-                args: {
-                    fee: frm.doc.name,
-					doctype: "Fee Advance"
-                },
-                callback: function (response) {
-                    console.log(response)
-                    pdf_url = response.message.undertaking_url
-                    if(response.message.undertaking_accepted){
-                        check=true
-                    }
-                    if(response.message.undertaking_url){
-                        is_rules_and_re = 1
-                        hide_check_reg = 0
-                    }
-                }
-            });
 
 			async function getPaymentRequest(reference_name, docstatus) {
 				let found = false;
@@ -230,6 +208,7 @@ frappe.ui.form.on('Fee Advance', {
 										d.set_df_property('table', 'data', response.message);
 									}
 								});
+								showUnderTaking(d);
 							}
 						},
 						{ 	label: 'Payment Mode', 
@@ -249,11 +228,9 @@ frappe.ui.form.on('Fee Advance', {
 						{ 	fieldtype: "Check", 
 							fieldname: "undertaking_check", 
 							label: `Accept Undertaking Before Making Payment <a href="${pdf_url}" target='_black'>Click here</a>`, 
-							hidden: hide_check_reg, 
-							reqd: is_rules_and_re, 
-							default: check, 
-							read_only: check, 
+							hidden: 1, 
 							onchange: function(e){
+								let payment_term = d.get_value('payment_term');
 								if (this.value) {
 									d.set_df_property(
 										'undertaking_content',
@@ -303,7 +280,8 @@ frappe.ui.form.on('Fee Advance', {
 														ip_address: userIpAddress,
 														browser_info: userAgentInfo,
 														fee_advance: document.getElementById('doc_value').value,
-														otp: otp
+														otp: otp,
+														payment_term: '${payment_term}'
 													},
 													callback: function (response) {
 														if (response.message === 'success') {
@@ -343,28 +321,47 @@ frappe.ui.form.on('Fee Advance', {
 					primary_action: onDialogSubmit
 				});
 
-				if (!check && !hide_check_reg) {
-					d.fields_dict.undertaking_check.input.onclick = function () {
-						if (d.fields_dict.undertaking_check.input.checked) {
-							sendOtp(frm);
-						}
-					};
-				}
-
 				d.show();
 
-				if (!hide_check_reg && !check) {
-					setTimeout(() => {
-						console.log("Delayed for 1 second.");
-						console.log(document.querySelector(".btn-modal-primary"));
-						const x = document.querySelector(".btn-modal-primary");
-						x.style.display = 'none';
-					}, 1000);
+				function showUnderTaking(d) {
+					frappe.call({
+						method: "edu_quality.edu_quality.server_scripts.manual_payment.get_unpaid_terms",
+						type: "POST",
+						args: {
+							fee: frm.doc.name,
+							doctype: "Fee Advance",
+							payment_term: d.get_value('payment_term')
+						},
+						callback: function (response) {
+							pdf_url = response.message.undertaking_url
+							if (!response.message.undertaking_accepted) {
+								d.set_df_property('undertaking_check', 'hidden', 0);
+								d.set_df_property('undertaking_check', 'reqd', 1);
+								// hide the submit button if undertaking is not accepted
+								setTimeout(() => {
+									console.log("Delayed for 1 second.");
+									console.log(document.querySelector(".btn-modal-primary"));
+									const x = document.querySelector(".btn-modal-primary");
+									x.style.display = 'none';
+								}, 1000);
+								// Send OTP
+								d.fields_dict.undertaking_check.input.onclick = function () {
+									if (d.fields_dict.undertaking_check.input.checked) {
+										sendOtp(frm);
+									}
+								};
+							}else{
+								d.set_df_property('undertaking_check', 'hidden', 0);
+								d.set_df_property('undertaking_check', 'default', 1);
+								d.set_df_property('undertaking_check', 'read_only', 1);
+							}
+						}
+					});
 				}
 
 				function onDialogSubmit(values) {
 					console.log(values)
-					if (!values.undertaking_check && !hide_check_reg) {
+					if (!values.undertaking_check) {
 						frappe.throw("Please select Terms and conditions");
 					} else {
 						frappe.call({

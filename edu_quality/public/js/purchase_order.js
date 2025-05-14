@@ -199,7 +199,7 @@ function addScanBtnForPrinter(frm) {
 }
 
 
-function mailFunction(frm){
+function mailFunction(frm) {
     if (!frm.doc.__islocal) {
         if (!(frappe.user_roles.includes("Printer") && !frappe.user_roles.includes("Administrator") && !frappe.user_roles.includes("Walnut Admin") && !frappe.user_roles.includes("System Manager"))) {
             frm.add_custom_button(__('Send Test Mail'), () => {
@@ -252,74 +252,74 @@ frappe.ui.form.on('Purchase Order', {
         addScanBtnForPrinter(frm)
         createReceiptButton(frm)
         mailFunction(frm)
+        if (frm_doc.custom_is_cmap)
+            frappe.call({
+                method: "edu_quality.overrides_hooks.purchase_order.generate_challan_list",
+                args: {
+                    self: frm.doc,
 
-        frappe.call({
-            method: "edu_quality.overrides_hooks.purchase_order.generate_challan_list",
-            args: {
-                self: frm.doc,
+                }, callback: function (r) {
+                    if (r.message) {
+                        const challan_html = frm.get_field('custom_challan_detail');
+                        var columns = generateColumns(r.message[1])
+                        var data = r.message[2]
+                        setTimeout(() => {
+                            const el = document.createElement('div')
+                            el.addEventListener('click', (e) => {
+                                const dataset = e.target.dataset
 
-            }, callback: function (r) {
-                if (r.message) {
-                    const challan_html = frm.get_field('custom_challan_detail');
-                    var columns = generateColumns(r.message[1])
-                    var data = r.message[2]
-                    setTimeout(() => {
-                        const el = document.createElement('div')
-                        el.addEventListener('click', (e) => {
-                            const dataset = e.target.dataset
+                                if (dataset.isPrint) {
+                                    frappe.call({
+                                        method: "edu_quality.overrides_hooks.purchase_order.get_linked_receipts",
+                                        args: {
+                                            name: frm.doc.name,
+                                            item_code: dataset.itemCode
+                                        }, callback: function (r) {
+                                            if (r.message) {
 
-                            if (dataset.isPrint) {
-                                frappe.call({
-                                    method: "edu_quality.overrides_hooks.purchase_order.get_linked_receipts",
-                                    args: {
-                                        name: frm.doc.name,
-                                        item_code: dataset.itemCode
-                                    }, callback: function (r) {
-                                        if (r.message) {
-
-                                            if (r.message.length)
-                                                frappe.msgprint({
-                                                    title: __('Linked Receipts'),
-                                                    indicator: 'green',
-                                                    message: __(r.message?.map((el => {
-                                                        return `<div><a href="/api/method/frappe.utils.print_format.download_pdf?doctype=Purchase Receipt&name=${el.parent}&format=Printer Receipt&no_letterhead=0" data-name="${el.parent}" data-value="${el.parent}">${el.parent}</a></div>`
-                                                    })).join(' '))
-                                                })
+                                                if (r.message.length)
+                                                    frappe.msgprint({
+                                                        title: __('Linked Receipts'),
+                                                        indicator: 'green',
+                                                        message: __(r.message?.map((el => {
+                                                            return `<div><a href="/api/method/frappe.utils.print_format.download_pdf?doctype=Purchase Receipt&name=${el.parent}&format=Printer Receipt&no_letterhead=0" data-name="${el.parent}" data-value="${el.parent}">${el.parent}</a></div>`
+                                                        })).join(' '))
+                                                    })
 
 
-                                        }
-
-                                    }
-                                })
-
-                                getItemQR(e.target.dataset.itemCode)
-                            }
-                            if (dataset.isCheck) {
-                                frappe.call({
-                                    method: "edu_quality.overrides_hooks.purchase_order.mark_item_as_printed",
-                                    args: {
-                                        purchase_ord: frm.doc.name,
-                                        item_code: dataset.itemCode,
-                                        checked: e.target.checked
-                                    }, callback: function (r) {
-                                        if (r.message) {
+                                            }
 
                                         }
+                                    })
 
-                                    }
-                                })
-                            }
-                        })
-                        el.classList.add(["d-flex", "flex-column"])
-                        frm.fields_dict.custom_challan_detail.wrapper.innerHTML = ''
-                        renderOrderCards(data, el)
-                        frm.fields_dict.custom_challan_detail.wrapper.appendChild(el)
-                    }, 1000)
+                                    getItemQR(e.target.dataset.itemCode)
+                                }
+                                if (dataset.isCheck) {
+                                    frappe.call({
+                                        method: "edu_quality.overrides_hooks.purchase_order.mark_item_as_printed",
+                                        args: {
+                                            purchase_ord: frm.doc.name,
+                                            item_code: dataset.itemCode,
+                                            checked: e.target.checked
+                                        }, callback: function (r) {
+                                            if (r.message) {
+
+                                            }
+
+                                        }
+                                    })
+                                }
+                            })
+                            el.classList.add(["d-flex", "flex-column"])
+                            frm.fields_dict.custom_challan_detail.wrapper.innerHTML = ''
+                            renderOrderCards(data, el)
+                            frm.fields_dict.custom_challan_detail.wrapper.appendChild(el)
+                        }, 1000)
+
+                    }
 
                 }
-
-            }
-        })
+            })
     },
     refresh(frm) {
         addScanBtnForPrinter(frm)

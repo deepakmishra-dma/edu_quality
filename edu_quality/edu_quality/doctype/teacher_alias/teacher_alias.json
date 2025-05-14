@@ -1,34 +1,28 @@
 {
  "actions": [],
  "allow_rename": 1,
- "creation": "2024-03-07 20:25:46.596704",
- "default_view": "List",
+ "autoname": "field:alias",
+ "creation": "2024-04-18 11:16:26.054878",
  "doctype": "DocType",
- "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "file",
-  "id_cards"
+  "alias"
  ],
  "fields": [
   {
-   "fieldname": "file",
-   "fieldtype": "Attach",
-   "label": "File"
-  },
-  {
-   "fieldname": "id_cards",
-   "fieldtype": "Table",
-   "label": "Id Cards",
-   "options": "Individual Permanent Card"
+   "fieldname": "alias",
+   "fieldtype": "Data",
+   "label": "Alias",
+   "unique": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-04-24 02:02:38.431588",
+ "modified": "2024-04-21 15:29:19.876335",
  "modified_by": "Administrator",
- "module": "Fees",
- "name": "Permanent Id Card",
+ "module": "Edu Quality",
+ "name": "Teacher Alias",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {
@@ -44,7 +38,7 @@
    "write": 1
   }
  ],
- "sort_field": "modified",
+ "sort_field": "creation",
  "sort_order": "DESC",
  "states": []
 }
