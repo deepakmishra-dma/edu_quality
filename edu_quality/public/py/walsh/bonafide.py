@@ -30,6 +30,7 @@ def send_bonafide(student_id):
                     "doctype": "Bonafide Certificate",
                     "student": student_id,
                     "academic_year": acad_year,
+                    "reference_number": student_id,
                     "school": student.school,
                 }
             )
@@ -70,4 +71,4 @@ def send_bonafide(student_id):
             pdf_url = frappe.utils.get_url(saved_file.file_url)
             return pdf_url
     except:
-        frappe.log_error('Bonafide Certificate Sending Failed', frappe.get_traceback())
+        frappe.log_error("Bonafide Certificate Sending Failed", frappe.get_traceback())
