@@ -5,7 +5,7 @@ import useStudentList from "../components/queries/useStudentList.ts";
 import useClassDetails from "../components/queries/useClassDetails.ts";
 import useStudentProfileColor from "../components/hooks/useStudentProfileColor.ts";
 import { Box, Stack, Image } from "@mantine/core";
-import useGuardianList from '../components/queries/useGuardianList.ts';
+// import useGuardianList from '../components/queries/useGuardianList.ts';
 
 import { StudentProfleFOrm } from "./StudentProfileForm.tsx";
 
@@ -34,9 +34,6 @@ export const StudentProfle = () => {
 
 
 
-    const { data: guardianList } = useGuardianList({
-        student_id: selectedStudent
-    })
 
 
 

@@ -69,10 +69,6 @@ interface UpdateAnnualIncomeProps {
     name: string
     annual_income: string
 }
-interface SendOtpPhone {
-    name?: string
-    mobile_number: string
-}
 
 export const guardin_email_update = () => {
     const { mutate, mutateAsync, ...mutationObjs } = useCustomMutation({
