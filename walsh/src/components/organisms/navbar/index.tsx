@@ -17,7 +17,9 @@ import {
   IconStar,
   IconCalendar,
   // IconFileDescription,
-  IconPrinter,
+  IconUser,
+  IconLink,
+  IconPrinter
 } from "@tabler/icons";
 import { IconClock } from "@tabler/icons-react";
 import { useLogout } from "@refinedev/core";
@@ -151,6 +153,16 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
             location: "/early-pickup",
           },
           {
+            label: "PTM Links",
+            icon: IconLink,
+            location: "/ptm-link",
+          },
+          {
+            label: "Student Profile",
+            icon: IconUser,
+            location: "/student-profile",
+          },
+          {
             label: "School Calendar",
             icon: IconCalendar,
             location: "/calendar",
@@ -166,6 +178,7 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
           //   icon: IconFileDescription,
           //   location: "/result",
           // },
+
           {
             label: "Request Bonafide Certificate",
             icon: IconPrinter,
