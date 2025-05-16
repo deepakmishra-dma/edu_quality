@@ -37,7 +37,7 @@ def create_student_account(student, student_applicant):
         email_key = student.get("name")
         first_name = student_applicant.get("first_name")
         last_name = student_applicant.get("last_name")
-        school = student.get("school","Walnut School at Wakad")
+        school = student.get("school", "Walnut School at Wakad")
         created_email = create_google_user(
             (google_service_settings.get("google_account_prefix", "") or "")
             + email_key,
@@ -484,3 +484,82 @@ def create_guardian(relation, **kwargs):
         }
     except Exception as e:
         frappe.logger("enrollment").exception(e)
+
+
+@frappe.whitelist()
+def relationDetails(student_id):
+    student = frappe.get_doc("Student", student_id)
+    guardian_details = []
+    for guardian in student.guardians:
+        guardian_doc = frappe.get_doc(
+            "Guardian", guardian.guardian, fields=["*"]
+        ).as_dict()
+        guardian_doc["relation"] = guardian.relation
+        guardian_details.append(guardian_doc)
+        # guardian_details.append(guardian.relation)
+        # print("relation ", guardian)
+    return guardian_details
+
+
+@frappe.whitelist()
+def update_guardian_email(name, new_email=None):
+    guardian = frappe.get_doc("Guardian", name)
+    guardian.email_address = new_email
+    # print("guardin ", guardian.as_dict())
+    guardian.save()
+
+
+@frappe.whitelist()
+def update_guardian_number(name, mobile_number=None):
+    guardian = frappe.get_doc("Guardian", name)
+    guardian.mobile_number = mobile_number
+    # print("guardin ", guardian.as_dict())
+    guardian.save()
+
+
+@frappe.whitelist()
+def update_guardian_father_email(name, new_email=None):
+    guardian = frappe.get_doc("Guardian", name)
+    guardian.email_address = new_email
+    # print("guardin ", guardian.as_dict())
+    guardian.save()
+
+
+@frappe.whitelist()
+def update_guardian__father_number(name, mobile_number=None):
+    guardian = frappe.get_doc("Guardian", name)
+    guardian.mobile_number = mobile_number
+    # print("guardin ", guardian.as_dict())
+    guardian.save()
+
+
+@frappe.whitelist()
+def update_guardian__address1(name, address_line_1=None):
+    guardian = frappe.get_doc("Student", name)
+    guardian.address_line_1 = address_line_1
+    guardian.save()
+    # print("guardin ", guardian.address_line_1)
+
+
+@frappe.whitelist()
+def update_guardian__address2(name, address_line_2=None):
+    guardian = frappe.get_doc("Student", name)
+    guardian.address_line_2 = address_line_2
+    # print("guardin ", guardian.as_dict())
+    guardian.save()
+
+
+@frappe.whitelist()
+def update_blood_group(name, blood_group=None):
+    guardian = frappe.get_doc("Student", name)
+    guardian.blood_group = blood_group
+    # print("guardin ", guardian.as_dict())
+    guardian.save()
+
+
+@frappe.whitelist()
+def update_annual_income(name, annual_income=None):
+    guardian = frappe.get_doc("Guardian", name)
+    guardian.annual_income = annual_income
+    # print("guardin ", guardian.as_dict())
+    guardian.save()
