@@ -1,0 +1,39 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-04-17 02:02:31.326789",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "trait_type",
+  "description"
+ ],
+ "fields": [
+  {
+   "fieldname": "trait_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Trait Type",
+   "options": "Book\nFood\nAmbition\nHT\nWT"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text",
+   "in_list_view": 1,
+   "label": "Description"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-04-17 02:05:26.285517",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "Birthday Card Trait",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

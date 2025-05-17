@@ -4,7 +4,8 @@ frappe.pages['scan-challan'].on_page_load = function (wrapper) {
 		title: 'Scan Challans',
 		single_column: true
 	});
-	const el = document.querySelector('.container.page-body')
+	const el = page.wrapper.find('.container.page-body');
+	// const el = document.querySelector('.container.page-body')
 	const d = make_fieldgroup(el, [
 		{
 			label: 'Enter Purchase Order/ Challan No',

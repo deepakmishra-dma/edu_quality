@@ -182,13 +182,15 @@ def get_undertaking_template(doc=None, is_deposit=False, fee=None):
             "Payment Request", doc.name, ["reference_doctype", "reference_name"]
         )
     if doctype == "Fee Advance":
-        class_name, academic_year, student = frappe.get_value(
-            doctype, docname, ["next_program", "academic_year", "student"]
+        class_name, academic_year, student, school = frappe.get_value(
+            doctype, docname, ["next_program", "academic_year", "student","school"]
         )
     else:
-        class_name, academic_year, student = frappe.get_value(
-            doctype, docname, ["program", "academic_year", "student"]
+        class_name, academic_year, student, school = frappe.get_value(
+            doctype, docname, ["program", "academic_year", "student","custom_school"]
         )
+    if not frappe.get_value("School", school,"custom_require_otp_for_accepting_rules_and_regulations"):
+        return None
     status = is_old_student(student, academic_year)
     filter_dict = {"class": class_name, "academic_year": academic_year}
 
@@ -237,10 +239,20 @@ def get_submitted_undertaking(payment_request):
     student = payment_request.party
     doctype = payment_request.reference_doctype
     docname = payment_request.reference_name
+    payment_term = payment_request.payment_term
     if doctype == "Fees":
-        class_name = frappe.get_value("Fees", docname, "program")
+        class_name, school = frappe.get_value("Fees", docname, ["program","custom_school"])
     elif doctype == "Fee Advance":
-        class_name = frappe.get_value("Fee Advance", docname, "next_program")
+        class_name, school = frappe.get_value("Fee Advance", docname, ["next_program","school"])
+    if frappe.get_value("School", school,"custom_otp_for_every_installment_showing_rules_and_regulations"):
+        if frappe.db.exists(
+            "Rules and Regulation Submission",
+            {"student": student, "program": class_name,"payment_term":payment_term},
+            "name",
+            ):
+            return True
+        else:
+            return False
     if frappe.db.exists(
         "Rules and Regulation Submission",
         {"student": student, "program": class_name},
@@ -263,22 +275,24 @@ def handle_undertaking_submission(**kwargs):
         student = doc.student
         doctype = "Fees"
         docname = doc.name
+        payment_term = kwargs.get("payment_term")
     elif kwargs.get("fee_advance"):
         doc = frappe.get_doc("Fee Advance", kwargs.get("fee_advance"))
         student = doc.student
         doctype = "Fee Advance"
         docname = doc.name
+        payment_term = kwargs.get("payment_term")
     else:
         payment_hash = kwargs.get("payment_request")
-        student, doctype, docname = frappe.get_value(
+        student, doctype, docname, payment_term = frappe.get_value(
             "Payment Request",
             {"payment_hash": payment_hash},
-            ["party", "reference_doctype", "reference_name"],
+            ["party", "reference_doctype", "reference_name","payment_term"],
         )
     if doctype == "Fees":
-        class_name = frappe.get_value("Fees", docname, "program")
+        class_name, school = frappe.get_value("Fees", docname, ["program","custom_school"])
     elif doctype == "Fee Advance":
-        class_name = frappe.get_value("Fee Advance", docname, "next_program")
+        class_name, school = frappe.get_value("Fee Advance", docname, ["next_program","school"])
 
     template = frappe.get_value(
         "Rules and Regulation Template", {"class": class_name}, "name"
@@ -290,26 +304,47 @@ def handle_undertaking_submission(**kwargs):
     mothers_name = frappe.get_value(
         "Student Guardian", {"parent": student, "relation": "Mother"}, "guardian_name"
     )
-
-    if not frappe.db.exists(
+    if frappe.get_value("School", school,"custom_otp_for_every_installment_showing_rules_and_regulations"):
+        if not frappe.db.exists(
         "Rules and Regulation Submission",
-        {"student": student_doc.name, "program": class_name},
-    ):
-        new_doc = frappe.new_doc("Rules and Regulation Submission")
-        new_doc.student = student_doc.name
-        new_doc.reference_no = student_doc.reference_number
-        new_doc.fathers_name = fathers_name
-        new_doc.mothers_name = mothers_name
-        new_doc.program = class_name
-        new_doc.submitted_with_response = "Yes"
-        new_doc.rules_and_regulation_template = template
-        new_doc.submitted_date = frappe.utils.nowdate()
-        new_doc.otp_entered = kwargs.get("otp")
-        new_doc.otp_sent_to_contact_no = get_mobile_number(student_doc)
-        new_doc.otp_sent_to_email_id = student_doc.student_email_id
-        new_doc.ip_address = kwargs.get("ip_address")
-        new_doc.user_info = kwargs.get("browser_info")
-        new_doc.save(ignore_permissions=True)
+        {"student": student_doc.name, "program": class_name,"payment_term":payment_term},
+        ):
+            new_doc = frappe.new_doc("Rules and Regulation Submission")
+            new_doc.student = student_doc.name
+            new_doc.reference_no = student_doc.reference_number
+            new_doc.fathers_name = fathers_name
+            new_doc.mothers_name = mothers_name
+            new_doc.program = class_name
+            new_doc.submitted_with_response = "Yes"
+            new_doc.rules_and_regulation_template = template
+            new_doc.submitted_date = frappe.utils.nowdate()
+            new_doc.otp_entered = kwargs.get("otp")
+            new_doc.otp_sent_to_contact_no = get_mobile_number(student_doc)
+            new_doc.otp_sent_to_email_id = student_doc.student_email_id
+            new_doc.ip_address = kwargs.get("ip_address")
+            new_doc.user_info = kwargs.get("browser_info")
+            new_doc.payment_term = payment_term
+            new_doc.save(ignore_permissions=True)
+    else:
+        if not frappe.db.exists(
+            "Rules and Regulation Submission",
+            {"student": student_doc.name, "program": class_name},
+        ):
+            new_doc = frappe.new_doc("Rules and Regulation Submission")
+            new_doc.student = student_doc.name
+            new_doc.reference_no = student_doc.reference_number
+            new_doc.fathers_name = fathers_name
+            new_doc.mothers_name = mothers_name
+            new_doc.program = class_name
+            new_doc.submitted_with_response = "Yes"
+            new_doc.rules_and_regulation_template = template
+            new_doc.submitted_date = frappe.utils.nowdate()
+            new_doc.otp_entered = kwargs.get("otp")
+            new_doc.otp_sent_to_contact_no = get_mobile_number(student_doc)
+            new_doc.otp_sent_to_email_id = student_doc.student_email_id
+            new_doc.ip_address = kwargs.get("ip_address")
+            new_doc.user_info = kwargs.get("browser_info")
+            new_doc.save(ignore_permissions=True)
 
 
 def get_undertaking_submission_pdf(student):

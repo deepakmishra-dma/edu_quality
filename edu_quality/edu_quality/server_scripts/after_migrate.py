@@ -9,7 +9,15 @@ def after_migrate():
     replace_emails() 
     replace_account_credentials()
     remove_webhooks()
+    disable_incoming_emails()
     # add_guardian_groups()
+
+def disable_incoming_emails():
+    # Have to disable for seamless creation og hd tickets on PROD
+    if frappe.db.exists("Email Account",{'email_id':" feedback@walnutedu.in"}):
+        email_account = frappe.get_doc("Email Account",{'email_id':" feedback@walnutedu.in"})
+        email_account.enable_incoming = 0
+        email_account.save(ignore_permissions=True)
 
 def add_guardian_groups():
     parents = frappe.db.get_all("Student Guardian",{'parenttype':"Student"},"guardian")

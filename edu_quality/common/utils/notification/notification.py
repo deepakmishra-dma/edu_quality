@@ -41,26 +41,23 @@ def create_notification_log(variables):
     notification_log.save(ignore_permissions=True)
 
 
-def create_notification_log_for_counselor(variables):
-    doc = variables.get("doc")
-    student_applicant = frappe.get_doc(doc.doctype, doc.name)
-    subject = f"Student Application Completion For {student_applicant.first_name} {student_applicant.last_name}"
-    url = get_url()
+def create_notification_log_for_counselor(doc):
+    subject = f"Student Application Completion For {doc.first_name} {doc.last_name}"
+    # url = get_url()
     email_content = (
         "Student Application Completion"
     )
 
-    doc = {
+    notification_doc = {
         "type": "Assignment",
         "document_type": "Student Applicant",
         "subject": subject,
         "document_name": doc.name,
         "email_content": email_content,
     }
-    user = frappe.session.user
     notification = frappe.new_doc("Notification Log")
-    notification.update(doc)
-    notification.for_user = user
+    notification.update(notification_doc)
+    notification.for_user = doc.owner
     notification.insert(ignore_permissions=True)
 
 
