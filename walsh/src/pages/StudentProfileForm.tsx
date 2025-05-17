@@ -106,7 +106,7 @@ export const StudentProfleFOrm = ({ student, selectedStudent, studentProfileColo
     const annuals_income = guardianList?.data?.message?.find((i) => i.relation === "Father")?.annual_income || "N/A"
     const annuals_income_mother = guardianList?.data?.message?.find((i) => i.relation === "Mother")?.annual_income || "N/A"
     const address_guardian2 = studentsList?.data?.message[0]?.address_line_2;
-    console.log("mother ", MotherEmail)
+
     const verifyOTP = async (id: string) => {
         if (id === guardianList?.data?.message?.find((i) => i.relation === "Mother")?.relation) {
 
@@ -774,7 +774,7 @@ export const StudentProfleFOrm = ({ student, selectedStudent, studentProfileColo
                             student.name === selectedStudent && FatherEmail && sendOtp.father_email &&
                             (
                                 <>
-                                    <p style={{ color: "green", marginLeft: "1rem" }}>OTP sent to {FatherEmail} {otpMessage}</p>
+                                    <p style={{ color: "green", marginLeft: "1rem" }}>OTP sent to {FatherMobile} {otpMessage}</p>
                                     <div style={{ display: "flex", flexDirection: "column", width: "100%", gap: "1rem", marginLeft: "1rem" }}>
 
                                         {/* <OtpInput /> */}

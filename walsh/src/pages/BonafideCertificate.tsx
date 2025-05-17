@@ -1,10 +1,10 @@
-import { Box, Button, Stack, Text } from "@mantine/core";
+import { Box, Button, Stack, Text, Table } from "@mantine/core";
 import { useEffect, useMemo, useState } from "react";
 import useStudentList from "../components/queries/useStudentList";
 import useClassDetails from "../components/queries/useClassDetails";
 import useStudentProfileColor from "../components/hooks/useStudentProfileColor";
 import { useSearchParams } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
+// import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import useBonafideList from "../components/queries/useBonafideList";
 
@@ -23,7 +23,7 @@ export const BonafideCertificate = () => {
     const { data: classDetails } = useClassDetails(selectedStudent)
     const students = useMemo(() => studentsList?.data?.message || [], [studentsList?.data])
     const studentProfileColor = useStudentProfileColor(selectedStudent)
-    console.log("Student --", selectedStudent)
+
     const subjectOptions = useMemo(() => {
         return classDetails?.data?.message?.class?.subject?.map?.(subject => ({
             label: subject.subject,
@@ -61,6 +61,7 @@ export const BonafideCertificate = () => {
                 // setSendingOtp(false)
             })
     };
+
     const requestBonafide = () => {
         const myHeaders = new Headers();
         myHeaders.append("Content-Type", "application/json");
@@ -99,11 +100,11 @@ export const BonafideCertificate = () => {
         }))
     }, [])
     const bonafide_name_id = bonafideList?.data?.message?.find((i) => i.reference_number === selectedStudent)?.reference_number
-    const bonafide_download = bonafideList?.data?.message?.find((i) => i.reference_number === selectedStudent)?.bonafide_pdf
 
 
 
-    console.log("chec k ", bonafideList)
+
+
     useEffect(() => {
         const studentNames = students?.map(student => student.name) || []
         if (!selectedStudent && searchedStudent && (selectedStudent != searchedStudent) && studentNames.includes(searchedStudent)) {
@@ -126,15 +127,63 @@ export const BonafideCertificate = () => {
             setSelectedUnit(unitNames[0])
         }
     }, [selectedUnit, unitOptions]);
-    const showToastMessage = () => {
-        toast.success("Please Check Your Email!", {
-            position: "top-right"
-        });
-    };
-    const dates = bonafideList?.data?.message?.find((i) => i.reference_number === selectedStudent)?.creation;
-    const formatDate = new Date(dates);
-    const formattedStartDate = formatDate.toLocaleDateString('en-GB').replace(/\//g, '-');
 
+
+
+
+    const rows1 = bonafideList?.data?.message?.filter((i) => i.reference_number == selectedStudent)
+
+
+    const rows = rows1?.map((i, index) => {
+        const formatDate = new Date(i.creation);
+        const formattedStartDate = formatDate.toLocaleDateString('en-GB').replace(/\//g, '-');
+        return (
+            <>
+                <tr >
+                    <td> <Text sx={{
+                        borderBottom: `1px solid #dee2e6`,
+                        color: studentProfileColor,
+                        fontWeight: "bold",
+                        marginLeft: "1rem"
+                    }}>{index}</Text></td>
+                    <td>
+                        <td> <Text sx={{
+                            borderBottom: `1px solid #dee2e6`,
+                            color: studentProfileColor,
+                            fontWeight: "bold",
+                            marginLeft: "1rem"
+                        }}>{formattedStartDate}</Text></td>
+                    </td>
+                    <td>
+                        <td> <Text sx={{
+                            borderBottom: `1px solid #dee2e6`,
+                            color: studentProfileColor,
+                            fontWeight: "bold",
+                            marginLeft: "1rem"
+                        }}>{i.name}</Text></td>
+                    </td>
+                    <td>
+                        <a href={i.bonafide_pdf} download={i?.bonafide_pdf}>
+
+                            <Button
+                                sx={{
+                                    marginBottom: 10,
+                                    marginTop: 10,
+                                    marginLeft: 5,
+                                    borderRadius: 10,
+                                    backgroundColor: studentProfileColor,
+                                }}
+                                onClick={() => {
+
+                                }}
+                            > Download Bonafide</Button>
+
+                        </a>
+                    </td>
+                </tr>
+            </>
+        )
+    })
 
     return (
         <>
@@ -215,22 +264,7 @@ export const BonafideCertificate = () => {
                                 (
                                     <>
                                         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "1rem" }}>
-                                            <a href={bonafide_download} download={bonafide_download}>
 
-                                                <Button
-                                                    sx={{
-                                                        marginBottom: 10,
-                                                        marginTop: 10,
-                                                        marginLeft: 5,
-                                                        borderRadius: 10,
-                                                        backgroundColor: studentProfileColor,
-                                                    }}
-                                                    onClick={() => {
-
-                                                    }}
-                                                > Download Bonafide</Button>
-
-                                            </a>
                                             <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
 
 
@@ -245,19 +279,52 @@ export const BonafideCertificate = () => {
                                                     }}
                                                     onClick={() => {
                                                         reGenerateBonafide();
-                                                        showToastMessage();
+
                                                     }}
                                                 > ReGenerate Bonafide</Button>
 
 
                                             </div>
                                         </div>
-                                        <Box sx={{ display: "flex", alignItems: "center", flexDirection: "column", justifyContent: "start" }}>
+                                        {/* <Box sx={{ display: "flex", alignItems: "center", flexDirection: "column", justifyContent: "start" }}>
 
                                             <Text sx={{
                                                 color: studentProfileColor,
                                                 fontWeight: 'bold'
-                                            }}>ReGenerate On : {formattedStartDate}</Text>
+                                            }}>Created On : {formattedStartDate}</Text>
+                                        </Box> */}
+                                        <Box sx={{
+                                            display: "flex", alignItems: "center", flexDirection: "column", justifyContent: "center"
+                                        }}>
+                                            < Table horizontalSpacing="sm" >
+                                                <thead style={{ backgroundColor: studentProfileColor + "22" }}>
+                                                    <tr >
+                                                        <td> <Text sx={{
+                                                            borderBottom: `1px solid #dee2e6`,
+                                                            color: studentProfileColor,
+                                                            fontWeight: "bold",
+                                                            marginLeft: "1rem"
+                                                        }}>Sr.no 1</Text></td>
+                                                        <td> <Text sx={{
+                                                            borderBottom: `1px solid #dee2e6`,
+                                                            color: studentProfileColor,
+                                                            fontWeight: "bold"
+                                                        }}>Created on</Text></td>
+                                                        <td> <Text sx={{
+                                                            borderBottom: `1px solid #dee2e6`,
+                                                            color: studentProfileColor,
+                                                            fontWeight: "bold"
+                                                        }}>Bonafide ID</Text></td>
+                                                        <td> <Text sx={{
+                                                            borderBottom: `1px solid #dee2e6`,
+                                                            color: studentProfileColor,
+                                                            fontWeight: "bold"
+                                                        }}>Download Link</Text></td>
+
+                                                    </tr>
+                                                </thead>
+                                                <tbody>{rows}</tbody>
+                                            </Table>
                                         </Box>
                                     </>
                                 )
@@ -272,17 +339,18 @@ export const BonafideCertificate = () => {
                                     }}
                                     onClick={() => {
                                         requestBonafide();
-                                        showToastMessage();
+
 
                                     }}
                                 > Request Bonafide</Button>
 
                         }
 
-                        <ToastContainer />
+
                     </Box>
-                </Box>
-            </Box>
+                </Box >
+            </Box >
         </>
     )
 }
+
