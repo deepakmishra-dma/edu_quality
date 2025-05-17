@@ -44,7 +44,7 @@ frappe.listview_settings['PTM Scheduler'] = {
                         frappe.prompt([
                             {'fieldname': 'summary', 'fieldtype': 'Data', 'label': 'Meeting Summary', 'reqd': 1},
                             {'fieldname': 'regenerate', 'fieldtype': 'Check', 'label': 'Re-Generate (if Present Gmeet Link)'},
-                            {'fieldname': 'imporsonate_user', 'fieldtype': 'Link', 'label': 'Select Inpersonate User', 'options': 'User', 'reqd': 1}
+                            {'fieldname': 'imporsonate_user', 'fieldtype': 'Link', 'label': 'Select Gmeet Owner', 'options': 'User', 'reqd': 1}
                         ], function(values) {
                             // Handle button click action here
                             // values.summary contains the meeting summary

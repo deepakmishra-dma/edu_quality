@@ -6,5 +6,8 @@ class CustomInstructor(Instructor):
            for i in self.custom_teacher_alias:
                alias = frappe.get_all('Teacher Alias Group',filters={'alias':i.alias},fields=['name','alias','parent'])
                if len(alias)>0:
-                   frappe.throw('Alias <b>{}</b> is Already Mapped to Teacher <b>{}</b>'.format(alias[0].get('alias'),alias[0].get('parent')))
+                   for i in alias:
+                       instructor_doc = frappe.get_doc('Instructor',i.get('parent'))
+                       if instructor_doc.get('status') == 'Active' and self.custom_school == instructor_doc.get('custom_school') and self.name != instructor_doc.name:
+                            frappe.throw('Alias <b>{}</b> is Already Mapped to Teacher <b>{}</b>'.format(i.get('alias'),i.get('parent')))
             
