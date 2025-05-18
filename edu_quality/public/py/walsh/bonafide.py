@@ -72,3 +72,10 @@ def send_bonafide(student_id):
             return pdf_url
     except:
         frappe.log_error("Bonafide Certificate Sending Failed", frappe.get_traceback())
+
+
+@frappe.whitelist(allow_guest=True)
+def bonafide_list():
+    bonafide_doc = frappe.get_all("Bonafide Certificate", fields=["*"])
+    print("list ", bonafide_doc)
+    return bonafide_doc

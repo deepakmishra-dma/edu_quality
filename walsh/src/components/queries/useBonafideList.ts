@@ -4,6 +4,7 @@ export interface BonafdeList {
     reference_number: string
     bonafide_pdf: string
     creation: any
+    name: any
 }
 
 const useBonafideList = () => {

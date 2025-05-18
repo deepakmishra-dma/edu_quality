@@ -30,7 +30,7 @@ export const Header: React.FC<HeaderProps> = ({ setNavbarOpen }) => {
             w={50}
             sx={{
               position: "absolute",
-              left: 0,
+              left: 45,
               top: 0,
               bottom: 0,
               cursor: "pointer",
@@ -48,7 +48,7 @@ export const Header: React.FC<HeaderProps> = ({ setNavbarOpen }) => {
           mr={10}
           sx={{
             position: "absolute",
-            right: 0,
+            left: 0,
             top: 0,
             bottom: 0,
             cursor: "pointer",
@@ -60,43 +60,44 @@ export const Header: React.FC<HeaderProps> = ({ setNavbarOpen }) => {
           sx={{
             fontSize: 20,
             fontWeight: "bold",
+            marginLeft: "3rem"
           }}
         >
           {location.pathname === "/"
             ? "Notices"
             : location.pathname === "/archived"
-            ? "Archived Messages"
-            : location.pathname === "/calendar"
-            ? "School Calender"
-            : location.pathname === "/stared"
-            ? "Starred Messages"
-            : location.pathname === "/early-pickup"
-            ? "Early Pick Up"
-            : location.pathname === "/bonafide"
-            ? "Request Bonafide"
-            : location.pathname === "/leave-note"
-            ? "Absent Note"
-            : /^\/notice\/([0-9a-f]+)$/.test(location.pathname)
-            ? ""
-            : /^\/cmap$/.test(location.pathname)
-            ? "Curriculum Updates"
-            : /^\/cmap\/list$/.test(location.pathname)
-            ? "Curriculum Updates"
-            : /^\/portion-circular\/list$/.test(location.pathname)
-            ? "Portion"
-            : /^\/portion-circular$/.test(location.pathname)
-            ? "Portion"
-            : /^\/date-circular$/.test(location.pathname)
-            ? "Weekly Updates"
-            : /^\/date-circular\/list$/.test(location.pathname)
-            ? "Weekly Updates"
-            : /^\/result/.test(location.pathname)
-            ? "Result"
-            : location.pathname === "/ptm-link"
-            ? "PTM Links"
-            : location.pathname === "/student-profile"
-            ? "Student Profile"
-            : ""}
+              ? "Archived Messages"
+              : location.pathname === "/calendar"
+                ? "School Calender"
+                : location.pathname === "/stared"
+                  ? "Starred Messages"
+                  : location.pathname === "/early-pickup"
+                    ? "Early Pick Up"
+                    : location.pathname === "/bonafide"
+                      ? "Request Bonafide"
+                      : location.pathname === "/leave-note"
+                        ? "Absent Note"
+                        : /^\/notice\/([0-9a-f]+)$/.test(location.pathname)
+                          ? ""
+                          : /^\/cmap$/.test(location.pathname)
+                            ? "Curriculum Updates"
+                            : /^\/cmap\/list$/.test(location.pathname)
+                              ? "Curriculum Updates"
+                              : /^\/portion-circular\/list$/.test(location.pathname)
+                                ? "Portion"
+                                : /^\/portion-circular$/.test(location.pathname)
+                                  ? "Portion"
+                                  : /^\/date-circular$/.test(location.pathname)
+                                    ? "Weekly Updates"
+                                    : /^\/date-circular\/list$/.test(location.pathname)
+                                      ? "Weekly Updates"
+                                      : /^\/result/.test(location.pathname)
+                                        ? "Result"
+                                        : location.pathname === "/ptm-link"
+                                          ? "PTM Links"
+                                          : location.pathname === "/student-profile"
+                                            ? "Student Profile"
+                                            : ""}
         </Box>
       </Stack>
     </MantineHeader>
