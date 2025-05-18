@@ -100,16 +100,20 @@ def get_unpaid_terms(fee, doctype, payment_term=None):
         school = fee_doc.school
         filters = {"student": fee_doc.student,"program":fee_doc.next_program}
 
-    require_top = frappe.get_value("School", school,"custom_require_otp_for_accepting_rules_and_regulations")
-    if require_top:
-        if frappe.get_value("School", school,"custom_otp_for_every_installment_showing_rules_and_regulations"):
-            filters["payment_term"] = payment_term
-    else:
-        return None
+    require_top = frappe.get_value("School", school, "custom_require_otp_for_accepting_rules_and_regulations")
+    undertaking_enabled = bool(require_top)
+
+    if require_top and frappe.get_value("School", school, "custom_otp_for_every_installment_showing_rules_and_regulations"):
+        filters["payment_term"] = payment_term
     
     if frappe.db.exists("Rules and Regulation Submission", filters,"name"):
         undertaking_accepted = True
     else:
         undertaking_accepted= False
-    data = {"terms": result,"undertaking_accepted":undertaking_accepted,"undertaking_url": get_undertaking_template(is_deposit=is_deposit,fee=fee_doc)}
+    data = {
+        "terms": result,
+        "undertaking_accepted": undertaking_accepted,
+        "undertaking_url": get_undertaking_template(is_deposit=is_deposit, fee=fee_doc),
+        "undertaking_enabled": undertaking_enabled
+    }
     return data

@@ -19,7 +19,8 @@
   "teacher_alias",
   "teacher",
   "date",
-  "is_gmeet_generated"
+  "is_gmeet_generated",
+  "is_notified"
  ],
  "fields": [
   {
@@ -101,18 +102,24 @@
   {
    "fieldname": "teacher_alias",
    "fieldtype": "Data",
-   "label": "Teacher Alias",
-   "read_only": 1
+   "label": "Teacher Alias"
   },
   {
    "fieldname": "period",
    "fieldtype": "Data",
    "label": "Period"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_notified",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Is Notified"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-04-21 16:16:29.810364",
+ "modified": "2024-04-24 15:05:50.028454",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "PTM Scheduler",
