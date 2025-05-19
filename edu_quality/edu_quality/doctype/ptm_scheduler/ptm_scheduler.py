@@ -142,8 +142,8 @@ def get_teacher_from_alias(alias):
 	teacher_name_doc = frappe.get_all('Teacher Alias Group', filters={'alias': alias}, fields=['parent', 'name']) 
 	if len(teacher_name_doc):
 		return teacher_name_doc[0].get('parent')   
-	#frappe.throw("No Teacher linked with Alias {}".format(alias))
-	return False
+	frappe.throw("No Teacher linked with Alias {}".format(alias))
+	# return False
 
 
 def get_formatted_date(date_str):
