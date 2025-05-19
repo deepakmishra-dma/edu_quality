@@ -31,7 +31,7 @@ def get_selected_item_map(items):
 def transform_data(items, selected_items, purchase_receipt_items=None):
     item_map = {}
     item_codes = [item.get("item_code") for item in items]
-    frappe.errprint(selected_items)
+
     item_data = frappe.db.get_list(
         "Item",
         filters=[["item_code", "in", item_codes]],
@@ -91,15 +91,13 @@ def transform_data(items, selected_items, purchase_receipt_items=None):
     selected_items_hash = {}
     if selected_items:
         selected_items_hash = {i: True for i in selected_items}
-    frappe.errprint(item_map)
-    frappe.errprint(selected_items_hash)
 
     transformed_items = [
         item_map.get(item)
         for item in item_map
-        if selected_items_hash.get(item) or selected_items == None
+        if selected_items_hash.get(item) or selected_items == None or not selected_items
     ]
-    frappe.errprint(transformed_items)
+
     return transformed_items
 
 
@@ -190,14 +188,14 @@ def generate_challan_list(self, selected_items=None):
         else selected_items
     )
     purchase_receipt_items = None
-    # purchase_receipt_item_doc = frappe.qb.docType("Purchase Receipt Item")
+
     purchase_receipt_items = frappe.db.get_list(
         "Purchase Receipt Item",
         filters={"purchase_order": self.get("name")},
         fields=["name", "item_code"],
         ignore_permissions=True,
     )
-    frappe.errprint(purchase_receipt_items)
+
     if len(purchase_receipt_items):
         purchase_receipt_items = {
             i.get("item_code"): True for i in purchase_receipt_items
@@ -246,26 +244,26 @@ def create_purchase_receipt(self, school, selected_items=[]):
         fields=["name", "item_code", "warehouse"],
         ignore_permissions=True,
     )
-    frappe.errprint("hh")
-    frappe.errprint(selected_items)
+
     selected_item_map = get_selected_item_map(selected_items)
+
     warehouse_to_item_map = get_warehouse_to_item_map(purchase_receipt_items)
     warehouse_to_name_map = get_warehouse_to_school_map(self.get("items"))
     receipt = make_purchase_receipt(source_name=self.get("name"))
-    frappe.errprint(selected_item_map)
-    frappe.errprint(warehouse_to_item_map)
-    frappe.errprint(warehouse_to_name_map)
-    frappe.errprint(purchase_receipt_items)
+
     filtered_items = list(
         filter(
             lambda item: warehouse_to_name_map.get(item.get("warehouse")) == school
             and f"{item.get('item_code')}-{item.get('warehouse')}"
             not in warehouse_to_item_map
-            and item.get("item_code") in selected_item_map,
+            and (
+                item.get("item_code") in selected_item_map
+                or (not self.get("custom_is_cmap_print") and not selected_item_map)
+            ),
             receipt.get("items"),
         )
     )
-    frappe.errprint(filtered_items)
+
     if len(filtered_items) == 0:
         frappe.msgprint(
             f"Quantity is 0 or receipt already created for the selected {school} and selected items, Please create receipt for another one"
@@ -273,7 +271,7 @@ def create_purchase_receipt(self, school, selected_items=[]):
         return
     receipt.items = filtered_items
     receipt.rounded_total = 0
-    frappe.errprint(receipt.as_dict())
+
     last = self.get("name").split("-")[-1]
     receipt.naming_series = f"MAT-PRE-.YYYY.-{last}-{school_prefix}-"
     receipt.insert()
@@ -308,7 +306,6 @@ def send_test_order_email(self, user):
             doc.custom_user_email = user
             doc.save(ignore_permissions=True)
             doc.reload()
-            trigger_event(doc=doc, event_name="purchase_order")
             frappe.clear_messages()
         return "Success"
     except Exception as e:

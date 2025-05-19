@@ -18,6 +18,9 @@ class PermanentIdCard(Document):
                 "items": [],
                 "supplier": "Printer",
                 "custom_academic_year": academic_year,
+                "custom_is_id_card": 1,
+                "custom_reference_doctype": "Permanent Id Card",
+                "custom_reference_docname": self.name,
             }
         )
 
@@ -42,14 +45,27 @@ class PermanentIdCard(Document):
                     "qty": item.count,
                     "schedule_date": now_date,
                     "warehouse": item.warehouse,
+                    "custom_sent_by": frappe.session.user,
                     "uom": "Nos",
+                    "custom_print_file_url": self.file,
                     "school": item.school,
                 },
             )
 
         if not len(bundled_items):
             frappe.throw("Can't Create Purchase Order without ID Cards")
-        return purchase_order.insert()
+        purchase_order = purchase_order.insert()
+        frappe.get_doc(
+            {
+                "doctype": "Id Card Order",
+                "parenttype": "Permanent Id Card",
+                "parentfield": "orders",
+                "parent": self.name,
+                "purchase_order": purchase_order.name,
+            }
+        ).insert(ignore_permissions=True)
+
+        return purchase_order
 
 
 """
@@ -69,29 +85,32 @@ def bundle_all_cards(doc):
             (ind_perm_card_doc.parent == doc.name)
             & (ind_perm_card_doc.parenttype == "Permanent ID Card")
         )
-        .groupby(program_enrollment.school)
-        .select(program_enrollment.school, Count("*").as_("count"))
+        .groupby(program_enrollment.custom_school)
+        .select(program_enrollment.custom_school.as_("school"), Count("*").as_("count"))
     )
     final_query = (
         frappe.qb.from_(query)
         .inner_join(school_doc)
         .on(school_doc.name == query.school)
-        .select(query.ALL, school_doc.warehouse)
+        .select(query.school, query.count, school_doc.warehouse)
     )
 
     return final_query.run(as_dict=True)
 
+
 # edu_quality.edu_quality.doctype.permanent_id_card.permanent_id_card.create_purchase_order
 """Create Purchase Orders for the specified permanent id card doc"""
+
+
 @frappe.whitelist()
 def create_purchase_order(name):
     try:
-        if not frappe.db.exists("Permanent ID Card", name):
+        if not frappe.db.exists("Permanent Id Card", name):
             frappe.throw(
                 "Doesn't exist, the specified pdf for the name provided doesn't exist"
             )
 
-        permanent_id_card = frappe.get_doc("Permanent ID Card", name)
+        permanent_id_card = frappe.get_doc("Permanent Id Card", name)
         purchase_order = permanent_id_card.create_order()
 
         if purchase_order:

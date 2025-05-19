@@ -27,7 +27,7 @@ frappe.query_reports["CMAP Print"] = {
 		{
 			"fieldname": "academic_year",
 			"fieldtype": "Select",
-			"options": ["2023-2024","2024-2025"],
+			"options": ["2023-2024", "2024-2025"],
 			"label": "Academic Year",
 		},
 		{
@@ -105,11 +105,14 @@ frappe.query_reports["CMAP Print"] = {
 
 			frappe.confirm(__(message), () => {
 				const academic_year = report.filters.find(el => el.fieldname === "academic_year").input.value
+				const class_name = report.filters.find(el => el.fieldname === "class").input.value
+				
 				frappe.call({
 					"method": "edu_quality.edu_quality.report.cmap_print.cmap_print.create_purchase_order",
 					"args": {
 						rows: selected_rows,
-						academic_year: academic_year
+						academic_year: academic_year,
+						class_name: class_name
 					},
 					callback: function (r) {
 						if (r.message) {
