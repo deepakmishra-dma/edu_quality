@@ -156,6 +156,7 @@ doc_events = {
     },
     "Guardian": {
         "before_insert": "edu_quality.edu_quality.server_scripts.guardian.before_insert",
+        "after_insert": "edu_quality.edu_quality.server_scripts.guardian.after_insert",
         "on_update": "edu_quality.edu_quality.server_scripts.guardian.on_update",
     },
     "Student Applicant": {
