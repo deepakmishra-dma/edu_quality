@@ -67,7 +67,7 @@ def import_ptm_schedule_background(csv_content):
 			date = get_formatted_date(date_str)
 			ptm_scheduler = frappe.new_doc("PTM Scheduler")
 			ptm_scheduler.academic_year = acad_year
-			ptm_scheduler.branch = branch
+			ptm_scheduler.branch = branch.strip()
 			ptm_scheduler.division = get_division(divStr=cls_div, branch=branch, academic_year=acad_year)
 			ptm_scheduler.teacher_alias = teacher_name
 			ptm_scheduler.teacher = get_teacher_from_alias(teacher_name)
