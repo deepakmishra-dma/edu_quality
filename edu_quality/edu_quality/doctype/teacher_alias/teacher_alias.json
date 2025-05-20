@@ -1,5 +1,6 @@
 {
  "actions": [],
+ "allow_import": 1,
  "allow_rename": 1,
  "autoname": "field:alias",
  "creation": "2024-04-18 11:16:26.054878",
@@ -18,7 +19,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-04-21 15:29:19.876335",
+ "modified": "2024-04-25 12:42:01.376280",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Teacher Alias",

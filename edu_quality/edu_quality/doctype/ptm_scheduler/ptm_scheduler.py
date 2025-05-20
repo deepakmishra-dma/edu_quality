@@ -67,7 +67,7 @@ def import_ptm_schedule_background(csv_content):
 			date = get_formatted_date(date_str)
 			ptm_scheduler = frappe.new_doc("PTM Scheduler")
 			ptm_scheduler.academic_year = acad_year
-			ptm_scheduler.branch = branch
+			ptm_scheduler.branch = branch.strip()
 			ptm_scheduler.division = get_division(divStr=cls_div, branch=branch, academic_year=acad_year)
 			ptm_scheduler.teacher_alias = teacher_name
 			ptm_scheduler.teacher = get_teacher_from_alias(teacher_name)
@@ -142,8 +142,8 @@ def get_teacher_from_alias(alias):
 	teacher_name_doc = frappe.get_all('Teacher Alias Group', filters={'alias': alias}, fields=['parent', 'name']) 
 	if len(teacher_name_doc):
 		return teacher_name_doc[0].get('parent')   
-	#frappe.throw("No Teacher linked with Alias {}".format(alias))
-	return False
+	frappe.throw("No Teacher linked with Alias {}".format(alias))
+	# return False
 
 
 def get_formatted_date(date_str):
