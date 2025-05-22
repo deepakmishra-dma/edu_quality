@@ -226,6 +226,7 @@ doc_events = {
         "before_validate": "edu_quality.overrides_hooks.purchase_order.before_validate",
     },
     "Employee": {
+        "before_save": "edu_quality.edu_quality.server_scripts.employee.before_save",
         "after_insert": "edu_quality.edu_quality.server_scripts.employee.after_insert",
         "on_update": "edu_quality.edu_quality.server_scripts.employee.on_update",
     },

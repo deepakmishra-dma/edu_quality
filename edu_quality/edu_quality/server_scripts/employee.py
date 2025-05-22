@@ -4,6 +4,15 @@ from frappe.utils.data import cint
 from edu_quality.api.google_admin import add_user_to_group, get_google_admin_object
 
 
+def before_save(doc, method=None):
+    email_pattern = re.compile(r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
+    mobile_pattern = re.compile(r"^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$")
+    if not mobile_pattern.match(doc.cell_number):
+        frappe.throw("Invalid Mobile Number")
+    if not email_pattern.match(doc.personal_email):
+        frappe.throw("Invalid Personal Email")
+
+
 def after_insert(doc, method=None):
     """
     1. Create a Google User Account if the option is enabled
