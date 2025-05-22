@@ -70,13 +70,14 @@ def get_google_group_info(doc, info_type="org_unit_path"):
     """
     Get the google group information based on the info_type
     """
-    school = frappe.get_doc("School", doc.branch)
-    group = next((g for g in school.google_groups if g.role == doc.designation), None)
-    return (
-        (group.group_email if info_type == "group_email" else group.org_unit_path)
-        if group
-        else None
-    )
+    if not doc.branch:
+        frappe.throw("Branch is mandatory to create a google user account")
+    if not doc.role:
+        frappe.throw("Role is mandatory to create a google user account")
+
+    branch = frappe.get_doc("Branch", doc.branch)
+    group = next((g for g in branch.google_groups if g.role == doc.role), None)
+    return group.get(info_type, None) if group else None
 
 
 def create_google_user_account(doc):
