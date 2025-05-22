@@ -23,12 +23,14 @@ def after_insert(doc, method=None):
     # Create User in Frappe/ERPNext
     create_user(doc)
 
-    # Add to relevant email groups in ERPNext
-    add_to_email_group(doc)
+    if doc.user_id:
+        # Add to relevant email groups in ERPNext
+        add_to_email_group(doc)
+        # Add user permissions for the employee based on the schools
+        add_to_user_permission(doc)
     # Send Communication mails to the user
     try:
         from nextai.funnel.custom_trigger import trigger_event
-
         trigger_event(doc, "employee_created")
     except:
         frappe.log_error(
@@ -39,6 +41,7 @@ def after_insert(doc, method=None):
 
 def on_update(doc, method=None):
     add_to_email_group(doc)
+    add_to_user_permission(doc)
 
 
 def add_to_email_group(doc):
@@ -51,7 +54,7 @@ def add_to_email_group(doc):
             {
                 "doctype": "Email Group Member",
                 "email_group": eg.email_group,
-                "email": doc.company_email,
+                "email": doc.company_email or doc.personal_email,
             }
         )
         email_group.insert(ignore_permissions=True)
@@ -64,6 +67,46 @@ def remove_from_email_group(doc):
     groups = frappe.get_all("Email Group Member", filters={"email": doc.company_email})
     for group in groups:
         frappe.delete_doc("Email Group Member", group.name, ignore_permissions=True)
+
+
+def add_to_user_permission(doc, method=None):
+    """
+    Add user permissions for the employee, based on the schools
+    """
+    if not doc.user_id:
+        return
+
+    # Get the school list
+    if not doc.school:
+        schools = frappe.get_all("School")
+        for s in schools:
+            add_user_permission(doc, s.name)
+    else:
+        # Remove existing user permissions if school is changed
+        remove_user_permission(doc)  # Remove existing user permissions
+        for s in doc.school:
+            add_user_permission(doc, s.school)
+
+
+def add_user_permission(doc, school):
+    """
+    add user permission for the employee to access the school
+    """
+    if frappe.db.exists("User Permission", {"user": doc.user_id, "allow": "School", "for_value": school}): return
+    perm = frappe.new_doc("User Permission")
+    perm.user = doc.user_id
+    perm.allow = "School"
+    perm.for_value = school
+    perm.insert(ignore_permissions=True)
+
+
+def remove_user_permission(doc, method=None):
+    """
+    Remove user permissions for the employee
+    """
+    user_permission = frappe.get_all("User Permission", filters={"user": doc.user_id, "allow": "School"})
+    for up in user_permission:
+        frappe.delete_doc("User Permission", up.name, ignore_permissions=True)
 
 
 def get_google_group_info(doc, info_type="org_unit_path"):
@@ -100,6 +143,10 @@ def create_google_user_account(doc):
     doc.reload()
 
 
+def get_username(email):
+    return email.split("@")[0]
+
+
 def create_user(emp):
     employee_name = emp.employee_name.split(" ")
     middle_name = last_name = ""
@@ -112,13 +159,14 @@ def create_user(emp):
 
     first_name = employee_name[0]
 
-    username = emp.company_email.split("@")[0]
+    email = emp.company_email or emp.personal_email
+    username = get_username(email)
 
     user = frappe.new_doc("User")
     user.update(
         {
             "name": emp.employee_name,
-            "email": emp.company_email or emp.personal_email,
+            "email": email,
             "enabled": 1,
             "first_name": first_name,
             "middle_name": middle_name,
