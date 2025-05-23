@@ -11,6 +11,7 @@ class PermanentIdCard(Document):
     @frappe.whitelist()
     def create_order(self):
         academic_year = current_academic_year()
+      
         purchase_order = frappe.get_doc(
             {
                 "doctype": "Purchase Order",
