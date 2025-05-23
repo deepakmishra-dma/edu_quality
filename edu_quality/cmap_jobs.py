@@ -110,15 +110,29 @@ def get_division_name_by_student_id(student_id):
         return division_list[0].get('parent')
     return None
         
- 
 
-@frappe.whitelist()
+
+def get_datetime_from_time_slot(date, time_slot):
+    # Parse the date string into a datetime object
+    date_obj = date
+    if time_slot:
+        time_obj = datetime.datetime.strptime(time_slot.strip(), "%I:%M %p").time()
+
+        # Combine date and time to create a datetime object
+        datetime_obj = datetime.datetime.combine(date_obj, time_obj)
+
+        return datetime_obj 
+
+@frappe.whitelist(allow_guest=True)
 def get_upcoming_online_ptm_links(student_id):
     student_division = get_division_name_by_student_id(student_id)
     if student_division:
-        ptm_scheduler_list = frappe.get_all('PTM Scheduler',filters={'date':('>=',getdate(today())),'is_gmeet_generated':1,'division':student_division},fields=['name','teacher','subject','division','slot','date','day','branch'])
+        ptm_scheduler_list = frappe.get_all('PTM Scheduler',filters={'date':('>=',getdate(today())),'is_gmeet_generated':1,'division':student_division},fields=['name','teacher','subject','division','slot','date','day','branch','gmeet_link'])
         if len(ptm_scheduler_list)>0:
-            return ptm_scheduler_list
+            for i in ptm_scheduler_list:
+                i['datetime'] = get_datetime_from_time_slot(i.get('date'),i.get('slot').split("-")[1])
+            ptm_scheduler_list = [ item for item in ptm_scheduler_list if item.get('datetime')>= datetime.datetime.now()]
+            return  ptm_scheduler_list   
         return []
        
     
