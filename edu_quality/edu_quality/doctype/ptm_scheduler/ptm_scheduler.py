@@ -70,7 +70,7 @@ def import_ptm_schedule_background(csv_content):
 			ptm_scheduler.branch = branch.strip()
 			ptm_scheduler.division = get_division(divStr=cls_div, branch=branch, academic_year=acad_year)
 			ptm_scheduler.teacher_alias = teacher_name
-			ptm_scheduler.teacher = get_teacher_from_alias(teacher_name)
+			ptm_scheduler.teacher = get_teacher_from_alias(teacher_name.strip(),branch.strip())
 			ptm_scheduler.subject = subject
 			ptm_scheduler.group = group
 			ptm_scheduler.period = period
@@ -88,7 +88,7 @@ def import_ptm_schedule_background(csv_content):
 		frappe.db.commit()
 		return {"status": "success", "message": _("PTM schedule imported successfully")}
 	except Exception as e:
-		frappe.log_error(f"Error importing PTM schedule background: {str(e)}", "PTM Schedule Import Background")
+		frappe.log_error(message=f"Error importing PTM schedule background: {str(e)}", title="PTM Schedule Import Background")
 		return {"status": "failed", "message": str(e)}
 
 
@@ -138,11 +138,18 @@ def get_division(divStr, branch, academic_year):
             return get_prefix(divStr) + "-" + branch +"-"+academic_year    
 
 
-def get_teacher_from_alias(alias):
-	teacher_name_doc = frappe.get_all('Teacher Alias Group', filters={'alias': alias}, fields=['parent', 'name']) 
-	if len(teacher_name_doc):
-		return teacher_name_doc[0].get('parent')   
-	frappe.throw("No Teacher linked with Alias {}".format(alias))
+def get_teacher_from_alias(alias,branch):
+	try:
+		teacher_name_doc = frappe.get_all('Teacher Alias Group', filters={'alias': alias}, fields=['parent', 'name']) 
+		if len(teacher_name_doc):
+			for i in teacher_name_doc:
+				teacher_doc = frappe.get_doc('Instructor',i.get('parent'))
+				if branch == teacher_doc.custom_school:
+					return i.parent
+		frappe.throw("No Teacher linked with Alias {} for School {} ".format(alias,branch))
+	except Exception as e:
+		frappe.throw("No Teacher linked with Alias {} for School {} with error : {} ".format(alias,branch,str(e)))
+     
 	# return False
 
 
