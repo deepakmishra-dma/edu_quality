@@ -15,47 +15,48 @@
         }
   
         .qr-image-size {
-          width: 2.8rem;
-          height: 2.8rem;
+          width: 2.5rem;
+          height: 2.5rem;
   
   
         }
   
         .student-image-size {
           display: inline-block;
-          width: 6.5rem;
-          height: 6.5rem;
-          margin: 0.5rem 0 0.5rem 1rem;
+          width: 6.35rem;
+    height: 6.35rem;
+    margin: 0.38rem 0 0.5rem 1rem;
           position: relative;
           top: -8px;
           overflow: hidden;
           border-radius: 2px;
         }
         .student-image-size>img{
-          width: 6.5rem;
-          height: 6.5rem;
+          width: 6.35rem;
+          height: 6.35rem;
         }
         .front {
           width: 100%;
-          height: 321.73px;
-          margin: 5px;
+          height: 329.21px;
+         
           background-repeat: no-repeat;
           padding-bottom: 1em;
           background-size: contain;
         }
   
         .back {
-          height: 361.73px;
-          width:100%;
+          width: 100%;
+          height: 329.21px;
   
   
-          margin: 5px;
+        
           border: 1px solid #fff;
           font-size: 10px;
           font-weight: bold;
           background-image: url("{{site_url}}{{ school.id_card_template_back}}");
-          background-size: cover;
+          background-size: contain;
           background-repeat: no-repeat;
+        
           transform: rotate(180deg);
         }
   
@@ -69,7 +70,7 @@
   
           right:-25%;
           transform: rotate(135deg);
-          top:17.5%;
+          top:14%;
         }
         .allergies-logo{
           border: solid 40px;
@@ -200,6 +201,7 @@
           display: flex;
           gap: 4px;
           position: relative;
+          font-size: 9px;
         }
   
         .address-info {
@@ -217,7 +219,7 @@
       }
         .address-info p {
           text-transform:uppercase;
-          font-size: 10px;
+          font-size: 9px;
           margin-left: 4px;
           font-weight: 500;
         }
@@ -260,7 +262,8 @@
         }
   
         .student-image {
-          margin-top: 95px;
+          margin-top: 91px;
+          margin-left:1px;
         }
   
         .student-details {
@@ -278,13 +281,40 @@
           border-radius: 50%;
         }
         .parent-container{
-          width: 215px;
-  
+          width: 212px;
+          /* overflow: hidden; */
           margin-left: 2px;
           margin-right: 2px;
         }
+        .cut-mark-circle{
+          height:16px;
+          width:16px;
+      
+          border-radius: 50%;
+          border: 1px solid black;
+        }
+
+        .cut-mark-container{
+          display: flex;
+          justify-content: space-between;
+     
+        }
+        .cut-mark-container-two{
+          display: flex;
+          flex-direction: column;
+
+        }
+        .cut-mark-container>.left,.cut-mark-container-two>.left{
+        border-left: 1px solid black;
+        padding-left:4px;
+        }
+        .cut-mark-container>.right,.cut-mark-container-two>.right{
+        border-right: 1px solid black;
+        padding-right:4px;
+        }
   </style>
   <div class="parent-container">
+    <div class="cut-mark-container" style="margin-top:10px;padding-bottom: 5px;"><div class="left"><div class="cut-mark-circle"></div></div><div class="right"><div class="cut-mark-circle"></div></div></div>
     <div class="front" style="background-image: url('{{site_url}}{{bg_image}}');">
       <div class="container">
         {% if student_data.has_allergies %}
@@ -301,7 +331,7 @@
           </div>
           <div class="student-details">
             {% if doc.transport_service_required %}
-            <h1 class="pickup-bus" style="color: white">{{doc.drop_bus}}</h1>
+            <h1 class="pickup-bus" style="color: white">{{doc.drop_bus or ""}}</h1>
             {% else %}
             <h1 class="pickup-bus">M{{batch_num}}</h1>
             {% endif %}
@@ -321,7 +351,7 @@
               endif
               %}
             >
-              {{div_name}}
+              {{div_name or ""}}
             </h2>
           </div>
           <div class="ref-col-container">
@@ -335,7 +365,7 @@
               %}
             >
               {{student_data.custom_reference_number or
-              student_data.reference_number}}
+              student_data.reference_number or ""}}
             </h2>
           </div>
         </div>
@@ -356,6 +386,20 @@
           />
         </div>
       </div>
+    </div>
+    <div class="cut-mark-container" style="padding-bottom: 5px;padding-top: 5px;">
+      <div class="cut-mark-container-two">
+        <div class="left">
+        <div class="cut-mark-circle "></div>
+        <div class="cut-mark-circle "></div></div>
+      </div>
+  
+      <div class="cut-mark-container-two">
+        <div class="right">
+        <div class="cut-mark-circle"></div>
+        <div class="cut-mark-circle"></div></div>
+      </div>
+  
     </div>
     <div
       class="back"
@@ -392,5 +436,6 @@
         {% endif %}
       </div>
     </div>
+    <div class="cut-mark-container" style="padding-top: 5px;" ><div class="left"><div class="cut-mark-circle"></div></div><div class="right"><div class="cut-mark-circle"></div></div></div>
   </div>
   

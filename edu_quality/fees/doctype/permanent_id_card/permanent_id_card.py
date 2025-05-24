@@ -11,7 +11,8 @@ class PermanentIdCard(Document):
     @frappe.whitelist()
     def create_order(self):
         academic_year = current_academic_year()
-      
+        permanent_id_card_doc = frappe.qb.DocType("Permanent Id Card")
+        
         purchase_order = frappe.get_doc(
             {
                 "doctype": "Purchase Order",
