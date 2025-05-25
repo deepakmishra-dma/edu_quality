@@ -19,8 +19,9 @@ import DateCmap from "./date-circular/index.tsx";
 import CmapDateList from "./date-circular/list.tsx";
 import EarlyPickup from "./EarlyPickup.tsx";
 import Result from "./result.tsx";
-// import { PtmLinks } from "./PtmLinks.tsx";
+
 import { StudentProfle } from "./StudentProfile.tsx";
+// import { PtmLinks } from "./PtmLinks.tsx";
 
 
 const Pages = () => {
