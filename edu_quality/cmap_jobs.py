@@ -132,6 +132,7 @@ def get_upcoming_online_ptm_links(student_id):
             for i in ptm_scheduler_list:
                 i['datetime'] = get_datetime_from_time_slot(i.get('date'),i.get('slot').split("-")[1])
             ptm_scheduler_list = [ item for item in ptm_scheduler_list if item.get('datetime')>= datetime.datetime.now()]
+            ptm_scheduler_list.sort(key=lambda x: x['datetime'])
             return  ptm_scheduler_list   
         return []
        
