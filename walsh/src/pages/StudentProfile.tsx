@@ -65,7 +65,7 @@ export const StudentProfle = () => {
 
 
     // console.log(findName("Mother"))
-    console.log("selected Guardian ", studentsList)
+    // console.log("selected Guardian ", studentsList)
     useEffect(() => {
         const studentNames = students?.map(student => student.name) || []
         if (!selectedStudent && searchedStudent && (selectedStudent != searchedStudent) && studentNames.includes(searchedStudent)) {

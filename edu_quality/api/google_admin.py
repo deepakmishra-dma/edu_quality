@@ -58,9 +58,9 @@ def create_google_user(
             )
             .execute()
         )
-        frappe.log_error("Account get for  ", str(existing_user))
+     
     except:
-        frappe.log_error("Correct exception")
+       
         exception = True
 
     try:
@@ -95,7 +95,7 @@ def create_google_user(
                 )
                 .execute()
             )
-            frappe.log_error("Account created for ", str(resp))
+        
             return resp
     except Exception as e:
         frappe.log_error(

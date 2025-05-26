@@ -54,9 +54,11 @@ def send_bonafide(student_id):
                 filters=[["guardian_name", "in", guardian_email]],
             )
             recipients = [i.email_address for i in guardian]
-
+            school_details = frappe.get_doc("School", student.school)
+            bcc_admin = school_details.get("bcc_email_address")
             frappe.sendmail(
                 recipients=recipients,
+                bcc=[bcc_admin],
                 subject="Bonafide Certificate",
                 message="Please find attached Bonafide Certificate",
                 attachments=[

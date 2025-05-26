@@ -137,7 +137,7 @@ def create_google_user_account(doc):
     Create a google user account
     """
     org_unit_path = get_google_group_info(doc)
-    org_unit_path = f"/{doc.branch}/{org_unit_path}" if org_unit_path else None
+    org_unit_path = org_unit_path.strip() if org_unit_path else None
     email_key = doc.employee_name.lower().strip().replace(" ", ".")
     # Create a Google User
     company_email = create_employee_google_user(
