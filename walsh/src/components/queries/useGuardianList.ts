@@ -18,8 +18,16 @@ interface Student_ID {
     student_id: string
 }
 
-const useGuardianList = (props: Student_ID) => {
-    return useCustom<{ message: Guardian[] }>({
+interface MotherId {
+    name: string
+}
+interface FatherId {
+    name: string
+}
+
+
+export const useStudentDataList = (props: Student_ID) => {
+    return useCustom({
         config: {
             query: {
                 student_id: props.student_id
@@ -28,27 +36,59 @@ const useGuardianList = (props: Student_ID) => {
         errorNotification: undefined,
         method: "get",
         queryOptions: {
-            queryKey: ["guardian", props.student_id],
+            queryKey: ["studentDataList", props.student_id],
         },
         successNotification: undefined,
-        url: '/api/method/edu_quality.public.py.student.relationDetails'
+        url: `/api/resource/Student/${props.student_id}`,
+    })
+}
+export const useMotherGuardianList = (props: MotherId) => {
+    return useCustom({
+        config: {
+            query: {
+                name: props.name
+            }
+        },
+        errorNotification: undefined,
+        method: "get",
+        queryOptions: {
+            queryKey: ["guardianMotherData", props.name],
+        },
+        successNotification: undefined,
+        url: `/api/resource/Guardian/${props.name}`
+    })
+}
+export const useFatherGuardianList = (props: FatherId) => {
+    return useCustom({
+        config: {
+            query: {
+                name: props.name
+            }
+        },
+        errorNotification: undefined,
+        method: "get",
+        queryOptions: {
+            queryKey: ["guardianFatherData", props.name],
+        },
+        successNotification: undefined,
+        url: `/api/resource/Guardian/${props.name}`
     })
 }
 
 
+interface FatherDetailsProps {
+    FatherGuardian: string
+}
 
 interface GuardianEmailvariables {
     name: string
-    new_email: string
+    email_address: string
 }
 interface GuardianNumbervariables {
     name: string
     mobile_number: string
 }
-interface GuardianFatherEmailvariables {
-    name: string
-    new_email: string
-}
+
 interface GuardianFatherNumbervariables {
     name: string
     mobile_number: string
@@ -76,15 +116,15 @@ export const guardin_email_update = () => {
     })
     const mutationFunction = useCallback((variables: GuardianEmailvariables) => {
         return mutate({
-            url: '/api/method/edu_quality.public.py.student.update_guardian_email',
-            method: 'post',
+            url: `/api/resource/Guardian/${variables.name}`,
+            method: 'put',
             values: variables
         })
     }, [mutate])
     const mutationAsyncFunction = useCallback((variables: GuardianEmailvariables) => {
         return mutateAsync({
-            url: '/api/method/edu_quality.public.py.student.update_guardian_email',
-            method: 'post',
+            url: `/api/resource/Guardian/${variables.name}`,
+            method: 'put',
             values: variables
         })
     }, [mutateAsync])
@@ -100,15 +140,15 @@ export const guardin_number_update = () => {
     })
     const mutationFunction = useCallback((variables: GuardianNumbervariables) => {
         return mutate({
-            url: '/api/method/edu_quality.public.py.student.update_guardian_number',
-            method: 'post',
+            url: `/api/resource/Guardian/${variables.name}`,
+            method: 'put',
             values: variables
         })
     }, [mutate])
     const mutationAsyncFunction = useCallback((variables: GuardianNumbervariables) => {
         return mutateAsync({
-            url: '/api/method/edu_quality.public.py.student.update_guardian_number',
-            method: 'post',
+            url: `/api/resource/Guardian/${variables.name}`,
+            method: 'put',
             values: variables
         })
     }, [mutateAsync])
@@ -118,45 +158,24 @@ export const guardin_number_update = () => {
         mutateAsync: mutationAsyncFunction
     }
 }
-export const guardin_father_email_update = () => {
-    const { mutate, mutateAsync, ...mutationObjs } = useCustomMutation({
-        mutationOptions: {}
-    })
-    const mutationFunction = useCallback((variables: GuardianFatherEmailvariables) => {
-        return mutate({
-            url: '/api/method/edu_quality.public.py.student.update_guardian_father_email',
-            method: 'post',
-            values: variables
-        })
-    }, [mutate])
-    const mutationAsyncFunction = useCallback((variables: GuardianFatherEmailvariables) => {
-        return mutateAsync({
-            url: '/api/method/edu_quality.public.py.student.update_guardian_father_email',
-            method: 'post',
-            values: variables
-        })
-    }, [mutateAsync])
-    return {
-        ...mutationObjs,
-        mutate: mutationFunction,
-        mutateAsync: mutationAsyncFunction
-    }
-}
-export const guardin_father_number_update = () => {
+
+export const guardin_father_number_update = ({ FatherGuardian }: FatherDetailsProps) => {
+    const urls = `/api/resource/Guardian/${FatherGuardian}`;
+    console.log("check url", urls)
     const { mutate, mutateAsync, ...mutationObjs } = useCustomMutation({
         mutationOptions: {}
     })
     const mutationFunction = useCallback((variables: GuardianFatherNumbervariables) => {
         return mutate({
-            url: '/api/method/edu_quality.public.py.student.update_guardian__father_number',
-            method: 'post',
+            url: `/api/resource/Guardian/${variables.name}`,
+            method: 'put',
             values: variables
         })
     }, [mutate])
     const mutationAsyncFunction = useCallback((variables: GuardianFatherNumbervariables) => {
         return mutateAsync({
-            url: '/api/method/edu_quality.public.py.student.update_guardian__father_number',
-            method: 'post',
+            url: `/api/resource/Guardian/${variables.name}`,
+            method: 'put',
             values: variables
         })
     }, [mutateAsync])
@@ -172,15 +191,15 @@ export const guardin_address = () => {
     })
     const mutationFunction = useCallback((variables: GuardianAddress) => {
         return mutate({
-            url: '/api/method/edu_quality.public.py.student.update_guardian__address1',
-            method: 'post',
+            url: `/api/resource/Student/${variables.name}`,
+            method: 'put',
             values: variables
         })
     }, [mutate])
     const mutationAsyncFunction = useCallback((variables: GuardianAddress) => {
         return mutateAsync({
-            url: '/api/method/edu_quality.public.py.student.update_guardian__address1',
-            method: 'post',
+            url: `/api/resource/Student/${variables.name}`,
+            method: 'put',
             values: variables
         })
     }, [mutateAsync])
@@ -196,15 +215,15 @@ export const guardin_address2 = () => {
     })
     const mutationFunction = useCallback((variables: GuardianAddress2) => {
         return mutate({
-            url: '/api/method/edu_quality.public.py.student.update_guardian__address2',
-            method: 'post',
+            url: `/api/resource/Student/${variables.name}`,
+            method: 'put',
             values: variables
         })
     }, [mutate])
     const mutationAsyncFunction = useCallback((variables: GuardianAddress2) => {
         return mutateAsync({
-            url: '/api/method/edu_quality.public.py.student.update_guardian__address2',
-            method: 'post',
+            url: `/api/resource/Student/${variables.name}`,
+            method: 'put',
             values: variables
         })
     }, [mutateAsync])
@@ -220,15 +239,15 @@ export const updateBloodGroup = () => {
     })
     const mutationFunction = useCallback((variables: UpdateBloodGroupProps) => {
         return mutate({
-            url: '/api/method/edu_quality.public.py.student.update_blood_group',
-            method: 'post',
+            url: `/api/resource/Student/${variables.name}`,
+            method: 'put',
             values: variables
         })
     }, [mutate])
     const mutationAsyncFunction = useCallback((variables: UpdateBloodGroupProps) => {
         return mutateAsync({
-            url: '/api/method/edu_quality.public.py.student.update_blood_group',
-            method: 'post',
+            url: `/api/resource/Student/${variables.name}`,
+            method: 'put',
             values: variables
         })
     }, [mutateAsync])
@@ -246,15 +265,15 @@ export const updateAnnualIncome = () => {
     })
     const mutationFunction = useCallback((variables: UpdateAnnualIncomeProps) => {
         return mutate({
-            url: '/api/method/edu_quality.public.py.student.update_annual_income',
-            method: 'post',
+            url: `/api/resource/Guardian/${variables.name}`,
+            method: 'put',
             values: variables
         })
     }, [mutate])
     const mutationAsyncFunction = useCallback((variables: UpdateAnnualIncomeProps) => {
         return mutateAsync({
-            url: '/api/method/edu_quality.public.py.student.update_annual_income',
-            method: 'post',
+            url: `/api/resource/Guardian/${variables.name}`,
+            method: 'put',
             values: variables
         })
     }, [mutateAsync])
@@ -269,4 +288,3 @@ export const updateAnnualIncome = () => {
 
 
 
-export default useGuardianList

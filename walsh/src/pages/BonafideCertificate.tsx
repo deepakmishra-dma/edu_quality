@@ -128,40 +128,36 @@ export const BonafideCertificate = () => {
         }
     }, [selectedUnit, unitOptions]);
 
-
-
-
     const rows1 = bonafideList?.data?.message?.filter((i) => i.reference_number == selectedStudent)
-
-
     const rows = rows1?.map((i, index) => {
         const formatDate = new Date(i.creation);
         const formattedStartDate = formatDate.toLocaleDateString('en-GB').replace(/\//g, '-');
         return (
             <>
+
+
                 <tr >
                     <td> <Text sx={{
                         borderBottom: `1px solid #dee2e6`,
                         color: studentProfileColor,
                         fontWeight: "bold",
-                        marginLeft: "1rem"
+
                     }}>{index}</Text></td>
-                    <td>
-                        <td> <Text sx={{
-                            borderBottom: `1px solid #dee2e6`,
-                            color: studentProfileColor,
-                            fontWeight: "bold",
-                            marginLeft: "1rem"
-                        }}>{formattedStartDate}</Text></td>
-                    </td>
-                    <td>
-                        <td> <Text sx={{
-                            borderBottom: `1px solid #dee2e6`,
-                            color: studentProfileColor,
-                            fontWeight: "bold",
-                            marginLeft: "1rem"
-                        }}>{i.name}</Text></td>
-                    </td>
+
+
+
+                    <td> <Text sx={{
+                        borderBottom: `1px solid #dee2e6`,
+                        color: studentProfileColor,
+                        fontWeight: "bold",
+                        marginBottom: 10,
+                        marginTop: 10,
+                        marginLeft: 10,
+                        borderRadius: 10,
+
+                    }}>{formattedStartDate}</Text></td>
+
+
                     <td>
                         <a href={i.bonafide_pdf} download={i?.bonafide_pdf}>
 
@@ -181,6 +177,7 @@ export const BonafideCertificate = () => {
                         </a>
                     </td>
                 </tr>
+
             </>
         )
     })
@@ -256,6 +253,7 @@ export const BonafideCertificate = () => {
                     </Stack>
                     <Box sx={{
                         textAlign: 'center',
+
                     }}>
 
 
@@ -263,12 +261,9 @@ export const BonafideCertificate = () => {
                             bonafide_name_id === selectedStudent ?
                                 (
                                     <>
-                                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "1rem" }}>
+                                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "1rem", overflow: "auto" }}>
 
                                             <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-
-
-
                                                 <Button
                                                     sx={{
                                                         marginBottom: 10,
@@ -285,36 +280,30 @@ export const BonafideCertificate = () => {
 
 
                                             </div>
-                                        </div>
-                                        {/* <Box sx={{ display: "flex", alignItems: "center", flexDirection: "column", justifyContent: "start" }}>
 
-                                            <Text sx={{
-                                                color: studentProfileColor,
-                                                fontWeight: 'bold'
-                                            }}>Created On : {formattedStartDate}</Text>
-                                        </Box> */}
+
+                                        </div>
                                         <Box sx={{
-                                            display: "flex", alignItems: "center", flexDirection: "column", justifyContent: "center"
+                                            display: "flex", alignItems: "center", flexDirection: "column", justifyContent: "center",
+                                            overflowX: "auto",
+                                            margin: "0px auto"
                                         }}>
-                                            < Table horizontalSpacing="sm" >
+                                            <Table horizontalSpacing="xl" style={{ margin: "0px auto" }}>
                                                 <thead style={{ backgroundColor: studentProfileColor + "22" }}>
                                                     <tr >
                                                         <td> <Text sx={{
                                                             borderBottom: `1px solid #dee2e6`,
                                                             color: studentProfileColor,
                                                             fontWeight: "bold",
-                                                            marginLeft: "1rem"
+
                                                         }}>Sr.no 1</Text></td>
+
                                                         <td> <Text sx={{
                                                             borderBottom: `1px solid #dee2e6`,
                                                             color: studentProfileColor,
                                                             fontWeight: "bold"
                                                         }}>Created on</Text></td>
-                                                        <td> <Text sx={{
-                                                            borderBottom: `1px solid #dee2e6`,
-                                                            color: studentProfileColor,
-                                                            fontWeight: "bold"
-                                                        }}>Bonafide ID</Text></td>
+
                                                         <td> <Text sx={{
                                                             borderBottom: `1px solid #dee2e6`,
                                                             color: studentProfileColor,
