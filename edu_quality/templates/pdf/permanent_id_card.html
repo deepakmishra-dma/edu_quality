@@ -333,7 +333,7 @@
             {% if doc.transport_service_required %}
             <h1 class="pickup-bus" style="color: white">{{doc.drop_bus or ""}}</h1>
             {% else %}
-            <h1 class="pickup-bus">M{{batch_num}}</h1>
+            <h1 class="pickup-bus">{{"M" if batch_num else ""}}{{batch_num or ""}}</h1>
             {% endif %}
             <div class="house-container">
               <span id="house" style="background-color: {{house}};"></span>
@@ -422,14 +422,14 @@
             <p>PHONE: {{student_data.student_mobile_number}}</p>
           </div>
           <div style="margin: 10px 4px 0 0">
-            <p>BLOOD GROUP: {{student_data.blood_group}}</p>
+            <p>BLOOD GROUP: {{student_data.blood_group or ""}}</p>
             <p>
-              DATE OF BIRTH: {{convertyearMonthDate(student_data.date_of_birth)}}
+              DATE OF BIRTH: {{convertyearMonthDate(student_data.date_of_birth or "")}}
             </p>
           </div>
         </div>
         <div class="tiffin-text">
-          <p>{{doc.tiffin_rack_no}}</p>
+          <p>{{doc.tiffin_rack_no or ""}}</p>
         </div>
         {% if student_data.has_allergies %}
         <div class="allergies-text"><p>Allergies</p></div>
