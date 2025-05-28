@@ -7,6 +7,7 @@ frappe.ui.form.on("Student", {
         addFeeDetails(frm);
         addParentDetails(frm);
         addReferral(frm);
+        swapDivision(frm);
     },
 
     late_drop: function (frm) {
@@ -214,4 +215,90 @@ function addParentDetails(frm){
             }
         });
     }
+}
+
+
+function swapDivision(frm) {
+    frm.add_custom_button(__('Swap/Change Division'), async function () {
+        let cur_ay = await frappe.db.get_value('Academic Year', { custom_current_academic_year: 1 }, ['name']);
+        let cur_pe = await frappe.db.get_value('Program Enrollment', { student: frm.doc.name, program: frm.doc.program, academic_year: cur_ay.name }, ['name', 'student_group']);
+        let division = cur_pe.message.student_group.split('-')[0];
+        let d = new frappe.ui.Dialog({
+            title: 'Swap/Change Division',
+            fields: [
+                {
+                    label: 'Swap With Student',
+                    fieldname: 'student_check',
+                    fieldtype: 'Check',
+                    default: 0,
+                    onchange: function () {
+                        if (d.get_value('student_check')) {
+                            d.set_df_property('student', 'hidden', 0);
+                            d.set_df_property('division', 'hidden', 1);
+                        }else{
+                            d.set_df_property('student', 'hidden', 1);
+                            d.set_df_property('division', 'hidden', 0);
+                        }
+                    }
+                },
+                {
+                    label: 'Division',
+                    fieldname: 'division',
+                    fieldtype: 'Link',
+                    options: "Student Group",
+                    get_query: function () {
+                        return {
+                            doctype: 'Student Group',
+                            filters: [["program", "=", frm.doc.program], ["academic_year", "=", cur_ay.message.name], ["name", "!=", cur_pe.message.student_group]],
+                        };
+                    }
+                },
+                {
+                    label: 'Student',
+                    fieldname: 'student',
+                    fieldtype: 'Link',
+                    options: "Student",
+                    hidden: 1,
+                    get_query: function () {
+                        return {
+                            doctype: 'Student',
+                            filters: [["program", "=", frm.doc.program], ["name", "!=", frm.doc.name], ["custom_division", "!=", division]],
+                        };
+                    }
+                }
+            ],
+            size: 'large',
+            primary_action_label: 'Submit',
+            primary_action(values) {
+                frappe.call({
+                    method: "edu_quality.edu_quality.server_scripts.student.swap_division",
+                    type: "POST",
+                    args: {
+                        program_enrollment: cur_pe.message.name,
+                        division: values.division,
+                        student_to_swap: values.student,
+                    },
+                    callback: function (response) {
+                        if(response.message){
+                            frappe.show_alert({
+                                message: __("Division Swapped"),
+                                indicator: 'green'
+                            });
+                            frm.reload_doc();
+                        }
+                        else{
+                            frappe.show_alert({
+                                message: __("Something Went Wrong!"),
+                                indicator: 'red'
+                            });
+                        }
+                    }
+                });
+                d.hide();
+            }
+        });
+
+        d.show();
+
+    });
 }
