@@ -129,7 +129,7 @@ export const BonafideCertificate = () => {
     }, [selectedUnit, unitOptions]);
 
     const rows1 = bonafideList?.data?.message?.filter((i) => i.reference_number == selectedStudent)
-    const rows = rows1?.map((i, index) => {
+    const rows = rows1?.map((i) => {
         const formatDate = new Date(i.creation);
         const formattedStartDate = formatDate.toLocaleDateString('en-GB').replace(/\//g, '-');
         return (
