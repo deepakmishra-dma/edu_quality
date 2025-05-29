@@ -142,7 +142,8 @@ export const StudentProfle = () => {
 
                             <Box sx={{
                                 marginTop: isSelected ? 4 : 5,
-                                borderBottom: isSelected ? '2px solid ' + studentProfileColor : '1px solid #0005'
+                                borderBottom: isSelected ? '2px solid ' + studentProfileColor : '1px solid #0005',
+
                             }} />
                             {
                                 student.name === selectedStudent && !opened &&

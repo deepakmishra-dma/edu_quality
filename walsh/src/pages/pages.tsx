@@ -21,7 +21,7 @@ import EarlyPickup from "./EarlyPickup.tsx";
 import Result from "./result.tsx";
 
 import { StudentProfle } from "./StudentProfile.tsx";
-// import { PtmLinks } from "./PtmLinks.tsx";
+import { PtmLinks } from "./PtmLinks.tsx";
 
 
 const Pages = () => {
@@ -76,7 +76,7 @@ const Pages = () => {
                 <Route path="/archived" element={<NoticeList archivedOnly />} />
                 <Route path="/calendar" element={<SchoolCalendar />} />
                 <Route path="/bonafide" element={<BonafideCertificate />} />
-                {/* <Route path="/ptm-link" element={<PtmLinks />} /> */}
+                <Route path="/ptm-link" element={<PtmLinks />} />
                 <Route path="/student-profile" element={<StudentProfle />} />
                 <Route path="/early-pickup" element={<EarlyPickup />} />
                 <Route path="/notice/:id" element={<NoticeDetails />} />

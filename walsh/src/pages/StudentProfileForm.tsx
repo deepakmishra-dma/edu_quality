@@ -221,7 +221,7 @@ export const StudentProfleFOrm = ({ student, selectedStudent, studentProfileColo
             }
         }
     };
-    // https://uat.walnutedu.in/api/resource/Guardian/EDU-GRD-2024-10285
+
     useEffect(() => {
         const fetchStudentDetails = async () => {
             try {
@@ -273,7 +273,7 @@ export const StudentProfleFOrm = ({ student, selectedStudent, studentProfileColo
     }, [])
 
 
-    console.log('selected ', selectedStudent)
+    console.log('selected ', studentDataList)
 
 
     const verifyMobileOTP = async (id: string) => {
@@ -500,11 +500,14 @@ export const StudentProfleFOrm = ({ student, selectedStudent, studentProfileColo
 
 
         }, [MotherMobile, FatherMobile])
+    const data_of_birth = studentsList?.data?.message[0]?.date_of_birth || "N/A"
+    const endDate = new Date(data_of_birth);
+    const formattedEndDate = endDate.toLocaleDateString('en-GB').replace(/\//g, '-');
     return (
         <>
-            <div style={{ display: "flex", alignItems: "center", flexDirection: "column", justifyContent: "space-between", width: "100%", margin: "0px auto" }}>
-                <div style={{ width: "100%", margin: "0px auto", overflowX: "auto" }}>
-                    <div style={{ display: "flex", alignItems: "center", borderBottom: `1px solid ${studentProfileColor}`, paddingBottom: "0.5rem", width: "700px", margin: "0px auto" }}>
+            <div style={{ display: "flex", flexDirection: "column", width: "700px" }}>
+                <div style={{ width: "700px", overflowX: "auto" }}>
+                    <div style={{ display: "flex", alignItems: "center", borderBottom: `1px solid ${studentProfileColor}`, paddingBottom: "0.5rem", margin: "0px auto", width: "700px" }}>
                         <Text sx={{
                             color: studentProfileColor,
                             padding: "10px 1rem"
@@ -545,7 +548,8 @@ export const StudentProfleFOrm = ({ student, selectedStudent, studentProfileColo
                             color: studentProfileColor,
                             padding: "10px 1rem"
                         }}>Date of Birth: </Text>
-                        <span style={{ color: "black" }}>{studentsList?.data?.message[0]?.date_of_birth}</span>
+
+                        <span style={{ color: "black" }}>{formattedEndDate}</span>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", borderBottom: `1px solid ${studentProfileColor}`, paddingBottom: "0.5rem", width: "700px", margin: "0px auto" }}>
 
@@ -582,7 +586,7 @@ export const StudentProfleFOrm = ({ student, selectedStudent, studentProfileColo
                         <span style={{ color: "black" }}>{studentsList?.data?.message[0]?.mother_tongue}</span>
                     </div>
 
-                    <div style={{ position: "relative", borderBottom: `1px solid ${studentProfileColor}`, paddingBottom: "0.5rem", width: "700px", margin: "0px auto" }}>
+                    <div style={{ position: "relative", borderBottom: `1px solid ${studentProfileColor}`, paddingBottom: "0.5rem", width: "700px", margin: "0px auto", }}>
                         <Text sx={{
 
                             color: studentProfileColor,
@@ -713,7 +717,7 @@ export const StudentProfleFOrm = ({ student, selectedStudent, studentProfileColo
 
                     </div>
                     {/* avantee.joshi@yopmail.com */}
-                    <div style={{ borderBottom: `1px solid ${studentProfileColor}`, paddingBottom: "0.5rem", width: "700px", margin: "0px auto" }}>
+                    <div style={{ borderBottom: `1px solid ${studentProfileColor}`, paddingBottom: "0.5rem", width: "700px", margin: "0px auto", }}>
                         <Text sx={{
 
                             color: studentProfileColor,
@@ -836,7 +840,7 @@ export const StudentProfleFOrm = ({ student, selectedStudent, studentProfileColo
                         }
 
                     </div>
-                    <div style={{ position: "relative", borderBottom: `1px solid ${studentProfileColor}`, paddingBottom: "0.5rem", width: "700px", margin: "0px auto" }}>
+                    <div style={{ position: "relative", borderBottom: `1px solid ${studentProfileColor}`, paddingBottom: "0.5rem", width: "700px", margin: "0px auto", }}>
                         <Text sx={{
 
                             color: studentProfileColor,
@@ -958,7 +962,7 @@ export const StudentProfleFOrm = ({ student, selectedStudent, studentProfileColo
 
 
                     </div>
-                    <div style={{ borderBottom: `1px solid ${studentProfileColor}`, paddingBottom: "0.5rem", width: "700px", margin: "0px auto" }}>
+                    <div style={{ borderBottom: `1px solid ${studentProfileColor}`, paddingBottom: "0.5rem", width: "700px", margin: "0px auto", }}>
                         <Text sx={{
 
                             color: studentProfileColor,
@@ -1077,7 +1081,7 @@ export const StudentProfleFOrm = ({ student, selectedStudent, studentProfileColo
 
 
                     </div>
-                    <div style={{ borderBottom: `1px solid ${studentProfileColor}`, paddingBottom: "0.5rem", width: "700px", margin: "0px auto" }}>
+                    <div style={{ borderBottom: `1px solid ${studentProfileColor}`, paddingBottom: "0.5rem", width: "700px", margin: "0px auto", }}>
                         <Text sx={{
 
                             color: studentProfileColor,
@@ -1146,7 +1150,7 @@ export const StudentProfleFOrm = ({ student, selectedStudent, studentProfileColo
                             }
                         </div>
                     </div>
-                    <div style={{ borderBottom: `1px solid ${studentProfileColor}`, paddingBottom: "0.5rem", width: "700px", margin: "0px auto" }}>
+                    <div style={{ borderBottom: `1px solid ${studentProfileColor}`, paddingBottom: "0.5rem", width: "700px", margin: "0px auto", }}>
                         <Text sx={{
 
                             color: studentProfileColor,
@@ -1216,7 +1220,7 @@ export const StudentProfleFOrm = ({ student, selectedStudent, studentProfileColo
                             }
                         </div>
                     </div>
-                    <div style={{ borderBottom: `1px solid ${studentProfileColor}`, paddingBottom: "0.5rem", width: "700px", margin: "0px auto" }}>
+                    <div style={{ borderBottom: `1px solid ${studentProfileColor}`, paddingBottom: "0.5rem", width: "700px", margin: "0px auto", }}>
                         <Text sx={{
                             color: studentProfileColor,
                             padding: "10px 1rem"
@@ -1282,7 +1286,7 @@ export const StudentProfleFOrm = ({ student, selectedStudent, studentProfileColo
                             }
                         </div>
                     </div>
-                    <div style={{ borderBottom: `1px solid ${studentProfileColor}`, paddingBottom: "0.5rem", width: "700px", margin: "0px auto" }}>
+                    <div style={{ borderBottom: `1px solid ${studentProfileColor}`, paddingBottom: "0.5rem", width: "700px", margin: "0px auto", }}>
                         <Text sx={{
 
                             color: studentProfileColor,
@@ -1351,7 +1355,7 @@ export const StudentProfleFOrm = ({ student, selectedStudent, studentProfileColo
                             }
                         </div>
                     </div>
-                    <div style={{ paddingBottom: "0.5rem", width: "700px", margin: "0px auto" }}>
+                    <div style={{ paddingBottom: "0.5rem", width: "700px", margin: "0px auto", }}>
                         <Text sx={{
 
                             color: studentProfileColor,
