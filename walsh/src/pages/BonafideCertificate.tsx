@@ -129,7 +129,7 @@ export const BonafideCertificate = () => {
     }, [selectedUnit, unitOptions]);
 
     const rows1 = bonafideList?.data?.message?.filter((i) => i.reference_number == selectedStudent)
-    const rows = rows1?.map((i, index) => {
+    const rows = rows1?.map((i) => {
         const formatDate = new Date(i.creation);
         const formattedStartDate = formatDate.toLocaleDateString('en-GB').replace(/\//g, '-');
         return (
@@ -137,12 +137,7 @@ export const BonafideCertificate = () => {
 
 
                 <tr >
-                    <td> <Text sx={{
-                        borderBottom: `1px solid #dee2e6`,
-                        color: studentProfileColor,
-                        fontWeight: "bold",
 
-                    }}>{index}</Text></td>
 
 
 
@@ -155,7 +150,7 @@ export const BonafideCertificate = () => {
                         marginLeft: 10,
                         borderRadius: 10,
 
-                    }}>{formattedStartDate}</Text></td>
+                    }} style={{ width: "152px", margin: "0px auto" }}>{formattedStartDate}</Text></td>
 
 
                     <td>
@@ -172,7 +167,7 @@ export const BonafideCertificate = () => {
                                 onClick={() => {
 
                                 }}
-                            > Download Bonafide</Button>
+                            > Download</Button>
 
                         </a>
                     </td>
@@ -290,14 +285,7 @@ export const BonafideCertificate = () => {
                                         }}>
                                             <Table horizontalSpacing="xl" style={{ margin: "0px auto" }}>
                                                 <thead style={{ backgroundColor: studentProfileColor + "22" }}>
-                                                    <tr >
-                                                        <td> <Text sx={{
-                                                            borderBottom: `1px solid #dee2e6`,
-                                                            color: studentProfileColor,
-                                                            fontWeight: "bold",
-
-                                                        }}>Sr.no 1</Text></td>
-
+                                                    <tr>
                                                         <td> <Text sx={{
                                                             borderBottom: `1px solid #dee2e6`,
                                                             color: studentProfileColor,
