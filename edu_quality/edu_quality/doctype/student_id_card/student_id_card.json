@@ -25,7 +25,7 @@
    "fieldname": "status",
    "fieldtype": "Select",
    "label": "Status",
-   "options": "PENDING\nCLICKED\nPRINTED\nSENT TO PRINT\nRECEIVED BY SCHOOL\nRECEIVED BY STUDENT"
+   "options": "PENDING\nPENDING(PDF CREATED)\nCLICKED\nPRINTED\nSENT TO PRINT\nRECEIVED BY SCHOOL\nRECEIVED BY STUDENT"
   },
   {
    "fieldname": "program_enrolled_in",
@@ -59,7 +59,7 @@
  "image_field": "photo_taken",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-04-25 01:42:08.965614",
+ "modified": "2024-04-26 15:30:03.339403",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Student ID Card",

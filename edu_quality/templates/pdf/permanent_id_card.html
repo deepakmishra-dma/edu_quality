@@ -298,6 +298,7 @@
           display: flex;
           justify-content: space-between;
      
+     
         }
         .cut-mark-container-two{
           display: flex;
@@ -312,9 +313,34 @@
         border-right: 1px solid black;
         padding-right:4px;
         }
+        .cut-mark-circle{
+          position: relative;
+         
+        }
+        .cut-mark-circle>.horizontal{
+          position: absolute;
+          width:100%;
+          height: 1px;
+          background-color: black;
+          left:0;
+          top:50%;
+        
+        }
+        .cut-mark-circle>.vertical{
+          position: absolute;
+          width:1px;
+          height: 100%;
+          top:0;
+          left:50%;
+          background-color: black;
+         
+         
+      
+        
+        }
   </style>
   <div class="parent-container">
-    <div class="cut-mark-container" style="margin-top:10px;padding-bottom: 5px;"><div class="left"><div class="cut-mark-circle"></div></div><div class="right"><div class="cut-mark-circle"></div></div></div>
+    <div class="cut-mark-container" style="margin-top:10px;padding-bottom: 5px;"><div class="left"><div class="cut-mark-circle"><div class="horizontal"></div><div class="vertical"></div></div></div><div class="right"><div class="cut-mark-circle"><div class="horizontal"></div><div class="vertical"></div></div></div></div>
     <div class="front" style="background-image: url('{{site_url}}{{bg_image}}');">
       <div class="container">
         {% if student_data.has_allergies %}
@@ -390,14 +416,14 @@
     <div class="cut-mark-container" style="padding-bottom: 5px;padding-top: 5px;">
       <div class="cut-mark-container-two">
         <div class="left">
-        <div class="cut-mark-circle "></div>
-        <div class="cut-mark-circle "></div></div>
+        <div class="cut-mark-circle "><div class="horizontal"></div><div class="vertical"></div></div>
+        <div class="cut-mark-circle "><div class="horizontal"></div><div class="vertical"></div></div></div>
       </div>
   
       <div class="cut-mark-container-two">
         <div class="right">
-        <div class="cut-mark-circle"></div>
-        <div class="cut-mark-circle"></div></div>
+        <div class="cut-mark-circle"><div class="horizontal"></div><div class="vertical"></div></div>
+        <div class="cut-mark-circle"><div class="horizontal"></div><div class="vertical"></div></div></div>
       </div>
   
     </div>
@@ -436,6 +462,6 @@
         {% endif %}
       </div>
     </div>
-    <div class="cut-mark-container" style="padding-top: 5px;" ><div class="left"><div class="cut-mark-circle"></div></div><div class="right"><div class="cut-mark-circle"></div></div></div>
+    <div class="cut-mark-container" style="padding-top: 5px;" ><div class="left"><div class="cut-mark-circle"><div class="horizontal"></div><div class="vertical"></div></div></div><div class="right"><div class="cut-mark-circle"><div class="horizontal"></div><div class="vertical"></div></div></div></div>
   </div>
   
