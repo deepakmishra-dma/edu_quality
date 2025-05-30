@@ -18,9 +18,9 @@ frappe.pages['mark-received-id-card'].on_page_load = function (wrapper) {
 			fieldtype: 'Button',
 			click: async () => {
 				const images = await nativeInterface.execute('openWebViewScanner')
-				d.set_value('qr_code', images?.data)
+				d.set_value('ref_nos', images?.data)
 				if (images?.data) {
-					postScanQr(images?.data)
+					postScanQr(images?.data, true)
 
 				}
 			}
@@ -30,7 +30,7 @@ frappe.pages['mark-received-id-card'].on_page_load = function (wrapper) {
 			fieldname: 'submitbtn',
 			fieldtype: 'Button',
 			click: async () => {
-				const qr_code = d['fields_dict']['qr_code']['input'].value
+				const qr_code = d['fields_dict']['ref_nos']['input'].value
 				if (qr_code)
 					postScanQr(qr_code)
 
@@ -54,33 +54,32 @@ function make_fieldgroup(parent, ddf_list) {
 }
 
 
-function postScanQr(key) {
+function postScanQr(key, qr_scan) {
 	let d = new frappe.ui.Dialog({
 		title: 'Confirm?',
 
 		primary_action_label: __("हो (Yes)"),
 		primary_action: () => {
 			frappe.call({
-				method: "edu_quality.api.scan_receipts.find_url_to_redirect_to",
+				method: "edu_quality.fees.doctype.permanent_id_card.permanent_id_card.mark_permanent_id_card_received",
 				args: {
-					key: key,
+					id_cards: key,
+					qr_scan: qr_scan,
 					type: "POST",
 				}, callback: (r) => {
 					console.log(r.message)
-					if ((frappe.user_roles.includes("Watchman") && !frappe.user_roles.includes("Administrator") && !frappe.user_roles.includes("Walnut Admin") && !frappe.user_roles.includes("System Manager") && r.message)) {
 
-						frappe.msgprint({
-							indicator: "green",
-							title: __("Updated Successfully"),
-							message: __(
-								`Receipt ${key} marked as received`
-							),
-						});
-						return d.set_value('qr_code', '')
-					}
-					if (r.message && typeof r.message === "string") {
-						frappe.set_route(`/app${r.message}`)
-					}
+
+					frappe.msgprint({
+						indicator: "green",
+						title: __("Updated Successfully"),
+						message: __(
+							`Receipt ${key} marked as received`
+						),
+					});
+					return d.set_value('ref_nos', '')
+
+
 				}
 			})
 			d.hide();

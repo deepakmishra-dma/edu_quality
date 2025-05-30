@@ -12,7 +12,7 @@ class PermanentIdCard(Document):
     def create_order(self):
         academic_year = current_academic_year()
         permanent_id_card_doc = frappe.qb.DocType("Permanent Id Card")
-        
+
         purchase_order = frappe.get_doc(
             {
                 "doctype": "Purchase Order",
@@ -100,7 +100,7 @@ def bundle_all_cards(doc):
     return final_query.run(as_dict=True)
 
 
-# edu_quality.edu_quality.doctype.permanent_id_card.permanent_id_card.create_purchase_order
+# edu_quality.fees.doctype.permanent_id_card.permanent_id_card.create_purchase_order
 """Create Purchase Orders for the specified permanent id card doc"""
 
 
@@ -128,3 +128,36 @@ def create_purchase_order(name):
         )
         frappe.logger("Permanent ID Card").exception(e)
         frappe.throw(str(e))
+
+
+# edu_quality.fees.doctype.permanent_id_card.permanent_id_card.mark_permanent_id_card_received
+@frappe.whitelist()
+def mark_permanent_id_card_received(id_cards, qr_scan=False):
+    if not isinstance(id_cards, str):
+        return
+    list_of_cards = id_cards.split(",")
+    for card in list_of_cards:
+        if qr_scan:
+            academic_year, school, ref_no = card.split("/")
+            school_doc = frappe.get_doc("School", school)
+            id_card_id = frappe.get_value(
+                "Program Enrollment",
+                filters={
+                    "academic_year": academic_year,
+                    "student": f"{school_doc.get('prefix','')}{ref_no}",
+                },
+                fieldname="custom_id_Card",
+            )
+        else:
+            academic_year = current_academic_year()
+            id_card_id = frappe.get_value(
+                "Program Enrollment",
+                filters={
+                    "academic_year": academic_year,
+                    "student": card,
+                },
+                fieldname="custom_id_Card",
+            )
+        frappe.db.set_value(
+            "Student ID Card", id_card_id, "status", "RECEIVED BY STUDENT"
+        )
