@@ -54,6 +54,7 @@
    "reqd": 1
   },
   {
+   "description": "Fomat Example :- 11:00 AM - 01:00 PM",
    "fieldname": "slot",
    "fieldtype": "Data",
    "label": "Slot"
@@ -101,8 +102,9 @@
   },
   {
    "fieldname": "teacher_alias",
-   "fieldtype": "Data",
-   "label": "Teacher Alias"
+   "fieldtype": "Link",
+   "label": "Teacher Alias",
+   "options": "Teacher Alias"
   },
   {
    "fieldname": "period",
@@ -119,7 +121,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-04-25 13:53:08.337346",
+ "modified": "2024-04-26 15:24:39.398838",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "PTM Scheduler",
