@@ -89,6 +89,7 @@ def remove_from_division(doc):
             roll_no = d.group_roll_number
             break
     division.save()
+    add_comment_in_division(doc, doc.student_group, True)
     return roll_no
 
 
@@ -112,6 +113,7 @@ def add_to_division(doc, division, roll_no=None):
         "active": 1
     })
     sg.save()
+    add_comment_in_division(doc, division)
 
 
 def swap_student_division(pe_doc_1, pe_doc_2):
@@ -168,3 +170,25 @@ def send_email_for_division_swap(pe_doc_1):
         subject="Division Swap",
         message=f"Dear {student.student_name},\n\nYour division has been swapped successfully. Please find the details below:\n\nDivision: {pe_doc_1.student_group}\n\nRegards,\n{school_details.name}",
     )
+
+
+def add_comment_in_division(student, division, is_removed=False):
+    """
+    Adds a comment in the division for a student.
+
+    Args:
+        student (object): The student object.
+        division (str): The division name.
+        is_removed (bool, optional): Flag to indicate if the student is removed. Defaults to False.
+    """
+    if is_removed:
+        comment = f"Student: {student.student_name}({student}) is Removed from division {division}"
+    else:
+        comment = f"Student: {student.student_name}({student}) is Added to division {division}"
+    frappe.get_doc({
+        'doctype': 'Comment',
+        'comment_type': 'Info',
+        'reference_doctype': 'Student Group',
+        'referenc_name': division,
+        'content': comment,
+    }).insert(ignore_permissions=True)
