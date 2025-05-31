@@ -142,7 +142,7 @@ override_doctype_class = {
     "Student": "edu_quality.edu_quality.overrides.student.CustomStudent",
     "Payment Entry": "edu_quality.edu_quality.overrides.payment_entry.CustomPaymentEntry",
     "Lead": "edu_quality.public.py.lead.CustomLead",
-    "Instructor":"edu_quality.edu_quality.overrides.instructor.CustomInstructor",
+    "Instructor": "edu_quality.edu_quality.overrides.instructor.CustomInstructor",
     "HD Ticket": "edu_quality.edu_quality.overrides.hd_ticket.CustomHDTicket",
 }
 
@@ -215,7 +215,10 @@ doc_events = {
     },
     "Purchase Order": {
         "before_validate": "edu_quality.overrides_hooks.purchase_order.before_validate",
-        "on_submit": "edu_quality.edu_quality.server_scripts.purchase_order.on_submit",
+        "on_submit": [
+            "edu_quality.edu_quality.server_scripts.purchase_order.on_submit",
+            "edu_quality.edu_quality.server_scripts.purchase_order.mark_id_card_sent_to_print",
+        ],
     },
     # "Instructor": {
     #     "after_insert": "edu_quality.overrides_hooks.instructor.after_insert",
@@ -226,6 +229,7 @@ doc_events = {
         "before_validate": "edu_quality.overrides_hooks.purchase_order.before_validate",
     },
     "Employee": {
+        "before_save": "edu_quality.edu_quality.server_scripts.employee.before_save",
         "after_insert": "edu_quality.edu_quality.server_scripts.employee.after_insert",
         "on_update": "edu_quality.edu_quality.server_scripts.employee.on_update",
     },

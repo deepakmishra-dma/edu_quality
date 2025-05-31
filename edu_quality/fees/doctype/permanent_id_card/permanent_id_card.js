@@ -10,7 +10,7 @@ function handleCreatePurchaseOrder(frm) {
 	frappe.confirm(__(message), () => {
 
 		frappe.call({
-			"method": "edu_quality.edu_quality.doctype.permanent_id_card.permanent_id_card.create_purchase_order",
+			"method": "edu_quality.fees.doctype.permanent_id_card.permanent_id_card.create_purchase_order",
 
 			"args": {
 				name: frm.doc.name
@@ -27,6 +27,6 @@ function handleCreatePurchaseOrder(frm) {
 }
 frappe.ui.form.on('Permanent Id Card', {
 	refresh: function (frm) {
-		frm.add_custom_button(__("Create Purchase Order"), handleCreatePurchaseOrder(frm))
+		frm.add_custom_button(__("Create Purchase Order"), () => handleCreatePurchaseOrder(frm))
 	}
 });

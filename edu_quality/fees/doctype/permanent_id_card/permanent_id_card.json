@@ -8,7 +8,8 @@
  "engine": "InnoDB",
  "field_order": [
   "file",
-  "id_cards"
+  "id_cards",
+  "orders"
  ],
  "fields": [
   {
@@ -21,11 +22,17 @@
    "fieldtype": "Table",
    "label": "Id Cards",
    "options": "Individual Permanent Card"
+  },
+  {
+   "fieldname": "orders",
+   "fieldtype": "Table",
+   "label": "Orders",
+   "options": "Id Card Order"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-04-24 02:02:38.431588",
+ "modified": "2024-04-25 01:15:16.378086",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Permanent Id Card",

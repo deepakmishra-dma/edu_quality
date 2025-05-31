@@ -37,7 +37,7 @@ def create_student_account(student, student_applicant):
         email_key = student.get("name")
         first_name = student_applicant.get("first_name")
         last_name = student_applicant.get("last_name")
-        school = student.get("school","Walnut School at Wakad")
+        school = student.get("school", "Walnut School at Wakad")
         created_email = create_google_user(
             (google_service_settings.get("google_account_prefix", "") or "")
             + email_key,

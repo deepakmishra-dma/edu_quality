@@ -4,12 +4,15 @@ import random
 import frappe
 import requests
 from frappe.auth import LoginManager
-from nextai.whatsapp_business_api_integration.doctype.whatsapp_message.whatsapp_message import send_templated_message
+from nextai.whatsapp_business_api_integration.doctype.whatsapp_message.whatsapp_message import (
+    send_templated_message,
+)
 
 from edu_quality.public.py.utils import remove_indian_country_code
 
 
-#comment
+# comment
+
 
 def format_wa_phone_no(phone_no):
     if not phone_no:
@@ -53,14 +56,18 @@ def match_otp(wa_phone_no, otp):
 
 def create_or_get_contact(wa_phone_number, contact_name):
     if frappe.db.exists("Contact", {"whatsapp_id": wa_phone_number}):
-        contact = frappe.get_last_doc("Contact", filters={"whatsapp_id": wa_phone_number})
+        contact = frappe.get_last_doc(
+            "Contact", filters={"whatsapp_id": wa_phone_number}
+        )
     else:
-        contact = frappe.get_doc({
-            "doctype": "Contact",
-            "first_name": contact_name,
-            "whatsapp_id": wa_phone_number,
-            "chatbot_disabled": 1
-        }).insert(ignore_permissions=True)
+        contact = frappe.get_doc(
+            {
+                "doctype": "Contact",
+                "first_name": contact_name,
+                "whatsapp_id": wa_phone_number,
+                "chatbot_disabled": 1,
+            }
+        ).insert(ignore_permissions=True)
     return contact
 
 
@@ -68,15 +75,19 @@ def send_otp_to_whatsapp(wa_phone_no, otp):
     try:
         contact = create_or_get_contact(wa_phone_no, "walsh:" + str(wa_phone_no))
         template_data = [{"type": "text", "text": f"{otp}"}]
-        send_templated_message(contact.name, "walsh_new_adm_login", json.dumps(template_data))
+        send_templated_message(
+            contact.name, "walsh_new_adm_login", json.dumps(template_data)
+        )
     except Exception as e:
         pass
 
 
 def send_otp_to_sms(full_phone_no, otp):
     api_key = "***REMOVED-SMS-KEY***"
-    message = (f"OTP is {otp} for logging into Walnut School's Wal-Sh app. " +
-               "Valid till 10 min.\nDo not share OTP for security reasons.")
+    message = (
+        f"OTP is {otp} for logging into Walnut School's Wal-Sh app. "
+        + "Valid till 10 min.\nDo not share OTP for security reasons."
+    )
     template_id = 1007162194737763683
     sender = "WLTSCL"
     encoded_message = requests.utils.quote(message)
@@ -89,13 +100,13 @@ def send_otp_to_sms(full_phone_no, otp):
 
 def save_push_notification_token(push_token, user_id=None):
     user_id = user_id or frappe.session.user
-    has_token = frappe.db.exists("Mobile Push Token", {"token": push_token, "user_id": user_id})
+    has_token = frappe.db.exists(
+        "Mobile Push Token", {"token": push_token, "user_id": user_id}
+    )
     if not has_token:
-        frappe.get_doc({
-            "doctype": "Mobile Push Token",
-            "token": push_token,
-            "user_id": user_id
-        }).insert(ignore_permissions=True)
+        frappe.get_doc(
+            {"doctype": "Mobile Push Token", "token": push_token, "user_id": user_id}
+        ).insert(ignore_permissions=True)
 
 
 @frappe.whitelist()
@@ -106,7 +117,9 @@ def remove_push_notification_token(push_token=None, remove_all=False):
         return
     if not push_token:
         return
-    has_token = frappe.db.exists("Mobile Push Token", {"token": push_token, "user_id": user_id})
+    has_token = frappe.db.exists(
+        "Mobile Push Token", {"token": push_token, "user_id": user_id}
+    )
     if has_token:
         frappe.db.delete("Mobile Push Token", {"token": push_token, "user_id": user_id})
 
@@ -122,14 +135,20 @@ def is_defaulter(guardian_name, logout_if_defaulter=False):
             return True
     return False
 
+
 def get_guardian(guardian_number):
     if frappe.db.exists("Guardian", {"mobile_number": guardian_number}):
         guardian = frappe.get_cached_doc("Guardian", {"mobile_number": guardian_number})
         return guardian
-    elif frappe.db.exists("Guardian", {"custom_secondary_mobile_number": guardian_number}):
-        guardian = frappe.get_cached_doc("Guardian", {"custom_secondary_mobile_number": guardian_number})
+    elif frappe.db.exists(
+        "Guardian", {"custom_secondary_mobile_number": guardian_number}
+    ):
+        guardian = frappe.get_cached_doc(
+            "Guardian", {"custom_secondary_mobile_number": guardian_number}
+        )
         return guardian
     return None
+
 
 @frappe.whitelist(allow_guest=True)
 def send_otp(phone_no):
@@ -184,18 +203,22 @@ def send_otp(phone_no):
                 "error_message": str(e)
             }
 
+
 def send_otp_to_email(email, otp):
     try:
         if not email:
             return
         template_name = "Walsh Email OTP"
         email_template = frappe.get_doc("Email Template", template_name)
-        content = frappe.render_template(email_template.get("response_html") or email_template.get("response"), {"otp":otp})
+        content = frappe.render_template(
+            email_template.get("response_html") or email_template.get("response"),
+            {"otp": otp},
+        )
         email_args = {
-                "recipients": [email],
-                "subject": email_template.get("subject"),
-                "message": content
-            }
+            "recipients": [email],
+            "subject": email_template.get("subject"),
+            "message": content,
+        }
         frappe.sendmail(**email_args)
     except Exception as e:
         frappe.log_error("Error sending lead generation email", str(e))
@@ -205,12 +228,20 @@ def send_otp_to_email(email, otp):
 
 def get_student_form(doc):
     student_forms = []
-    applicants = frappe.db.get_all("Student Guardian", {'guardian': doc.name, 'parenttype': "Student Applicant"},
-                                   "parent")
+    applicants = frappe.db.get_all(
+        "Student Guardian",
+        {"guardian": doc.name, "parenttype": "Student Applicant"},
+        "parent",
+    )
     link = frappe.utils.get_url() + "/walnut-school-student-application/"
     for applicant in applicants:
-        student = frappe.db.get_value("Student", {'student_applicant': applicant.parent}) or applicant.parent
-        student_forms.append({"student": student, "link": link + applicant.parent + "/edit"})
+        student = (
+            frappe.db.get_value("Student", {"student_applicant": applicant.parent})
+            or applicant.parent
+        )
+        student_forms.append(
+            {"student": student, "link": link + applicant.parent + "/edit"}
+        )
     return student_forms
 
 
@@ -239,20 +270,16 @@ def verify_otp(otp, phone_no, push_token=None, form_link=None):
             return {
                 "success": True,
                 "message": "Login Successful",
-                "form_link": form_link
+                "form_link": form_link,
             }
 
         return {
             "error": True,
             "error_type": "invalid_otp",
-            "error_message": "Invalid OTP"
+            "error_message": "Invalid OTP",
         }
     except Exception as e:
-        return {
-            "error": True,
-            "error_type": "server_error",
-            "error_message": str(e)
-        }
+        return {"error": True, "error_type": "server_error", "error_message": str(e)}
 
 
 @frappe.whitelist()

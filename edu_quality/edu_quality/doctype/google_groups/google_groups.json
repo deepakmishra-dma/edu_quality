@@ -16,7 +16,7 @@
    "fieldname": "role",
    "fieldtype": "Link",
    "label": "Role",
-   "options": "Designation"
+   "options": "Role"
   },
   {
    "fieldname": "column_break_dxxc",
@@ -36,7 +36,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-04-05 13:04:06.635767",
+ "modified": "2024-04-24 18:39:01.647504",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Google Groups",

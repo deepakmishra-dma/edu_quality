@@ -30,6 +30,7 @@ def send_bonafide(student_id):
                     "doctype": "Bonafide Certificate",
                     "student": student_id,
                     "academic_year": acad_year,
+                    "reference_number": student_id,
                     "school": student.school,
                 }
             )
@@ -53,9 +54,11 @@ def send_bonafide(student_id):
                 filters=[["guardian_name", "in", guardian_email]],
             )
             recipients = [i.email_address for i in guardian]
-
+            school_details = frappe.get_doc("School", student.school)
+            bcc_admin = school_details.get("bcc_email_address")
             frappe.sendmail(
                 recipients=recipients,
+                bcc=[bcc_admin],
                 subject="Bonafide Certificate",
                 message="Please find attached Bonafide Certificate",
                 attachments=[
@@ -70,4 +73,11 @@ def send_bonafide(student_id):
             pdf_url = frappe.utils.get_url(saved_file.file_url)
             return pdf_url
     except:
-        frappe.log_error('Bonafide Certificate Sending Failed', frappe.get_traceback())
+        frappe.log_error("Bonafide Certificate Sending Failed", frappe.get_traceback())
+
+
+@frappe.whitelist(allow_guest=True)
+def bonafide_list():
+    bonafide_doc = frappe.get_all("Bonafide Certificate", fields=["*"])
+    print("list ", bonafide_doc)
+    return bonafide_doc

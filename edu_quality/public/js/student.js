@@ -7,6 +7,7 @@ frappe.ui.form.on("Student", {
         addFeeDetails(frm);
         addParentDetails(frm);
         addReferral(frm);
+        cancelStudent(frm);
     },
 
     late_drop: function (frm) {
@@ -62,6 +63,88 @@ frappe.ui.form.on("Student", {
         });
     }
 });
+
+
+function cancelStudent(frm){
+    if(frm.doc.student_status == "Cancelled"){
+        return 1
+    }
+    frm.add_custom_button(__('Cancel Student'), function () {
+        let bank_validation = true;
+        if(!frm.doc.custom_cancellation_letter){
+            frappe.throw("Upload Cancellation Letter to Continue!");
+        }
+        frappe.call({
+            method: "edu_quality.edu_quality.server_scripts.student.validate_bank_account",
+            type: "GET",
+            args: {
+                student: frm.doc.name
+            },
+            callback: function (response) {
+                if(!response.message){
+                    bank_validation = false;
+                    return frappe.throw("Bank Account is not linked to this student");
+                }
+            }
+        })
+        
+        let d = new frappe.ui.Dialog({
+            title: 'Student Cancellation',
+            fields: [
+                {
+                    label: 'Academic Year',
+                    fieldname: 'academic_year',
+                    fieldtype: 'Link',
+                    options: "Academic Year"
+                },
+                {
+                    label: 'Fee Collection',
+                    fieldname: 'fee_collection',
+                    fieldtype: 'Select',
+                    options: ["Ignore Pending Fee","Collect Full Fee","Collect Partial Fee","Deduct from Deposit"]
+                }
+            ],
+            size: 'large',
+            primary_action_label: 'Submit',
+            primary_action(values) {
+                frappe.call({
+                    method: "edu_quality.edu_quality.server_scripts.student.cancel_student",
+                    type: "POST",
+                    args: {
+                        academic_year: values.academic_year,
+                        fee_collection: values.fee_collection,
+                        student: frm.doc.name
+                    },
+                    callback: function (response) {
+                        if(response.message==1){
+                        frappe.show_alert({
+                            message: __("Student Cancellation Successful!"),
+                            indicator: 'green'
+                        });
+                        frm.reload_doc();
+                    }
+                    else{
+                        frappe.show_alert({
+                            message: __("Something Went Wrong!"),
+                            indicator: 'red'
+                        });
+                    }
+                        
+                    }
+                });
+                d.hide();
+            }
+        });
+        if(bank_validation){
+            d.show();
+        }
+        else{
+            d.hide();
+        }
+
+    });
+
+}
 
 
 function addReferral(frm){

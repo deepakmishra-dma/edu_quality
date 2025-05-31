@@ -1,1 +1,2 @@
-edu_quality.patches.guardian_chatbot_disable #28-03-2024
+edu_quality.patches.term2 #24-04-2024 5
+edu_quality.patches.student_update #24-04-2024 1

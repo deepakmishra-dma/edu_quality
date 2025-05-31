@@ -263,9 +263,11 @@ def mark_student_as_defaulter(data):
                     "Defaulter",
                 )
             except Exception as e:
+                frappe.log_error("Google Mark as Defaulter Failure",frappe.get_traceback())
                 frappe.logger("mark_student_as_defaulter").exception(e)
                 pass
     except Exception as e:
+        frappe.log_error("Google Mark as Defaulter Failure",frappe.get_traceback())
         frappe.logger("mark_student_as_defaulter").exception(e)
 
 

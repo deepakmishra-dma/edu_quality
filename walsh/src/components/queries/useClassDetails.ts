@@ -1,9 +1,10 @@
-import {useCustom} from "@refinedev/core";
+import { useCustom } from "@refinedev/core";
 
 export interface ClassDetails {
   "division": {
     student_group_name: string
     name: string
+    custom_school: string
   }
   "program": {
     program_name: string
@@ -11,7 +12,9 @@ export interface ClassDetails {
   "class": {
     subject: [{
       subject: string
+
     }]
+    name: string
   }
 }
 

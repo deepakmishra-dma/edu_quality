@@ -297,7 +297,10 @@ def get_data_from_queries(filters=None):
         frappe.qb.from_(purchase_ord_item_table)
         .inner_join(purchase_ord_table)
         .on(purchase_ord_item_table.parent == purchase_ord_table.name)
-        .where((purchase_ord_item_table.item_code.isin(products or [None])))
+        .where(
+            (purchase_ord_item_table.item_code.isin(products or [None]))
+            & (purchase_ord_table.custom_class == filters.get("class"))
+        )
         .groupby(purchase_ord_item_table.item_code)
         .select(
             purchase_ord_item_table.item_code,
@@ -346,7 +349,7 @@ def execute(filters=None):
 
 
 @frappe.whitelist()
-def create_purchase_order(rows, academic_year=None):
+def create_purchase_order(rows, academic_year=None, class_name=None):
     if isinstance(rows, str):
         rows = parse_json(rows)
 
@@ -358,6 +361,7 @@ def create_purchase_order(rows, academic_year=None):
             "items": [],
             "supplier": "Printer",
             "custom_is_cmap_print": 1,
+            "custom_class": class_name,
             "custom_academic_year": academic_year,
         }
     )
