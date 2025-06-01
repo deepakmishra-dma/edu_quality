@@ -7,7 +7,7 @@ frappe.ui.form.on("Student", {
         addFeeDetails(frm);
         addParentDetails(frm);
         addReferral(frm);
-        swapDivision(frm);
+        swapDivisionButton(frm);
     },
 
     late_drop: function (frm) {
@@ -218,11 +218,12 @@ function addParentDetails(frm){
 }
 
 
-function swapDivision(frm) {
+function swapDivisionButton(frm) {
     frm.add_custom_button(__('Swap/Change Division'), async function () {
         let cur_ay = await frappe.db.get_value('Academic Year', { custom_current_academic_year: 1 }, ['name']);
         let cur_pe = await frappe.db.get_value('Program Enrollment', { student: frm.doc.name, program: frm.doc.program, academic_year: cur_ay.name }, ['name', 'student_group']);
         let division = cur_pe.message.student_group.split('-')[0];
+        let cur_batch = await frappe.db.get_value('Student Group', {"name": cur_pe.message.student_group}, "batch")
         let d = new frappe.ui.Dialog({
             title: 'Swap/Change Division',
             fields: [
@@ -269,36 +270,54 @@ function swapDivision(frm) {
             ],
             size: 'large',
             primary_action_label: 'Submit',
-            primary_action(values) {
-                frappe.call({
-                    method: "edu_quality.edu_quality.server_scripts.student.swap_division",
-                    type: "POST",
-                    args: {
-                        program_enrollment: cur_pe.message.name,
-                        division: values.division,
-                        student_to_swap: values.student,
-                    },
-                    callback: function (response) {
-                        if(response.message){
+            primary_action: async function(values) {
+                let new_batch = await frappe.db.get_value('Student Group', {"name": values.division}, "batch");
+
+                if (cur_batch.message.batch == new_batch.message.batch) {
+                    swapDivision(frm, values.student, cur_pe.message.name, values.division);
+                } else {
+                    frappe.confirm('Change in batches, Are you sure you want to proceed?',
+                        () => {swapDivision(frm, values.student, cur_pe.message.name, values.division);},
+                        () => {
                             frappe.show_alert({
-                                message: __("Division Swapped"),
-                                indicator: 'green'
-                            });
-                            frm.reload_doc();
-                        }
-                        else{
-                            frappe.show_alert({
-                                message: __("Something Went Wrong!"),
-                                indicator: 'red'
+                                message: __("Action Cancelled"),
+                                indicator: 'orange'
                             });
                         }
-                    }
-                });
+                    )
+                }
                 d.hide();
             }
         });
 
         d.show();
 
+    });
+}
+
+function swapDivision(frm, student, program_enrollment, division){
+    frappe.call({
+        method: "edu_quality.edu_quality.server_scripts.student.swap_division",
+        type: "POST",
+        args: {
+            program_enrollment: program_enrollment,
+            division: division,
+            student_to_swap: student,
+        },
+        callback: function (response) {
+            if(response.message){
+                frappe.show_alert({
+                    message: __("Division Swapped"),
+                    indicator: 'green'
+                });
+                frm.reload_doc();
+            }
+            else{
+                frappe.show_alert({
+                    message: __("Something Went Wrong! Please check Error log"),
+                    indicator: 'red'
+                });
+            }
+        }
     });
 }
