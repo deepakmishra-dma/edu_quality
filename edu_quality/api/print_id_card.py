@@ -126,9 +126,29 @@ def generate(**kwargs):
 
 @frappe.whitelist()
 def generate_permanent_id_cards(**kwargs):
-    generate_permanent_id_cards_async(kwargs)
+    program_enrollment = frappe.db.get_all(
+        "Program Enrollment",
+        filters=[["name", "in", kwargs.get("enrollments")]],
+        fields=["custom_school", "name", "custom_status", "academic_year"],
+    )
+    hash = None
+    for i in program_enrollment:
+        name = i.get("name")
+        if i.get("custom_status") in ["Cancelled", "Alumni"]:
+            frappe.throw(
+                f"Cannot Create ID Card for cancelled student or alumni students {name}"
+            )
+        if not hash:
+            hash = i
+        elif hash.get("custom_school") != i.get("custom_school"):
+            frappe.throw(f"School is not same for {name}")
+        elif hash.get("academic_year") != i.get("academic_year"):
+            frappe.throw(f"School is not same for {name}")
+    frappe.enqueue(generate_permanent_id_cards_async, **kwargs, queue="long")
 
-def generate_permanent_id_cards_async(kwargs):
+
+
+def generate_permanent_id_cards_async(**kwargs):
     try:
         base_url = frappe.utils.get_url()
         config = frappe.get_site_config()
@@ -172,6 +192,7 @@ def generate_permanent_id_cards_async(kwargs):
             f.write(main_pdf)
         doc = frappe.new_doc("Permanent Id Card")
         file_path = str(filename).replace(str(public_path), "")
+
         for enrollment in program_enrollment:
             doc.append(
                 "id_cards",
@@ -179,9 +200,27 @@ def generate_permanent_id_cards_async(kwargs):
                     "program_enrollment": enrollment.name,
                 },
             )
-            frappe.db.set_value("Student ID Card",enrollment.custom_id_card,"status","PENDING(PDF CREATED)")
+            frappe.db.set_value(
+                "Student ID Card",
+                enrollment.custom_id_card,
+                "status",
+                "PENDING(PDF CREATED)",
+            )
+
+            frappe.get_doc(
+                {
+                    "doctype": "ID Card Event",
+                    "parenttype": "Student ID Card",
+                    "timestamp":frappe.utils.now(),
+                    "parentfield": "events",
+                    "status": "PENDING(PDF CREATED)",
+                    "user": frappe.session.user,
+                    "parent": enrollment.custom_id_card,
+                }
+            ).insert(ignore_permissions=True)
         doc.file = file_path
         doc.save(ignore_permissions=True)
+
     except Exception as e:
         frappe.logger("permanent_id_card").exception(e)
         frappe.log_error(

@@ -24,3 +24,14 @@ def mark_id_card_sent_to_print(self, method=None):
             frappe.db.set_value(
                 "Student ID Card", id_card.get("id_card"), "status", "SENT TO PRINT"
             )
+            frappe.get_doc(
+                {
+                    "doctype": "ID Card Event",
+                    "parenttype": "Student ID Card",
+                    "timestamp": frappe.utils.now(),
+                    "parentfield": "events",
+                    "status": "SENT TO PRINT",
+                    "user": frappe.session.user,
+                    "parent": id_card.get("id_card"),
+                }
+            ).insert(ignore_permissions=True)
