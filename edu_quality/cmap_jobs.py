@@ -154,42 +154,14 @@ def get_datetime_from_time_slot(date, time_slot):
 
 
 @frappe.whitelist(allow_guest=True)
-def get_upcoming_online_ptm_links():
-    student_division = get_division_name_by_student_id("SHJD71")
-    print("student dividion", student_division)
-
+def get_upcoming_online_ptm_links(student_id):
+    student_division = get_division_name_by_student_id(student_id)
     if student_division:
-        ptm_scheduler_list = frappe.get_all(
-            "PTM Scheduler",
-            filters={
-                "date": (">=", datetime.datetime.now().date()),
-                "is_gmeet_generated": 0,
-                "division": student_division,
-            },
-            fields=[
-                "name",
-                "teacher",
-                "subject",
-                "division",
-                "slot",
-                "date",
-                "day",
-                "branch",
-                "gmeet_link",
-            ],
-        )
-        print("ptm dividion", ptm_scheduler_list)
-        print("student_division", student_division)
-        if len(ptm_scheduler_list) > 0:
+        ptm_scheduler_list = frappe.get_all('PTM Scheduler',filters={'date':('>=',getdate(today())),'is_gmeet_generated':1,'division':student_division},fields=['*'])
+        if len(ptm_scheduler_list)>0:
             for i in ptm_scheduler_list:
-                i["datetime"] = get_datetime_from_time_slot(
-                    i.get("date"), i.get("slot").split("-")[1]
-                )
-            ptm_scheduler_list = [
-                item
-                for item in ptm_scheduler_list
-                if item.get("datetime") >= datetime.datetime.now()
-            ]
-            ptm_scheduler_list.sort(key=lambda x: x["datetime"])
+                i['datetime'] = get_datetime_from_time_slot(i.get('date'),i.get('slot').split("-")[1])
+            ptm_scheduler_list = [ item for item in ptm_scheduler_list if item.get('datetime') >= datetime.datetime.now()]
+            ptm_scheduler_list.sort(key=lambda x: x['datetime'])
             return ptm_scheduler_list
         return []
