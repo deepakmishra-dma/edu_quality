@@ -161,3 +161,14 @@ def mark_permanent_id_card_received(id_cards, qr_scan=False):
         frappe.db.set_value(
             "Student ID Card", id_card_id, "status", "RECEIVED BY STUDENT"
         )
+        frappe.get_doc(
+            {
+                "doctype": "ID Card Event",
+                "timestamp": frappe.utils.now(),
+                "parenttype": "Student ID Card",
+                "parentfield": "events",
+                "status": "RECEIVED BY STUDENT",
+                "user": frappe.session.user,
+                "parent": id_card_id,
+            }
+        ).insert(ignore_permissions=True)
