@@ -54,42 +54,96 @@ def import_ptm_schedule_from_url(url):
         #frappe.db.close()
 		
 
+# def import_ptm_schedule_background(csv_content):
+# 	try:
+# 		csv_reader = csv.reader(StringIO(csv_content))
+# 		total_rows = sum(1 for row in csv_reader) - 1  # Excluding header row
+# 		csv_reader = csv.reader(StringIO(csv_content))
+# 		next(csv_reader)  # Skip header row
+		
+# 		for idx, row in enumerate(csv_reader):
+# 			acad_year, branch, cls_div, teacher_name, subject, group, period, gmeet, slot, date_str = row
+# 			day = date_str.split(", ")[0]
+# 			date = get_formatted_date(date_str)
+# 			ptm_scheduler = frappe.new_doc("PTM Scheduler")
+# 			ptm_scheduler.academic_year = acad_year
+# 			ptm_scheduler.branch = branch.strip()
+# 			ptm_scheduler.division = get_division(divStr=cls_div, branch=branch, academic_year=acad_year)
+# 			ptm_scheduler.teacher_alias = teacher_name
+# 			ptm_scheduler.teacher = get_teacher_from_alias(teacher_name.strip(),branch.strip())
+# 			ptm_scheduler.subject = subject
+# 			ptm_scheduler.group = group
+# 			ptm_scheduler.period = period
+# 			ptm_scheduler.slot = format_time_slot(slot)
+# 			ptm_scheduler.date = date
+# 			ptm_scheduler.day = day
+# 			ptm_scheduler.save()
+# 			progress = (idx + 1) * 100 // total_rows
+			
+# 			# Publish progress
+# 			frappe.realtime.publish_progress(progress, title="Import PTM Scheduler", description=f"{idx+1}/{total_rows} rows processed")
+
+
+		
+# 		frappe.db.commit()
+# 		return {"status": "success", "message": _("PTM schedule imported successfully")}
+# 	except Exception as e:
+# 		frappe.log_error(message=f"Error importing PTM schedule background: {str(e)}", title="PTM Schedule Import Background")
+# 		return {"status": "failed", "message": str(e)}
+
+
+
 def import_ptm_schedule_background(csv_content):
+	errors = []
 	try:
 		csv_reader = csv.reader(StringIO(csv_content))
-		total_rows = sum(1 for row in csv_reader) - 1  # Excluding header row
+		total_rows = sum(1 for _ in csv_reader) - 1  # Excluding header row
 		csv_reader = csv.reader(StringIO(csv_content))
 		next(csv_reader)  # Skip header row
-		
-		for idx, row in enumerate(csv_reader):
-			acad_year, branch, cls_div, teacher_name, subject, group, period, gmeet, slot, date_str = row
-			day = date_str.split(", ")[0]
-			date = get_formatted_date(date_str)
-			ptm_scheduler = frappe.new_doc("PTM Scheduler")
-			ptm_scheduler.academic_year = acad_year
-			ptm_scheduler.branch = branch.strip()
-			ptm_scheduler.division = get_division(divStr=cls_div, branch=branch, academic_year=acad_year)
-			ptm_scheduler.teacher_alias = teacher_name
-			ptm_scheduler.teacher = get_teacher_from_alias(teacher_name.strip(),branch.strip())
-			ptm_scheduler.subject = subject
-			ptm_scheduler.group = group
-			ptm_scheduler.period = period
-			ptm_scheduler.slot = format_time_slot(slot)
-			ptm_scheduler.date = date
-			ptm_scheduler.day = day
-			ptm_scheduler.save()
-			progress = (idx + 1) * 100 // total_rows
-			
-			# Publish progress
-			frappe.realtime.publish_progress(progress, title="Import PTM Scheduler", description=f"{idx+1}/{total_rows} rows processed")
 
+		for idx, row in enumerate(csv_reader, start=1):
+			try:
+				acad_year, branch, cls_div, teacher_name, subject, group, period, gmeet, slot, date_str = row
+				day = date_str.split(", ")[0]
+				date = get_formatted_date(date_str)
+				ptm_scheduler = frappe.new_doc("PTM Scheduler")
+				ptm_scheduler.academic_year = acad_year
+				ptm_scheduler.branch = branch.strip()
+				ptm_scheduler.division = get_division(divStr=cls_div, branch=branch, academic_year=acad_year)
+				ptm_scheduler.teacher_alias = teacher_name
+				ptm_scheduler.teacher = get_teacher_from_alias(teacher_name.strip(), branch.strip())
+				ptm_scheduler.subject = subject
+				ptm_scheduler.group = group
+				ptm_scheduler.period = period
+				ptm_scheduler.slot = format_time_slot(slot)
+				ptm_scheduler.date = date
+				ptm_scheduler.day = day
+				ptm_scheduler.save()
+				progress = idx * 100 // total_rows
 
-		
+				# Publish progress
+				frappe.realtime.publish_progress(progress, title="Import PTM Scheduler", description=f"{idx}/{total_rows} rows processed")
+			except Exception as e:
+				err = [idx,str(e)]
+				errors.append(err)
+				# Rollback changes
+				
+
+		if errors:
+			frappe.db.rollback()
+			error_message = "Error importing PTM schedule background:<br>"
+			error_message += "<table>"
+			error_message += "<tr><th>Row No</th><th>Error Message</th></tr>"
+			for err in errors:
+				error_message += f"<tr><td>{err[0]}</td><td>{err[1]}</td></tr>"
+			error_message += "</table>"
+			return {"status": "failed", "message": error_message}
 		frappe.db.commit()
 		return {"status": "success", "message": _("PTM schedule imported successfully")}
 	except Exception as e:
 		frappe.log_error(message=f"Error importing PTM schedule background: {str(e)}", title="PTM Schedule Import Background")
 		return {"status": "failed", "message": str(e)}
+
 
 
 def is_number(n):
@@ -137,18 +191,25 @@ def get_division(divStr, branch, academic_year):
         else:
             return get_prefix(divStr) + "-" + branch +"-"+academic_year    
 
+def get_teacher_from_alias(alias, branch):
+    error_raised = False  # Flag to track if error has been raised
+    try:
+        teacher_name_doc = frappe.get_all('Teacher Alias Group', filters={'alias': alias}, fields=['parent', 'name']) 
+        if len(teacher_name_doc):
+            for i in teacher_name_doc:
+                teacher_doc = frappe.get_doc('Instructor', i.get('parent'))
+                if branch == teacher_doc.custom_school:
+                    return i.parent
+        error_raised = True  # Set flag to True if no teacher is found
+        raise Exception("No Teacher linked with Alias {} for School {} ".format(alias, branch))
+    except Exception as e:
+        if not error_raised:  # Check if error has been raised before
+            error_raised = True  # Set flag to True if error is being raised now
+            raise Exception("No Teacher linked with Alias {} for School {} with error: {} ".format(alias, branch, str(e)))
+        else:
+            raise e  # Re-raise the exception if it has been raised before
 
-def get_teacher_from_alias(alias,branch):
-	try:
-		teacher_name_doc = frappe.get_all('Teacher Alias Group', filters={'alias': alias}, fields=['parent', 'name']) 
-		if len(teacher_name_doc):
-			for i in teacher_name_doc:
-				teacher_doc = frappe.get_doc('Instructor',i.get('parent'))
-				if branch == teacher_doc.custom_school:
-					return i.parent
-		frappe.throw("No Teacher linked with Alias {} for School {} ".format(alias,branch))
-	except Exception as e:
-		frappe.throw("No Teacher linked with Alias {} for School {} with error : {} ".format(alias,branch,str(e)))
+
      
 	# return False
 

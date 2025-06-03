@@ -123,7 +123,7 @@ def get_datetime_from_time_slot(date, time_slot):
 
         return datetime_obj 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist()
 def get_upcoming_online_ptm_links(student_id):
     student_division = get_division_name_by_student_id(student_id)
     if student_division:
