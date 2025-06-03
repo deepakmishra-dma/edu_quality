@@ -79,7 +79,9 @@ def get_batch_number(program_enrollment):
     div_dict = {}
     for pe in program_enrollment:
         div = frappe.get_doc("Student Group", pe.student_group)
-        batch_number = frappe.get_value("Student Batch Name", div.batch, "custom_batch_number")
+        batch_number = frappe.get_value(
+            "Student Batch Name", div.batch, "custom_batch_number"
+        )
         div_dict[pe.name] = batch_number
 
     return div_dict
@@ -124,10 +126,9 @@ def generate(**kwargs):
 
 @frappe.whitelist()
 def generate_permanent_id_cards(**kwargs):
-    frappe.enqueue(generate_permanent_id_cards_async, **kwargs, queue="long")
+    generate_permanent_id_cards_async(kwargs)
 
-
-def generate_permanent_id_cards_async(**kwargs):
+def generate_permanent_id_cards_async(kwargs):
     try:
         base_url = frappe.utils.get_url()
         config = frappe.get_site_config()
@@ -171,7 +172,14 @@ def generate_permanent_id_cards_async(**kwargs):
             f.write(main_pdf)
         doc = frappe.new_doc("Permanent Id Card")
         file_path = str(filename).replace(str(public_path), "")
-
+        for enrollment in program_enrollment:
+            doc.append(
+                "id_cards",
+                {
+                    "program_enrollment": enrollment.name,
+                },
+            )
+            frappe.db.set_value("Student ID Card",enrollment.custom_id_card,"status","PENDING(PDF CREATED)")
         doc.file = file_path
         doc.save(ignore_permissions=True)
     except Exception as e:

@@ -13,7 +13,7 @@ def get_students():
     return students
 
 
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=True)
 def get_student_class_details(student):
     current_yr = frappe.db.get_value(
         "Academic Year", {"custom_current_academic_year": 1}
