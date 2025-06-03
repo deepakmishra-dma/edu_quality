@@ -1,6 +1,7 @@
 import frappe
 from education.education.doctype.student.student import Student
 from frappe.auth import LoginManager
+from edu_quality.edu_quality.server_scripts.guardian import set_guardian_permissions
 
 class CustomStudent(Student):
     def validate_user(self):
@@ -27,3 +28,8 @@ class CustomStudent(Student):
 
             self.user = student_user.name
         login_manager.login_as(current_user)
+
+
+    def on_update(self):
+        # Giving permissions to guardian
+        set_guardian_permissions(self)

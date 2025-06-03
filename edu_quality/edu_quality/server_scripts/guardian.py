@@ -106,12 +106,45 @@ def set_student_permissions(doc,patch=0):
             perm.insert(ignore_permissions=True)
             
 
-def set_guardian_permissions(doc):
-    if not doc.user:
+def create_permission(guardian, user):
+    if not user:
         return
-    if not frappe.db.exists("User Permission",{"user":doc.user,"allow":"Guardian","for_value":doc.name}):
+
+    if not frappe.db.exists("User Permission", {"user": user, "allow": "Guardian", "for_value": guardian}):
         perm = frappe.new_doc("User Permission")
-        perm.user = doc.user
+        perm.user = user
         perm.allow = "Guardian"
-        perm.for_value = doc.name
+        perm.for_value = guardian
         perm.insert(ignore_permissions=True)
+
+
+def set_guardian_permissions(doc):
+    """
+    Set permissions for the guardian based on the relationship with the student.
+
+    Args:
+        doc (object): Guardian document.
+        update (bool, optional): If the guardian is being updated. Defaults to False.
+    """
+    if doc.doctype == "Student":
+        mother_name = frappe.get_value("Student Guardian", {"parent": doc.name, 'relation': 'Mother'}, 'guardian')
+        father_name = frappe.get_value("Student Guardian", {"parent": doc.name, 'relation': 'Father'}, 'guardian')
+        mother_user = frappe.get_value("Guardian", mother_name, 'user') if mother_name else None
+        father_user = frappe.get_value("Guardian", father_name, 'user') if father_name else None
+
+        if mother_user and father_user:
+            # Create permissions for both parents and giving permissions to father
+            create_permission(mother_name, father_user)
+            create_permission(father_name, father_user)
+            # Giving permissions to mother
+            create_permission(mother_name, mother_user)
+            create_permission(father_name, mother_user)
+
+        elif mother_user:
+            create_permission(mother_name, mother_user)
+
+        elif father_user:
+            create_permission(father_name, father_user)
+
+    elif doc.doctype == "Guardian":
+        create_permission(doc.name, doc.user)
