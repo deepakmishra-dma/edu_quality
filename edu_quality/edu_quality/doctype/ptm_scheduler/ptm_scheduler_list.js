@@ -84,19 +84,39 @@ function checkFilePermission(file) {
     });
 }
 
+// function importCSVData(file) {
+//     frappe.call({
+//         method: 'edu_quality.edu_quality.doctype.ptm_scheduler.ptm_scheduler.import_ptm_schedule_from_url',
+//         args: { 'url': file },
+//         callback: function (response) {
+//             if (response.message.status === 'success') {
+//                 frappe.msgprint(response.message.message);
+//             } else {
+//                 frappe.msgprint('Import failed: \n' + response.message.message);
+//             }
+//         }
+//     });
+// }
 function importCSVData(file) {
     frappe.call({
         method: 'edu_quality.edu_quality.doctype.ptm_scheduler.ptm_scheduler.import_ptm_schedule_from_url',
         args: { 'url': file },
         callback: function (response) {
             if (response.message.status === 'success') {
-                frappe.msgprint(response.message.message);
+                // Display success message with green indicator
+                frappe.msgprint('<div style="color: green;">Success: ' + response.message.message + '</div>');
             } else {
-                frappe.msgprint('Import failed: ' + response.message.message);
+                // Display failure message with red indicator
+                frappe.msgprint('<div style="color: red;">Import failed: <br>' + response.message.message + '</div>');
             }
+        },
+        error: function (xhr, textStatus, error) {
+            // Handle error in making the AJAX call
+            frappe.msgprint('<div style="color: red;">Error occurred while importing data: <br>' + error + '</div>');
         }
     });
 }
+
 
 
 function generate_gmeet_links(items,summary,imporsonate_user,regenerate) {
