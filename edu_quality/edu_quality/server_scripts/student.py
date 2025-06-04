@@ -90,6 +90,7 @@ def remove_from_division(doc):
             break
     division.save()
     add_comment_in_division(doc, doc.student_group, True)
+    add_student_log(doc, doc.student_group, True)
     return roll_no
 
 
@@ -114,6 +115,7 @@ def add_to_division(doc, division, roll_no=None):
     })
     sg.save()
     add_comment_in_division(doc, division)
+    add_student_log(doc, division)
 
 
 def swap_student_division(pe_doc_1, pe_doc_2):
@@ -182,9 +184,9 @@ def add_comment_in_division(student, division, is_removed=False):
         is_removed (bool, optional): Flag to indicate if the student is removed. Defaults to False.
     """
     if is_removed:
-        comment = f"Student: {student.student_name}({student}) is Removed from division {division}"
+        comment = f"Student: {student.student_name}({student.name}) is Removed from division {division}"
     else:
-        comment = f"Student: {student.student_name}({student}) is Added to division {division}"
+        comment = f"Student: {student.student_name}({student.name}) is Added to division {division}"
     frappe.get_doc({
         'doctype': 'Comment',
         'comment_type': 'Info',
@@ -192,3 +194,28 @@ def add_comment_in_division(student, division, is_removed=False):
         'referenc_name': division,
         'content': comment,
     }).insert(ignore_permissions=True)
+
+
+def add_student_log(doc, division, is_removed=False):
+    """
+    doc: Program Enrollment
+    division: Division
+    this function adds student log
+    """
+    student_info = f"Student: {doc.student_name}({doc.name})"
+    action = "Removed from" if is_removed else "Added to"
+    log = f"{student_info} is {action} division {division}"
+
+    doc_info = {
+        'doctype': 'Student Log',
+        'student': doc.student,
+        'type': 'General',
+        'academic_year': doc.academic_year,
+        'academic_term': doc.academic_term,
+        'program': doc.program,
+        'student_batch': doc.student_batch_name,
+        'log': log,
+        'date': frappe.utils.now_datetime(),
+    }
+
+    frappe.get_doc(doc_info).insert(ignore_permissions=True)
