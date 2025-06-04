@@ -6,8 +6,9 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "reference_number",
   "bonafide_pdf",
+  "student_name",
+  "reference_number",
   "column_break_xnei",
   "school"
  ],
@@ -30,16 +31,23 @@
    "options": "School"
   },
   {
-   "fieldname": "reference_number",
+   "fieldname": "student_name",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Reference number",
+   "label": "Student Name",
    "options": "Student"
+  },
+  {
+   "fieldname": "reference_number",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "Reference Number",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-04-22 16:18:00.228600",
+ "modified": "2024-04-29 18:17:13.747299",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Bonafide Certificate",

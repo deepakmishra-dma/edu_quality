@@ -19,7 +19,7 @@ export const PtmLinks = () => {
 
     const { data: studentsList } = useStudentList()
     const { data: classDetails } = useClassDetails(selectedStudent)
-    // console.log("selected student ", classDetails)
+
     const students = useMemo(() => studentsList?.data?.message || [], [studentsList?.data])
 
     useEffect(() => {
@@ -207,7 +207,7 @@ export const PtmLinks = () => {
                                                 color: "black",
                                                 fontWeight: "bold"
                                             }}>Upcoming Online PTMs</Text>
-                                            <Box sx={{ overflowX: "auto", textAlign: "center", }}>
+                                            <Box sx={{ textAlign: "center", }}>
 
                                                 <Table horizontalSpacing="xl">
                                                     <thead style={{ backgroundColor: studentProfileColor + "22" }}>
@@ -242,6 +242,7 @@ export const PtmLinks = () => {
                                                     <tbody>{rows}</tbody>
                                                 </Table>
                                             </Box>
+
                                         </>
                                     )
                                         :
