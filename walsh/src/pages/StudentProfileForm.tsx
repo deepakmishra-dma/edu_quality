@@ -177,7 +177,7 @@ export const StudentProfleFOrm = ({ student, selectedStudent, studentProfileColo
                 });
                 const data = await response.json();
                 if (data.message.success) {
-                    console.log("fther ", FatherGuardian)
+
                     setVerificationStatus('OTP Verified!');
                     setStatusColor('green');
                     setTimeout(() => {
@@ -254,26 +254,10 @@ export const StudentProfleFOrm = ({ student, selectedStudent, studentProfileColo
         };
         fetchGuardianDetails()
     }, [setFatherDetails])
-    useEffect(() => {
-        const fetchGuardianDetails = async () => {
-            try {
-                const headers = new Headers();
-                headers.append('content', 'application/json');
-                const response = await fetch(`/api/resource/Guardian/${MotherGuardian}`, { headers });
-                const data = await response.json();
-                console.log("data ", data)
-                // setMotherDetails([...motherDetails, data]);
 
 
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            }
-        };
-        fetchGuardianDetails()
-    }, [])
 
 
-    console.log('selected ', studentDataList)
 
 
     const verifyMobileOTP = async (id: string) => {
