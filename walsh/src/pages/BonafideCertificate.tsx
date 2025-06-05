@@ -23,6 +23,7 @@ export const BonafideCertificate = () => {
     const { data: classDetails } = useClassDetails(selectedStudent)
     const students = useMemo(() => studentsList?.data?.message || [], [studentsList?.data])
     const studentProfileColor = useStudentProfileColor(selectedStudent)
+    const bonafide_name_id = bonafideList?.data?.message?.find((i) => i.student_name === selectedStudent)?.student_name
 
     const subjectOptions = useMemo(() => {
         return classDetails?.data?.message?.class?.subject?.map?.(subject => ({
@@ -37,7 +38,7 @@ export const BonafideCertificate = () => {
             method: 'POST',
             headers: myHeaders,
             body: JSON.stringify({
-                "student_id": selectedStudent
+                "student_id": selectedStudent,
             }),
         })
             .then(response => response.json())
@@ -99,9 +100,6 @@ export const BonafideCertificate = () => {
             value: `${i + 1}`
         }))
     }, [])
-    const bonafide_name_id = bonafideList?.data?.message?.find((i) => i.reference_number === selectedStudent)?.reference_number
-
-
 
 
 
@@ -128,18 +126,14 @@ export const BonafideCertificate = () => {
         }
     }, [selectedUnit, unitOptions]);
 
-    const rows1 = bonafideList?.data?.message?.filter((i) => i.reference_number == selectedStudent)
+    const rows1 = bonafideList?.data?.message?.filter((i) => i.student_name == selectedStudent)
+
     const rows = rows1?.map((i) => {
         const formatDate = new Date(i.creation);
         const formattedStartDate = formatDate.toLocaleDateString('en-GB').replace(/\//g, '-');
         return (
             <>
-
-
-                <tr >
-
-
-
+                <tr>
 
                     <td> <Text sx={{
                         borderBottom: `1px solid #dee2e6`,
@@ -176,6 +170,8 @@ export const BonafideCertificate = () => {
             </>
         )
     })
+
+
 
     return (
         <>

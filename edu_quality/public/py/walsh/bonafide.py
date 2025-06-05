@@ -5,6 +5,7 @@ from edu_quality.edu_quality.server_scripts.utils import current_academic_year
 
 @frappe.whitelist(allow_guest=True)
 def send_bonafide(student_id):
+
     try:
         if frappe.db.exists(
             "Bonafide Certificate",
@@ -30,8 +31,9 @@ def send_bonafide(student_id):
                     "doctype": "Bonafide Certificate",
                     "student": student_id,
                     "academic_year": acad_year,
-                    "reference_number": student_id,
+                    "student_name": student.name,
                     "school": student.school,
+                    "reference_number": student.name,
                 }
             )
             doc.insert(ignore_permissions=True)
@@ -71,6 +73,8 @@ def send_bonafide(student_id):
                 ],
             )
             pdf_url = frappe.utils.get_url(saved_file.file_url)
+            print("student", student.name)
+
             return pdf_url
     except:
         frappe.log_error("Bonafide Certificate Sending Failed", frappe.get_traceback())
@@ -79,5 +83,4 @@ def send_bonafide(student_id):
 @frappe.whitelist(allow_guest=True)
 def bonafide_list():
     bonafide_doc = frappe.get_all("Bonafide Certificate", fields=["*"])
-    print("list ", bonafide_doc)
     return bonafide_doc
