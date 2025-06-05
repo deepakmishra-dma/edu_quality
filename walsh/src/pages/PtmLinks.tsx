@@ -207,7 +207,7 @@ export const PtmLinks = () => {
                                                 color: "black",
                                                 fontWeight: "bold"
                                             }}>Upcoming Online PTMs</Text>
-                                            <Box sx={{ textAlign: "center", }}>
+                                            <Box sx={{ textAlign: "center", overflowX: "scroll" }}>
 
                                                 <Table horizontalSpacing="xl">
                                                     <thead style={{ backgroundColor: studentProfileColor + "22" }}>
