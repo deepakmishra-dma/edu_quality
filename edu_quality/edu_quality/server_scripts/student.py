@@ -261,7 +261,7 @@ def add_comment_in_division(student, division, is_removed=False):
         'doctype': 'Comment',
         'comment_type': 'Info',
         'reference_doctype': 'Student Group',
-        'referenc_name': division,
+        'reference_name': division,
         'content': comment,
     }).insert(ignore_permissions=True)
 
