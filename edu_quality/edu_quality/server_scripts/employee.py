@@ -48,6 +48,12 @@ def after_insert(doc, method=None):
         )
 
 
+def before_insert(doc, method=None):
+    create_employee_workspace = frappe.get_value("Google Service Account", None, "create_employee_workspace")
+    if not cint(create_employee_workspace):
+        doc.prefered_contact_email = 'Personal Email'
+
+
 def on_update(doc, method=None):
     add_to_email_group(doc)
     add_to_user_permission(doc)

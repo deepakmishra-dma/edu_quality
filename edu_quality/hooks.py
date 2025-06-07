@@ -232,6 +232,7 @@ doc_events = {
     "Employee": {
         "before_save": "edu_quality.edu_quality.server_scripts.employee.before_save",
         "after_insert": "edu_quality.edu_quality.server_scripts.employee.after_insert",
+        "before_insert": "edu_quality.edu_quality.server_scripts.employee.before_insert",
         "on_update": "edu_quality.edu_quality.server_scripts.employee.on_update",
     },
     "Student Group": {
