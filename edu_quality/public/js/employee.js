@@ -60,10 +60,18 @@ frappe.ui.form.on('Employee', {
                                 new_employee: values.employee
                             },
                             callback: function (response) {
-                                frappe.show_alert({
-                                    message: __(response.message),
-                                    indicator: 'green'
-                                });
+                                if (response.message.status == "error") {
+                                    frappe.show_alert({
+                                        message: __(response.message.message),
+                                        indicator: 'red'
+                                    });
+                                }else {
+                                    frappe.show_alert({
+                                        message: __(response.message),
+                                        indicator: 'green'
+                                    });
+                                    frm.reload_doc();
+                                }
                                 frm.reload_doc();
                             }
                         });
