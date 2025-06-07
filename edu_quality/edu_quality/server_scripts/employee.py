@@ -1,8 +1,12 @@
 import re
 import frappe
 from frappe.utils.data import cint
-from edu_quality.api.google_admin import add_user_to_group, get_google_admin_object
-
+from edu_quality.api.google_admin import (
+    add_user_to_group,
+    get_google_admin_object,
+    suspend_google_user,
+    get_google_user_with_key,
+)
 
 def before_save(doc, method=None):
     email_pattern = re.compile(r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
@@ -289,6 +293,12 @@ def mark_ex_employee(employee):
         employee.status = "Left"
         employee.relieving_date = frappe.utils.now()
         employee.save()
+        # Suspend the google user
+        if employee.company_email:
+            email_key = employee.company_email.split("@")[0]
+            google_user = get_google_user_with_key(email_key)
+            if google_user:
+                suspend_google_user(employee.company_email)
         frappe.response["message"] = "Employee marked as Ex-Employee"
     except:
         err_msg = "Error while marking the employee as Ex-Employee"
