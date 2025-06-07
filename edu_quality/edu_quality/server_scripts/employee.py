@@ -277,3 +277,20 @@ def migrate_employee_data(employee, new_employee):
     employee.save()
     # Add logic to migrate the data here
     frappe.response["message"] = "Employee data migrated successfully"
+
+
+@frappe.whitelist()
+def mark_ex_employee(employee):
+    """
+    Mark the employee as an ex-employee
+    """
+    try:
+        employee = frappe.get_doc("Employee", employee)
+        employee.status = "Left"
+        employee.relieving_date = frappe.utils.now()
+        employee.save()
+        frappe.response["message"] = "Employee marked as Ex-Employee"
+    except:
+        err_msg = "Error while marking the employee as Ex-Employee"
+        frappe.log_error(err_msg,frappe.get_traceback(), reference_doctype="Employee", reference_name=employee)
+        frappe.response["message"] = err_msg
