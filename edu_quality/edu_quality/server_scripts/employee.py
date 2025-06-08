@@ -1,8 +1,12 @@
 import re
 import frappe
 from frappe.utils.data import cint
-from edu_quality.api.google_admin import add_user_to_group, get_google_admin_object
-
+from edu_quality.api.google_admin import (
+    add_user_to_group,
+    get_google_admin_object,
+    suspend_google_user,
+    get_google_user_with_key,
+)
 
 def before_save(doc, method=None):
     email_pattern = re.compile(r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
@@ -46,6 +50,12 @@ def after_insert(doc, method=None):
             f"Error while sending communication mail to the user",
             frappe.get_traceback(),
         )
+
+
+def before_insert(doc, method=None):
+    create_employee_workspace = frappe.get_value("Google Service Account", None, "create_employee_workspace")
+    if not cint(create_employee_workspace):
+        doc.prefered_contact_email = 'Personal Email'
 
 
 def on_update(doc, method=None):
@@ -265,9 +275,76 @@ def migrate_employee_data(employee, new_employee):
     """
     Migrate the employee data from one employee to another
     """
-    employee = frappe.get_doc("Employee", employee)
-    new_employee = frappe.get_doc("Employee", new_employee)
-    employee.is_migrated = 1
-    employee.save()
-    # Add logic to migrate the data here
-    frappe.response["message"] = "Employee data migrated successfully"
+    try:
+        employee = frappe.get_doc("Employee", employee)
+        new_employee = frappe.get_doc("Employee", new_employee)
+        employee.is_migrated = 1
+        employee.save()
+        transfer_teacher_alias(employee, new_employee)
+        frappe.response["message"] = "Employee data migrated successfully"
+    except:
+        frappe.db.rollback()
+        err_msg = "Error while migrating the employee data"
+        frappe.log_error(err_msg,frappe.get_traceback(), reference_doctype="Employee", reference_name=employee.name)
+        frappe.response["message"] = {
+            "status": "error",
+            "message": err_msg,
+        }
+
+
+@frappe.whitelist()
+def mark_ex_employee(employee):
+    """
+    Mark the employee as an ex-employee
+    """
+    try:
+        employee = frappe.get_doc("Employee", employee)
+        employee.status = "Left"
+        employee.relieving_date = frappe.utils.now()
+        employee.save()
+
+        # Suspend the google user
+        if employee.company_email:
+            email_key = employee.company_email.split("@")[0]
+            google_user = get_google_user_with_key(email_key)
+            if google_user:
+                suspend_google_user(employee.company_email)
+
+        # Mark the instructor as an ex-instructor
+        mark_ex_instructor(employee)
+        frappe.response["message"] = "Employee marked as Ex-Employee"
+    except:
+        frappe.db.rollback()
+        err_msg = "Error while marking the employee as Ex-Employee"
+        frappe.log_error(err_msg,frappe.get_traceback(), reference_doctype="Employee", reference_name=employee.name)
+        frappe.response["message"] = err_msg
+
+
+def mark_ex_instructor(employee):
+    """
+    Mark the instructor as an ex-instructor
+    """
+    if not frappe.db.exists("Instructor", {'employee': employee.name}):
+        frappe.throw("Instructor not found")
+    frappe.db.set_value("Instructor", {'employee': employee.name}, "status", "Left")
+
+
+def transfer_teacher_alias(old_employee, new_employee):
+    """
+    Transfers the teacher alias from an old employee to a new employee.
+
+    Args:
+        old_employee (str): The name of the old employee whose teacher alias is to be transferred.
+        new_employee (str): The name of the new employee who will receive the teacher alias.
+    """
+    # Get the instructor documents for the old and new employees
+    old_instructor = frappe.get_doc("Instructor", {'employee': old_employee.name})
+    new_instructor = frappe.get_doc("Instructor", {'employee': new_employee.name})
+
+    # Transfer the teacher aliases from the old employee to the new employee
+    for alias in old_instructor.custom_teacher_alias:
+        new_instructor.append("custom_teacher_alias", {"alias": alias.alias})
+        frappe.delete_doc("Teacher Alias Group", alias.name)
+
+    # Save the changes made to the new instructor document
+    new_instructor.save()
