@@ -302,18 +302,31 @@ def mark_ex_employee(employee):
         employee.status = "Left"
         employee.relieving_date = frappe.utils.now()
         employee.save()
+
         # Suspend the google user
         if employee.company_email:
             email_key = employee.company_email.split("@")[0]
             google_user = get_google_user_with_key(email_key)
             if google_user:
                 suspend_google_user(employee.company_email)
+
+        # Mark the instructor as an ex-instructor
+        mark_ex_instructor(employee)
         frappe.response["message"] = "Employee marked as Ex-Employee"
     except:
         frappe.db.rollback()
         err_msg = "Error while marking the employee as Ex-Employee"
         frappe.log_error(err_msg,frappe.get_traceback(), reference_doctype="Employee", reference_name=employee.name)
         frappe.response["message"] = err_msg
+
+
+def mark_ex_instructor(employee):
+    """
+    Mark the instructor as an ex-instructor
+    """
+    if not frappe.db.exists("Instructor", {'employee': employee.name}):
+        frappe.throw("Instructor not found")
+    frappe.db.set_value("Instructor", {'employee': employee.name}, "status", "Left")
 
 
 def transfer_teacher_alias(old_employee, new_employee):
