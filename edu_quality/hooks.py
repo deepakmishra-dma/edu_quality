@@ -237,6 +237,7 @@ doc_events = {
     },
     "Student Group": {
         "on_update": "edu_quality.overrides_hooks.student_group.on_update",
+        "before_save":"edu_quality.overrides_hooks.student_group.before_save"
     },
 }
 
@@ -251,6 +252,7 @@ scheduler_events = {
         "0 * * * *": ["edu_quality.tasks.cron"],
         "0 19 * * *": ["edu_quality.tasks.send_bulk_notification_cmap_to_guardian"],
         "0 6 * * *": ["edu_quality.tasks.schedule_birthday_greeting"],
+        "* * * * *": ["edu_quality.cmap_jobs.send_ptm_notifications_to_students","edu_quality.cmap_jobs.notify_teacher_before_half_hour_job"]
     },
     "daily": [
         "edu_quality.tasks.time_based",

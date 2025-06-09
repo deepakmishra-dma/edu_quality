@@ -21,8 +21,8 @@ _SCOPES = {
     "drive": ("https://www.googleapis.com/auth/drive"),
     "indexing": ("https://www.googleapis.com/auth/indexing"),
     "calendar":   ['https://www.googleapis.com/auth/calendar',
-                    'https://www.googleapis.com/auth/calendar.events']
-    }
+                'https://www.googleapis.com/auth/calendar.events']
+}
 _SERVICES = {
     "admin": ("admin", "directory_v1"),
     "contacts": ("people", "v1"),
