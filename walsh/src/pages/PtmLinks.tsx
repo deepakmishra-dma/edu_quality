@@ -77,32 +77,79 @@ export const PtmLinks = () => {
     const custom_school = classDetails?.data?.message?.division?.custom_school
     const { data: onlinePTM, refetch: onlineRefetch, isLoading } = usePTMLinksQuery(selectedStudent)
     const { data: offlinePTM, refetch: offlineRefetch, isLoading: offlinePtmLoading } = useofflinePTMLinksQuery(custom_school)
+
+
     useEffect(() => {
-        // Fetch data when the component mounts or when it is reloaded
+
         onlineRefetch();
         offlineRefetch();
     }, [onlineRefetch, offlineRefetch]);
 
+
+
     const rows = onlinePTM?.data?.message?.map((element: any) => {
+        const [linkEnabled, setLinkEnabled] = useState(false);
         const endDate = new Date(element.date);
         const formattedEndDate = endDate.toLocaleDateString('en-GB').replace(/\//g, '-');
-        return (
-            <>
+        useEffect(() => {
 
-                <tr >
-                    <td ><Text style={{ width: "152px" }}>{element.subject}</Text></td>
-                    <td ><Text style={{ width: "152px" }}>{formattedEndDate}</Text></td>
-                    <td><Text style={{ width: "152px" }}>{element.day}</Text></td>
-                    <td ><Text style={{ width: "152px" }}>{element.slot}</Text></td>
-                    <td >
-                        <a href={element.gmeet_link} target="__blank">
-                            <Text style={{ width: "152px" }}>Link</Text>
-                        </a>
-                    </td>
-                </tr>
-            </>
-        )
-    })
+            const slotStartTimeParts = element.slot.split(' - ')[0].split(' ');
+            const slotStartHours = parseInt(slotStartTimeParts[0].split(':')[0]);
+            const slotStartMinutes = parseInt(slotStartTimeParts[0].split(':')[1]);
+            const slotStartPeriod = slotStartTimeParts[1];
+
+            let slotStartHours24 = slotStartHours;
+            if (slotStartPeriod === 'PM' && slotStartHours !== 12) {
+                slotStartHours24 += 12;
+            }
+
+            const slotStartTime = new Date();
+            slotStartTime.setHours(slotStartHours24, slotStartMinutes, 0, 0);
+
+            const currentDateTime = new Date();
+            const currentHours = currentDateTime.getHours() % 12 || 12;
+            const currentMinutes = currentDateTime.getMinutes();
+            const currentPeriod = currentDateTime.getHours() < 12 ? 'AM' : 'PM';
+
+            let currentHours24 = currentHours;
+            if (currentPeriod === 'PM' && currentHours !== 12) {
+                currentHours24 += 12;
+            }
+
+            currentDateTime.setHours(currentHours24, currentMinutes, 0, 0);
+
+
+            const timeDifference = Math.floor((slotStartTime.getTime() - currentDateTime.getTime()) / (60 * 1000));
+
+            const timeoutId = setTimeout(() => {
+                setLinkEnabled(true);
+            }, timeDifference * 60 * 1000 - 5 * 60 * 1000);
+
+            return () => clearTimeout(timeoutId);
+        }, [element.slot, element.date]);
+
+        return (
+            <tr key={element.id}>
+                <td><Text>{element.subject}</Text></td>
+                <td><Text>{formattedEndDate}</Text></td>
+                <td><Text>{element.slot}</Text></td>
+                <td>
+                    {
+                        linkEnabled ?
+                            <a href={element.gmeet_link} target="__blank" style={{ textDecoration: 'none', }}>
+                                <Text sx={{ backgroundColor: studentProfileColor, borderRadius: '25px' }} style={{ color: 'white', padding: '1px' }}>Meet Link</Text>
+                            </a>
+                            :
+                            <span>Not Available</span>
+                    }
+
+                </td>
+            </tr>
+        );
+    });
+
+
+
 
 
     const rows2 = offlinePTM?.data?.message?.map((element: any) => {
@@ -112,8 +159,8 @@ export const PtmLinks = () => {
             return (
                 <>
                     <tr >
-                        <td ><Text style={{ width: "150px", margin: "0px auto" }}>{element.event}</Text></td>
-                        <td ><Text style={{ width: "150px", margin: "0px auto" }}>{formattedStartDate}</Text></td>
+                        <td ><Text >{element.event}</Text></td>
+                        <td ><Text >{formattedStartDate}</Text></td>
                     </tr>
                 </>
             )
@@ -201,7 +248,6 @@ export const PtmLinks = () => {
                                 {
                                     onlinePTM?.data?.message?.length > 0 ? (
                                         <>
-
                                             <Text sx={{
                                                 margin: "20px 0",
                                                 color: "black",
@@ -209,33 +255,31 @@ export const PtmLinks = () => {
                                             }}>Upcoming Online PTMs</Text>
                                             <Box sx={{ textAlign: "center", overflowX: "scroll" }}>
 
-                                                <Table horizontalSpacing="xl">
+
+
+                                                <Table horizontalSpacing="sm">
                                                     <thead style={{ backgroundColor: studentProfileColor + "22" }}>
                                                         <tr>
                                                             <td> <Text sx={{
                                                                 borderBottom: `1px solid #dee2e6`,
                                                                 color: studentProfileColor,
-                                                                fontWeight: "bold"
+                                                                fontWeight: "bold",
                                                             }}>Subject</Text></td>
                                                             <td> <Text sx={{
                                                                 borderBottom: `1px solid #dee2e6`,
                                                                 color: studentProfileColor,
-                                                                fontWeight: "bold"
+                                                                fontWeight: "bold",
                                                             }}>Date</Text></td>
+
                                                             <td> <Text sx={{
                                                                 borderBottom: `1px solid #dee2e6`,
                                                                 color: studentProfileColor,
-                                                                fontWeight: "bold"
-                                                            }}>Day</Text></td>
-                                                            <td> <Text sx={{
-                                                                borderBottom: `1px solid #dee2e6`,
-                                                                color: studentProfileColor,
-                                                                fontWeight: "bold"
+                                                                fontWeight: "bold",
                                                             }}>Time</Text></td>
                                                             <td> <Text sx={{
                                                                 borderBottom: `1px solid #dee2e6`,
                                                                 color: studentProfileColor,
-                                                                fontWeight: "bold"
+                                                                fontWeight: "bold",
                                                             }}>Link</Text></td>
                                                         </tr>
                                                     </thead>
