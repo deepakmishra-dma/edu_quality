@@ -180,7 +180,7 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
           // },
 
           {
-            label: "Request Bonafide Certificate",
+            label: "Bonafide Certificate",
             icon: IconPrinter,
             location: "/bonafide",
           },
