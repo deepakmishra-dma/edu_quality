@@ -1,0 +1,55 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-04-30 22:04:57.054794",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "name1",
+  "evaluation_criteria",
+  "mode_of_entry"
+ ],
+ "fields": [
+  {
+   "fieldname": "name1",
+   "fieldtype": "Data",
+   "label": "Name"
+  },
+  {
+   "fieldname": "evaluation_criteria",
+   "fieldtype": "Select",
+   "label": "Evaluation Criteria",
+   "options": "Marks\nGrades"
+  },
+  {
+   "fieldname": "mode_of_entry",
+   "fieldtype": "Select",
+   "label": "Mode of Entry",
+   "options": "Manual / CSV\nAPI"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-05-01 00:35:58.274053",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "Exam Type",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1,0 +1,132 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:name1",
+ "creation": "2024-04-30 21:57:25.747685",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_psge",
+  "amended_from",
+  "name1",
+  "school",
+  "class",
+  "order_of_exam",
+  "report_print_configuration",
+  "is_printable",
+  "show_in_app",
+  "calculate_ranks",
+  "is_final_exam",
+  "is_composite",
+  "sub_exams_for_composite"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_psge",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Exam",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "name1",
+   "fieldtype": "Data",
+   "label": "Name",
+   "unique": 1
+  },
+  {
+   "fieldname": "school",
+   "fieldtype": "Link",
+   "label": "School",
+   "options": "School"
+  },
+  {
+   "fieldname": "class",
+   "fieldtype": "Link",
+   "label": "Class",
+   "options": "Program"
+  },
+  {
+   "fieldname": "order_of_exam",
+   "fieldtype": "Int",
+   "label": "Order of exam"
+  },
+  {
+   "fieldname": "report_print_configuration",
+   "fieldtype": "Link",
+   "label": "Report Print Configuration",
+   "options": "Print Format"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_printable",
+   "fieldtype": "Check",
+   "label": "Is Printable"
+  },
+  {
+   "default": "0",
+   "fieldname": "show_in_app",
+   "fieldtype": "Check",
+   "label": "Show in App"
+  },
+  {
+   "default": "0",
+   "fieldname": "calculate_ranks",
+   "fieldtype": "Check",
+   "label": "Calculate Ranks"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_final_exam",
+   "fieldtype": "Check",
+   "label": "Is Final Exam"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_composite",
+   "fieldtype": "Check",
+   "label": "Is Composite"
+  },
+  {
+   "depends_on": "eval:doc.is_composite",
+   "fieldname": "sub_exams_for_composite",
+   "fieldtype": "Table",
+   "label": "Sub Exams For Composite",
+   "options": "Composite Exam"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2024-05-01 01:20:51.313156",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "Exam",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
