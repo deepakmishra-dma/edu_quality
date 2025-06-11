@@ -134,14 +134,13 @@ class CustomStudent(Student):
                 return self.check_deposit()
             elif fee_collection == "Ignore Pending Fee":
                 self.check_deposit()
-                self.reverse_pending_fees(academic_year)
-            
+                return self.reverse_pending_fees(academic_year)
         except Exception as e:
             frappe.logger("Cancel").exception(e)
             frappe.throw(e)
 
     def reverse_pending_fees(self,academic_year):
-        fees_list = frappe.db.get_all("Fees",filters=[["Fees","docstatus","=","1"],["Fees","student","=","FUOA31"],["Fees","outstanding_amount",">",0],["Fees","academic_year","=",academic_year]])
+        fees_list = frappe.db.get_all("Fees",filters=[["Fees","docstatus","=","1"],["Fees","student","=",self.name],["Fees","outstanding_amount",">",0],["Fees","academic_year","=",academic_year]])
         for fee in fees_list:
             fee_doc = frappe.get_doc("Fees",fee.name)
             if fee_doc.outstanding_amount == fee_doc.grand_total:
@@ -150,8 +149,9 @@ class CustomStudent(Student):
                     pr_doc = frappe.get_doc("Payment Request",pr.name)
                     pr_doc.cancel()
                 fee_doc.cancel()
+                return 1
             else:
-                fee_doc.reverse_pending_fees()
+                return fee_doc.reverse_pending_fees()
 
     def check_deposit(self):
         fees_list = frappe.db.get_all("Fees",filters={'docstatus':1,'student':self.name})
@@ -162,12 +162,14 @@ class CustomStudent(Student):
                 if frappe.db.exists("Payment Request",[["Payment Request","reference_name","=",fee.name],["Payment Request","payment_term","is","not set"],["Payment Request","status","=","Paid"]]):
                     deposit_paid = 1
                 description,outstanding = frappe.db.get_value("Payment Schedule",{'parent':fee.name,"payment_term":"Term 1"},['description','outstanding'])
+                frappe.logger("Cancel").exception(description)
+                frappe.logger("Cancel").exception(outstanding)
                 if "deposit" in description.lower() and outstanding==0:
                         deposit_paid=1
                 if deposit_paid:
                     return self.refund_deposit(fee.name,deposit,account)
                 return frappe.throw("Deposit Not Paid!")
-        return frappe.msgprint("Deposit Not Found!")
+        return 1
 
     def refund_deposit(self,fee,amount,account):
         student = self.name

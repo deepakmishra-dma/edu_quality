@@ -22,7 +22,7 @@ from frappe import _, bold, throw
 from erpnext.accounts.general_ledger import make_gl_entries
 from erpnext.accounts.general_ledger import make_reverse_gl_entries
 from edu_quality.edu_quality.server_scripts.payment_split import generate_split_payment
-
+from frappe.desk.query_report import run
 class CustomFees(Fees):
     def generate_split(self):
         generate_split_payment(self)
@@ -38,6 +38,76 @@ class CustomFees(Fees):
     def reverse_pending_fees(self):
         if not self.outstanding_amount < self.grand_total:
             return frappe.throw("Fees has not been paid!")
+        return self.company_wise_pending_fees()
+        
+    def company_wise_pending_fees(self):
+        company_list = frappe.get_all("Company")
+        for company in company_list:
+            company_doc = frappe.get_doc("Company",company.name)
+            filter = {
+                "company":company.name,
+                "from_date":str(self.posting_date),
+                "to_date":frappe.utils.nowdate(),
+                "account":[company_doc.default_receivable_account],
+                "party_type":"Student",
+                "party":[self.student],
+                "party_name":self.student,
+                "group_by":"Group by Voucher (Consolidated)",
+                "cost_center":[],
+                "school":[],
+                "program":[],
+                "project":[],
+                "include_dimensions":1,
+                "include_default_book_entries":1,
+                "show_remarks":1}
+            report = run(report_name="General Ledger",filters=filter,user="Administrator")
+            balance = report['result'][-1]['balance']
+            if balance > 0:
+                self.reverse_partial_amount(company_doc,balance)
+        return 1
+
+    def reverse_partial_amount(self,company,amount):
+        entries = []
+        entries.append(self.get_gl_dict(
+                                    {
+                                        "company": company.name,
+                                        "posting_date":frappe.utils.nowdate(),
+                                        "account": company.default_income_account,
+                                        "party_type": "Student",
+                                        "party": self.student,
+                                        "against": company.default_receivable_account,
+                                        "debit": amount,
+                                        "debit_in_account_currency":amount,
+                                        "against_voucher": self.name,
+                                        "against_voucher_type": self.doctype,
+                                        "cost_center": company.cost_center
+                                    },
+                                    item=self,
+                                ))
+        entries.append(self.get_gl_dict(
+                                        {
+                                            "company": company.name,
+                                            "posting_date":frappe.utils.nowdate(),
+                                            "account": company.default_receivable_account,
+                                            "against": self.student,
+                                            "credit": amount,
+                                            "credit_in_account_currency":amount,
+                                            "cost_center": company.cost_center,
+                                            "against_voucher": self.name,
+                                            "against_voucher_type": self.doctype,
+                                            "party_type": "Student",
+                                            "party": self.student
+                                        },
+                                        item=self,
+                                    ))
+        make_gl_entries(
+            entries,
+            update_outstanding="No",
+            merge_entries=False,
+        )
+
+
+
 
     def make_gl_entries(self):
         if not self.grand_total:
