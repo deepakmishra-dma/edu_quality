@@ -35,6 +35,10 @@ class CustomFees(Fees):
         make_reverse_gl_entries(voucher_type=self.doctype, voucher_no=self.name)
         # frappe.db.set(self, 'status', 'Cancelled')
 
+    def reverse_pending_fees(self):
+        if not self.outstanding_amount < self.grand_total:
+            return frappe.throw("Fees has not been paid!")
+
     def make_gl_entries(self):
         if not self.grand_total:
             return
