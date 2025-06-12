@@ -23,7 +23,35 @@ from erpnext.accounts.general_ledger import make_gl_entries
 from erpnext.accounts.general_ledger import make_reverse_gl_entries
 from edu_quality.edu_quality.server_scripts.payment_split import generate_split_payment
 from frappe.desk.query_report import run
+
+
 class CustomFees(Fees):
+    @frappe.whitelist()
+    def get_uncreated_payment_terms(self):
+        terms = []
+        for term in self.payment_schedule:
+            if not frappe.db.exists("Payment Request",{'reference_name':self.name,'payment_term':term.payment_term,'docstatus':1}):
+                terms.append(term.payment_term)
+        return terms
+
+    @frappe.whitelist()
+    def create_payment_request(self,payment_term):
+        if not payment_term:
+            return frappe.throw("Invalid Payment Term!")
+        elif frappe.db.exists("Payment Request",{'reference_name':self.name,'payment_term':payment_term,'docstatus':1}):
+            return frappe.throw("Payment Request already created!")
+        else:
+            frappe.enqueue(
+                "edu_quality.public.py.student.create_payment_request",
+                fee=self,
+                term = payment_term,
+                is_async=True,
+                queue="long",
+                timeout=1800,
+            )
+            return frappe.msgprint("Payment Request Generation is enqueued!")
+
+
     def generate_split(self):
         generate_split_payment(self)
 

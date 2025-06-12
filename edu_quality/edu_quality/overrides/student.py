@@ -162,8 +162,6 @@ class CustomStudent(Student):
                 if frappe.db.exists("Payment Request",[["Payment Request","reference_name","=",fee.name],["Payment Request","payment_term","is","not set"],["Payment Request","status","=","Paid"]]):
                     deposit_paid = 1
                 description,outstanding = frappe.db.get_value("Payment Schedule",{'parent':fee.name,"payment_term":"Term 1"},['description','outstanding'])
-                frappe.logger("Cancel").exception(description)
-                frappe.logger("Cancel").exception(outstanding)
                 if "deposit" in description.lower() and outstanding==0:
                         deposit_paid=1
                 if deposit_paid:
