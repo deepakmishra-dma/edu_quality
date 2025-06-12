@@ -1,39 +1,30 @@
 
-import { useCustom } from "@refinedev/core";
+// import { useCustom } from "@refinedev/core";
+import { useQuery } from '@tanstack/react-query';
 
 
 
 
 export const usePTMLinksQuery = (selectedStudent: string) => {
-    return useCustom({
-        config: {
-            query: {
-                student_id: selectedStudent
-            }
-        },
-        errorNotification: undefined,
-        method: "get",
-        queryOptions: {
-            queryKey: ["onlinePTMList", selectedStudent],
-        },
-        successNotification: undefined,
-        url: `/api/method/edu_quality.cmap_jobs.get_upcoming_online_ptm_links`,
-    })
-}
+    return useQuery({
+        queryKey: ['onlinePTMList', selectedStudent],
+        queryFn: () =>
+            fetch(`/api/method/edu_quality.cmap_jobs.get_upcoming_online_ptm_links?student_id=${selectedStudent}`).then((res) => {
+                if (res.status === 200) return res.json();
+                throw new Error('Error fetching PTM links');
+            }),
+    });
+};
+
+
 
 export const useofflinePTMLinksQuery = (custom_school: string | undefined) => {
-    return useCustom({
-        config: {
-            query: {
-                school: custom_school
-            }
-        },
-        errorNotification: undefined,
-        method: "get",
-        queryOptions: {
-            queryKey: ["offlinePTMList", custom_school],
-        },
-        successNotification: undefined,
-        url: `/api/method/edu_quality.api.calendar.get_calender_events`,
-    })
-}
+    return useQuery({
+        queryKey: ['offlinePTMList', custom_school],
+        queryFn: () =>
+            fetch(`/api/method/edu_quality.api.calendar.get_calender_events?school=${custom_school}`).then((res) => {
+                if (res.status === 200) return res.json();
+                throw new Error('Failed to fetch offline PTM links');
+            }),
+    });
+};
