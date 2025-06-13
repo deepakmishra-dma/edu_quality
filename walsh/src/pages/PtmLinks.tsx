@@ -89,7 +89,7 @@ export const PtmLinks = () => {
 
     const rows = onlinePTM?.data?.message?.map?.((element: any) => {
         const [linkEnabled, setLinkEnabled] = useState(false);
-        const endDate = new Date(element.date);
+        const endDate = new Date(element?.date);
         const formattedEndDate = endDate.toLocaleDateString('en-GB').replace(/\//g, '-');
         useEffect(() => {
 
@@ -126,13 +126,13 @@ export const PtmLinks = () => {
             }, timeDifference * 60 * 1000 - 5 * 60 * 1000);
 
             return () => clearTimeout(timeoutId);
-        }, [element.slot, element.date]);
+        }, [element?.slot, element?.date]);
 
         return (
-            <tr key={element.id}>
-                <td><Text>{element.subject}</Text></td>
+            <tr key={element?.id}>
+                <td><Text>{element?.subject}</Text></td>
                 <td><Text>{formattedEndDate}</Text></td>
-                <td><Text>{element.slot}</Text></td>
+                <td><Text>{element?.slot}</Text></td>
                 <td>
                     {
                         linkEnabled ?
@@ -154,12 +154,12 @@ export const PtmLinks = () => {
 
     const rows2 = offlinePTM?.data?.message?.map?.((element: any) => {
         if (element?.event?.includes("PTM")) {
-            const startDate = new Date(element.start);
+            const startDate = new Date(element?.start);
             const formattedStartDate = startDate.toLocaleDateString('en-GB').replace(/\//g, '-');
             return (
                 <>
                     <tr >
-                        <td ><Text >{element.event}</Text></td>
+                        <td ><Text >{element?.event}</Text></td>
                         <td ><Text >{formattedStartDate}</Text></td>
                     </tr>
                 </>
@@ -221,7 +221,7 @@ export const PtmLinks = () => {
                     <Text sx={{
                         color: studentProfileColor,
                         fontWeight: 'bold'
-                    }}>{classDetails?.data?.message?.program.program_name} - {classDetails?.data?.message?.division.student_group_name}</Text>
+                    }}>{classDetails?.data?.message?.program?.program_name} - {classDetails?.data?.message?.division?.student_group_name}</Text>
                     {students.find(student => student.name === selectedStudent)?.reference_number && <Text sx={{
                         borderRadius: 50,
                         backgroundColor: studentProfileColor + '22',
@@ -322,7 +322,7 @@ export const PtmLinks = () => {
                     <Text sx={{
                         color: studentProfileColor,
                         fontWeight: 'bold'
-                    }}>{classDetails?.data?.message?.program.program_name} - {classDetails?.data?.message?.division.student_group_name}</Text>
+                    }}>{classDetails?.data?.message?.program?.program_name} - {classDetails?.data?.message?.division?.student_group_name}</Text>
                     {students.find(student => student.name === selectedStudent)?.reference_number && <Text sx={{
                         borderRadius: 50,
                         backgroundColor: studentProfileColor + '22',
