@@ -13,8 +13,7 @@ export const PtmLinks = () => {
     const [selectedUnit, setSelectedUnit] = useState<string>('unit 1')
 
     const [success, setSuccess] = useState(false)
-    const [IsErrorOnlineCheck, setIsErrorOnlineCheck] = useState(false)
-    const [IsErrorofflineCheck, setIsErrorOfflineCheck] = useState(false)
+
     const [searchParams, setSearchParams] = useSearchParams()
     const searchedStudent = searchParams.get('student')
 
@@ -76,16 +75,19 @@ export const PtmLinks = () => {
             setSuccess(false)
     }, [selectedStudent]);
     const custom_school = classDetails?.data?.message?.division?.custom_school
+    const { data: onlinePTM, refetch: onlineRefetch, isLoading } = usePTMLinksQuery(selectedStudent)
+    const { data: offlinePTM, refetch: offlineRefetch, isLoading: offlinePtmLoading } = useofflinePTMLinksQuery(custom_school)
 
-    const { data: onlinePTM, refetch: onlineRefetch, isLoading, isError: IsErrorOnline } = usePTMLinksQuery(selectedStudent)
-    const { data: offlinePTM, refetch: offlineRefetch, isLoading: offlinePtmLoading, isError: IsErrorOffline } = useofflinePTMLinksQuery(custom_school)
+
     useEffect(() => {
 
-        onlineRefetch().catch(() => setIsErrorOnlineCheck(true))
-        offlineRefetch().catch(() => setIsErrorOfflineCheck(true))
+        onlineRefetch();
+        offlineRefetch();
     }, [onlineRefetch, offlineRefetch]);
 
-    const rows = onlinePTM?.message?.map?.((element: any) => {
+
+
+    const rows = onlinePTM?.data?.message?.map?.((element: any) => {
         const [linkEnabled, setLinkEnabled] = useState(false);
         const endDate = new Date(element.date);
         const formattedEndDate = endDate.toLocaleDateString('en-GB').replace(/\//g, '-');
@@ -147,7 +149,10 @@ export const PtmLinks = () => {
     });
 
 
-    const rows2 = offlinePTM?.message?.map?.((element: any) => {
+
+    console.log("check ", offlinePTM)
+
+    const rows2 = offlinePTM?.data?.message?.map?.((element: any) => {
         if (element?.event?.includes("PTM")) {
             const startDate = new Date(element.start);
             const formattedStartDate = startDate.toLocaleDateString('en-GB').replace(/\//g, '-');
@@ -162,6 +167,7 @@ export const PtmLinks = () => {
         }
     })
 
+
     return (
         <Box>
             <Stack sx={{
@@ -171,8 +177,6 @@ export const PtmLinks = () => {
                 // borderBottom: '1px solid  #0005',
                 gap: 0
             }}>
-                {IsErrorOnline && <Text color="red">Error fetching online PTM data</Text>}
-                {IsErrorOffline && <Text color="red">Error fetching offline PTM data</Text>}
                 {students.map((student, index) => {
                     const isSelected = selectedStudent === student.name
                     return <Box
@@ -233,72 +237,71 @@ export const PtmLinks = () => {
                     }}>{students.find(student => student.name === selectedStudent)?.reference_number}</Text>}
                 </Stack>
                 {
-                    !IsErrorOnline && !isLoading &&
-                    // isLoading ?
-                    // <Text align="center" color="dimmed" weight="bold" my={30}>Loading...</Text>
-                    // :
-                    <Box sx={{
-                        textAlign: 'center',
-                    }}>
+                    isLoading ?
+                        <Text align="center" color="dimmed" weight="bold" my={30}>Loading...</Text>
+                        :
+                        <Box sx={{
+                            textAlign: 'center',
+                        }}>
 
-                        <>
-                            {
-                                onlinePTM?.message && onlinePTM?.message?.length > 0 ? (
-                                    <>
-                                        <Text sx={{
-                                            margin: "20px 0",
-                                            color: "black",
-                                            fontWeight: "bold"
-                                        }}>Upcoming Online PTMs</Text>
-                                        <Box sx={{ textAlign: "center", overflowX: "scroll" }}>
-
+                            <>
+                                {
+                                    onlinePTM?.data?.message?.length > 0 ? (
+                                        <>
+                                            <Text sx={{
+                                                margin: "20px 0",
+                                                color: "black",
+                                                fontWeight: "bold"
+                                            }}>Upcoming Online PTMs</Text>
+                                            <Box sx={{ textAlign: "center", overflowX: "scroll" }}>
 
 
-                                            <Table horizontalSpacing="sm">
-                                                <thead style={{ backgroundColor: studentProfileColor + "22" }}>
-                                                    <tr>
-                                                        <td> <Text sx={{
-                                                            borderBottom: `1px solid #dee2e6`,
-                                                            color: studentProfileColor,
-                                                            fontWeight: "bold",
-                                                        }}>Subject</Text></td>
-                                                        <td> <Text sx={{
-                                                            borderBottom: `1px solid #dee2e6`,
-                                                            color: studentProfileColor,
-                                                            fontWeight: "bold",
-                                                        }}>Date</Text></td>
 
-                                                        <td> <Text sx={{
-                                                            borderBottom: `1px solid #dee2e6`,
-                                                            color: studentProfileColor,
-                                                            fontWeight: "bold",
-                                                        }}>Time</Text></td>
-                                                        <td> <Text sx={{
-                                                            borderBottom: `1px solid #dee2e6`,
-                                                            color: studentProfileColor,
-                                                            fontWeight: "bold",
-                                                        }}>Link</Text></td>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>{rows}</tbody>
-                                            </Table>
-                                        </Box>
+                                                <Table horizontalSpacing="sm">
+                                                    <thead style={{ backgroundColor: studentProfileColor + "22" }}>
+                                                        <tr>
+                                                            <td> <Text sx={{
+                                                                borderBottom: `1px solid #dee2e6`,
+                                                                color: studentProfileColor,
+                                                                fontWeight: "bold",
+                                                            }}>Subject</Text></td>
+                                                            <td> <Text sx={{
+                                                                borderBottom: `1px solid #dee2e6`,
+                                                                color: studentProfileColor,
+                                                                fontWeight: "bold",
+                                                            }}>Date</Text></td>
 
-                                    </>
-                                )
-                                    :
-                                    <>
-                                        <Text sx={{
-                                            margin: "10px 0",
-                                            color: "black",
-                                            fontWeight: "bold"
-                                        }}>There is no Online PTM Scheduled</Text>
-                                    </>
-                            }
+                                                            <td> <Text sx={{
+                                                                borderBottom: `1px solid #dee2e6`,
+                                                                color: studentProfileColor,
+                                                                fontWeight: "bold",
+                                                            }}>Time</Text></td>
+                                                            <td> <Text sx={{
+                                                                borderBottom: `1px solid #dee2e6`,
+                                                                color: studentProfileColor,
+                                                                fontWeight: "bold",
+                                                            }}>Link</Text></td>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>{rows}</tbody>
+                                                </Table>
+                                            </Box>
 
-                        </>
+                                        </>
+                                    )
+                                        :
+                                        <>
+                                            <Text sx={{
+                                                margin: "10px 0",
+                                                color: "black",
+                                                fontWeight: "bold"
+                                            }}>There is no Online PTM Scheduled</Text>
+                                        </>
+                                }
 
-                    </Box>
+                            </>
+
+                        </Box>
                 }
             </Box>
 
@@ -335,60 +338,59 @@ export const PtmLinks = () => {
                     }}>{students.find(student => student.name === selectedStudent)?.reference_number}</Text>}
                 </Stack>
                 {
-                    !IsErrorOffline && !offlinePtmLoading &&
-                    //  offlinePtmLoading ?
-                    //     <Text align="center" color="dimmed" weight="bold" my={30}>Loading...</Text>
-                    //     :
-                    <Box sx={{
-                        textAlign: 'center',
-                    }}>
-                        <>
+                    offlinePtmLoading ?
+                        <Text align="center" color="dimmed" weight="bold" my={30}>Loading...</Text>
+                        :
+                        <Box sx={{
+                            textAlign: 'center',
+                        }}>
+                            <>
 
 
-                            {
-                                offlinePTM?.message?.length > 0 ?
-                                    <div style={{ marginTop: "1rem" }}>
-                                        <Text sx={{
-                                            margin: "30px 0px",
-                                            color: "black",
-                                            fontWeight: "bold",
+                                {
+                                    offlinePTM?.data?.message?.length > 0 ?
+                                        <div style={{ marginTop: "1rem" }}>
+                                            <Text sx={{
+                                                margin: "30px 0px",
+                                                color: "black",
+                                                fontWeight: "bold",
 
-                                        }}>Offline PTMs Scheduled</Text>
-                                        <Box sx={{ display: "flex", alignItems: "start", flexDirection: "column", justifyContent: "start" }}>
-                                            <Table horizontalSpacing="md">
-                                                <thead style={{ backgroundColor: studentProfileColor + "22" }}>
-                                                    <tr>
-                                                        <td> <Text sx={{
-                                                            borderBottom: `1px solid #dee2e6`,
-                                                            color: studentProfileColor,
-                                                            fontWeight: "bold"
-                                                        }}>PTM Event</Text></td>
-                                                        <td> <Text sx={{
-                                                            borderBottom: `1px solid #dee2e6`,
-                                                            color: studentProfileColor,
-                                                            fontWeight: "bold"
-                                                        }}>Date</Text></td>
+                                            }}>Offline PTMs Scheduled</Text>
+                                            <Box sx={{ display: "flex", alignItems: "start", flexDirection: "column", justifyContent: "start" }}>
+                                                <Table horizontalSpacing="md">
+                                                    <thead style={{ backgroundColor: studentProfileColor + "22" }}>
+                                                        <tr>
+                                                            <td> <Text sx={{
+                                                                borderBottom: `1px solid #dee2e6`,
+                                                                color: studentProfileColor,
+                                                                fontWeight: "bold"
+                                                            }}>PTM Event</Text></td>
+                                                            <td> <Text sx={{
+                                                                borderBottom: `1px solid #dee2e6`,
+                                                                color: studentProfileColor,
+                                                                fontWeight: "bold"
+                                                            }}>Date</Text></td>
 
 
-                                                    </tr>
-                                                </thead>
-                                                <tbody>{rows2}</tbody>
-                                            </Table>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>{rows2}</tbody>
+                                                </Table>
 
-                                        </Box>
-                                    </div>
-                                    :
-                                    <>
-                                        <Text sx={{
-                                            margin: "10px 0",
-                                            color: "black",
-                                            fontWeight: "bold"
-                                        }}>There is no Offline PTM Scheduled</Text>
-                                    </>
-                            }
-                        </>
+                                            </Box>
+                                        </div>
+                                        :
+                                        <>
+                                            <Text sx={{
+                                                margin: "10px 0",
+                                                color: "black",
+                                                fontWeight: "bold"
+                                            }}>There is no Offline PTM Scheduled</Text>
+                                        </>
+                                }
+                            </>
 
-                    </Box>
+                        </Box>
                 }
             </Box>
 
