@@ -87,7 +87,7 @@ export const PtmLinks = () => {
 
 
 
-    const rows = onlinePTM?.data?.message?.map((element: any) => {
+    const rows = onlinePTM?.data?.message?.map?.((element: any) => {
         const [linkEnabled, setLinkEnabled] = useState(false);
         const endDate = new Date(element.date);
         const formattedEndDate = endDate.toLocaleDateString('en-GB').replace(/\//g, '-');
@@ -150,10 +150,10 @@ export const PtmLinks = () => {
 
 
 
+    console.log("check ", offlinePTM)
 
-
-    const rows2 = offlinePTM?.data?.message?.map((element: any) => {
-        if (element.event?.includes("PTM")) {
+    const rows2 = offlinePTM?.data?.message?.map?.((element: any) => {
+        if (element?.event?.includes("PTM")) {
             const startDate = new Date(element.start);
             const formattedStartDate = startDate.toLocaleDateString('en-GB').replace(/\//g, '-');
             return (

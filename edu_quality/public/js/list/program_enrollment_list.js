@@ -23,7 +23,7 @@ frappe.listview_settings['Program Enrollment'] = {
                     message: __('Permanent ID Cards Generation Scheduled Successfully. <a href="/app/permanent-id-card" target="_blank">Click Here</a>'),
                     primary_action: {
                         label: __("OK"),
-                        action: function() {
+                        action: function () {
                             frappe.hide_msgprint();
                         }
                     }
@@ -74,7 +74,13 @@ frappe.listview_settings['Program Enrollment'] = {
 
 
         });
-        
+        frappe.db.get_list("Academic Year", { filters: { "custom_current_academic_year": 1 }, fields: ["name"] }).then((response) => {
+            if (!frappe.route_options) {
+                const result = response?.[0]?.name
+                frappe.listview_settings['Program Enrollment']["filters"] = [["academic_year", "=", result]]
+            }
+        })
+
         list_view.page.add_action_item("Generate Permanent ID Cards", async () => {
             const selectedEnrollments = list_view?.get_checked_items(true);
 

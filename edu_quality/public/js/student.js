@@ -76,15 +76,12 @@ function cancelStudent(frm){
             frappe.throw("Upload Cancellation Letter to Continue!");
         }
         frappe.call({
-            method: "edu_quality.edu_quality.server_scripts.student.validate_bank_account",
-            type: "GET",
-            args: {
-                student: frm.doc.name
-            },
+            doc: frm.doc,
+            method: "validate_bank_account",
             callback: function (response) {
                 if(!response.message){
                     bank_validation = false;
-                    return frappe.throw("Bank Account is not linked to this student");
+                    // return frappe.throw("Bank Account is not linked to this student");
                 }
             }
         })
@@ -102,19 +99,19 @@ function cancelStudent(frm){
                     label: 'Fee Collection',
                     fieldname: 'fee_collection',
                     fieldtype: 'Select',
-                    options: ["Ignore Pending Fee","Collect Full Fee","Collect Partial Fee","Deduct from Deposit"]
+                    options: ["Ignore Pending Fee","Collect Full Fee","Collect Partial Fee","Deduct from Deposit","Deposit Refund"]
                 }
             ],
             size: 'large',
             primary_action_label: 'Submit',
             primary_action(values) {
                 frappe.call({
-                    method: "edu_quality.edu_quality.server_scripts.student.cancel_student",
+                    doc:frm.doc,
+                    method: "cancel_student",
                     type: "POST",
                     args: {
                         academic_year: values.academic_year,
                         fee_collection: values.fee_collection,
-                        student: frm.doc.name
                     },
                     callback: function (response) {
                         if(response.message==1){

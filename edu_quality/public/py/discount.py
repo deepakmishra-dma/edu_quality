@@ -378,7 +378,6 @@ def separate_links(doc,term):
 
 
 def only_deposit(doc):
-    frappe.logger('only').exception('called')
     make_payment_request(
         party_type="Student",
         party=doc.student,
