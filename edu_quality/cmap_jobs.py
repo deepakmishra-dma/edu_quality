@@ -168,7 +168,8 @@ def get_upcoming_online_ptm_links(student_id):
         filterss = {'date':('>=',getdate(today())),'is_gmeet_generated':1,'division':student_division}
         if student_is_grp and student_group:
             filterss['group'] = str(student_group)
-            print(student_group)
+        else:
+            frappe.throw('No Student Group Allocated to Student')    
         ptm_scheduler_list = frappe.get_all('PTM Scheduler',filters=filterss,fields=['*'])
         if len(ptm_scheduler_list)>0:
             for i in ptm_scheduler_list:
