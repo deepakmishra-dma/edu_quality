@@ -6,7 +6,8 @@ import useStudentList from "../components/queries/useStudentList.ts";
 import useClassDetails from "../components/queries/useClassDetails.ts";
 import useStudentProfileColor from "../components/hooks/useStudentProfileColor.ts";
 import { usePTMLinksQuery, useofflinePTMLinksQuery } from "../components/queries/usePTMLinksQuery.tsx";
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 export const PtmLinks = () => {
     const [selectedStudent, setSelectedStudent] = useState<string>('')
     const [selectedSubject, setSelectedSubject] = useState<string>('')
@@ -75,18 +76,26 @@ export const PtmLinks = () => {
             setSuccess(false)
     }, [selectedStudent]);
     const custom_school = classDetails?.data?.message?.division?.custom_school
-    const { data: onlinePTM, refetch: onlineRefetch, isLoading } = usePTMLinksQuery(selectedStudent)
-    const { data: offlinePTM, refetch: offlineRefetch, isLoading: offlinePtmLoading } = useofflinePTMLinksQuery(custom_school)
+    const { data: onlinePTM, refetch: onlinePTMRefetch, isLoading, error } = usePTMLinksQuery(selectedStudent)
+    const { data: offlinePTM, refetch: offlineRefetch, isLoading: offlinePtmLoading, error: offlinePTMError } = useofflinePTMLinksQuery(custom_school)
 
 
     useEffect(() => {
-
-        onlineRefetch();
+        onlinePTMRefetch();
         offlineRefetch();
-    }, [onlineRefetch, offlineRefetch]);
 
+    }, [onlinePTMRefetch, offlineRefetch]);
 
+    useEffect(() => {
+        if (error) {
+            toast.error(error)
+        }
+        if (offlinePTMError) {
+            toast.error(offlinePTMError)
+        }
+    }, [error, offlinePTMError])
 
+    console.log("error ", error);
     const rows = onlinePTM?.data?.message?.map?.((element: any) => {
         const [linkEnabled, setLinkEnabled] = useState(false);
         const endDate = new Date(element?.date);
@@ -170,6 +179,8 @@ export const PtmLinks = () => {
 
     return (
         <Box>
+
+            <ToastContainer />
             <Stack sx={{
                 whiteSpace: 'nowrap',
                 overflow: 'auto',
