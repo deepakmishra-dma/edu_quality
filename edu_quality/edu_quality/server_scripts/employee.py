@@ -310,8 +310,9 @@ def mark_ex_employee(employee):
             if google_user:
                 suspend_google_user(employee.company_email)
 
-        # Mark the instructor as an ex-instructor
-        mark_ex_instructor(employee)
+        # Mark the instructor as an ex-instructor if the employee is an instructor
+        if frappe.db.exists("Instructor", {'employee': employee.name}):
+            mark_ex_instructor(employee)
         frappe.response["message"] = "Employee marked as Ex-Employee"
     except:
         frappe.db.rollback()
