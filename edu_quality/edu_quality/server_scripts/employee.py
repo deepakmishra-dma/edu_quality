@@ -280,7 +280,10 @@ def migrate_employee_data(employee, new_employee):
         new_employee = frappe.get_doc("Employee", new_employee)
         employee.is_migrated = 1
         employee.save()
+        # Transfer the teacher alias from the old employee to the new employee
         transfer_teacher_alias(employee, new_employee)
+        # Transfer the CMAP data from the old employee to the new employee
+        transfer_cmap_data(employee, new_employee)
         frappe.response["message"] = "Employee data migrated successfully"
     except:
         frappe.db.rollback()
@@ -349,3 +352,28 @@ def transfer_teacher_alias(old_employee, new_employee):
 
     # Save the changes made to the new instructor document
     new_instructor.save()
+
+
+def transfer_cmap_data(employee, new_employee):
+    """
+    Transfer the CMAP data from the old employee to the new employee
+
+    Args:
+        old_employee (str): The name of the old employee whose CMAP data is to be transferred.
+        new_employee (str): The name of the new employee who will receive the CMAP data.
+    """
+    # Get the instructor documents for the old and new employees
+    old_instructor = frappe.get_value("Instructor", {'employee': employee.name}, "name")
+    new_instructor = frappe.get_value("Instructor", {'employee': new_employee.name}, "name")
+    # Update the instructor field in the CMAP Assignment documents
+    filters = {
+        "teacher": old_instructor,
+        "parenttype": "CMAP",
+        "real_date": ["is", "not set"]
+    }
+
+    data = {
+        "teacher": new_instructor,
+    }
+
+    frappe.db.set_value("CMAP Assignment", filters, data)
