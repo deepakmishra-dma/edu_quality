@@ -4,7 +4,7 @@ import { useCustom } from "@refinedev/core";
 
 
 export const usePTMLinksQuery = (selectedStudent: string) => {
-    return useCustom({
+    const { data, error, ...rest } = useCustom({
         config: {
             query: {
                 student_id: selectedStudent
@@ -18,10 +18,15 @@ export const usePTMLinksQuery = (selectedStudent: string) => {
         successNotification: undefined,
         url: `/api/method/edu_quality.cmap_jobs.get_upcoming_online_ptm_links`,
     })
+    return {
+        data,
+        error: error?.response?.data?.exception, // Extract the error message
+        ...rest,
+    };
 }
 
 export const useofflinePTMLinksQuery = (custom_school: string | undefined) => {
-    return useCustom({
+    const { data, error, ...rest } = useCustom({
         config: {
             query: {
                 school: custom_school
@@ -35,4 +40,9 @@ export const useofflinePTMLinksQuery = (custom_school: string | undefined) => {
         successNotification: undefined,
         url: `/api/method/edu_quality.api.calendar.get_calender_events`,
     })
+    return {
+        data,
+        error: error?.response?.data?.exception, // Extract the error message
+        ...rest,
+    };
 }
