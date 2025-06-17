@@ -312,6 +312,8 @@ def mark_ex_employee(employee):
             google_user = get_google_user_with_key(email_key)
             if google_user:
                 suspend_google_user(employee.company_email)
+                # Send Mail to the exiting employee
+                send_exiting_employee_mail(employee)
 
         # Mark the instructor as an ex-instructor if the employee is an instructor
         if frappe.db.exists("Instructor", {'employee': employee.name}):
@@ -377,3 +379,17 @@ def transfer_cmap_data(employee, new_employee):
     }
 
     frappe.db.set_value("CMAP Assignment", filters, data)
+
+
+def send_exiting_employee_mail(employee):
+    """
+    Send the mail to the exiting employee, informing them about the account suspension
+    """
+    try:
+        from nextai.funnel.custom_trigger import trigger_event
+        trigger_event(employee, "employee_exited")
+    except:
+        frappe.log_error(
+            f"Error while sending communication mail to the Ex-Employee",
+            frappe.get_traceback(),
+        )
