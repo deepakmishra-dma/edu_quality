@@ -1,5 +1,5 @@
 frappe.ui.form.on('Employee', {
-    refresh: function (frm) {
+    refresh: async function (frm) {
         if (frm.doc.status == "Active") {
             frm.add_custom_button(__('Mark Ex Employee'), function () {
                 frappe.confirm(
@@ -30,6 +30,7 @@ frappe.ui.form.on('Employee', {
             });
         }
         if (frm.doc.status == "Left" && frm.doc.is_migrated == 0) {
+            let school = await frappe.db.get_value('Instructor', {employee: frm.doc.name}, 'custom_school');
             frm.add_custom_button(__('Migrate Data'), function () {
                 let d = new frappe.ui.Dialog({
                     title: 'Migrate Employee Data to Another Employee',
@@ -41,10 +42,8 @@ frappe.ui.form.on('Employee', {
                             options: "Employee",
                             get_query: function () {
                                 return {
-                                    doctype: 'Employee',
-                                    filters: {
-                                        status: "Active",
-                                    },
+                                    query: "edu_quality.edu_quality.server_scripts.employee.employee_query",
+                                    filters: { school: school.message.custom_school, status: 'Active' }
                                 };
                             }
                         }
@@ -65,7 +64,7 @@ frappe.ui.form.on('Employee', {
                                         message: __(response.message.message),
                                         indicator: 'red'
                                     });
-                                }else {
+                                } else {
                                     frappe.show_alert({
                                         message: __(response.message),
                                         indicator: 'green'
@@ -78,7 +77,6 @@ frappe.ui.form.on('Employee', {
                         d.hide();
                     }
                 });
-
                 d.show();
 
             });

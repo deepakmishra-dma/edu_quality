@@ -361,8 +361,8 @@ def transfer_cmap_data(employee, new_employee):
     Transfer the CMAP data from the old employee to the new employee
 
     Args:
-        old_employee (str): The name of the old employee whose CMAP data is to be transferred.
-        new_employee (str): The name of the new employee who will receive the CMAP data.
+        employee (Document): The name of the old employee whose CMAP data is to be transferred.
+        new_employee (Document): The name of the new employee who will receive the CMAP data.
     """
     # Get the instructor documents for the old and new employees
     old_instructor = frappe.get_value("Instructor", {'employee': employee.name}, "name")
@@ -393,3 +393,31 @@ def send_exiting_employee_mail(employee):
             f"Error while sending communication mail to the Ex-Employee",
             frappe.get_traceback(),
         )
+
+
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def employee_query(doctype, txt, searchfield, start, page_len, filters):
+    school = filters.get('school')
+    if not school:
+        frappe.throw("Instructor or School is not present for the Employee")
+    query = f"""
+            SELECT
+                emp.name, emp.employee_name
+            FROM
+                `tabEmployee` emp
+            WHERE
+                emp.status == 'Active'
+                AND emp.name IN (
+                    SELECT
+                        instructor.employee
+                    FROM
+                        `tabInstructor` instructor
+                    WHERE instructor.custom_school = '{school}'
+                )
+            AND emp.name LIKE %(txt)s
+            ORDER BY
+                emp.name
+            LIMIT {start}, {page_len}
+        """
+    return frappe.db.sql(query, {"txt": "%{}%".format(txt)})
