@@ -407,7 +407,7 @@ def employee_query(doctype, txt, searchfield, start, page_len, filters):
             FROM
                 `tabEmployee` emp
             WHERE
-                emp.status == 'Active'
+                emp.status = 'Active'
                 AND emp.name IN (
                     SELECT
                         instructor.employee
