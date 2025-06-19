@@ -129,12 +129,6 @@ export const PtmLinks = () => {
         }
     }, [error, offlinePTMError])
 
-
-
-
-
-
-
     const rows = useCallback(() => {
 
         return onlinePTM?.data?.message?.map?.((element: any) => {
