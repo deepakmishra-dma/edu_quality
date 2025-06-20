@@ -1,6 +1,6 @@
 import { Box, Stack, Text } from "@mantine/core";
 import { Table } from "@mantine/core";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import useStudentList from "../components/queries/useStudentList.ts";
 import useClassDetails from "../components/queries/useClassDetails.ts";
@@ -8,10 +8,44 @@ import useStudentProfileColor from "../components/hooks/useStudentProfileColor.t
 import { usePTMLinksQuery, useofflinePTMLinksQuery } from "../components/queries/usePTMLinksQuery.tsx";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
+
+function timeToMinutes(timeStr: string) {
+    const [time, period] = timeStr.split(" ");
+    let [hours, minutes] = time.split(":").map(Number);
+
+    if (period === "PM" && hours !== 12) {
+        hours += 12;
+    } else if (period === "AM" && hours === 12) {
+        hours = 0;
+    }
+
+    return hours * 60 + minutes;
+}
+
+function isTimeBeforeCurrent(meetTime: string, endDate: Date, currentTime: Date) {
+    const fiveMinutes = 5;
+    const [startTime] = meetTime.split(" - ");
+    const meetTimeInMinutes = timeToMinutes(startTime);
+    const currentMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
+
+
+    return (meetTimeInMinutes - fiveMinutes) <= currentMinutes && endDate <= currentTime;
+}
+
 export const PtmLinks = () => {
     const [selectedStudent, setSelectedStudent] = useState<string>('')
     const [selectedSubject, setSelectedSubject] = useState<string>('')
     const [selectedUnit, setSelectedUnit] = useState<string>('unit 1')
+
+    const [checkLinkTime, setCheckLinkTime] = useState(false);
+
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            setCheckLinkTime(prevState => !prevState)
+        }, 2000);
+        return () => clearInterval(intervalId);
+    }, []);
 
     const [success, setSuccess] = useState(false)
 
@@ -95,71 +129,32 @@ export const PtmLinks = () => {
         }
     }, [error, offlinePTMError])
 
-    console.log("error ", error);
-    const rows = onlinePTM?.data?.message?.map?.((element: any) => {
-        const [linkEnabled, setLinkEnabled] = useState(false);
-        const endDate = new Date(element?.date);
-        const formattedEndDate = endDate.toLocaleDateString('en-GB').replace(/\//g, '-');
-        useEffect(() => {
+    const rows = useCallback(() => {
 
-            const slotStartTimeParts = element.slot.split(' - ')[0].split(' ');
-            const slotStartHours = parseInt(slotStartTimeParts[0].split(':')[0]);
-            const slotStartMinutes = parseInt(slotStartTimeParts[0].split(':')[1]);
-            const slotStartPeriod = slotStartTimeParts[1];
+        return onlinePTM?.data?.message?.map?.((element: any) => {
+            const endDate = new Date(element.date);
+            const formattedEndDate = endDate.toLocaleDateString('en-GB').replace(/\//g, '-');
+            const isLinkedEnable = isTimeBeforeCurrent(element?.slot, endDate, new Date())
 
-            let slotStartHours24 = slotStartHours;
-            if (slotStartPeriod === 'PM' && slotStartHours !== 12) {
-                slotStartHours24 += 12;
-            }
-
-            const slotStartTime = new Date();
-            slotStartTime.setHours(slotStartHours24, slotStartMinutes, 0, 0);
-
-            const currentDateTime = new Date();
-            const currentHours = currentDateTime.getHours() % 12 || 12;
-            const currentMinutes = currentDateTime.getMinutes();
-            const currentPeriod = currentDateTime.getHours() < 12 ? 'AM' : 'PM';
-
-            let currentHours24 = currentHours;
-            if (currentPeriod === 'PM' && currentHours !== 12) {
-                currentHours24 += 12;
-            }
-
-            currentDateTime.setHours(currentHours24, currentMinutes, 0, 0);
-
-
-            const timeDifference = Math.floor((slotStartTime.getTime() - currentDateTime.getTime()) / (60 * 1000));
-
-            const timeoutId = setTimeout(() => {
-                setLinkEnabled(true);
-            }, timeDifference * 60 * 1000 - 5 * 60 * 1000);
-
-            return () => clearTimeout(timeoutId);
-        }, [element?.slot, element?.date]);
-
-        return (
-            <tr key={element?.id}>
-                <td><Text>{element?.subject}</Text></td>
-                <td><Text>{formattedEndDate}</Text></td>
-                <td><Text>{element?.slot}</Text></td>
-                <td>
-                    {
-                        linkEnabled ?
-                            <a href={element.gmeet_link} target="__blank" style={{ textDecoration: 'none', }}>
-                                <Text sx={{ backgroundColor: studentProfileColor, borderRadius: '25px' }} style={{ color: 'white', padding: '1px' }}>Meet Link</Text>
-                            </a>
-                            :
-                            <span>Not Available</span>
-                    }
-
-                </td>
-            </tr>
-        );
-    });
-
-
-
-    console.log("check ", offlinePTM)
+            return (
+                <tr key={element?.id}>
+                    <td><Text>{element?.subject}</Text></td>
+                    <td><Text>{formattedEndDate}</Text></td>
+                    <td><Text>{element?.slot}</Text></td>
+                    <td>
+                        {
+                            isLinkedEnable ?
+                                <a href={element.gmeet_link} target="__blank" style={{ textDecoration: 'none', }}>
+                                    <Text sx={{ backgroundColor: studentProfileColor, borderRadius: '25px' }} style={{ color: 'white', padding: '1px' }}>Meet Link</Text>
+                                </a>
+                                :
+                                <span>Not Available</span>
+                        }
+                    </td>
+                </tr>
+            );
+        });
+    }, [checkLinkTime])
 
     const rows2 = offlinePTM?.data?.message?.map?.((element: any) => {
         if (element?.event?.includes("PTM")) {
@@ -265,9 +260,6 @@ export const PtmLinks = () => {
                                                 fontWeight: "bold"
                                             }}>Upcoming Online PTMs</Text>
                                             <Box sx={{ textAlign: "center", overflowX: "scroll" }}>
-
-
-
                                                 <Table horizontalSpacing="sm">
                                                     <thead style={{ backgroundColor: studentProfileColor + "22" }}>
                                                         <tr>
@@ -294,7 +286,7 @@ export const PtmLinks = () => {
                                                             }}>Link</Text></td>
                                                         </tr>
                                                     </thead>
-                                                    <tbody>{rows}</tbody>
+                                                    <tbody>{rows()}</tbody>
                                                 </Table>
                                             </Box>
 
