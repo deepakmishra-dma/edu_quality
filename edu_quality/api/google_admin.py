@@ -6,6 +6,8 @@ from googleapiclient.errors import HttpError
 import os
 import secrets
 from edu_quality.public.py.utils import add_indian_country_code
+import re
+
 
 PASSWORD_LENGTH = 12
 
@@ -29,9 +31,25 @@ def get_google_users():
     return admin_obj.users().list()
 
 
-def create_google_user(email_key, first_name, last_name, recovery_mail, phone_no):
+@frappe.whitelist()
+def get_google_user_with_key(email_key):
+    admin_obj = get_google_admin_object()
+    return (
+        admin_obj.users()
+        .get(
+            userKey=f"{email_key}@walnutedu.in",
+        )
+        .execute()
+    )
+
+
+@frappe.whitelist()
+def create_google_user(
+    email_key, first_name, last_name, recovery_mail, phone_no, school, org_unit_path=None
+):
     user_service = get_google_admin_object()
     exception = False
+    existing_user = None
     try:
         existing_user = (
             user_service.users()
@@ -40,35 +58,60 @@ def create_google_user(email_key, first_name, last_name, recovery_mail, phone_no
             )
             .execute()
         )
+     
     except:
+       
         exception = True
 
-    if exception:
-        new_user = {
-            "primaryEmail": f"{email_key}@walnutedu.in",
-            "name": {
-                "givenName": first_name,
-                "familyName": last_name,
-            },
-            # "recoveryPhone": add_indian_country_code(phone_no, True),
-            "password": "walnut@12345",
-            "changePasswordAtNextLogin": True,
-            "ipWhitelisted": False,
-            # "recoveryEmail": recovery_mail,
-            "orgUnitPath": f"/Walnut School at Wakad/Students",
-        }
-        if recovery_mail:
+    try:
+        if exception:
+            new_user = {
+                "primaryEmail": f"{email_key}@walnutedu.in",
+                "name": {
+                    "givenName": first_name,
+                    "familyName": last_name,
+                },
+                # "recoveryPhone": add_indian_country_code(phone_no, True),
+                "password": "walnut@12345",
+                "changePasswordAtNextLogin": True,
+                "ipWhitelisted": False,
+                # "recoveryEmail": recovery_mail,
+                "orgUnitPath": org_unit_path or f"/{school}/Students",
+            }
+            recovery_mail = (str(recovery_mail) or "feedback@walnutedu.in").strip().lower()
+            email_pattern = r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"
+            match = re.match(email_pattern, recovery_mail)
+            if not match:
+                recovery_mail = "feedback@walnutedu.in"
             new_user["recoveryEmail"] = recovery_mail
 
-        if phone_no:
-            new_user["recoveryPhone"] = add_indian_country_code(phone_no, True)
-
-        return (
-            user_service.users()
-            .insert(
-                body=new_user,
+            # if phone_no:
+            #     new_user["recoveryPhone"] = add_indian_country_code(phone_no, True)
+            frappe.log_error("account creating for ", str(new_user))
+            resp = (
+                user_service.users()
+                .insert(
+                    body=new_user,
+                )
+                .execute()
             )
-            .execute()
+        
+            return resp
+    except Exception as e:
+        frappe.log_error(
+            "Google Account Creation failed",
+            str(
+                [
+                    frappe.get_traceback(),
+                    "variables",
+                    email_key,
+                    first_name,
+                    last_name,
+                    recovery_mail,
+                    phone_no,
+                    school,
+                ]
+            ),
         )
     # frappe.log_error("google account created with" + str(existing_user))
     return existing_user
@@ -77,9 +120,11 @@ def create_google_user(email_key, first_name, last_name, recovery_mail, phone_no
 def add_user_to_group(email, group_email):
     try:
         user_service = get_google_admin_object()
-        user_service.members().insert(groupKey=group_email, body={"email": email,'role': 'MEMBER'}).execute()
+        user_service.members().insert(
+            groupKey=group_email, body={"email": email, "role": "MEMBER"}
+        ).execute()
     except Exception as e:
-        frappe.logger('google_groups').exception(e)
+        frappe.logger("google_groups").exception(e)
 
 
 def remove_user_from_group(email, group_email):
@@ -87,7 +132,7 @@ def remove_user_from_group(email, group_email):
         user_service = get_google_admin_object()
         user_service.members().delete(groupKey=group_email, memberKey=email)
     except Exception as e:
-        frappe.logger('google_groups').exception(e)
+        frappe.logger("google_groups").exception(e)
 
 
 def suspend_google_user(email):

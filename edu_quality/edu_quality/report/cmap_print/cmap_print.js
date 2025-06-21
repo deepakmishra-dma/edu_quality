@@ -26,16 +26,9 @@ frappe.query_reports["CMAP Print"] = {
 	"filters": [
 		{
 			"fieldname": "academic_year",
-			"fieldtype": "Link",
-			"options": "Academic Year",
+			"fieldtype": "Select",
+			"options": ["2023-2024", "2024-2025"],
 			"label": "Academic Year",
-			get_data: function (year) {
-
-				return frappe.db.get_link_options('Academic Year', year, {
-					custom_current_academic_year: 1,
-					custom_next_academic_year: 1,
-				});
-			},
 		},
 		{
 			"fieldname": "class",
@@ -86,7 +79,6 @@ frappe.query_reports["CMAP Print"] = {
 		value = default_formatter(value, row, column, data)
 		if (column.id.includes("qty")) {
 			value = `<input type="number" id="${column.id}" value=${value} oninput="changePrintCMAPReportData(this,'${column.id}','${row[0]?.rowIndex}')" />`
-			console.log(frappe.query_report)
 		}
 		if (column.id == "total_quantity") {
 			value = `<input type="number" disabled="true" id="${column.id}" value=${value} oninput="changePrintCMAPReportData(this,'${column.id}','${row[0]?.rowIndex}')" />`
@@ -113,11 +105,14 @@ frappe.query_reports["CMAP Print"] = {
 
 			frappe.confirm(__(message), () => {
 				const academic_year = report.filters.find(el => el.fieldname === "academic_year").input.value
+				const class_name = report.filters.find(el => el.fieldname === "class").input.value
+				
 				frappe.call({
 					"method": "edu_quality.edu_quality.report.cmap_print.cmap_print.create_purchase_order",
 					"args": {
 						rows: selected_rows,
-						academic_year: academic_year
+						academic_year: academic_year,
+						class_name: class_name
 					},
 					callback: function (r) {
 						if (r.message) {

@@ -1,12 +1,11 @@
 var error_msg = {
-    "academic_year": "Academic Year is required before pushing to MGR",
-    "center": "School is required before pushing to MGR",
-    "first_name": "First name is required before pushing to MGR",
-    "fathers_phone": "Father's phone number is required before pushing to MGR",
-    "class": "Class is required before pushing to MGR",
-    "fathers_email": "father's email id is required before pushing to MGR",
-    "gender": "Gender is required before pushing to MGR",
-
+    "academic_year": "Academic Year is required before proceeding ahead",
+    "center": "School is required before proceeding ahead",
+    "first_name": "First name is required before proceeding ahead",
+    "fathers_phone": "Father's phone number is required before proceeding ahead",
+    "class": "Class is required before proceeding ahead",
+    "fathers_email": "father's email id is required before proceeding ahead",
+    "gender": "Gender is required before proceeding ahead",
 }
 
 var subStatuses = {
@@ -48,7 +47,7 @@ frappe.ui.form.on("Lead", {
         }
         frm.set_intro(`
         <p class="text-dark my-0">
-            Pushing to MGR requires these fields:<ul><li>Academic Year</li><li> School</li><li>First Name</li><li>Date of Birth</li><li>Fathers Phone</li><li>Class</li><li>Fathers Email</li><li>Gender</li>
+            These fields are required before proceeding ahead:<ul><li>Academic Year</li><li> School</li><li>First Name</li><li>Date of Birth</li><li>Fathers Phone</li><li>Class</li><li>Fathers Email</li><li>Gender</li>
       
       `, 'orange')
         setTimeout(() => {
@@ -69,45 +68,52 @@ frappe.ui.form.on("Lead", {
                 }
                 // })
             }, '', "Open in whatsapp ui")
-
-            frm.add_custom_button(__("Push To MGR"), function () {
-                var errorKey = Object.keys(error_msg).find(error => frm.doc[error] === null || frm.doc[error] === undefined || frm.doc[error] === '')
-                if (String(frm.doc.fathers_phone).length != 10) {
-                    frappe.msgprint({
-                        message: __("Fathers Phone Number format is invalid, Please check the spacing is according to standard phone number spacing or none at all, and country code shouldn't be there for Indian numbers only for foreign numbers. and please make sure the number is 10 digits only before pushing to MGR"),
-                        indicator: "red",
-                        title: __("Incorrect Field")
-                    });
-                    return
-                }
-                if (errorKey) {
-                    frappe.msgprint({
-                        title: __('Error'),
-                        message: __(error_msg[errorKey]),
-                        indicator: 'red'
-                    });
-                    return
-                }
-                frappe.call({
-                    method: "frappe.desk.form.save.savedocs",
-                    args: { doc: frm.doc, action: 'Save' },
-                    callback: function (r) {
-                        $(document).trigger("save", [frm.doc]);
-                        frappe.call({
-                            method: "edu_quality.api.student_application.create_student_application",
-                            type: "POST",
-                            args: { name: frm.docname },
-                            callback: () => {
-                                frm.disable_form()
-                                frm.disable_save()
-                            }
+            if (frm.doc.status != "Applied" && frm.doc.status != "Enrolled" && frm.doc.status != "Enrollment Pending") {
+                frm.set_df_property('status', 'read_only', 0);
+                frm.add_custom_button(__("Create Admission"), function () {
+                    var errorKey = Object.keys(error_msg).find(error => frm.doc[error] === null || frm.doc[error] === undefined || frm.doc[error] === '')
+                    if (String(frm.doc.fathers_phone).length != 10) {
+                        frappe.msgprint({
+                            message: __("Fathers Phone Number format is invalid, Please check the spacing is according to standard phone number spacing or none at all, and country code shouldn't be there for Indian numbers only for foreign numbers. and please make sure the number is 10 digits only before proceeding ahead"),
+                            indicator: "red",
+                            title: __("Incorrect Field")
                         });
-                    },
-                    error: function (r) {
-                    },
-                });
+                        return
+                    }
+                    if (errorKey) {
+                        frappe.msgprint({
+                            title: __('Error'),
+                            message: __(error_msg[errorKey]),
+                            indicator: 'red'
+                        });
+                        return
+                    }
+                    frappe.call({
+                        method: "frappe.desk.form.save.savedocs",
+                        args: { doc: frm.doc, action: 'Save' },
+                        callback: function (r) {
+                            $(document).trigger("save", [frm.doc]);
+                            frappe.call({
+                                method: "edu_quality.api.student_application.create_student_application",
+                                type: "POST",
+                                args: { name: frm.docname },
+                                callback: (r) => {
+                                    frm.disable_form()
+                                    frm.disable_save()
+                                    if (r.message) {
+                                        window.location.href = r.message;
+                                    }
+                                }
+                            });
+                        },
+                        error: function (r) {
+                        },
+                    });
 
-            })
+                })
+            } else if (frm.doc.status === "Applied" || frm.doc.status === "Enrolled" || frm.doc.status === "Enrollment Pending") {
+                frm.set_df_property('status', 'read_only', 1);
+            }
             $('.inner-group-button[data-label="Create"]').remove()
         }, 10)
 
@@ -120,7 +126,7 @@ frappe.ui.form.on("Lead", {
         const re = /^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/
         if (!re.test(temp_fathers_phone)) {
             frappe.msgprint({
-                message: __("Fathers Phone Number format is invalid, Please check the spacing is according to standard phone number spacing or none at all, and country code shouldn't be there for Indian numbers only for foreign numbers. and please make sure the number is 10 digits only before pushing to MGR"),
+                message: __("Fathers Phone Number format is invalid, Please check the spacing is according to standard phone number spacing or none at all, and country code shouldn't be there for Indian numbers only for foreign numbers. and please make sure the number is 10 digits only before proceeding ahead"),
                 indicator: "red",
                 title: __("Incorrect Field")
             });

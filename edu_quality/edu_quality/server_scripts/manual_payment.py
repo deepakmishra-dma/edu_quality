@@ -11,9 +11,12 @@ def manual_payment(fee,term,data,payment_mode):
             filters = [["Payment Request","payment_term","is","not set"],["Payment Request","reference_name","=",fee],["Payment Request","docstatus","=",1]]
         else:
             filters = {'reference_name':fee,'payment_term':term,'docstatus':1}
+        frappe.logger("man1").exception(filters)
         if frappe.db.exists("Payment Request",filters):
-            frappe.enqueue(set_as_paid,queue='long',filters=filters,data=data,payment_mode=payment_mode)
-        frappe.response["message"] = "Manual Payment Received Successfully"
+            frappe.enqueue(set_as_paid,queue='short',filters=filters,data=data,payment_mode=payment_mode)
+            frappe.response["message"] = "Manual Payment Received Successfully"
+            return
+        frappe.response["message"] = "Error Occured"
     except Exception as e:
         frappe.logger('manual').exception(e)
         frappe.response["message"] = "Error Occured"
@@ -71,7 +74,7 @@ def company_wise(data, component):
 
 
 @frappe.whitelist()
-def get_unpaid_terms(fee, doctype):
+def get_unpaid_terms(fee, doctype, payment_term=None):
     filters = [
         ["reference_doctype",'=',doctype],
         ["reference_name",'=',fee],
@@ -91,13 +94,26 @@ def get_unpaid_terms(fee, doctype):
         component = json.loads(fee_doc.component_split).get("Term 1")
         is_deposit = component.get('is_deposit') if component else False
     if doctype =="Fees":
+        school = fee_doc.custom_school
         filters = {"student": fee_doc.student,"program":fee_doc.program}
     else:
+        school = fee_doc.school
         filters = {"student": fee_doc.student,"program":fee_doc.next_program}
 
+    require_top = frappe.get_value("School", school, "custom_require_otp_for_accepting_rules_and_regulations")
+    undertaking_enabled = bool(require_top)
+
+    if require_top and frappe.get_value("School", school, "custom_otp_for_every_installment_showing_rules_and_regulations"):
+        filters["payment_term"] = payment_term
+    
     if frappe.db.exists("Rules and Regulation Submission", filters,"name"):
         undertaking_accepted = True
     else:
         undertaking_accepted= False
-    data = {"terms": result,"undertaking_accepted":undertaking_accepted,"undertaking_url": get_undertaking_template(is_deposit=is_deposit,fee=fee_doc)}
+    data = {
+        "terms": result,
+        "undertaking_accepted": undertaking_accepted,
+        "undertaking_url": get_undertaking_template(is_deposit=is_deposit, fee=fee_doc),
+        "undertaking_enabled": undertaking_enabled
+    }
     return data

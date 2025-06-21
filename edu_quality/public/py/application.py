@@ -10,7 +10,7 @@ from edu_quality.public.py.discount import (
 from edu_quality.edu_quality.server_scripts.student_applicant import (
     add_referral_discount,
 )
-from edu_quality.api.google_admin import create_google_user, add_user_to_group
+
 
 from edu_quality.edu_quality.server_scripts.utils import (
     is_rolled_over,
@@ -18,6 +18,8 @@ from edu_quality.edu_quality.server_scripts.utils import (
     previous_academic_year,
 )
 from edu_quality.public.py.student import update_student
+
+from edu_quality.edu_quality.server_scripts.guardian import set_student_permissions
 
 
 def autoname(doc, method=None):
@@ -27,6 +29,9 @@ def autoname(doc, method=None):
         naming_format = f"{school_code}-{class_name}-LD-"
         doc.name = make_autoname(naming_format + ".#####")
 
+
+
+    
 
 def before_save(doc, method=None):
     doc.fee_components = []
@@ -196,8 +201,13 @@ def enroll_student(source_name, email=None, refno=None, data=None,division=None)
     if data:
         student_data = update_student(data)
         student.update(student_data)
+    if student_applicant.custom_allergies:
+        student.allergies = student_applicant.custom_allergies
     student.save()
-    create_student_account(student, student_applicant)
+    payment_plan = frappe.get_value(
+        "Fee Schedule", student_applicant.fee_schedule, "payment_plan"
+    )
+    # create_student_account(student, student_applicant)
     program_enrollment = frappe.new_doc("Program Enrollment")
     program_enrollment.student = student.name
     program_enrollment.student_category = student_applicant.student_category
@@ -207,12 +217,20 @@ def enroll_student(source_name, email=None, refno=None, data=None,division=None)
     program_enrollment.academic_year = student_applicant.academic_year
     program_enrollment.academic_term = student_applicant.academic_term
     program_enrollment.student_group = student_group
+    program_enrollment.student_batch_name = student_applicant.batch
+    program_enrollment.payment_plan = payment_plan
     program_enrollment.save()
     # program_enrollment.submit()
     frappe.publish_realtime(
         "enroll_student_progress", {"progress": [2, 4]}, user=frappe.session.user
     )
-    return program_enrollment
+
+    frappe.set_value("Lead", student_applicant.lead, "status", "Enrollment Pending")
+
+    url = frappe.utils.get_url_to_form(
+            "Program Enrollment", program_enrollment.name
+        )
+    return url
 
 def get_student_group_mgr(division,doc):
     program_id = frappe.get_value("Student Group",{'academic_year':doc.academic_year,'program':doc.program,'student_group_name':division})
@@ -258,49 +276,11 @@ def get_max_strength(student_group):
     return frappe.db.get_value("Student Group", student_group, "max_strength")
 
 
-def get_phone_no_from_guardians(guardians):
-    guardians_names = [guardian.get("guardian") for guardian in guardians]
-    guardian_data = frappe.db.get_list(
-        "Guardian",
-        filters=[["name", "in", guardians_names]],
-        fields=["mobile_number", "email_address"],
-    )
-    mobile_number = find_first_key_with_value(guardian_data, "mobile_number", "")
-    email_address = find_first_key_with_value(guardian_data, "email_address", "")
-    return mobile_number, email_address
 
 
-def create_student_account(student, student_applicant):
-    google_service_settings = frappe.get_single("Google Service Account")
-
-    if google_service_settings.get("create_student_workspace"):
-        mobile_number, email_address = get_phone_no_from_guardians(
-            student_applicant.get("guardians")
-        )
-        email_key = student.get("name")
-        first_name = student_applicant.get("first_name")
-        last_name = student_applicant.get("last_name")
-        created_email = create_google_user(
-            google_service_settings.get("google_account_prefix", "") + email_key,
-            first_name,
-            last_name,
-            email_address,
-            mobile_number,
-        ).get("primaryEmail", "")
-
-        group_email = frappe.get_value('School', student.school, 'group_email')
-        if group_email:
-            add_user_to_group(created_email, group_email)
-
-        student.student_email_id = created_email
-        student.save()
 
 
-def find_first_key_with_value(list_of_dicts, key, value):
-    for dictionary in list_of_dicts:
-        frappe.errprint(dictionary["email_address"])
-        if key in dictionary and dictionary[key]:
-            return dictionary[key]
+
 
 
 def get_student_count(fee_schedule, student_group):

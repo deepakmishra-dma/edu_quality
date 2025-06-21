@@ -1,0 +1,94 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:{school}-TT-{####}",
+ "creation": "2024-03-04 16:28:50.829740",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "school",
+  "section_break_vfrzz",
+  "classes_applicable",
+  "column_break_ot9pa",
+  "divisions_applicable",
+  "section_break_vtms7",
+  "working_days",
+  "number_of_working_days"
+ ],
+ "fields": [
+  {
+   "fieldname": "school",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "School",
+   "options": "School",
+   "reqd": 1
+  },
+  {
+   "fieldname": "classes_applicable",
+   "fieldtype": "Table MultiSelect",
+   "label": "Classes Applicable",
+   "options": "Classes",
+   "reqd": 1
+  },
+  {
+   "fieldname": "divisions_applicable",
+   "fieldtype": "Table MultiSelect",
+   "label": "Divisions Applicable",
+   "options": "Divisions",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_ot9pa",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_vfrzz",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "section_break_vtms7",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "working_days",
+   "fieldtype": "Table",
+   "label": "Working Days",
+   "options": "Working Days",
+   "reqd": 1
+  },
+  {
+   "fieldname": "number_of_working_days",
+   "fieldtype": "Int",
+   "label": "Number of Working Days",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-03-04 16:41:44.905906",
+ "modified_by": "Administrator",
+ "module": "Attendance",
+ "name": "Timetable Setup",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

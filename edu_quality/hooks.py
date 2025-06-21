@@ -13,7 +13,8 @@ app_license = "MIT"
 # include js, css files in header of desk.html
 # app_include_css = "/assets/edu_quality/css/edu_quality.css"
 app_include_js = [
-    "/assets/edu_quality/js/carnivalEvent.js",
+    "/assets/edu_quality/js/exportTool.js" "/assets/edu_quality/js/carnivalEvent.js",
+    # "export_tool.bundle.js",
 ]
 
 # include js, css files in header of web template
@@ -44,9 +45,12 @@ doctype_js = {
     "Topic": "public/js/topic.js",
     "Instructor": "public/js/instructor.js",
     "Payment Request": "public/js/payment_request.js",
+    "Program Enrollment": "public/js/program_enrollment.js",
+    "Employee": "public/js/employee.js",
 }
 doctype_list_js = {
     "Student Applicant": "public/js/list/student_applicant_list.js",
+    "Guardian": "public/js/list/guardian_list.js",
     "Lead": "public/js/list/lead_list.js",
     "Program Enrollment": "public/js/list/program_enrollment_list.js",
     "Student": "public/js/list/student_list.js",
@@ -87,7 +91,10 @@ doctype_list_js = {
 
 # add methods and filters to jinja environment
 jinja = {
-    "methods": ["edu_quality.overrides_hooks.purchase_order"],
+    "methods": [
+        "edu_quality.overrides_hooks.purchase_order",
+        "edu_quality.public.py.utils",
+    ],
     # "filters": "edu_quality.utils.jinja_filters"
 }
 
@@ -116,6 +123,7 @@ jinja = {
 permission_query_conditions = {
     "Contact": "edu_quality.permissions.contacts.contact_query",
     "Purchase Order": "edu_quality.permissions.purchase_orders.purchase_query",
+    "Student": "edu_quality.permissions.students.student_query",
 }
 #
 # has_permission = {
@@ -134,6 +142,8 @@ override_doctype_class = {
     "Student": "edu_quality.edu_quality.overrides.student.CustomStudent",
     "Payment Entry": "edu_quality.edu_quality.overrides.payment_entry.CustomPaymentEntry",
     "Lead": "edu_quality.public.py.lead.CustomLead",
+    "Instructor": "edu_quality.edu_quality.overrides.instructor.CustomInstructor",
+    "HD Ticket": "edu_quality.edu_quality.overrides.hd_ticket.CustomHDTicket",
 }
 
 # Document Events
@@ -141,7 +151,16 @@ override_doctype_class = {
 # Hook on document methods and events
 
 doc_events = {
+    "HD Ticket": {
+        "after_insert": "edu_quality.edu_quality.server_scripts.hd_ticket.after_insert",
+    },
+    "Guardian": {
+        "before_insert": "edu_quality.edu_quality.server_scripts.guardian.before_insert",
+        "after_insert": "edu_quality.edu_quality.server_scripts.guardian.after_insert",
+        "on_update": "edu_quality.edu_quality.server_scripts.guardian.on_update",
+    },
     "Student Applicant": {
+        "on_update": "edu_quality.edu_quality.server_scripts.student_applicant.on_update",
         "before_save": "edu_quality.public.py.application.before_save",
         "after_insert": "edu_quality.edu_quality.server_scripts.student_applicant.after_insert",
         "autoname": "edu_quality.public.py.application.autoname",
@@ -149,10 +168,17 @@ doc_events = {
     "Program Enrollment": {
         "on_submit": [
             "edu_quality.public.py.fee.create_fees",
-            "edu_quality.public.py.fee.create_id_card",
+            "edu_quality.public.py.fee.update_program_enrollment",
         ],
-        "after_insert": "edu_quality.public.py.fee.append_program_enrollment",
+        "before_insert": "edu_quality.public.py.fee.sync_student_data",
+        "after_insert": [
+            "edu_quality.public.py.fee.append_program_enrollment",
+            "edu_quality.public.py.fee.create_id_card",
+            "edu_quality.public.py.fee.create_birthday_card",
+        ],
         "on_trash": "edu_quality.public.py.fee.remove_program_enrollment",
+        "on_update_after_submit": "edu_quality.public.py.fee.update_program_enrollment",
+        "on_cancel": "edu_quality.edu_quality.server_scripts.program_enrollment.on_cancel",
     },
     "Contact": {
         "before_validate": "edu_quality.overrides_hooks.contact.before_validate"
@@ -169,13 +195,9 @@ doc_events = {
         "on_submit": "edu_quality.public.py.payment_request.on_submit",
     },
     "Student": {
-        "autoname": "edu_quality.public.py.student.autoname",
-        "before_insert": "edu_quality.public.py.student.before_insert",
+        "after_insert": "edu_quality.public.py.student.after_insert",
         "before_save": "edu_quality.public.py.student.before_save",
-    },
-    "Custom Field": {"after_insert": "edu_quality.public.py.fixtures.custom_fields"},
-    "Custom DocPerm": {
-        "after_insert": "edu_quality.public.py.fixtures.custom_doc_perm"
+        "on_update": "edu_quality.public.py.student.on_update",
     },
     "Payment Entry": {
         "validate": "edu_quality.edu_quality.server_scripts.payment_entry.validate"
@@ -191,27 +213,50 @@ doc_events = {
         "after_insert": "edu_quality.overrides_hooks.topic.after_insert",
     },
     "Purchase Order": {
-        "before_validate": "edu_quality.overrides_hooks.purchase_order.before_validate"
+        "before_validate": "edu_quality.overrides_hooks.purchase_order.before_validate",
+        "on_submit": [
+            "edu_quality.edu_quality.server_scripts.purchase_order.on_submit",
+            "edu_quality.edu_quality.server_scripts.purchase_order.mark_id_card_sent_to_print",
+        ],
     },
     # "Instructor": {
     #     "after_insert": "edu_quality.overrides_hooks.instructor.after_insert",
     #     "after_delete": "edu_quality.overrides_hooks.instructor.after_delete",
     # },
     "Purchase Receipt": {
-        "before_validate": "edu_quality.overrides_hooks.purchase_order.before_validate"
+        "before_save": "edu_quality.overrides_hooks.purchase_receipt.before_save",
+        "before_validate": "edu_quality.overrides_hooks.purchase_order.before_validate",
+    },
+    "Employee": {
+        "before_save": "edu_quality.edu_quality.server_scripts.employee.before_save",
+        "after_insert": "edu_quality.edu_quality.server_scripts.employee.after_insert",
+        "before_insert": "edu_quality.edu_quality.server_scripts.employee.before_insert",
+        "on_update": "edu_quality.edu_quality.server_scripts.employee.on_update",
+    },
+    "Student Group": {
+        "on_update": "edu_quality.overrides_hooks.student_group.on_update",
+        "before_save":"edu_quality.overrides_hooks.student_group.before_save"
     },
 }
 
 # Scheduled Tasks
 # ---------------
 scheduler_events = {
-    "all": ["edu_quality.api.student_application.get_and_schedule_pending_walkouts"],
-    "cron": {"0 * * * *": ["edu_quality.tasks.cron"]},
+    "all": [
+        "edu_quality.api.student_application.get_and_schedule_pending_walkouts",
+        "edu_quality.overrides_hooks.item.upload_all_imported_to_drive",
+    ],
+    "cron": {
+        "0 * * * *": ["edu_quality.tasks.cron"],
+        "0 19 * * *": ["edu_quality.tasks.send_bulk_notification_cmap_to_guardian"],
+        "0 6 * * *": ["edu_quality.tasks.schedule_birthday_greeting"],
+        "* * * * *": ["edu_quality.cmap_jobs.send_ptm_notifications_to_students","edu_quality.cmap_jobs.notify_teacher_before_half_hour_job"]
+    },
     "daily": [
         "edu_quality.tasks.time_based",
         "edu_quality.tasks.create_payment_request_before_due_date",
         "edu_quality.tasks.create_payment_request_before_due_date_fee_advance",
-        "edu_quality.tasks.update_academic_year",
+        # "edu_quality.tasks.update_academic_year",
     ],
 }
 # scheduler_events = {
@@ -243,6 +288,10 @@ scheduler_events = {
 # override_whitelisted_methods = {
 # 	"frappe.desk.doctype.event.event.get_events": "edu_quality.event.get_events"
 # }
+
+override_whitelisted_methods = {
+    "helpdesk.helpdesk.doctype.hd_ticket.api.get_one": "edu_quality.edu_quality.server_scripts.hd_ticket.get_one"
+}
 #
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,
@@ -301,173 +350,12 @@ scheduler_events = {
 # 	"edu_quality.auth.validate"
 # ]
 
-# fixtures = [
-#     {"dt": "Web Page"}
-
-# ]
-
-fixtures = [
-    {"dt": "Workflow"},
-    {"dt": "Workflow State"},
-    {"dt": "Workflow Action Master"},
-    {"dt": "Server Script", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
-    {"dt": "Property Setter", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
-    {"dt": "Client Script", "filters": [["module", "in", ["Edu Quality", "Fees"]]]},
-    {"dt": "DocType Layout"},
-    {"dt": "Translation"},
-    {"dt": "Lead Source"},
-    {"dt": "Student Batch Name"},
-    {"dt": "Custom Field", "filters": [["module", "=", "Edu Quality"]]},
-    {"dt": "Web Page"},
-    {"dt": "Accounting Dimension"},
-    {
-        "dt": "Role",
-        "filters": [
-            [
-                "name",
-                "in",
-                [
-                    "Head Administration",
-                    "Councellor",
-                    "Teacher",
-                    "Printer",
-                    "Watchman",
-                    "Clerk",
-                ],
-            ]
-        ],
-    },
-    {"dt": "Custom DocPerm", "filters": [["module", "=", "Edu Quality"]]},
-    {"dt": "Program"},
-    {"dt": "Lead Sub Status"},
-    # {"dt": "School"},
-    {"dt": "Academic Year"},
-    {
-        "dt": "Funnel Node",
-        "filters": [
-            [
-                "name",
-                "in",
-                [
-                    "Student Referral",
-                    "Fee Receipt",
-                    "Undertaking OTP",
-                    "Payment Link",
-                    "Payment Link Remainder",
-                ],
-            ]
-        ],
-    },
-    {
-        "dt": "Print Format",
-        "filters": [
-            [
-                "name",
-                "in",
-                ["Printer Receipt", "Printer"],
-            ]
-        ],
-    },
-    {"dt": "Workspace"},
-    {"dt": "Number Card"},
-    # {"dt": "Funnel"},
-    # {"dt": "Email Template"},
-    # {"dt": "Letter Head"},
-    # {"dt": "Class Type"},
-    {"dt": "Item Group"},
-    {"dt": "CRM Settings"},
-    {
-        "dt": "Workspace",
-        "filters": [
-            [
-                "name",
-                "in",
-                [
-                    "Home",
-                    "Walnut Accounts",
-                    "Student Management",
-                    "Fees Setup",
-                    "Walnut Analytics Dashboard",
-                    "HR",
-                    "Counsellor",
-                    "Content Creator",
-                    "Walnut Analytics Dashboard",
-                    "Coordinator",
-                    "Councellor",
-                    "Digital Academic",
-                    "Customer Care",
-                    "Teacher",
-                    "Principal",
-                    "System Admin",
-                    "Accounts Admin",
-                    "Vice-Principal",
-                    "CRM",
-                    "Selling",
-                    "Buying",
-                    "Website",
-                    "Tools",
-                    "Users",
-                    "Integrations",
-                    "Accounting",
-                    "Stock",
-                    "Assets",
-                    "Projects",
-                    "Support",
-                    "Quality",
-                    "Manufacturing",
-                    "ERPNext Integrations",
-                    "Build",
-                    "ERPNext Settings",
-                    "POS Awesome",
-                    "Fees Module",
-                    "Student CRM",
-                    "Accounts",
-                    "System Setup",
-                    "Printer",
-                    "Watchman",
-                    "School Admin",
-                    "Financial Reports",
-                    "Receivables",
-                    "Payables",
-                    "Education",
-                    "Website",
-                    "Tools",
-                    "Integrations",
-                    "Clerk",
-                ],
-            ]
-        ],
-    },
-    {
-        "dt": "Custom HTML Block",
-    },
-    {"dt": "Report", "filters": [["name", "in", "Generic Report"]]},
-    {
-        "dt": "Module Profile",
-        "filters": [
-            [
-                "name",
-                "in",
-                ["Councellor", "Content Creator", "Printer", "Watchman", "Clerk"],
-            ]
-        ],
-    },
-    {
-        "dt": "Role Profile",
-        "filters": [
-            [
-                "name",
-                "in",
-                ["Councellor", "Content Creator", "Printer", "Watchman", "Clerk"],
-            ]
-        ],
-    },
-]
+fixtures = [{"dt": "Custom DocPerm"}]
 
 
 after_migrate = [
     "edu_quality.public.py.utils.migrate",
-    "edu_quality.tasks.update_academic_year",
+    "edu_quality.edu_quality.server_scripts.after_migrate.after_migrate",
 ]
 
 website_route_rules = [

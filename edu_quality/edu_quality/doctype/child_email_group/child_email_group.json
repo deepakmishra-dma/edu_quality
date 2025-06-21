@@ -1,0 +1,37 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-04-05 11:36:46.892570",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "email_group",
+  "column_break_nyhj"
+ ],
+ "fields": [
+  {
+   "fieldname": "column_break_nyhj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "email_group",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Email Group",
+   "options": "Email Group"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-04-17 12:52:32.556188",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "Child Email Group",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

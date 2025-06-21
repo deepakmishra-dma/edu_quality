@@ -1,5 +1,8 @@
 import json
-from edu_quality.fees.doctype.fee_advance.fee_advance import cancel_liability_entries, get_one_time_discounts
+from edu_quality.fees.doctype.fee_advance.fee_advance import (
+    cancel_liability_entries,
+    get_one_time_discounts,
+)
 from edu_quality.public.py.discount import (
     add_discount,
     get_all_discounts,
@@ -7,13 +10,16 @@ from edu_quality.public.py.discount import (
     time_based_discount,
     update_payment_schedule,
     get_label,
+    calculate_discount
 )
 
 from edu_quality.edu_quality.server_scripts.student_applicant import referal_discount
 from erpnext.accounts.general_ledger import make_reverse_gl_entries
-from edu_quality.edu_quality.server_scripts.payment_plan import remove_payment_plan_discount
+from edu_quality.edu_quality.server_scripts.payment_plan import (
+    remove_payment_plan_discount,
+)
 from edu_quality.public.py.discount import update_breakup_after_pp_change
-
+from edu_quality.edu_quality.server_scripts.student_applicant import update_referral_discount
 
 import frappe
 from erpnext.accounts.utils import get_account_currency
@@ -29,15 +35,19 @@ from frappe.utils import flt, get_url, nowdate
 from edu_quality.overrides import make_payment_request
 from datetime import datetime
 from edu_quality.public.py.payment_request import update_payment_request_after_discount
-from edu_quality.public.py.utils import im_2_b64, gen_qr_code_b64
+from edu_quality.public.py.utils import (
+    im_2_b64,
+    gen_qr_code_b64,
+    gen_qr_code_b64_transparent,
+)
 import qrcode
 from edu_quality.public.py.discount import remove_discount
 
 
 def after_insert(doc, method=None):
     payment_plan(doc)
-    doc.save()
-
+    apply_referral_for_unpaid_fee_advance(doc)
+    doc.reload()
 
 def before_submit(doc, method=None):
     time_dis = time_based_discount(doc)
@@ -47,27 +57,101 @@ def before_submit(doc, method=None):
 
     # payment_split(doc, ref_dis, time_dis, payplan_discount)
     doc.total_discount = get_all_discounts(doc)
-    
+
 
 def on_submit(doc, method=None):
-    total_discount = 0
-    filters = {"student": doc.student, "outstanding_amount": 0, "next_program":doc.program, "academic_year": doc.academic_year, "docstatus": 1}
+    filters = {
+        "student": doc.student,
+        "outstanding_amount": ["<=",0],
+        "next_program": doc.program,
+        "academic_year": doc.academic_year,
+        "docstatus": 1,
+    }
     if frappe.db.exists("Fee Advance", filters):
         payment_amount = doc.payment_schedule[0].payment_amount
         fee_advance = frappe.get_doc("Fee Advance", filters)
+        doc.payment_plan = fee_advance.payment_plan
         # cancel_liability_entries(fee_advance)
         discount_applied = get_one_time_discounts(fee_advance)
         for discount in discount_applied.keys():
-            add_discount(doc.name, discount)
-            total_discount += discount_applied.get(discount)
-
+            if "payplan" not in discount.lower():
+                add_discount(doc.name, discount)
+        if fee_advance.referral_amount:
+            update_referral_discount(doc,fee_advance.referral_amount,True)
         if doc.payment_schedule:
-            frappe.db.set_value("Payment Schedule", doc.payment_schedule[0].name, "outstanding", 0)
-            frappe.db.set_value("Payment Schedule", doc.payment_schedule[0].name, "payment_amount", payment_amount - total_discount)
-        fee_outstanding_amount = doc.outstanding_amount - (fee_advance.amount + total_discount)
-        frappe.db.set_value("Fees", doc.name, "outstanding_amount", fee_outstanding_amount)
+            payment_schedule = doc.payment_schedule[0]
+            frappe.db.set_value("Payment Schedule", payment_schedule.name, "outstanding", 0)
+            term_first_amount = frappe.get_value("Payment Schedule", payment_schedule.name, "payment_amount")
+            fee_outstanding_amount = max(0, doc.outstanding_amount - term_first_amount)
+            frappe.db.set_value("Fees", doc.name, "outstanding_amount", fee_outstanding_amount)
         doc.reload()
+    else:
+        filters = {
+            "student": doc.student,
+            "outstanding_amount": [">", 0],
+            "next_program": doc.program,
+            "academic_year": doc.academic_year,
+            "docstatus": 1,
+        }
+        fee_advance = frappe.get_value("Fee Advance", filters)
+        if fee_advance:
+            fee_advance = frappe.get_doc("Fee Advance", fee_advance)
+            fee_advance.cancel()
+    
+    doc.generate_split()
+
+
+
+# def update_referral_discount(doc, fee_advance):
+#     if fee_advance.referral_amount:
+#         for component in doc.components:
+#             if component.fees_category in ["Tuition Fee", 'Tuition Fee (KG)']:
+#                 fee_comp = frappe.get_value(
+#                     "Fee Component", component.name, ["amount","custom_discount_amount", "custom_amount_after_discount","custom_discounts"], as_dict=True
+#                 )
+#                 discount_amount = fee_comp.custom_discount_amount + fee_advance.referral_amount
+#                 if fee_comp.custom_discounts:
+#                     fee_comp.custom_discounts += ", Referral"
+#                 else:
+#                     fee_comp.custom_discounts = "Referral"
+#                 updates = {
+#                     "custom_discount_amount": fee_comp.custom_discount_amount + fee_advance.referral_amount,
+#                     "custom_amount_after_discount": fee_comp.custom_amount_after_discount - fee_advance.referral_amount,
+#                     "custom_discount_percentage": calculate_discount(fee_comp.amount, discount_amount),
+#                     "custom_discounts": fee_comp.custom_discounts
+#                 }
+#                 frappe.db.set_value("Fee Component", component.name, updates)
+#                 doc.add_discount_entry(component.custom_company, fee_advance.referral_amount)
+#         return fee_advance.referral_amount 
+#     return 0
         
+        
+def apply_referral_for_unpaid_fee_advance(doc):
+    total_discount = 0
+    filters = {
+        "student": doc.student,
+        "outstanding_amount": [">", 0],
+        "next_program": doc.program,
+        "academic_year": doc.academic_year,
+        "docstatus": 1,
+    }
+    fee_advance = frappe.get_value("Fee Advance", filters)
+    if fee_advance:
+        fee_advance = frappe.get_doc("Fee Advance", filters)
+        fee_advance.reload()
+        doc.payment_plan = fee_advance.payment_plan
+        doc.save()
+        doc.reload()
+        discount_applied = get_one_time_discounts(fee_advance)
+        for discount in discount_applied.keys():
+            if "payplan" not in discount.lower(): 
+                add_discount(doc.name, discount)
+
+        if fee_advance.referral_amount:
+            update_referral_discount(doc,fee_advance.referral_amount)
+        return fee_advance
+
+
 
 def verify_invoice_portion(payment_schedule):
     total_portion = sum([ps.invoice_portion for ps in payment_schedule])
@@ -83,6 +167,7 @@ def verify_payment_term(payment_schedule):
         else:
             terms.append(ps.payment_term)
 
+
 def validate_discounts(doc):
     for component in doc.components:
         if "Payment Plan" in component.custom_discounts:
@@ -92,24 +177,27 @@ def validate_discounts(doc):
 def custom_payment_plan(doc):
     try:
         return
-        remove_payment_plan_discount(doc,custom_payment_plan=1)
+        remove_payment_plan_discount(doc, custom_payment_plan=1)
         doc.save()
         update_breakup_after_pp_change(doc)
         update_payment_request_after_discount(doc)
     except Exception as e:
-        frappe.logger('custom').exception(e)
+        frappe.logger("custom").exception(e)
+
 
 def after_save(doc, method=None):
     return
     from edu_quality.public.py.discount import update_total_discount_in_fees
+
     update_total_discount_in_fees(doc)
+
 
 def on_update(doc, method=None):
     old_doc = doc.get_doc_before_save()
     if old_doc.payment_plan != doc.payment_plan:
-        frappe.logger('PP').exception('pp modify')
+        frappe.logger("PP").exception("pp modify")
         return
-    
+
     if doc.parent_otp == 0 and old_doc.payment_schedule != doc.payment_schedule:
         if old_doc.payment_plan == doc.payment_plan:
             doc.need_otp = 1
@@ -171,34 +259,60 @@ def get_deposit(doc_payment_plan, payment_plan):
     return 0
 
 
+def sync_student_data(doc, method=None):
+    student = frappe.get_value("Student", doc.student, ["has_allergies", "allergies", "is_handicap", "handicap", "student_status"], as_dict=True)
+    doc.has_allergies = student.has_allergies
+    doc.allergies = student.allergies
+    doc.is_handicap = student.is_handicap
+    doc.handicap = student.handicap
+    doc.custom_status = student.student_status
 
-def create_id_card(doc,method=None):
+
+def create_id_card(doc, method=None):
     student = frappe.get_doc("Student", doc.student)
-    qrcode_image = gen_qr_code_b64(
+    qrcode_image = gen_qr_code_b64_transparent(
         f"{doc.get('academic_year')}/{doc.get('custom_school')}/{student.get('reference_number')}"
     )
-    doc.custom_id_card = (
-        frappe.get_doc(
-            {
-                "doctype": "Student ID Card",
-                "program_enrolled_in": doc.name,
-                "qr_code": qrcode_image,
-            }
-        )
-        .insert()
-        .get("name")
+    id_card = frappe.get_doc(
+        {
+            "doctype": "Student ID Card",
+            "program_enrolled_in": doc.name,
+            "qr_code": qrcode_image,
+        }
     )
+    id_card.insert()
+    frappe.db.set_value("Program Enrollment", doc.name, "custom_id_card", id_card.name)
+    doc.reload()
+
 
 def create_fees(doc, method=None):
     try:
         student = frappe.get_doc("Student", doc.student)
-        if student.imported and student.student_status not in ["Cancelled","New student"]:
-            existing_pe = frappe.get_all("Program Enrollment", {"student": doc.student, "docstatus": 1})
+        if student.imported and student.student_status not in [
+            "Cancelled",
+            "New student",
+        ]:
+            existing_pe = frappe.get_all(
+                "Program Enrollment", {"student": doc.student, "docstatus": 1}
+            )
             if len(existing_pe) <= 1:
                 return
-        fee_structure = frappe.get_value("Fee Structure", {"program": doc.program, "academic_year":doc.academic_year}, "name")
-        fee_schedule = frappe.get_value("Fee Schedule", {"fee_structure": fee_structure}, "name")
-        stude_appli_class = frappe.get_value("Student Applicant",{"student_email_id":student.student_email_id,"program":doc.program},'name')
+        fee_structure = frappe.get_value(
+            "Fee Structure",
+            {"program": doc.program, "academic_year": doc.academic_year, "docstatus": 1},
+            "name",
+        )
+        fee_schedule = frappe.get_value(
+            "Fee Schedule", {"fee_structure": fee_structure, "docstatus": 1}, "name"
+        )
+        if student.student_applicant:
+            stude_appli_class = student.student_applicant
+        else:
+            stude_appli_class = frappe.get_value(
+                "Student Applicant",
+                {"student_email_id": student.student_email_id, "program": doc.program},
+                "name",
+            )
         if not stude_appli_class:
             fee_data = {
                 "doctype": "Fees",
@@ -209,12 +323,12 @@ def create_fees(doc, method=None):
                 "fee_schedule": fee_schedule,
                 "academic_year": doc.academic_year,
                 "custom_school": doc.custom_school,
-                "company": frappe.get_value("Fee Structure", fee_structure, "institution"),
+                "company": frappe.get_value(
+                    "Fee Structure", fee_structure, "institution"
+                ),
             }
             fee = frappe.get_doc(fee_data)
-            fee_structure = frappe.get_doc(
-                    "Fee Structure", fee_structure
-                )
+            fee_structure = frappe.get_doc("Fee Structure", fee_structure)
             for component in fee_structure.components:
                 fee.append(
                     "components",
@@ -224,27 +338,26 @@ def create_fees(doc, method=None):
                         "description": component.description,
                         "custom_company": component.custom_company,
                         "school": component.school,
-                        "label": component.label
+                        "label": component.label,
                     },
                 )
             fee.insert()
             fee.submit()
             from edu_quality.public.py.student import update_student_group
 
-            update_student_group(
-                doc.name, fee_structure=fee_structure.name
-            )
+            update_student_group(doc.name, fee_structure=fee_structure.name)
         else:
             student_applicant = frappe.get_doc(
-                "Student Applicant", {"student_email_id":student.student_email_id}
-            )
+                "Student Applicant", stude_appli_class)
             fees = frappe.get_doc(
                 {
                     "doctype": "Fees",
                     "student": student.name,
                     "posting_date": nowdate(),
                     "program_enrollment": frappe.get_value(
-                        "Program Enrollment", {"student": doc.student,"program":doc.program}, "name"
+                        "Program Enrollment",
+                        {"student": doc.student, "program": doc.program},
+                        "name",
                     ),
                     "fee_structure": student_applicant.fee_structure,
                     "fee_schedule": student_applicant.fee_schedule,
@@ -263,7 +376,7 @@ def create_fees(doc, method=None):
                             "description": component.description,
                             "custom_company": component.custom_company,
                             "school": component.school,
-                            "label": component.label
+                            "label": component.label,
                         },
                     )
             else:
@@ -279,7 +392,7 @@ def create_fees(doc, method=None):
                             "description": component.description,
                             "custom_company": component.custom_company,
                             "school": component.school,
-                            "label": component.label
+                            "label": component.label,
                         },
                     )
             fees.insert()
@@ -289,9 +402,19 @@ def create_fees(doc, method=None):
             update_student_group(
                 fees.program_enrollment, fee_structure=student_applicant.fee_structure
             )
+        student.custom_school = doc.custom_school
+        student.save()
+        update_lead_status(doc)
     except Exception as e:
         frappe.logger("fee").exception(e)
         frappe.throw(str(e))
+
+
+def update_lead_status(doc, method=None):
+    student_applicant = frappe.get_value("Student", doc.student, 'student_applicant')
+    if student_applicant:
+        lead = frappe.get_value('Student Applicant', student_applicant, 'lead')
+        frappe.set_value("Lead", lead, "status", "Enrolled")
 
 
 def append_program_enrollment(doc, method=None):
@@ -761,3 +884,43 @@ def component_wise(
     component_wise_split["breakup"] = breakup
     component_wise_split["is_deposit"] = combination
     return component_wise_split
+
+
+def update_program_enrollment(doc, method):
+    division = frappe.get_value("Student Group", doc.student_group, "student_group_name")
+    frappe.db.sql(
+        """
+        UPDATE `tabStudent` 
+        SET roll_no=%s,
+            tiffin_rack_no=%s,
+            bus_service_required=%s,
+            school_house=%s,
+            custom_division=%s,
+            pickup_bus=%s,
+            drop_bus=%s,
+            pickup_address=%s,
+            drop_address=%s,
+            image=%s,
+            program=%s,
+            custom_division=%s
+        WHERE name=%s
+        """, 
+        (
+            doc.roll_no, 
+            doc.tiffin_rack_no, 
+            doc.transport_service_required, 
+            doc.school_house, 
+            doc.student_group, 
+            doc.pickup_bus, 
+            doc.drop_bus, 
+            doc.pickup_address, 
+            doc.drop_address, 
+            doc.image,
+            doc.program,
+            division,
+            doc.student
+        )
+    )
+
+def create_birthday_card(self,method=None):
+    frappe.get_doc({"doctype":"Birthday Card","program_enrollment":self.name}).insert(ignore_permissions=True)

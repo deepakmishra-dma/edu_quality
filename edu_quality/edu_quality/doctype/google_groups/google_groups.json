@@ -1,0 +1,48 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-04-05 11:51:40.043812",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "role",
+  "column_break_dxxc",
+  "org_unit_path",
+  "group_email"
+ ],
+ "fields": [
+  {
+   "fieldname": "role",
+   "fieldtype": "Link",
+   "label": "Role",
+   "options": "Role"
+  },
+  {
+   "fieldname": "column_break_dxxc",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "org_unit_path",
+   "fieldtype": "Data",
+   "label": "Org Unit Path"
+  },
+  {
+   "fieldname": "group_email",
+   "fieldtype": "Data",
+   "label": "Group Email"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-04-24 18:39:01.647504",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "Google Groups",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

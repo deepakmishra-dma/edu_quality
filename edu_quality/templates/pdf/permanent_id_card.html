@@ -1,0 +1,467 @@
+{% set letter_head = frappe.get_doc("Letter Head","Walnut School") %} {% set
+  student_data = frappe.get_doc("Student",doc.student) %} {% set id_card_data =
+  frappe.get_doc("Student ID Card",doc.custom_id_card) %} {% set guardians = [] %}
+  {% for guardian in student_data.guardians %} {% set temp_guard =
+  frappe.get_doc("Guardian",guardian.guardian,fields=["mobile_number,mobile_number"]).mobile_number
+  %} {% if guardians.append(temp_guard) %} {% endif %} {% endfor %} {% set
+  division_data = frappe.get_doc("Student Group",doc.student_group) %} {% set
+  school = frappe.get_doc("School", doc.custom_school) %}
+  
+  <style>
+  
+        * {
+          margin: 0;
+          font-family: Arial, Helvetica, sans-serif !important;
+        }
+  
+        .qr-image-size {
+          width: 2.5rem;
+          height: 2.5rem;
+  
+  
+        }
+  
+        .student-image-size {
+          display: inline-block;
+          width: 6.35rem;
+    height: 6.35rem;
+    margin: 0.38rem 0 0.5rem 1rem;
+          position: relative;
+          top: -8px;
+          overflow: hidden;
+          border-radius: 2px;
+        }
+        .student-image-size>img{
+          width: 6.35rem;
+          height: 6.35rem;
+        }
+        .front {
+          width: 100%;
+          height: 329.21px;
+         
+          background-repeat: no-repeat;
+          padding-bottom: 1em;
+          background-size: contain;
+        }
+  
+        .back {
+          width: 100%;
+          height: 329.21px;
+  
+  
+        
+          border: 1px solid #fff;
+          font-size: 10px;
+          font-weight: bold;
+          background-image: url("{{site_url}}{{ school.id_card_template_back}}");
+          background-size: contain;
+          background-repeat: no-repeat;
+        
+          transform: rotate(180deg);
+        }
+  
+        .container {
+          padding: 5px;
+          position: relative;
+          overflow: hidden;
+        }
+        .allergies-container{
+          position: absolute;
+  
+          right:-25%;
+          transform: rotate(135deg);
+          top:14%;
+        }
+        .allergies-logo{
+          border: solid 40px;
+        border-color: transparent #FFEA63 transparent  transparent;
+          color: black;
+          font-size: 12px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+    .asterisk-container{
+      position: absolute;
+      display: inline-block;
+      color: black;
+      top:50%;
+      left:75%;
+  
+  
+    }
+    .asterisk-container i {
+  
+      color: black;
+      font-size: 16px;
+  
+    }
+        .detail-container {
+          margin:-8px;
+          display: flex;
+          justify-content: space-between;
+          gap: 4px;
+          position: relative;
+          width: 100%;
+        }
+  
+        .academic-details {
+          width: 25%;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+  
+  
+        }
+  
+        .academic-details h3 {
+          font-size: 12px;
+          font-weight: bold;
+          line-height: 10px;
+          display: flex;
+        }
+  
+        .academic-year {
+          display: flex;
+          gap: 4px;
+          text-align: center;
+          white-space: nowrap;
+  
+  
+        }
+        .academic-year h3{
+          font-size: 8px;
+        }
+        .student-name {
+          width: 75%;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          padding-left: 25px;
+        }
+  
+        .student-name p {
+          width: 100%;
+          overflow: hidden;
+          text-transform: uppercase;
+          font-weight: 600;
+          line-height: 30px;
+        }
+  
+        .custom-border {
+          border: 1px solid black;
+  
+        }
+  
+        .reference-container {
+          display: flex;
+          margin-top:-0.8rem;
+        }
+  
+        .ref-col-container {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 5px;
+        }
+  
+        .ref-col-container h2 {
+          font-size: 18pt;
+          font-weight: 700;
+          color: red;
+          line-height: 50px;
+        }
+  
+        .pickup-bus {
+          font-size: 28px;
+          font-weight: 900;
+          color: red;
+          margin: 1rem auto;
+          margin-bottom: 2.25rem;
+        }
+  
+        .student-info {
+          display: flex;
+          gap: 20px;
+          align-items: flex-start;
+          flex-direction: column;
+          height: max-content;
+          margin-top: 20px;
+          margin-left: 10px;
+          position: relative;
+          padding-left: 12px;
+          padding-right:12px;
+        }
+  
+        .student-info p {
+          width: 180px;
+          display: flex;
+          gap: 4px;
+          position: relative;
+          font-size: 9px;
+        }
+  
+        .address-info {
+          display: flex;
+          flex-wrap: wrap;
+        }
+  
+        .address {
+          margin-top: 100px;
+          margin-left: 10px;
+          font-size: 10px;
+        }
+      .address.heading{
+        font-size: 10px !important;
+      }
+        .address-info p {
+          text-transform:uppercase;
+          font-size: 9px;
+          margin-left: 4px;
+          font-weight: 500;
+        }
+  
+        .school-data {
+          text-align: center;
+  
+  
+        }
+        .info-container{
+          position: relative;
+  
+        }
+        .allergies-text{
+  
+          transform: rotate(270deg);
+          position: absolute;
+  
+          left:-12px;
+  
+          bottom:28px;
+          /* transform: rotate(270deg); */
+          font-size: 8pt;
+          font-weight: 600;
+        }
+        .tiffin-text {
+          transform: rotate(270deg);
+          position: absolute;
+  
+          right:0px;
+  
+          bottom:28px;
+          /* transform: rotate(270deg); */
+          font-size: 8pt;
+          font-weight: 600;
+        }
+        .tiffin-text p{
+          font-size: 8pt;
+          font-weight: 600;
+        }
+  
+        .student-image {
+          margin-top: 91px;
+          margin-left:1px;
+        }
+  
+        .student-details {
+          margin-left: 24px;
+        }
+        .house-container{
+          display: flex;
+          width: 100%;
+          justify-content: center;
+        }
+        #house {
+          display: inline-block;
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+        }
+        .parent-container{
+          width: 212px;
+          /* overflow: hidden; */
+          margin-left: 2px;
+          margin-right: 2px;
+        }
+        .cut-mark-circle{
+          height:16px;
+          width:16px;
+      
+          border-radius: 50%;
+          border: 1px solid black;
+        }
+
+        .cut-mark-container{
+          display: flex;
+          justify-content: space-between;
+     
+     
+        }
+        .cut-mark-container-two{
+          display: flex;
+          flex-direction: column;
+
+        }
+        .cut-mark-container>.left,.cut-mark-container-two>.left{
+        border-left: 1px solid black;
+        padding-left:4px;
+        }
+        .cut-mark-container>.right,.cut-mark-container-two>.right{
+        border-right: 1px solid black;
+        padding-right:4px;
+        }
+        .cut-mark-circle{
+          position: relative;
+         
+        }
+        .cut-mark-circle>.horizontal{
+          position: absolute;
+          width:100%;
+          height: 1px;
+          background-color: black;
+          left:0;
+          top:50%;
+        
+        }
+        .cut-mark-circle>.vertical{
+          position: absolute;
+          width:1px;
+          height: 100%;
+          top:0;
+          left:50%;
+          background-color: black;
+         
+         
+      
+        
+        }
+  </style>
+  <div class="parent-container">
+    <div class="cut-mark-container" style="margin-top:10px;padding-bottom: 5px;"><div class="left"><div class="cut-mark-circle"><div class="horizontal"></div><div class="vertical"></div></div></div><div class="right"><div class="cut-mark-circle"><div class="horizontal"></div><div class="vertical"></div></div></div></div>
+    <div class="front" style="background-image: url('{{site_url}}{{bg_image}}');">
+      <div class="container">
+        {% if student_data.has_allergies %}
+        <div class="allergies-container">
+          <div class="allergies-logo"></div>
+          <div class="asterisk-container">
+            <i class="fa fa-asterisk" aria-hidden="true"></i>
+          </div>
+        </div>
+        {% endif %}
+        <div class="row student-image">
+          <div class="student-image-size">
+            <img src="{{site_url}}{{doc.image}}" />
+          </div>
+          <div class="student-details">
+            {% if doc.transport_service_required %}
+            <h1 class="pickup-bus" style="color: white">{{doc.drop_bus or ""}}</h1>
+            {% else %}
+            <h1 class="pickup-bus">{{"M" if batch_num else ""}}{{batch_num or ""}}</h1>
+            {% endif %}
+            <div class="house-container">
+              <span id="house" style="background-color: {{house}};"></span>
+            </div>
+          </div>
+        </div>
+        <div class="reference-container">
+          <div class="ref-col-container">
+            <h2
+              {%
+              if
+              doc.transport_service_required
+              %}style="color: white"
+              {%
+              endif
+              %}
+            >
+              {{div_name or ""}}
+            </h2>
+          </div>
+          <div class="ref-col-container">
+            <h2
+              {%
+              if
+              doc.transport_service_required
+              %}style="color: white"
+              {%
+              endif
+              %}
+            >
+              {{student_data.custom_reference_number or
+              student_data.reference_number or ""}}
+            </h2>
+          </div>
+        </div>
+      </div>
+      <div class="detail-container">
+        <div class="student-name">
+          <p style='font-size: {{reduce_font_size_steps(18,1,student_data.first_name,10,5)}}px;'>{{student_data.first_name.replace(" ", "&nbsp;")}}</p>
+          <p style='font-size: {{reduce_font_size_steps(18,1,student_data.first_name,10,5)}}px;'>{{student_data.last_name}}</p>
+        </div>
+        <div class="academic-details">
+          <div class="academic-year">
+            <h3>{{doc.academic_year}}</h3>
+          </div>
+          <img
+            src="{{id_card_data.qr_code}}"
+            class="qr-image-size"
+            alt="QR Code"
+          />
+        </div>
+      </div>
+    </div>
+    <div class="cut-mark-container" style="padding-bottom: 5px;padding-top: 5px;">
+      <div class="cut-mark-container-two">
+        <div class="left">
+        <div class="cut-mark-circle "><div class="horizontal"></div><div class="vertical"></div></div>
+        <div class="cut-mark-circle "><div class="horizontal"></div><div class="vertical"></div></div></div>
+      </div>
+  
+      <div class="cut-mark-container-two">
+        <div class="right">
+        <div class="cut-mark-circle"><div class="horizontal"></div><div class="vertical"></div></div>
+        <div class="cut-mark-circle"><div class="horizontal"></div><div class="vertical"></div></div></div>
+      </div>
+  
+    </div>
+    <div
+      class="back"
+      style="background-image: url('{{site_url}}{{ school.id_card_template_back}}');"
+    >
+      <div class="address">
+        <h3 class="address heading">ADDRESS:</h3>
+        <div class="address-info">
+          <p>{{student_data.address_line_1[:60] if student_data.address_line_1 else ''}}</p>
+          <p>{{student_data.address_line_2[:50] if student_data.address_line_2 else ''}}</p>
+          <p>{{student_data.city or ''}}</p>
+          <p>{{student_data.pincode or ''}}</p>
+        </div>
+      </div>
+      <div class="info-container">
+        <div class="student-info">
+          <div style="margin: 0 4px 0 0">
+            <p>ROLL No: {{doc.roll_no}}</p>
+            <p>ACADEMIC YEAR: {{doc.academic_year}}</p>
+            <p>PHONE: {{student_data.student_mobile_number}}</p>
+          </div>
+          <div style="margin: 10px 4px 0 0">
+            <p>BLOOD GROUP: {{student_data.blood_group or ""}}</p>
+            <p>
+              DATE OF BIRTH: {{convertyearMonthDate(student_data.date_of_birth or "")}}
+            </p>
+          </div>
+        </div>
+        <div class="tiffin-text">
+          <p>{{doc.tiffin_rack_no or ""}}</p>
+        </div>
+        {% if student_data.has_allergies %}
+        <div class="allergies-text"><p>Allergies</p></div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="cut-mark-container" style="padding-top: 5px;" ><div class="left"><div class="cut-mark-circle"><div class="horizontal"></div><div class="vertical"></div></div></div><div class="right"><div class="cut-mark-circle"><div class="horizontal"></div><div class="vertical"></div></div></div></div>
+  </div>
+  

@@ -70,8 +70,25 @@ def get_breakup(fees,term):
 def get_payment_details(**kwargs):
     payment_request = frappe.get_value("Payment Request",{'payment_hash': kwargs.get('doc')})
     payment_request = frappe.get_doc("Payment Request",payment_request)
-    if payment_request.docstatus == 2:
+
+    if payment_request.docstatus == 2: #cancelled to intitated redirect
+        if frappe.db.exists("Payment Request",{
+            "reference_name":payment_request.reference_name,
+            "payment_term":payment_request.payment_term,
+            "status":"Initiated"
+            }):
+                request = frappe.db.get_value("Payment Request",{
+                "reference_name":payment_request.reference_name,
+                "payment_term":payment_request.payment_term,
+                "status":"Initiated"
+                },"payment_hash")
+                return {'redirect': frappe.utils.get_url()+"/payment?payment_request="+request}
         return frappe.throw("The payment link is invalidated or cancelled! Please check email for new link or contact the school!")
+
+    #redirect to deposit if present
+    if payment_request.payment_term and frappe.db.exists("Payment Request",[["Payment Request","status","=","Initiated"],["Payment Request","payment_term","is","not set"],["Payment Request","reference_name","=",payment_request.reference_name]]):
+        request = frappe.db.get_value("Payment Request",[["Payment Request","status","=","Initiated"],["Payment Request","payment_term","is","not set"],["Payment Request","reference_name","=",payment_request.reference_name]],"payment_hash")
+        return {'redirect': frappe.utils.get_url()+"/payment?payment_request="+request}
     fees = frappe.get_doc(payment_request.reference_doctype, payment_request.reference_name)
     breakup = []
     if payment_request.payment_term:
@@ -83,13 +100,19 @@ def get_payment_details(**kwargs):
             due_date = fees.due_date
         is_deposit = component['is_deposit']
         if fees.doctype == "Fees":
-            student_name = fees.student_name
+            first_name = frappe.db.get_value("Student", fees.student, "first_name")
+            last_name = frappe.db.get_value("Student", fees.student, "last_name")
+            student_name = f"{first_name} {last_name or ''}"
             company = fees.company
         elif fees.doctype == "Fee Advance":
-            student_name = frappe.db.get_value("Student", fees.student, "student_name")
+            first_name = frappe.db.get_value("Student", fees.student, "first_name")
+            last_name = frappe.db.get_value("Student", fees.student, "last_name")
+            student_name = f"{first_name} {last_name or ''}"
             company = fees.company
     else:
-        student_name = fees.student_name
+        first_name = frappe.db.get_value("Student", fees.student, "first_name")
+        last_name = frappe.db.get_value("Student", fees.student, "last_name")
+        student_name = f"{first_name} {last_name or ''}"
         due_date = fees.due_date
         for fee in fees.components:
             fee_type = frappe.db.get_value("Fee Category",fee.fees_category,"type")
@@ -137,7 +160,7 @@ def get_discounts(fees):
         pass
     if fees.doctype == "Fee Advance":
         for component in fees.components:
-            if component.fees_category=="Tuition Fee":
+            if component.fees_category in ["Tuition Fee", 'Tuition Fee (KG)']:
                 referral_discount_company = component.custom_company
             if component.custom_discounts:
                 if component.custom_company == fees.company:
@@ -153,7 +176,10 @@ def get_discounts(fees):
 
 @frappe.whitelist(allow_guest=True)
 def payment_url(payment_request,payment_method="UPI"):
-    return payment_request.get_payment_url(payment_method=payment_method)
+    try:
+        return payment_request.get_payment_url(payment_method=payment_method)
+    except Exception as e:
+        frappe.logger('payment_er').exception(e)
 
 @frappe.whitelist(allow_guest=True)
 def payment_charge(**kwargs):

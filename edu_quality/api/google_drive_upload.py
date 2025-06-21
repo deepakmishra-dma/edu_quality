@@ -35,8 +35,6 @@ def get_google_folder_name_with_id(folder_id):
         )
         return folder_exist
     except Exception as e:
-        if e.resp.status == 404:
-            return False
         frappe.msgprint("Something Went Wrong")
         return False
 
@@ -45,7 +43,7 @@ def check_for_folder_in_google_drive(folder_name=None, root_folder=None):
     """Checks if folder exists in Google Drive else create it."""
     service_account_doc = frappe.get_single("Google Service Account")
     root_folder_id = root_folder or service_account_doc.get(("root_folder"))
-
+    frappe.log_error("Checking and creating folder drive",str([root_folder,root_folder_id,folder_name,service_account_doc.get(("root_folder"))]))
     if folder_name == None:
         return root_folder_id
 
@@ -76,10 +74,11 @@ def check_for_folder_in_google_drive(folder_name=None, root_folder=None):
     google_drive = get_google_drive_object()
 
     try:
+        encoded_folder_name = generate_name_for_drive(folder_name)
         google_drive_folders = (
             google_drive.files()
             .list(
-                q=f"mimeType='application/vnd.google-apps.folder' and name='{folder_name}' and '{root_folder_id}' in parents"
+                q=f"mimeType='application/vnd.google-apps.folder' and name='{encoded_folder_name}' and '{root_folder_id}' in parents"
             )
             .execute()
         )
@@ -91,6 +90,7 @@ def check_for_folder_in_google_drive(folder_name=None, root_folder=None):
             ).format(e)
         )
     backup_folder_exists = False
+
     for f in google_drive_folders.get("files"):
         if f.get("name") == folder_name:
             backup_folder_exists = True
@@ -109,22 +109,45 @@ def get_absolute_path(file_url):
 
 
 @frappe.whitelist()
-def upload_file_to_drive(file_url, folder_name, root_folder=None):
+def upload_file_to_drive(
+    file_url, folder_name=None, root_folder=None, file_name=None, mimetype="image/jpeg"
+):
     # Get Google Drive Object
     google_drive = get_google_drive_object()
 
     # Check if folder exists in Google Drive
     id = check_for_folder_in_google_drive(folder_name, root_folder)
 
-    file_metadata = {"name": os.path.basename(file_url), "parents": [id]}
+    file_metadata = {"name": file_name or os.path.basename(file_url), "parents": [id]}
 
     try:
-        media = MediaFileUpload(
-            get_absolute_path(file_url), mimetype="image/jpeg", resumable=True
+        media = MediaFileUpload(get_absolute_path(file_url), mimetype, resumable=True)
+        return (
+            google_drive.files()
+            .create(body=file_metadata, media_body=media, fields="id")
+            .execute()
         )
-        google_drive.files().create(
-            body=file_metadata, media_body=media, fields="id"
-        ).execute()
+    except OSError as e:
+        frappe.throw(("Google Drive - Could not locate - {0}").format(e))
+
+    return "Google Drive Backup Successful."
+
+
+@frappe.whitelist()
+def update_file_on_drive(file_url, file_id, file_name=None, mimetype="image/jpeg"):
+    # Get Google Drive Object
+    google_drive = get_google_drive_object()
+    if file_name:
+        file_metadata = {"name": file_name}
+
+    try:
+        media = MediaFileUpload(get_absolute_path(file_url), mimetype, resumable=True)
+        result = (
+            google_drive.files()
+            .update(fileId=file_id, body=file_metadata, media_body=media, fields="id")
+            .execute()
+        )
+        return result
     except OSError as e:
         frappe.throw(("Google Drive - Could not locate - {0}").format(e))
 
@@ -190,7 +213,8 @@ def find_file_by_name_and_folder(file_name, root_folder_id):
         if not root_folder_id or not file_name:
             return False
         google_drive = get_google_drive_object()
-        query = f"name='{file_name}' and '{root_folder_id}' in parents"
+        encoded_file_name = generate_name_for_drive(file_name)
+        query = f"name='{encoded_file_name}' and '{root_folder_id}' in parents"
 
         results = google_drive.files().list(q=query, fields="files(id, name)").execute()
         files = results.get("files", [])
@@ -275,6 +299,16 @@ def upload_file(file_url, folder_name, root_folder=None):
     return "Queued Successfully"
 
 
+def schedule_delete_file_from_drive(file_id):
+    frappe.enqueue(
+        "edu_quality.edu_quality.api.google_drive_upload.delete_file_from_drive",
+        queue="long",
+        timeout=1800,
+        file_id=file_id,
+    )
+
+
+@frappe.whitelist()
 def delete_file_from_drive(file_id):
     try:
         google_drive = get_google_drive_object()
@@ -296,3 +330,9 @@ def progress_callback(request_id, response, exception):
             ),
             "%",
         )
+
+
+def generate_name_for_drive(file_name):
+    if not file_name:
+        return ""
+    return file_name.replace("\\", "\\\\").replace("'", r"\'")

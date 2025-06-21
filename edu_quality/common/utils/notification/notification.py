@@ -40,3 +40,33 @@ def create_notification_log(variables):
     notification_log.document_name = notification_log.name
     notification_log.save(ignore_permissions=True)
 
+
+def create_notification_log_for_counselor(doc):
+    subject = f"Student Application Completion For {doc.first_name} {doc.last_name}"
+    # url = get_url()
+    email_content = (
+        "Student Application Completion"
+    )
+
+    notification_doc = {
+        "type": "Assignment",
+        "document_type": "Student Applicant",
+        "subject": subject,
+        "document_name": doc.name,
+        "email_content": email_content,
+    }
+    notification = frappe.new_doc("Notification Log")
+    notification.update(notification_doc)
+    notification.for_user = doc.owner
+    notification.insert(ignore_permissions=True)
+
+
+
+def check_user_role(variables):
+    doc = variables.get("doc")
+    check_role = True
+    if "Guardian" in frappe.get_roles(frappe.session.user):
+        check_role = True
+    else:
+        check_role = False
+    variables['check_role'] = check_role

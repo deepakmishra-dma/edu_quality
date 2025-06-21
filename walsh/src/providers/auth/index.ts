@@ -2,11 +2,8 @@ import {AuthBindings} from "@refinedev/core";
 
 export const authProvider: AuthBindings = {
   login: async ({phone, otp}) => {
-    console.log({
-      phone,
-      otp,
-    })
-
+    // @ts-expect-error undefined
+    const pushToken = window.getPushNotificationToken?.();
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
 
@@ -14,15 +11,16 @@ export const authProvider: AuthBindings = {
       method: 'POST',
       headers: myHeaders,
       body: JSON.stringify({
-        "phone_no": phone,
-        "otp": otp
+        phone_no: phone,
+        otp: otp,
+        push_token: pushToken || undefined
       }),
       redirect: 'follow'
     })
     const data = await response.json()
     const message = data?.message
 
-    if (message.success) {
+    if (message?.success) {
       return {
         success: true,
         redirectTo: "/",
@@ -38,9 +36,34 @@ export const authProvider: AuthBindings = {
     };
   },
   logout: async () => {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+
+    // @ts-expect-error undefined
+    const pushToken = window.getPushNotificationToken?.();
+
+    const response = await fetch("/api/method/edu_quality.public.py.walsh.login.logout", {
+      method: 'POST',
+      headers: myHeaders,
+      body: JSON.stringify({
+        push_token: pushToken || undefined
+      }),
+      redirect: 'follow'
+    })
+    const data = await response.json()
+    const message = data?.message
+    if (message.success) {
+      return {
+        success: true,
+        redirectTo: "/",
+      };
+    }
     return {
-      success: true,
-      redirectTo: "/login",
+      success: false,
+      error: {
+        name: "Logout Error",
+        message: message.error_message,
+      },
     };
   },
   check: async () => {

@@ -1,0 +1,147 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:PTM-{academic_year}-{division}-{teacher}-{#####}",
+ "creation": "2024-04-17 12:43:56.312893",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "academic_year",
+  "division",
+  "period",
+  "day",
+  "slot",
+  "gmeet_link",
+  "column_break_xtid",
+  "branch",
+  "group",
+  "subject",
+  "teacher_alias",
+  "teacher",
+  "date",
+  "is_gmeet_generated",
+  "is_notified"
+ ],
+ "fields": [
+  {
+   "fieldname": "academic_year",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Academic Year",
+   "options": "Academic Year",
+   "reqd": 1
+  },
+  {
+   "fieldname": "branch",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "School",
+   "options": "School",
+   "reqd": 1
+  },
+  {
+   "fieldname": "day",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Day",
+   "reqd": 1
+  },
+  {
+   "fieldname": "teacher",
+   "fieldtype": "Link",
+   "label": "Teacher",
+   "options": "Instructor",
+   "reqd": 1
+  },
+  {
+   "description": "Fomat Example :- 11:00 AM - 01:00 PM",
+   "fieldname": "slot",
+   "fieldtype": "Data",
+   "label": "Slot"
+  },
+  {
+   "fieldname": "column_break_xtid",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "group",
+   "fieldtype": "Data",
+   "label": "Group",
+   "reqd": 1
+  },
+  {
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "label": "Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "gmeet_link",
+   "fieldtype": "Data",
+   "label": "Gmeet Link"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_gmeet_generated",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Is Generated"
+  },
+  {
+   "fieldname": "division",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Division",
+   "options": "Student Group",
+   "reqd": 1
+  },
+  {
+   "fieldname": "subject",
+   "fieldtype": "Data",
+   "label": "Subject"
+  },
+  {
+   "fieldname": "teacher_alias",
+   "fieldtype": "Link",
+   "label": "Teacher Alias",
+   "options": "Teacher Alias"
+  },
+  {
+   "fieldname": "period",
+   "fieldtype": "Data",
+   "label": "Period"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_notified",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Is Notified"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-04-26 15:24:39.398838",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "PTM Scheduler",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

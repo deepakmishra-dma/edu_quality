@@ -1,0 +1,64 @@
+
+{%- block head_include %}
+<link rel="stylesheet" href="{{site_url}}/assets/frappe/css/fonts/fontawesome/font-awesome.min.css">
+{% endblock -%}
+<style>
+  @page {
+    size: A4 Landscape;
+    margin: 0;
+    padding: 0;
+  }
+  
+  @font-face {
+      font-family: "Arial";
+      src: url("/assets/edu_quality/fonts/arial.ttf"); 
+      font-weight: normal;/* EOT file for IE */
+    }
+    @font-face {
+      font-family: "Arial";
+      src: url("/assets/edu_quality/fonts/arialbd.ttf");
+      font-weight: bold; /* EOT file for IE */
+    }
+    @font-face {
+      font-family: "Arial";
+      src: url("/assets/edu_quality/fonts/arialbd.ttf");
+      font-weight: 600; /* EOT file for IE */
+    }
+    @font-face {
+      font-family: "Arial";
+      src: url("/assets/edu_quality/fonts/arialbd.ttf");
+      font-weight: 800; /* EOT file for IE */
+    }
+    @font-face {
+      font-family: "Arial";
+      src: url("/assets/edu_quality/fonts/arialbd.ttf");
+      font-weight: 900; /* EOT file for IE */
+    }
+  .page {
+    display: flex;
+    padding-left:12px;
+    padding-right: 12px;
+    width: 100%;
+   
+  }
+
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+</style>
+
+{% for enrollment_array in program_enrollments %}
+<div class="container-fluid page">
+  
+    {% for enrollment in range(0,(enrollment_array|length)) %}
+    {% set enroll_template =
+    frappe.render_template("edu_quality/templates/pdf/permanent_id_card.html",{'doc':enrollment_array[enrollment],
+    'bg_image': background_images[enrollment_array[enrollment].name], 'div_name': divisions[enrollment_array[enrollment].name],
+    'house': house_colors[enrollment_array[enrollment].name], 'site_url': site_url, 'batch_num': batch_numbers[enrollment_array[enrollment].name]}) %}
+ {{enroll_template}}
+    {% endfor %}
+  </div>
+</div>
+{% endfor %}

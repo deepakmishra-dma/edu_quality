@@ -100,7 +100,7 @@ class RolloverTool(Document):
 				prog_enrollment.academic_year = next_academic_year()
 				prog_enrollment.student_group = stud.next_division
 				prog_enrollment.save()
-				prog_enrollment.submit()
+				# prog_enrollment.submit()
 		frappe.msgprint(_("{0} Students have been enrolled").format(total))
 	
 	def fees_setup_validation(self,programs):
@@ -121,39 +121,45 @@ class RolloverTool(Document):
 			total = len(programs)
 			self.fees_setup_validation(programs)
 			for program in programs:
+				next_program = None
 				error_data = []
 				frappe.publish_realtime(
 							"program_enrollment_tool", dict(progress=[i + 1, total]), user=frappe.session.user
 								)
 				#skip senior kg and last class in school
-				if i== len(programs)-1 or "Senior KG" in program.name:
-					continue
-				else:
-					next_program = programs[i+1]
-					next_yr =  next_academic_year(self.academic_year)
-					students = self.get_students(program.name)
-					for j,student in enumerate(students):
-						division = self.get_division(student,next_program.name)
-						if not division:
-							error_data.append({
-										"student": student.student,
-										"student_name": student.student_name,
-										"current_class": program.name,
-										"next_class": next_program.name,
-										"current_division": frappe.db.get_value("Program Enrollment",{"student":student.student,"academic_year":self.academic_year},'student_group'),
-									})
-						else:
-							if not frappe.db.exists("Program Enrollment",{"student":student.student,"academic_year":next_yr}):
-								prog_enrollment = frappe.new_doc("Program Enrollment")
-								prog_enrollment.student = student.student
-								prog_enrollment.student_name = student.student_name
-								prog_enrollment.program = next_program.name
-								prog_enrollment.academic_year = next_yr
-								prog_enrollment.student_group = division
-								prog_enrollment.save()
-								if not student.possible_dropout:
-									prog_enrollment.submit()
-									frappe.db.set_value("Student",student.student,"student_status","Current student")
+				if "Senior KG" in program.name:
+					continue #manual case
+				elif i==len(programs)-1:
+					if not frappe.db.exists("Program",{'school':self.school,"sequence":program.sequence+1}):
+						continue #last class
+					else:
+						next_program = frappe.db.get_value("Program",{'school':self.school,"sequence":program.sequence+1},["name","sequence","school"],as_dict=True)
+				next_program = next_program or programs[i+1]
+
+				next_yr =  next_academic_year(self.academic_year)
+				students = self.get_students(program.name)
+				for j,student in enumerate(students):
+					division = self.get_division(student,next_program.name)
+					if not division:
+						error_data.append({
+									"student": student.student,
+									"student_name": student.student_name,
+									"current_class": program.name,
+									"next_class": next_program.name,
+									"current_division": frappe.db.get_value("Program Enrollment",{"student":student.student,"academic_year":self.academic_year},'student_group'),
+								})
+					else:
+						if not frappe.db.exists("Program Enrollment",{"student":student.student,"academic_year":next_yr}):
+							prog_enrollment = frappe.new_doc("Program Enrollment")
+							prog_enrollment.student = student.student
+							prog_enrollment.student_name = student.student_name
+							prog_enrollment.program = next_program.name
+							prog_enrollment.academic_year = next_yr
+							prog_enrollment.student_group = division
+							prog_enrollment.save()
+							if not student.possible_dropout:
+								# prog_enrollment.submit()
+								frappe.db.set_value("Student",student.student,"student_status","Current student")
 				i+=1
 				if error_data:
 					self.add_to_table(error_data)

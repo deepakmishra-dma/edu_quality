@@ -3,7 +3,7 @@ import erpnext
 from education.education.doctype.fees.fees import Fees
 from erpnext.accounts.utils import get_account_currency, get_fiscal_years, validate_fiscal_year
 from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
-	get_accounting_dimensions,
+    get_accounting_dimensions,
 )
 from frappe.utils import (
     add_days,
@@ -22,13 +22,202 @@ from frappe import _, bold, throw
 from erpnext.accounts.general_ledger import make_gl_entries
 from erpnext.accounts.general_ledger import make_reverse_gl_entries
 from edu_quality.edu_quality.server_scripts.payment_split import generate_split_payment
+from frappe.desk.query_report import run
+
 
 class CustomFees(Fees):
+    @frappe.whitelist()
+    def get_uncreated_payment_terms(self):
+        terms = []
+        for term in self.payment_schedule:
+            if not frappe.db.exists("Payment Request",{'reference_name':self.name,'payment_term':term.payment_term,'docstatus':1}):
+                terms.append(term.payment_term)
+        return terms
+
+    @frappe.whitelist()
+    def create_payment_request(self,payment_term):
+        if not payment_term:
+            return frappe.throw("Invalid Payment Term!")
+        elif frappe.db.exists("Payment Request",{'reference_name':self.name,'payment_term':payment_term,'docstatus':1}):
+            return frappe.throw("Payment Request already created!")
+        else:
+            frappe.enqueue(
+                "edu_quality.public.py.student.create_payment_request",
+                fee=self,
+                term = payment_term,
+                is_async=True,
+                queue="long",
+                timeout=1800,
+            )
+            return frappe.msgprint("Payment Request Generation is enqueued!")
+    
+    def deduct_from_deposit(self,deposit_amount,deposit_account):
+        if self.outstanding_amount <=deposit_amount:
+            pending_fees = self.company_wise_pending_fees()
+        else:
+            remaining_deposit = 0
+            company_list = self.company_wise_balance()
+            split_amount = deposit_amount/len(company_list)
+            for company in company_list:
+                if company.balance >= split_amount:
+                    self.reverse_partial_amount(company.company,split_amount,deposit=1)
+                    company.balance -= split_amount
+                else:
+                    self.reverse_partial_amount(company.company,company.balance,deposit=1)
+                    remaining_deposit += split_amount - company.balance
+                    company.balance = 0 
+            while remaining_deposit > 0:
+                for company in company_list:
+                    if company.balance >= remaining_deposit:
+                        self.reverse_partial_amount(company.company,remaining_deposit,deposit=1)
+                        company.balance -= remaining_deposit
+                        remaining_deposit = 0
+                    else:
+                        self.reverse_partial_amount(company.company,company.balance,deposit=1)
+                        remaining_deposit = remaining_deposit - company.balance
+                        company.balance = 0
+            
+
+
+
+
     def generate_split(self):
         generate_split_payment(self)
 
     def update_split(self):
         generate_split_payment(self,update=1)
+        
+    def on_cancel(self):
+        self.ignore_linked_doctypes = ("GL Entry", "Payment Ledger Entry","Journal Entry")
+        make_reverse_gl_entries(voucher_type=self.doctype, voucher_no=self.name)
+        # frappe.db.set(self, 'status', 'Cancelled')
+
+    def reverse_pending_fees(self):
+        if not self.outstanding_amount < self.grand_total:
+            return frappe.throw("Fees has not been paid!")
+        return self.company_wise_pending_fees()
+    
+    def company_wise_balance(self):
+        result = []
+        company_list = frappe.get_all("Company")
+        for company in company_list:
+            company_doc = frappe.get_doc("Company",company.name)
+            filter = {
+                "company":company.name,
+                "from_date":str(self.posting_date),
+                "to_date":frappe.utils.nowdate(),
+                "account":[company_doc.default_receivable_account],
+                "party_type":"Student",
+                "party":[self.student],
+                "party_name":self.student,
+                "group_by":"Group by Voucher (Consolidated)",
+                "cost_center":[],
+                "school":[],
+                "program":[],
+                "project":[],
+                "include_dimensions":1,
+                "include_default_book_entries":1,
+                "show_remarks":1}
+            report = run(report_name="General Ledger",filters=filter,user="Administrator")
+            balance = report['result'][-1]['balance']
+            result.append({"company":company,"balance":balance})
+        return result
+        
+    def company_wise_pending_fees(self,deposit=0):
+        result = self.company_wise_balance()
+        for company in result:
+            if company.balance > 0:
+                self.reverse_partial_amount(company.company,company.balance,deposit)
+        return 1
+
+    def reverse_partial_amount(self,company,amount,deposit):
+        entries = []
+
+        account = company.custom_default_concession_account
+        if deposit:
+            account = company.default_cash_account
+
+        entries.append(self.get_gl_dict(
+                                    {
+                                        "company": company.name,
+                                        "posting_date":frappe.utils.nowdate(),
+                                        "account": account,
+                                        "party_type": "Student",
+                                        "party": self.student,
+                                        "against": company.default_receivable_account,
+                                        "debit": amount,
+                                        "debit_in_account_currency":amount,
+                                        "against_voucher": self.name,
+                                        "against_voucher_type": self.doctype,
+                                        "cost_center": company.cost_center
+                                    },
+                                    item=self,
+                                ))
+        entries.append(self.get_gl_dict(
+                                        {
+                                            "company": company.name,
+                                            "posting_date":frappe.utils.nowdate(),
+                                            "account": company.default_receivable_account,
+                                            "against": self.student,
+                                            "credit": amount,
+                                            "credit_in_account_currency":amount,
+                                            "cost_center": company.cost_center,
+                                            "against_voucher": self.name,
+                                            "against_voucher_type": self.doctype,
+                                            "party_type": "Student",
+                                            "party": self.student
+                                        },
+                                        item=self,
+                                    ))
+        make_gl_entries(
+            entries,
+            update_outstanding="No",
+            merge_entries=False,
+        )
+
+    def deposit_adjustment_entry(self,amount):
+        company = frappe.get_doc("Company","Unique Educational and Sports Foundation")
+        entries = []
+
+        entries.append(self.get_gl_dict(
+                                    {
+                                        "company": company.name,
+                                        "posting_date":frappe.utils.nowdate(),
+                                        "account": company.default_deposit_account,
+                                        "party_type": "Student",
+                                        "party": self.student,
+                                        "against": company.default_cash_account,
+                                        "debit": amount,
+                                        "debit_in_account_currency":amount,
+                                        "against_voucher": self.name,
+                                        "against_voucher_type": self.doctype,
+                                        "cost_center": company.cost_center
+                                    },
+                                    item=self,
+                                ))
+        entries.append(self.get_gl_dict(
+                                        {
+                                            "company": company.name,
+                                            "posting_date":frappe.utils.nowdate(),
+                                            "account": company.default_cash_account,
+                                            "against": self.student,
+                                            "credit": amount,
+                                            "credit_in_account_currency":amount,
+                                            "cost_center": company.cost_center,
+                                            "against_voucher": self.name,
+                                            "against_voucher_type": self.doctype,
+                                            "party_type": "Student",
+                                            "party": self.student
+                                        },
+                                        item=self,
+                                    ))
+        make_gl_entries(
+            entries,
+            update_outstanding="No",
+            merge_entries=False,
+        )
+
+
 
 
     def make_gl_entries(self):
@@ -165,13 +354,42 @@ class CustomFees(Fees):
 
     def get_company_splits(self):
         try:
+            entries = []
             fee_advance_entries, fee_advance = get_fee_advance_entries(self)
             update_componant(self, fee_advance)
             student_entries = {}
             fee_entries = {}
             for component in self.components:
-                receivable_account, income_account,cost_center = frappe.db.get_value("Company", component.custom_company,["default_receivable_account","default_income_account","cost_center"])
-                if receivable_account in student_entries:
+                receivable_account, sales,cost_center,deposit_account = frappe.db.get_value("Company", component.custom_company,["default_receivable_account","default_income_account","cost_center","default_deposit_account"])
+                income_account = sales
+                if "deposit" in str(component.fees_category).lower():
+                        entries.append(self.get_gl_dict(
+                                                {
+                                                    "company": component.custom_company,
+                                                    "account": receivable_account,
+                                                    "party_type": "Student",
+                                                    "party": self.student,
+                                                    "against": deposit_account,
+                                                    "debit": component.amount,
+                                                    "debit_in_account_currency": component.amount,
+                                                    "against_voucher": self.name,
+                                                    "against_voucher_type": self.doctype
+                                                },
+                                                item=self,
+                                            ))
+                        entries.append(self.get_gl_dict(
+                                        {
+                                            "company": component.custom_company,
+                                            "account": deposit_account,
+                                            "against": self.student,
+                                            "credit": component.amount,
+                                            "credit_in_account_currency": component.amount,
+                                            "cost_center": cost_center
+                                        },
+                                        item=self,
+                                    ))
+                        continue
+                if receivable_account in student_entries: 
                     student_entries[receivable_account].debit += component.amount
                     student_entries[receivable_account].debit_in_account_currency += component.amount
                     fee_entries[income_account].credit += component.amount 
@@ -202,10 +420,13 @@ class CustomFees(Fees):
                                     },
                                     item=self,
                                 ))
-            entries = []
             for i in student_entries.values():
+                if int(i.get("debit")) == 0 and int(i.get("credit")) == 0:
+                    continue
                 entries.append(i)
             for j in fee_entries.values():
+                if int(i.get("debit")) == 0 and int(i.get("credit")) == 0:
+                    continue
                 entries.append(j)
             entries.extend(fee_advance_entries if fee_advance_entries else [])
             return entries
@@ -236,6 +457,7 @@ def before_save(doc,method=None):
                     "custom_company": component.custom_company,
                     "rte_excempt": 0,
                     "school": component.school,
+                    'label': component.label,
                     "doctype": "Fee Component"
                     })
 
@@ -247,36 +469,36 @@ def update_fee_components(doc):
 
 @erpnext.allow_regional
 def update_gl_dict_with_regional_fields(doc, gl_dict):
-	pass
+    pass
 
 def set_balance_in_account_currency(
-	gl_dict, account_currency=None, conversion_rate=None, company_currency=None
+    gl_dict, account_currency=None, conversion_rate=None, company_currency=None
 ):
-	if (not conversion_rate) and (account_currency != company_currency):
-		frappe.throw(
-			_("Account: {0} with currency: {1} can not be selected").format(
-				gl_dict.account, account_currency
-			)
-		)
+    if (not conversion_rate) and (account_currency != company_currency):
+        frappe.throw(
+            _("Account: {0} with currency: {1} can not be selected").format(
+                gl_dict.account, account_currency
+            )
+        )
 
-	gl_dict["account_currency"] = (
-		company_currency if account_currency == company_currency else account_currency
-	)
+    gl_dict["account_currency"] = (
+        company_currency if account_currency == company_currency else account_currency
+    )
 
-	# set debit/credit in account currency if not provided
-	if flt(gl_dict.debit) and not flt(gl_dict.debit_in_account_currency):
-		gl_dict.debit_in_account_currency = (
-			gl_dict.debit
-			if account_currency == company_currency
-			else flt(gl_dict.debit / conversion_rate, 2)
-		)
+    # set debit/credit in account currency if not provided
+    if flt(gl_dict.debit) and not flt(gl_dict.debit_in_account_currency):
+        gl_dict.debit_in_account_currency = (
+            gl_dict.debit
+            if account_currency == company_currency
+            else flt(gl_dict.debit / conversion_rate, 2)
+        )
 
-	if flt(gl_dict.credit) and not flt(gl_dict.credit_in_account_currency):
-		gl_dict.credit_in_account_currency = (
-			gl_dict.credit
-			if account_currency == company_currency
-			else flt(gl_dict.credit / conversion_rate, 2)
-		)
+    if flt(gl_dict.credit) and not flt(gl_dict.credit_in_account_currency):
+        gl_dict.credit_in_account_currency = (
+            gl_dict.credit
+            if account_currency == company_currency
+            else flt(gl_dict.credit / conversion_rate, 2)
+        )
           
 
 def get_fee_advance_entries(fees):
@@ -326,10 +548,10 @@ def get_fee_advance_entries(fees):
              
         
     entries = []
-    for i in student_entries.values():
-        entries.append(i)
-    for j in fee_entries.values():
-        entries.append(j)
+    # for i in student_entries.values(): #financial rollover
+    #     entries.append(i)
+    # for j in fee_entries.values():
+    #     entries.append(j)
 
     return entries, fee_advance
 

@@ -1,0 +1,161 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:TT-{###}",
+ "creation": "2024-03-04 16:45:36.593247",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "class_details_section",
+  "school",
+  "column_break_3ry7c",
+  "class",
+  "column_break_qrflj",
+  "division",
+  "timings_section",
+  "day",
+  "column_break_r6mdl",
+  "from_time",
+  "column_break_5o1pm",
+  "to_time",
+  "subject_details_section",
+  "subject",
+  "column_break_yg1aq",
+  "subject_type",
+  "column_break_0ybqc",
+  "type"
+ ],
+ "fields": [
+  {
+   "fieldname": "school",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "School",
+   "options": "School",
+   "reqd": 1
+  },
+  {
+   "fieldname": "class",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Class",
+   "options": "Program",
+   "reqd": 1
+  },
+  {
+   "fieldname": "division",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Division",
+   "options": "Student Group",
+   "reqd": 1
+  },
+  {
+   "fieldname": "day",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Day",
+   "options": "Monday\nTuesday\nWednesday\nThursday\nFriday\nSaturday\nSunday",
+   "reqd": 1
+  },
+  {
+   "fieldname": "from_time",
+   "fieldtype": "Time",
+   "label": "From Time",
+   "reqd": 1
+  },
+  {
+   "fieldname": "to_time",
+   "fieldtype": "Time",
+   "label": "To Time",
+   "reqd": 1
+  },
+  {
+   "fieldname": "subject",
+   "fieldtype": "Link",
+   "label": "Subject",
+   "options": "Course",
+   "reqd": 1
+  },
+  {
+   "fieldname": "subject_type",
+   "fieldtype": "Link",
+   "label": "Subject Type",
+   "options": "Subject Type",
+   "reqd": 1
+  },
+  {
+   "fieldname": "type",
+   "fieldtype": "Select",
+   "label": "Type",
+   "options": "Exam\nRegular\nEvent",
+   "reqd": 1
+  },
+  {
+   "fieldname": "class_details_section",
+   "fieldtype": "Section Break",
+   "label": "Class Details"
+  },
+  {
+   "fieldname": "timings_section",
+   "fieldtype": "Section Break",
+   "label": "Timings"
+  },
+  {
+   "fieldname": "subject_details_section",
+   "fieldtype": "Section Break",
+   "label": "Subject Details"
+  },
+  {
+   "fieldname": "column_break_3ry7c",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_qrflj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_r6mdl",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_5o1pm",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_yg1aq",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_0ybqc",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-03-04 16:52:53.393090",
+ "modified_by": "Administrator",
+ "module": "Attendance",
+ "name": "Timetable",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

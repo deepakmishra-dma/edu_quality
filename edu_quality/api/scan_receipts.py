@@ -6,6 +6,16 @@ from frappe.utils import cint, cstr, flt, get_link_to_form
 # edu_quality.api.scan_receipts.find_url_to_redirect_to
 @frappe.whitelist()
 def find_url_to_redirect_to(key):
+    roles = frappe.get_roles()
+    if (
+        "Watchman" in roles
+        and not "Administrator" in roles
+        and not "System Manager" in roles
+    ):
+        if frappe.db.exists("Purchase Receipt", key):
+            receipt_doc = frappe.get_doc("Purchase Receipt", key)
+            receipt_doc.workflow_state = "Received"
+            return receipt_doc.save(ignore_permissions=True)
     if frappe.db.exists("Purchase Order", key, cache=True):
         return f"/purchase-order/{key}"
     if frappe.db.exists("Purchase Receipt", key, cache=True):

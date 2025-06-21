@@ -8,7 +8,9 @@
  "field_order": [
   "school",
   "division",
-  "teacher"
+  "teacher",
+  "real_date",
+  "real_date_updated_on"
  ],
  "fields": [
   {
@@ -31,12 +33,25 @@
    "in_list_view": 1,
    "label": "School",
    "options": "School"
+  },
+  {
+   "fieldname": "real_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Real Date"
+  },
+  {
+   "fieldname": "real_date_updated_on",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Real Date Updated On",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2023-11-29 08:00:15.293148",
+ "modified": "2024-04-10 14:18:45.334528",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "CMAP Assignment",

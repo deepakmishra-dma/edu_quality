@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 
 import frappe
-from frappe.query_builder.functions import Count
+from frappe.query_builder.functions import Count, Max
 from frappe.utils import parse_json, today, getdate
 from edu_quality.edu_quality.server_scripts.utils import calculate_strength_previous
 
@@ -154,17 +154,42 @@ def get_columns(filters):
     return columns
 
 
-def transform_data(program_enrollments, CMAPS, class_filter):
+def transform_data(
+    program_enrollments, CMAPS, class_filter, products_max_data, products_rec_data
+):
     # converting the dict array received to a hashmap
     converted_dict = {item["program"]: item["count"] for item in program_enrollments}
+    max_hash = {}
+    for i in products_max_data:
+        item_code = i.get("item_code")
+        max_hash[item_code] = i
+    products_rec_hash = {}
+    for i in products_rec_data:
+        item_code = i.get("item_code")
+        products_rec_hash[item_code] = i
+
     data = []
     school_fields = generate_school_fields(class_filter)
     for i in CMAPS:
         for school in school_fields:
+            if i.get("product_code") in max_hash:
+                i["sent_to_print"] = max_hash[i.get("product_code")].get("transaction")
+                i["sent_by"] = max_hash[i.get("product_code")].get("sent_by")
+            if i.get("product_code") in products_rec_hash:
+                i["received_from_printer_on"] = products_rec_hash[
+                    i.get("product_code")
+                ].get("received_date")
+                i["received_by"] = products_rec_hash[i.get("product_code")].get(
+                    "received_by"
+                )
+
             i[school.get("fieldname")] = (
                 converted_dict.get(f'{i.get("class")}-{school.get("label")}', 0) or 0
             )
-            i[f"extra_{school.get('fieldname')}"] = 30
+
+            i[f"extra_{school.get('fieldname')}"] = frappe.db.get_value(
+                "School", school.get("label"), "custom_extra_print_qty"
+            )
 
         i["total_quantity"] = get_school_fields_sum(i)
 
@@ -190,6 +215,11 @@ def get_data_from_queries(filters=None):
     item_detail = frappe.qb.DocType("Item Detail")
     cmap = frappe.qb.DocType("CMAP")
     item = frappe.qb.DocType("Item")
+    purchase_ord_table = frappe.qb.DocType("Purchase Order")
+    purchase_ord_item_table = frappe.qb.DocType("Purchase Order Item")
+    purchase_rec_table = frappe.qb.DocType("Purchase Receipt")
+    purchase_rec_item_table = frappe.qb.DocType("Purchase Receipt Item")
+
     item_group = frappe.qb.DocType("Item Group")
     class_filter = filters.get("class")
     subject_filter = filters.get("subject")
@@ -208,6 +238,7 @@ def get_data_from_queries(filters=None):
             & (cmap["class"] == class_filter)
             & (cmap.subject.isin(subject_filter if len(subject_filter) else [None]))
             & (cmap.unit.isin(unit_filter if len(unit_filter) else [None]))
+            & (cmap.reserved_for_portion_circular == 0)
             & (
                 (
                     cmap.plan_date[
@@ -249,44 +280,64 @@ def get_data_from_queries(filters=None):
     )
     qty_needed_for_schools_query = ""
 
-    if academic_year_doc.custom_next_academic_year:
-        qty_needed_for_schools = []
-        schools = frappe.db.get_list("School")
-        schools = [school.get("name") for school in schools]
-
-        for school in schools:
-            try:
-                projected_strength = calculate_strength_previous(
-                    f"{class_filter}-{school}", filters.get("academic_year")
-                )
-            except Exception as e:
-                frappe.errprint(str(e))
-                projected_strength = 0
-
-            qty_needed_for_schools.append(
-                {
-                    "count": projected_strength,
-                    "program": f"{class_filter}-{school}",
-                }
-            )
-
-    else:
-        qty_needed_for_schools_query = (
-            frappe.qb.from_(student)
-            .inner_join(program_enrollment)
-            .on(student.name == program_enrollment.student)
-            .where(
-                (student.student_status.isin(["Current student", "Defaulter"]))
-                & (program_enrollment.academic_year == filters.get("academic_year"))
-                & (program_enrollment.program.like(f'{filters.get("class")}-%'))
-            )
-            .groupby(program_enrollment.program)
-            .select(count_all, program_enrollment.program)
+    qty_needed_for_schools_query = (
+        frappe.qb.from_(student)
+        .inner_join(program_enrollment)
+        .on(student.name == program_enrollment.student)
+        .where(
+            (program_enrollment.academic_year == filters.get("academic_year"))
+            & (program_enrollment.program.like(f'{filters.get("class")}-%'))
         )
-        qty_needed_for_schools = qty_needed_for_schools_query.run(as_dict=True)
+        .groupby(program_enrollment.program)
+        .select(count_all, program_enrollment.program)
+    )
+
+    products = [i.get("product_code") for i in cmap_data]
+    products_max_query = (
+        frappe.qb.from_(purchase_ord_item_table)
+        .inner_join(purchase_ord_table)
+        .on(purchase_ord_item_table.parent == purchase_ord_table.name)
+        .where(
+            (purchase_ord_item_table.item_code.isin(products or [None]))
+            & (purchase_ord_table.custom_class == filters.get("class"))
+        )
+        .groupby(purchase_ord_item_table.item_code)
+        .select(
+            purchase_ord_item_table.item_code,
+            Max(purchase_ord_table.transaction_date).as_("transaction"),
+            purchase_ord_table.custom_sent_by.as_("sent_by"),
+            purchase_ord_table.name,
+        )
+    )
+
+    # products_query = frappe.qb.from_(purchase_ord_item_table).inner_join(group_products_query)
+    products_max_data = products_max_query.run(as_dict=True)
+    purchase_orders = [i.get("name") for i in products_max_data]
+
+    products_rec_query = (
+        frappe.qb.from_(purchase_rec_item_table)
+        .inner_join(purchase_rec_table)
+        .on(purchase_rec_table.name == purchase_rec_item_table.parent)
+        .where(purchase_rec_item_table.purchase_order.isin(purchase_orders or [None]))
+        .groupby(purchase_rec_item_table.purchase_order)
+        .select(
+            purchase_rec_item_table.item_code,
+            Max(purchase_rec_table.custom_receiving_date).as_("received_date"),
+            Max(purchase_rec_table.custom_received_by).as_("received_by"),
+        )
+    )
+
+    products_rec_data = products_rec_query.run(as_dict=True)
+    qty_needed_for_schools = qty_needed_for_schools_query.run(as_dict=True)
 
     frappe.errprint(qty_needed_for_schools)
-    return transform_data(qty_needed_for_schools, cmap_data, class_filter)
+    return transform_data(
+        qty_needed_for_schools,
+        cmap_data,
+        class_filter,
+        products_max_data,
+        products_rec_data,
+    )
 
 
 def execute(filters=None):
@@ -298,7 +349,7 @@ def execute(filters=None):
 
 
 @frappe.whitelist()
-def create_purchase_order(rows, academic_year=None):
+def create_purchase_order(rows, academic_year=None, class_name=None):
     if isinstance(rows, str):
         rows = parse_json(rows)
 
@@ -310,6 +361,7 @@ def create_purchase_order(rows, academic_year=None):
             "items": [],
             "supplier": "Printer",
             "custom_is_cmap_print": 1,
+            "custom_class": class_name,
             "custom_academic_year": academic_year,
         }
     )

@@ -68,7 +68,7 @@ frappe.ui.form.on('Broadcast Group', {
 	// }
 	refresh: function (frm) {
 		frm.add_custom_button(__("Broadcast Message"), async function () {
-			const templates = await (await fetch('/api/resource/WhatsApp Template')).json()
+			const templates = await (await fetch('/api/resource/WhatsApp Template?limit=0')).json()
 			const mappedTemplates = templates?.data?.map((template) => { return template.name })
 			const whatsappTemplate = new frappe.ui.Dialog({
 				title: "Select a Whatsapp Template",

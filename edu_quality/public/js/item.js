@@ -1,6 +1,6 @@
 async function getItemCode(frm) {
     hidePrintCheckBtn(frm)
-    if (!frm.doc.custom_subject || !frm.doc.custom_class || !frm.doc.custom_textbook || !frm.doc.custom_chapter || !frm.doc.item_group) return
+    if (!frm.doc.custom_subject || !frm.doc.custom_class || !frm.doc.custom_textbook || !frm.doc.custom_chapter || !frm.doc.item_group || !frm.doc.custom_is_cmap) return
     if (frm.doc.__islocal) {
         frappe.call({
             method: "edu_quality.overrides_hooks.item.calculate_sheet_number",
@@ -35,7 +35,7 @@ async function getItemCode(frm) {
 // }
 function uploadFileButton(frm) {
 
-    frm.get_field('custom_upload_file_to_drive').onclick = function () {
+    frm.get_field('custom_upload_file_to_drive').onclick = async function () {
         if (frm.doc.__islocal) {
             frappe.msgprint({
                 message: __("Please Save the item before uploading product document on drive"),
@@ -44,14 +44,34 @@ function uploadFileButton(frm) {
             });
             return
         }
+        if (!frm.doc.custom_is_cmap) {
+            frappe.msgprint({
+                message: __("Can only upload file if item is of type cmap"),
+                indicator: "red",
+                title: __("Error getting worksheet header")
+            });
+            return
+        }
+        const item_group_doc = await frappe.call({
+            method: "frappe.client.get",
+            args: {
+                doctype: "Item Group",
+                name: frm.doc.item_group,
+            },
+
+        });
+
+
+        const allowed_extensions = item_group_doc?.message?.custom_allowed_file_extensions?.split(",")?.map((ext) => `${ext}`.toLowerCase()) || []
         const input = document.createElement('input');
         input.type = 'file';
-        input.accept = '.pdf,.ppt,.pptx,.ppsx';
+        input.accept = allowed_extensions?.map((ext) => `.${ext}`).join(",");
+
         input.onchange = function () {
             const file = input.files[0];
             if (file) {
                 const ext = file.name.split('.').pop().toLowerCase();
-                if (['pdf', 'ppt', 'pptx', 'ppsx'].includes(ext)) {
+                if (allowed_extensions.includes(ext)) {
                     const form_data = new FormData();
                     form_data.append('file', file);
                     form_data.append('doctype', frm.doctype);
@@ -73,7 +93,7 @@ function uploadFileButton(frm) {
                         console.error('Error:', error);
                     });
                 } else {
-                    frappe.msgprint(__('Please upload only PDF or PowerPoint (PPT/PPTX) files.'));
+                    frappe.msgprint(__(`Please upload only ${allowed_extensions?.map((ext) => `.${ext}`).join(",")} files.`));
                 }
             }
         };
@@ -139,7 +159,9 @@ function appendUrl(frm) {
 }
 frappe.ui.form.on("Item", {
     refresh: function (frm) {
-        console.log(frm, 'hha')
+
+
+
         appendUrl(frm)
         uploadFileButton(frm)
         getLinkedSubject(frm)
@@ -147,7 +169,9 @@ frappe.ui.form.on("Item", {
         // queryTextbook(frm)
         queryTopic(frm)
 
-        if (!frm.doc.__islocal)
+        if (!frm.doc.__islocal) {
+            frm.disable_save()
+            frm.page.set_primary_action(__('Save'), () => customSaveHandler(frm));
             frappe.call({
                 method: "edu_quality.overrides_hooks.item.get_qr_code",
                 args: {
@@ -157,6 +181,8 @@ frappe.ui.form.on("Item", {
             `
                 }
             })
+        }
+
         frm.get_field('custom_view_worksheet_header').onclick = function () {
             if (frm.doc.__islocal) {
                 frappe.msgprint({
@@ -164,6 +190,15 @@ frappe.ui.form.on("Item", {
                     indicator: "red",
                     title: __("Error getting worksheet header")
                 });
+                return
+            }
+            if (!frm.doc.custom_is_cmap) {
+                frappe.msgprint({
+                    message: __("Can only see worksheet Header if item is of type cmap"),
+                    indicator: "red",
+                    title: __("Error getting worksheet header")
+                });
+                return
             }
             if (!frm.doc.__islocal) {
                 window.open(`/api/method/edu_quality.overrides_hooks.item.get_worksheet_template?name=${frm.doc.name}`)
@@ -265,4 +300,50 @@ function getClassSubject(frm) {
     });
 
 
+}
+
+function customSaveHandler(frm) {
+
+    // Your custom logic here
+    // For example, you can display a message
+    let d = new frappe.ui.Dialog({
+        title: 'Reason',
+        fields: [
+            {
+                label: 'Reason for Change(min 10 characters)',
+                fieldname: 'comment',
+                fieldtype: 'Text',
+                onchange: (event) => {
+                    if (event.target.value.length >= 10) {
+                        d.$wrapper.find(".btn-primary").prop('disabled', false)
+                    }
+                    else {
+                        d.$wrapper.find(".btn-primary").prop('disabled', true)
+                    }
+                }
+            },
+
+        ],
+        size: 'small', // small, large, extra-large 
+        primary_action_label: 'Comment and Save',
+        async primary_action(values) {
+            if (!values.comment) return
+
+            await frappe.call({
+                "method": "frappe.desk.form.utils.add_comment",
+                "args": {
+                    reference_doctype: frm.doctype,
+                    reference_name: frm.docname,
+                    content: values.comment,
+                    comment_email: frappe.session.user,
+                    comment_by: frappe.session.user_fullname,
+                }
+            });
+            d.hide();
+            frm.save("Save")
+
+        }
+    });
+    d.$wrapper.find(".btn-primary").prop('disabled', true)
+    d.show();
 }

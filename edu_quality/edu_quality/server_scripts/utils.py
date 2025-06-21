@@ -4,10 +4,7 @@ import json
 
 
 def current_academic_year():
-    filter = [
-        ["Academic Year", "year_start_date", "<=", today()],
-        ["Academic Year", "year_end_date", ">=", today()],
-    ]
+    filter = {"custom_current_academic_year": 1}
     if frappe.db.exists("Academic Year", filter):
         return frappe.db.get_value("Academic Year", filter)
 
@@ -31,7 +28,9 @@ def previous_academic_year(current=None):
     )
     filters = [["Academic Year", "year_end_date", "<=", current_start_date]]
     if frappe.db.exists("Academic Year", filters):
-        return frappe.db.get_all("Academic Year", filters, order_by="year_end_date")[-1].name
+        return frappe.db.get_all("Academic Year", filters, order_by="year_end_date")[
+            -1
+        ].name
 
 
 def is_rolled_over(academic_year=None):
@@ -131,11 +130,13 @@ def get_next_class(current_class):
 
 
 @frappe.whitelist()
-def projected_strength(current_class,academic_year=None):
+def projected_strength(current_class, academic_year=None):
     if not academic_year:
         academic_year = current_academic_year()
     prev_class = get_previous_class(current_class)
-    count = frappe.db.count("Program Enrollment",{"program": prev_class,"academic_year":academic_year})
+    count = frappe.db.count(
+        "Program Enrollment", {"program": prev_class, "academic_year": academic_year}
+    )
     next_class = get_next_class(current_class)
     strength = frappe.db.count(
         "Program Enrollment",
@@ -159,7 +160,7 @@ def get_previous_class(current_class):
         return frappe.db.get_value(
             "Program", {"school": school, "sequence": current_sequence - 1}
         )
-    return frappe.db.get_value("Program",current_class,"previous_class")
+    return frappe.db.get_value("Program", current_class, "previous_class")
 
 
 def calculate_strength_previous(current_class, academic_year=None):
@@ -185,8 +186,6 @@ def calculate_strength_previous(current_class, academic_year=None):
         result = query.run(as_dict=True)
         strength += len(result)
         frappe.errprint(query)
-
-
 
     query = (
         frappe.qb.from_(prog_enroll_table)
@@ -277,12 +276,14 @@ def email_recipients(student, case=0):
 
     return recipients
 
+
 @frappe.whitelist()
-def add_referral(referred_by,referred_student):
+def add_referral(referred_by, referred_student):
     from edu_quality.edu_quality.server_scripts.student_applicant import (
-    add_referral_discount,
+        add_referral_discount,
     )
-    if frappe.db.get_value("Student",referred_student,"referred_by"):
+
+    if frappe.db.get_value("Student", referred_student, "referred_by"):
         return frappe.throw("Student already Referred!")
-    frappe.db.set_value("Student",referred_student,"referred_by",referred_by)
-    add_referral_discount(referred_by)
+    frappe.db.set_value("Student", referred_student, "referred_by", referred_by)
+    return add_referral_discount(referred_by)

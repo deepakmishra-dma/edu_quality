@@ -1,15 +1,18 @@
 // Copyright (c) 2023, Hybrowlabs Technologies and contributors
 // For license information, please see license.txt
-async function getPeriodNo(frm) {
+async function getPeriodNo(frm, ignoreExistingValue = false) {
     if (!frm.doc.subject || !frm.doc.class || !frm.doc.academic_year) return
-    if (frm.doc.__islocal) {
+    if (frm.doc.__islocal || ignoreExistingValue) {
+        if (ignoreExistingValue) {
+            frm.set_value('period', '')
+        }
         frappe.call({
             method: "edu_quality.edu_quality.doctype.cmap.cmap.get_cmap_period_no",
             args: {
                 self: frm.doc
             }, callback: function (r) {
                 // frm.set_value('custom_sheet_number', r.message)
-                if (!frm.doc.period)
+                if (ignoreExistingValue || !frm.doc.period)
                     frm.set_value('period', r.message)
             }
         })
@@ -17,29 +20,51 @@ async function getPeriodNo(frm) {
 
     }
 }
-function getNoteQuery(cur_frm, fieldName, fieldGroup) {
+async function getNoteQuery(cur_frm, fieldName, fieldGroup, options, item) {
+    const field = frappe.meta.get_docfield("Item Detail", fieldName, item)
+    field.options = options || [];
 
-    cur_frm.fields_dict['products'].grid.get_field(fieldName).on_change = function () {
-
-    }
-    cur_frm.fields_dict['products'].grid.get_field(fieldName).get_query = function (doc, cdt, dn) {
-        let d = locals[cdt][dn];
-        return {
-            "query": "edu_quality.edu_quality.doctype.cmap.cmap.get_unique_material_query",
-            "filters": {
-                "parent": d.item,
-                "material_type": fieldGroup,
-
-            },
-        };
-    }
+    cur_frm.refresh_field("products")
 }
-function setupNotesColumns(cur_frm) {
+function updateNoteQuery(cur_frm, res, row_name) {
     const groups = [["broadcast", "Broadcast"], ["parent_note", "Parent Note"], ["home_work", "Home Work"], ["class_work", "Class Work"], ["material_required", "Material Required"]]
-    groups.forEach(array => {
-        getNoteQuery(cur_frm, array[0], array[1])
+    if (res == "EMPTY_IT") {
+        return groups.forEach(array => {
+            getNoteQuery(cur_frm, array[0], array[1],
+                [" "], row_name
+            )
+        })
+    }
+
+    return groups.forEach(array => {
+        getNoteQuery(cur_frm, array[0], array[1],
+            [...(res?.[array[1]] || [null])], row_name
+        )
     })
 }
+async function setupNotesColumns(cur_frm) {
+
+    const EXISTING_ROWS_IN_CHILD_TABLE = cur_frm.fields_dict["products"].grid.grid_rows
+
+    for (row in EXISTING_ROWS_IN_CHILD_TABLE) {
+
+        const item = frappe.model.get_value("Item Detail", EXISTING_ROWS_IN_CHILD_TABLE[row].doc.name, "item")
+        const res = await getProductMaterials(item)
+        updateNoteQuery(cur_frm, res?.message, EXISTING_ROWS_IN_CHILD_TABLE[row].doc.name)
+
+    }
+}
+
+async function getProductMaterials(item) {
+    const res = await frappe.call({
+        method: "edu_quality.edu_quality.doctype.cmap.cmap.get_product_materials",
+        args: {
+            "item_id": item
+        }
+    })
+    return res
+}
+
 async function getProduct(id) {
     const headers = new Headers()
     headers.append('X-Frappe-CSRF-Token', frappe.csrf_token)
@@ -62,44 +87,14 @@ async function checkNotes(type, frm, materialType) {
             "added_items": broadcastItems
         },
         callback: function (r) {
-            console.log(r.message)
+
         }
     });
 
 }
 
 async function getNotes(frm) {
-    // const products = frm.get_field('products').grid.data || []
-    // const data = await Promise.all(products.map(product => {
-    //     return getProduct(product.item)
-    // }))
-    // let optionsHash = {}
 
-    // data.forEach(el => {
-    //     el.forEach(note => {
-    //         if (Array.isArray(optionsHash[note.material_type])) {
-    //             optionsHash[note.material_type].push(note.description)
-    //         }
-    //         else {
-    //             optionsHash[note.material_type] = [note.description]
-    //         }
-    //     })
-    // })
-    // const broadcast = frm.get_field('broadcast')
-    // const homeWork = frm.get_field('home_work')
-    // const classWork = frm.get_field("class_work")
-    // const materialRequired = frm.get_field("material_required")
-    // const parentNote = frm.get_field("parent_note")
-    // broadcast.df.options = optionsHash['Broadcast'] || []
-    // homeWork.df.options = optionsHash['Home Work'] || []
-    // parentNote.df.options = optionsHash['Parent Note'] || []
-    // classWork.df.options = optionsHash['Class Work'] || []
-    // materialRequired.df.options = optionsHash['Material Required'] || []
-    // broadcast.set_options()
-    // homeWork.set_options()
-    // classWork.set_options()
-    // materialRequired.set_options()
-    // parentNote.set_options()
 }
 async function getLinkedSubject(frm) {
     if (frm.doc.class)
@@ -129,16 +124,16 @@ async function getLinkedSubject(frm) {
 
 }
 function texbookQuery(frm) {
-    frm.fields_dict['products'].grid.get_field('textbook').get_query = function (doc, cdt, dn) {
-        let d = locals[cdt][dn];
-        return {
-            "filters": {
-                "subject": cur_frm.doc.subject,
-                "class": cur_frm.doc.class
-            },
+    // frm.fields_dict['products'].grid.get_field('textbook').get_query = function (doc, cdt, dn) {
+    //     let d = locals[cdt][dn];
+    //     return {
+    //         "filters": {
+    //             "subject": cur_frm.doc.subject,
+    //             "class": cur_frm.doc.class
+    //         },
 
-        };
-    }
+    //     };
+    // }
 }
 frappe.ui.form.on("CMAP", {
     refresh(frm) {
@@ -150,7 +145,6 @@ frappe.ui.form.on("CMAP", {
 
             }
         })
-
         getNotes(frm)
         cur_frm.fields_dict['products'].grid.get_field('item_group').get_query = function (doc, cdt, dn) {
             let d = locals[cdt][dn];
@@ -208,6 +202,12 @@ frappe.ui.form.on("CMAP", {
         getPeriodNo(frm)
         texbookQuery(frm)
     }
+    , reserved_for_portion_circular: (frm) => {
+        if (!frm.doc.reserved_for_portion_circular) {
+            return getPeriodNo(frm, true)
+        }
+        getRandomString(frm)
+    }
 
 
 });
@@ -229,13 +229,20 @@ frappe.ui.form.on("Item Detail", {
     material_required: async (frm) => {
         const res = await checkNotes("material_required", frm, "Material Required")
     },
-    item: function (frm, cdt, cdn) {
+    item: async function (frm, cdt, cdn) {
 
         var d = locals[cdt][cdn];
+        if (d.item) {
+            const res = await getProductMaterials(d.item)
+            updateNoteQuery(cur_frm, res?.message, d.name)
+        }
+        else {
+            updateNoteQuery(cur_frm, "EMPTY_IT", d.name)
+        }
         frm.doc.products.forEach(function (row, i) {
 
             if (row.item === d.item && row.name != d.name) {
-                console.log('hi')
+
                 frappe.msgprint('Item you added already exists on the table.');
                 frappe.model.remove_from_locals(cdt, cdn);
                 frm.refresh_field('products');
@@ -244,3 +251,18 @@ frappe.ui.form.on("Item Detail", {
         });
     }
 })
+
+
+async function getRandomString(frm) {
+    if (!frm.doc.reserved_for_portion_circular) return
+
+    frappe.call({
+        method: "edu_quality.edu_quality.doctype.cmap.cmap.id_generator",
+        callback: function (r) {
+            frm.set_value('period', r.message)
+        }
+    })
+
+
+
+}

@@ -24,7 +24,55 @@ from erpnext.accounts.party import get_party_bank_account
 
 
 class CustomPaymentRequest(PaymentRequest):
+
+    def set_as_paid(self):
+        if self.payment_channel == "Phone":
+            self.db_set("status", "Paid")
+
+        else:
+            if self.status != 'Paid':
+                payment_entry = self.create_payment_entry()
+                self.make_invoice()
+                return payment_entry
+
+    def refund_request(self):
+        frappe.set_user("Administrator")
+        doc = frappe.get_doc(self.reference_doctype, self.reference_name)
+        paid_to  = self.bank_account.split()[0]
+        paid_to = frappe.db.get_value("Account",{'account_name':paid_to})
+        payment_entry = frappe.get_doc(
+            {
+                "doctype": "Payment Entry",
+                "payment_type": "Pay",
+                "company": "Unique Educational and Sports Foundation",
+                "cost_center": "Main - UESF",
+                "posting_date": nowdate(),
+                "reference_date": nowdate(),
+                "mode_of_payment": "Bank Draft",
+                "party_type": "Student",
+                "party": self.party,
+                "party_name": frappe.get_value("Student", self.party, "first_name"),
+                "paid_from": "Refundable Deposit - UESF",
+                "paid_to": paid_to,
+                "paid_amount": self.grand_total,
+                "received_amount": self.grand_total,
+                "remarks": "Deposit Refund",
+                "source_exchange_rate": 1,
+                "target_exchange_rate": 1,
+            }
+        )
+
+        for dimension in get_accounting_dimensions():
+            payment_entry.update({dimension: doc.get(dimension)})
+
+        payment_entry.insert(ignore_permissions=True)
+        payment_entry.submit()
+        return payment_entry
+
+            
     def create_payment_entry(self,submit=False):
+        if self.payment_request_type == "Outward":
+            return self.refund_request()
         fees = frappe.get_doc(self.reference_doctype, self.reference_name)
         paid_amount = 0
         if self.payment_term:
@@ -67,6 +115,7 @@ class CustomPaymentRequest(PaymentRequest):
             trigger_event(doc=self, event_name="fee_receipt")
         except Exception as e:
             print("Chatnext is not installed")
+        return payment_entry
 
 
     def set_payment_request_url(self):
