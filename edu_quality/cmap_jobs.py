@@ -217,19 +217,19 @@ def send_ptm_notifications_to_students():
         division_list =  [i.get('division') for i in list_12hrs]   
         students_lists = get_list_of_students_from_division_list(division_list)
         if len(students_lists):
-            notification_handler([i.get('student') for i in students_lists ],"12 Hrs")
+            notification_handler([i.get('student') for i in students_lists ],"12 Hours")
     
     if len(list_15mins)>0:
         division_list =  [i.get('division') for i in list_15mins]   
         students_lists = get_list_of_students_from_division_list(division_list)
         if len(students_lists):
-            notification_handler([i.get('student') for i in students_lists ],"15 Mins")         
+            notification_handler([i.get('student') for i in students_lists ],"15 Minutes")         
     
     if len(list_5mins)>0:
         division_list =  [i.get('division') for i in list_5mins]   
         students_lists = get_list_of_students_from_division_list(division_list)
         if len(students_lists):
-            notification_handler([i.get('student') for i in students_lists ],"5 Mins")                 
+            notification_handler([i.get('student') for i in students_lists ],"5 Minutes")                 
             
 
     
@@ -259,7 +259,7 @@ def notification_handler(student_data,time_inwords):
         if final_guardian_list:
             for guardian_name, guardian_data in final_guardian_list.items():
                 send_notification_custom(
-                    subject="Upcoming PTM Meetings are in next {} please do check it out:)".format(time_inwords),
+                    subject="Online PTM in {}. Pl join in!".format(time_inwords),
                     guardian=guardian_data,
                 )
 
@@ -277,7 +277,7 @@ def send_notification_custom(subject, guardian):
                 {
                     "to": push_token.get("token"),
                     "title": subject,
-                    "data": {"url_path": f"/ptm-links/"},
+                    "data": {"url_path": f"/ptm-links"},
                     # "body": json.dumps({"url_path": f"/notice/{notice_id}?student={student_id}"})
                 }
             )
