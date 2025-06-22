@@ -1,7 +1,6 @@
 import frappe
 from education.education.doctype.student.student import Student
 from frappe.auth import LoginManager
-from edu_quality.edu_quality.server_scripts.guardian import set_guardian_permissions
 from frappe.utils import getdate
 import datetime
 from erpnext.accounts.doctype.payment_request.payment_request import get_gateway_details
@@ -112,10 +111,6 @@ class CustomStudent(Student):
             self.user = student_user.name
         login_manager.login_as(current_user)
 
-
-    def on_update(self):
-        # Giving permissions to guardian
-        set_guardian_permissions(self)
 
     @frappe.whitelist()
     def validate_bank_account(self):
