@@ -10,7 +10,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 
-function timeToMinutes(timeStr: string) {
+function timeToMinutes(timeStr: any) {
     const [time, period] = timeStr.split(" ");
     let [hours, minutes] = time.split(":").map(Number);
 
@@ -23,14 +23,16 @@ function timeToMinutes(timeStr: string) {
     return hours * 60 + minutes;
 }
 
-function isTimeBeforeCurrent(meetTime: string, endDate: Date, currentTime: Date) {
+
+
+function isTimeBeforeCurrent(meetTime: string, currentTime: Date) {
     const fiveMinutes = 5;
-    const [startTime] = meetTime.split(" - ");
+    const [startTime, endTime] = meetTime.split(" - ");
     const meetTimeInMinutes = timeToMinutes(startTime);
+    const endTimeInMinutes = timeToMinutes(endTime);
     const currentMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
 
-
-    return (meetTimeInMinutes - fiveMinutes) <= currentMinutes && endDate <= currentTime;
+    return (meetTimeInMinutes - fiveMinutes) <= currentMinutes && currentMinutes <= endTimeInMinutes;
 }
 
 export const PtmLinks = () => {
@@ -129,31 +131,25 @@ export const PtmLinks = () => {
         }
     }, [error, offlinePTMError])
 
-    const rows = useCallback(() => {
+    const rows = useCallback((element: any) => {
 
-        return onlinePTM?.data?.message?.map?.((element: any) => {
-            const endDate = new Date(element.date);
-            const formattedEndDate = endDate.toLocaleDateString('en-GB').replace(/\//g, '-');
-            const isLinkedEnable = isTimeBeforeCurrent(element?.slot, endDate, new Date())
+        const isLinkedEnable = isTimeBeforeCurrent(element?.slot, new Date())
+        return (
+            <>
+                {
+                    isLinkedEnable ?
+                        <a href={element.gmeet_link
+                        } target="__blank" style={{ textDecoration: 'none', }
+                        }>
+                            <Text sx={{ backgroundColor: studentProfileColor, borderRadius: '25px' }} style={{ color: 'white', padding: '1px', }}>JOIN PTM VIA LINK</Text>
+                        </a >
+                        :
+                        <span>Not Available</span>
+                }
+            </>
 
-            return (
-                <tr key={element?.id}>
-                    <td><Text>{element?.subject}</Text></td>
-                    <td><Text>{formattedEndDate}</Text></td>
-                    <td><Text>{element?.slot}</Text></td>
-                    <td>
-                        {
-                            isLinkedEnable ?
-                                <a href={element.gmeet_link} target="__blank" style={{ textDecoration: 'none', }}>
-                                    <Text sx={{ backgroundColor: studentProfileColor, borderRadius: '25px' }} style={{ color: 'white', padding: '1px' }}>Meet Link</Text>
-                                </a>
-                                :
-                                <span>Not Available</span>
-                        }
-                    </td>
-                </tr>
-            );
-        });
+        );
+
     }, [checkLinkTime])
 
     const rows2 = offlinePTM?.data?.message?.map?.((element: any) => {
@@ -163,8 +159,8 @@ export const PtmLinks = () => {
             return (
                 <>
                     <tr >
-                        <td ><Text >{element?.event}</Text></td>
-                        <td ><Text >{formattedStartDate}</Text></td>
+                        <td ><Text sx={{ color: studentProfileColor }}>{element?.event}</Text></td>
+                        <td ><Text sx={{ color: studentProfileColor }}>{formattedStartDate}</Text></td>
                     </tr>
                 </>
             )
@@ -228,6 +224,11 @@ export const PtmLinks = () => {
                         color: studentProfileColor,
                         fontWeight: 'bold'
                     }}>{classDetails?.data?.message?.program?.program_name} - {classDetails?.data?.message?.division?.student_group_name}</Text>
+                    <Text sx={{
+
+                        color: "black",
+                        fontWeight: "bold"
+                    }}>Upcoming Online PTMs</Text>
                     {students.find(student => student.name === selectedStudent)?.reference_number && <Text sx={{
                         borderRadius: 50,
                         backgroundColor: studentProfileColor + '22',
@@ -254,40 +255,33 @@ export const PtmLinks = () => {
                                 {
                                     onlinePTM?.data?.message?.length > 0 ? (
                                         <>
-                                            <Text sx={{
-                                                margin: "20px 0",
-                                                color: "black",
-                                                fontWeight: "bold"
-                                            }}>Upcoming Online PTMs</Text>
-                                            <Box sx={{ textAlign: "center", overflowX: "scroll" }}>
-                                                <Table horizontalSpacing="sm">
-                                                    <thead style={{ backgroundColor: studentProfileColor + "22" }}>
-                                                        <tr>
-                                                            <td> <Text sx={{
-                                                                borderBottom: `1px solid #dee2e6`,
-                                                                color: studentProfileColor,
-                                                                fontWeight: "bold",
-                                                            }}>Subject</Text></td>
-                                                            <td> <Text sx={{
-                                                                borderBottom: `1px solid #dee2e6`,
-                                                                color: studentProfileColor,
-                                                                fontWeight: "bold",
-                                                            }}>Date</Text></td>
 
-                                                            <td> <Text sx={{
-                                                                borderBottom: `1px solid #dee2e6`,
-                                                                color: studentProfileColor,
-                                                                fontWeight: "bold",
-                                                            }}>Time</Text></td>
-                                                            <td> <Text sx={{
-                                                                borderBottom: `1px solid #dee2e6`,
-                                                                color: studentProfileColor,
-                                                                fontWeight: "bold",
-                                                            }}>Link</Text></td>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>{rows()}</tbody>
-                                                </Table>
+                                            <Box sx={{ textAlign: "center" }}>
+                                                {
+                                                    onlinePTM?.data?.message?.map?.((element: any) => {
+                                                        const endDate = new Date(element?.date);
+                                                        const formattedEndDate = endDate.toLocaleDateString('en-GB').replace(/\//g, '-');
+
+                                                        return (
+                                                            <>
+
+                                                                <div style={{ borderTop: `1px solid ${studentProfileColor}`, marginTop: "1rem", padding: "1rem 0px", position: 'relative', marginBottom: '1rem' }}>
+                                                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: "space-between", padding: '0px 1rem', gap: "1rem" }}>
+                                                                        <Text sx={{ color: studentProfileColor, }}>Date: {formattedEndDate} {`(${element?.day})`}</Text>
+                                                                        <span style={{ border: `1px solid ${studentProfileColor}`, width: '1px', height: '30px' }}></span>
+                                                                        <Text sx={{ color: studentProfileColor }}>Time: {element?.slot}</Text>
+                                                                    </div>
+
+                                                                    <Text sx={{ color: studentProfileColor }} style={{ display: "flex", alignItems: "start", padding: "0px 1rem", margin: '1rem auto' }}>Subject: {element?.subject}</Text>
+                                                                    <div
+                                                                        style={{ margin: '0px auto', width: '250px', position: 'absolute', left: '0px', right: '0px', bottom: '0px', height: '10px', marginBottom: '1rem' }}
+                                                                    >{rows(element)}</div>
+
+                                                                </div>
+                                                            </>
+                                                        )
+                                                    })
+                                                }
                                             </Box>
 
                                         </>
@@ -326,6 +320,12 @@ export const PtmLinks = () => {
                         color: studentProfileColor,
                         fontWeight: 'bold'
                     }}>{classDetails?.data?.message?.program?.program_name} - {classDetails?.data?.message?.division?.student_group_name}</Text>
+                    <Text sx={{
+
+                        color: "black",
+                        fontWeight: "bold",
+
+                    }}>Offline PTMs Scheduled</Text>
                     {students.find(student => student.name === selectedStudent)?.reference_number && <Text sx={{
                         borderRadius: 50,
                         backgroundColor: studentProfileColor + '22',
@@ -348,17 +348,9 @@ export const PtmLinks = () => {
                             textAlign: 'center',
                         }}>
                             <>
-
-
                                 {
                                     offlinePTM?.data?.message?.length > 0 ?
                                         <div style={{ marginTop: "1rem" }}>
-                                            <Text sx={{
-                                                margin: "30px 0px",
-                                                color: "black",
-                                                fontWeight: "bold",
-
-                                            }}>Offline PTMs Scheduled</Text>
                                             <Box sx={{ display: "flex", alignItems: "start", flexDirection: "column", justifyContent: "start" }}>
                                                 <Table horizontalSpacing="md">
                                                     <thead style={{ backgroundColor: studentProfileColor + "22" }}>
