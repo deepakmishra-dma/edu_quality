@@ -131,7 +131,6 @@ export const PtmLinks = () => {
         }
     }, [error, offlinePTMError])
 
-
     const rows = useCallback((element: any) => {
 
         const isLinkedEnable = isTimeBeforeCurrent(element?.slot, new Date())
@@ -160,8 +159,8 @@ export const PtmLinks = () => {
             return (
                 <>
                     <tr >
-                        <td ><Text >{element?.event}</Text></td>
-                        <td ><Text >{formattedStartDate}</Text></td>
+                        <td ><Text sx={{ color: studentProfileColor }}>{element?.event}</Text></td>
+                        <td ><Text sx={{ color: studentProfileColor }}>{formattedStartDate}</Text></td>
                     </tr>
                 </>
             )
@@ -267,12 +266,13 @@ export const PtmLinks = () => {
                                                             <>
 
                                                                 <div style={{ borderTop: `1px solid ${studentProfileColor}`, marginTop: "1rem", padding: "1rem 0px", position: 'relative', marginBottom: '1rem' }}>
-                                                                    <div style={{ display: 'flex', alignItems: 'start', justifyContent: "space-between", padding: '0px 1rem', width: 'auto' }}>
-                                                                        <p>Date: {formattedEndDate} {`(${element?.day})`}</p>
-                                                                        <p>Time: {element?.slot}</p>
+                                                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: "space-between", padding: '0px 1rem', gap: "1rem" }}>
+                                                                        <Text sx={{ color: studentProfileColor, }}>Date: {formattedEndDate} {`(${element?.day})`}</Text>
+                                                                        <span style={{ border: `1px solid ${studentProfileColor}`, width: '1px', height: '30px' }}></span>
+                                                                        <Text sx={{ color: studentProfileColor }}>Time: {element?.slot}</Text>
                                                                     </div>
 
-                                                                    <span style={{ display: "flex", alignItems: "start", padding: "0px 1rem", margin: '1rem auto' }}>Subject: {element?.subject}</span>
+                                                                    <Text sx={{ color: studentProfileColor }} style={{ display: "flex", alignItems: "start", padding: "0px 1rem", margin: '1rem auto' }}>Subject: {element?.subject}</Text>
                                                                     <div
                                                                         style={{ margin: '0px auto', width: '250px', position: 'absolute', left: '0px', right: '0px', bottom: '0px', height: '10px', marginBottom: '1rem' }}
                                                                     >{rows(element)}</div>
