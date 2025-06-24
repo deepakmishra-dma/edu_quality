@@ -50,6 +50,35 @@ class CustomFees(Fees):
                 timeout=1800,
             )
             return frappe.msgprint("Payment Request Generation is enqueued!")
+    
+    def deduct_from_deposit(self,deposit_amount,deposit_account):
+        if self.outstanding_amount <=deposit_amount:
+            pending_fees = self.company_wise_pending_fees()
+        else:
+            remaining_deposit = 0
+            company_list = self.company_wise_balance()
+            split_amount = deposit_amount/len(company_list)
+            for company in company_list:
+                if company.balance >= split_amount:
+                    self.reverse_partial_amount(company.company,split_amount,deposit=1)
+                    company.balance -= split_amount
+                else:
+                    self.reverse_partial_amount(company.company,company.balance,deposit=1)
+                    remaining_deposit += split_amount - company.balance
+                    company.balance = 0 
+            while remaining_deposit > 0:
+                for company in company_list:
+                    if company.balance >= remaining_deposit:
+                        self.reverse_partial_amount(company.company,remaining_deposit,deposit=1)
+                        company.balance -= remaining_deposit
+                        remaining_deposit = 0
+                    else:
+                        self.reverse_partial_amount(company.company,company.balance,deposit=1)
+                        remaining_deposit = remaining_deposit - company.balance
+                        company.balance = 0
+            
+
+
 
 
     def generate_split(self):
@@ -67,8 +96,9 @@ class CustomFees(Fees):
         if not self.outstanding_amount < self.grand_total:
             return frappe.throw("Fees has not been paid!")
         return self.company_wise_pending_fees()
-        
-    def company_wise_pending_fees(self):
+    
+    def company_wise_balance(self):
+        result = []
         company_list = frappe.get_all("Company")
         for company in company_list:
             company_doc = frappe.get_doc("Company",company.name)
@@ -90,17 +120,28 @@ class CustomFees(Fees):
                 "show_remarks":1}
             report = run(report_name="General Ledger",filters=filter,user="Administrator")
             balance = report['result'][-1]['balance']
-            if balance > 0:
-                self.reverse_partial_amount(company_doc,balance)
+            result.append({"company":company,"balance":balance})
+        return result
+        
+    def company_wise_pending_fees(self,deposit=0):
+        result = self.company_wise_balance()
+        for company in result:
+            if company.balance > 0:
+                self.reverse_partial_amount(company.company,company.balance,deposit)
         return 1
 
-    def reverse_partial_amount(self,company,amount):
+    def reverse_partial_amount(self,company,amount,deposit):
         entries = []
+
+        account = company.custom_default_concession_account
+        if deposit:
+            account = company.default_cash_account
+
         entries.append(self.get_gl_dict(
                                     {
                                         "company": company.name,
                                         "posting_date":frappe.utils.nowdate(),
-                                        "account": company.default_income_account,
+                                        "account": account,
                                         "party_type": "Student",
                                         "party": self.student,
                                         "against": company.default_receivable_account,
@@ -117,6 +158,48 @@ class CustomFees(Fees):
                                             "company": company.name,
                                             "posting_date":frappe.utils.nowdate(),
                                             "account": company.default_receivable_account,
+                                            "against": self.student,
+                                            "credit": amount,
+                                            "credit_in_account_currency":amount,
+                                            "cost_center": company.cost_center,
+                                            "against_voucher": self.name,
+                                            "against_voucher_type": self.doctype,
+                                            "party_type": "Student",
+                                            "party": self.student
+                                        },
+                                        item=self,
+                                    ))
+        make_gl_entries(
+            entries,
+            update_outstanding="No",
+            merge_entries=False,
+        )
+
+    def deposit_adjustment_entry(self,amount):
+        company = frappe.get_doc("Company","Unique Educational and Sports Foundation")
+        entries = []
+
+        entries.append(self.get_gl_dict(
+                                    {
+                                        "company": company.name,
+                                        "posting_date":frappe.utils.nowdate(),
+                                        "account": company.default_deposit_account,
+                                        "party_type": "Student",
+                                        "party": self.student,
+                                        "against": company.default_cash_account,
+                                        "debit": amount,
+                                        "debit_in_account_currency":amount,
+                                        "against_voucher": self.name,
+                                        "against_voucher_type": self.doctype,
+                                        "cost_center": company.cost_center
+                                    },
+                                    item=self,
+                                ))
+        entries.append(self.get_gl_dict(
+                                        {
+                                            "company": company.name,
+                                            "posting_date":frappe.utils.nowdate(),
+                                            "account": company.default_cash_account,
                                             "against": self.student,
                                             "credit": amount,
                                             "credit_in_account_currency":amount,

@@ -1,5 +1,5 @@
 import frappe
-from edu_quality.edu_quality.server_scripts.guardian import create_user, set_guardian_permissions
+from edu_quality.edu_quality.server_scripts.guardian import create_user
 
 # def execute():
 #     return
@@ -19,7 +19,13 @@ def execute():
     """
     This patch will create User Permission for Guardians
     """
-    students = frappe.get_all("Student")
-    for student in students:
-        student = frappe.get_doc("Student", student.name)
-        set_guardian_permissions(student)
+    guardian_list = frappe.db.get_all("Guardian", ["name","user"])
+    for guardian in guardian_list:
+        if not guardian.user:
+            continue
+        if not frappe.db.exists("User Permission",{"user":guardian.user,"allow":"Guardian","for_value":guardian.name}):
+            perm = frappe.new_doc("User Permission")
+            perm.user = guardian.user
+            perm.allow = "Guardian"
+            perm.for_value = guardian.name
+            perm.insert(ignore_permissions=True)

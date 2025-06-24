@@ -196,7 +196,7 @@ def update_payment_request_after_discount(doc):
         # filter for not paid payment request
         not_paid_filter = {
             "reference_name": doc.name,
-            "status": ["!=", "Paid"],
+            "status": ["=", "Initiated"],
             "payment_term": ["is","set"]
         }
         # if payment request is not paid

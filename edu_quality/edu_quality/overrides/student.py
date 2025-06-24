@@ -1,7 +1,6 @@
 import frappe
 from education.education.doctype.student.student import Student
 from frappe.auth import LoginManager
-from edu_quality.edu_quality.server_scripts.guardian import set_guardian_permissions
 from frappe.utils import getdate
 import datetime
 from erpnext.accounts.doctype.payment_request.payment_request import get_gateway_details
@@ -113,10 +112,6 @@ class CustomStudent(Student):
         login_manager.login_as(current_user)
 
 
-    def on_update(self):
-        # Giving permissions to guardian
-        set_guardian_permissions(self)
-
     @frappe.whitelist()
     def validate_bank_account(self):
         return frappe.db.exists("Bank Account", {"party": self.name})
@@ -135,9 +130,29 @@ class CustomStudent(Student):
             elif fee_collection == "Ignore Pending Fee":
                 self.check_deposit()
                 return self.reverse_pending_fees(academic_year)
+            elif fee_collection == "Deduct from Deposit":
+                return self.deduct_from_deposit()
+            
         except Exception as e:
             frappe.logger("Cancel").exception(e)
             frappe.throw(e)
+
+    def deduct_from_deposit(self):
+        pending_fees = frappe.db.get_all("Fees",filters=[["Fees","docstatus","=","1"],["Fees","student","=",self.name],["Fees","outstanding_amount",">",0]])
+        if len(pending_fees) > 1:
+            return frappe.throw("More than one pending Fee Present!")
+        pending_fees = pending_fees[0]
+        pending_fee_doc = frappe.get_doc("Fees",pending_fees.name)
+        deposit_fee, deposit_amount, deposit_account = self.check_deposit(deduct=1)
+        if pending_fee_doc.outstanding_amount < deposit_amount:
+            refund_amount = deposit_amount - pending_fee_doc.outstanding_amount
+            self.refund_deposit(deposit_fee,refund_amount,deposit_account)
+            deposit_fee_doc = frappe.get_doc("Fees",deposit_fee)
+            deposit_fee_doc.deposit_adjustment_entry(pending_fee_doc.outstanding_amount)
+        return pending_fee_doc.deduct_from_deposit(deposit_amount,deposit_account)
+        
+
+
 
     def reverse_pending_fees(self,academic_year):
         fees_list = frappe.db.get_all("Fees",filters=[["Fees","docstatus","=","1"],["Fees","student","=",self.name],["Fees","outstanding_amount",">",0],["Fees","academic_year","=",academic_year]])
@@ -153,7 +168,7 @@ class CustomStudent(Student):
             else:
                 return fee_doc.reverse_pending_fees()
 
-    def check_deposit(self):
+    def check_deposit(self,deduct=0):
         fees_list = frappe.db.get_all("Fees",filters={'docstatus':1,'student':self.name})
         for fee in fees_list:
             if frappe.db.exists("Fee Component",[['parent','=',fee.name],['fees_category','like','%DEPOSIT%']]):
@@ -165,6 +180,8 @@ class CustomStudent(Student):
                 if "deposit" in description.lower() and outstanding==0:
                         deposit_paid=1
                 if deposit_paid:
+                    if deduct:
+                        return fee.name,deposit,account
                     return self.refund_deposit(fee.name,deposit,account)
                 return frappe.throw("Deposit Not Paid!")
         return 1
@@ -208,7 +225,9 @@ class CustomStudent(Student):
 
         pr.insert(ignore_permissions=True)
         pr.submit()
+        
         #add deposit refund in student ledger
+        
         return 1
 
     @frappe.whitelist()
