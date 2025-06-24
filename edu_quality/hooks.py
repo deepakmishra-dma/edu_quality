@@ -33,6 +33,7 @@ app_include_js = [
 
 # include js in doctype views
 doctype_js = {
+    "Payment Entry": "public/js/payment_entry.js",
     "Student Applicant": "public/js/application.js",
     "Reference Number Settings": "public/js/reference_number.js",
     "Fees": "public/js/fees.js",
