@@ -296,7 +296,6 @@ def mark_as_defaulter(data):
     try:
         data = frappe.json.loads(data)
 
-        mark_student_as_defaulter(data)
         frappe.enqueue(
             method=mark_student_as_defaulter,
             data=data,
