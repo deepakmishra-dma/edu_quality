@@ -243,18 +243,50 @@ def send_payment_reminder(data):
 
 def mark_student_as_defaulter(data):
     try:
+
         for row in data:
-            stud_doc = frappe.get_doc("Student",{"reference_number": row.get("refno"), "school": row.get("school")},"student_email_id")
-            # stud_doc.student_status = "Defaulter"
-            # stud_doc.save()
-            frappe.db.set_value(
+            student_email = frappe.db.get_value(
                 "Student",
                 {"reference_number": row.get("refno"), "school": row.get("school")},
-                "student_status",
-                "Defaulter",
+                "student_email_id",
             )
-            suspend_google_user(stud_doc)
+
+            # stud_doc.student_status = "Defaulter"
+            # stud_doc.save()
+            try:
+
+                suspend_google_user(student_email)
+                frappe.db.set_value(
+                    "Student",
+                    {"reference_number": row.get("refno"), "school": row.get("school")},
+                    "student_status",
+                    "Defaulter",
+                )
+
+                student = frappe.db.get_value(
+                    "Student",
+                    {"reference_number": row.get("refno"), "school": row.get("school")},
+                    "name",
+                )
+
+                frappe.db.set_value(
+                    "Program Enrollment",
+                    {
+                        "student": student,
+                        "academic_year": row.get("academic_year"),
+                    },
+                    "custom_status",
+                    "Defaulter",
+                )
+
+            except Exception as e:
+                frappe.log_error(
+                    "Google Mark as Defaulter Failure", frappe.get_traceback()
+                )
+                frappe.logger("mark_student_as_defaulter").exception(e)
+                
     except Exception as e:
+        frappe.log_error("Google Mark as Defaulter Failure", frappe.get_traceback())
         frappe.logger("mark_student_as_defaulter").exception(e)
 
 
@@ -262,7 +294,11 @@ def mark_student_as_defaulter(data):
 def mark_as_defaulter(data):
     try:
         data = frappe.json.loads(data)
-        frappe.enqueue(method=mark_student_as_defaulter, data=data, queue="long")
+        frappe.enqueue(
+            method=mark_student_as_defaulter,
+            data=data,
+            queue="long",
+        )
         frappe.response["message"] = {
             "title": "Success",
             "msg": "Student Marked As Defaulter Successfully",
