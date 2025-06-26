@@ -259,7 +259,7 @@ def notification_handler(student_data,time_inwords):
         if final_guardian_list:
             for guardian_name, guardian_data in final_guardian_list.items():
                 send_notification_custom(
-                    subject="Online PTM in {}. Pl join in!".format(time_inwords),
+                    subject="Online PTM in {}. Please join in!".format(time_inwords),
                     guardian=guardian_data,
                 )
 
