@@ -220,8 +220,6 @@ class CustomStudent(Student):
                     "reference_name": fee,
                     "source_exchange_rate": 1,
                     "target_exchange_rate": 1,
-                    "reference_no": fee,
-                    "reference_date": frappe.utils.nowdate(),
                     "mode_of_payment": "Bank Draft"
                     }
         )
@@ -229,10 +227,16 @@ class CustomStudent(Student):
         for dimension in get_accounting_dimensions():
             pe.update({dimension: ref_doc.get(dimension)})
 
-        pe.insert(ignore_permissions=True)
-        pe.submit()
-        #add deposit refund in student ledger
-        return 1
+        pe.update({
+            "reference_no": fee,
+            "reference_date": frappe.utils.nowdate(),
+        })
+        try:
+            pe.insert(ignore_permissions=True)
+            pe.submit()
+            return 1
+        except Exception as e:
+            frappe.throw(e)
 
     @frappe.whitelist()
     def mark_entry(self, status, reason=None, date=None, time=None):
