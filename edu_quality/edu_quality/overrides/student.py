@@ -187,47 +187,51 @@ class CustomStudent(Student):
         return 1
 
     def refund_deposit(self,fee,amount,account):
+        company = frappe.get_doc("Company",frappe.defaults.get_user_default("company"))
         student = self.name
-        gateway_account = get_gateway_details({}) or frappe._dict()
-        pr = frappe.new_doc("Payment Request")
         ref_doc = frappe.get_doc("Fees",fee)
-        pr.update(
+        pe = frappe.new_doc("Payment Entry")
+        pe.update(
             {
-                "payment_gateway_account": gateway_account.get("name"),
-                "payment_gateway": gateway_account.get("payment_gateway"),
-                "payment_account": gateway_account.get("payment_account"),
-                "payment_channel": gateway_account.get("payment_channel"),
-                "payment_request_type": "Outward",
-                "currency": "INR",
-                "grand_total": amount,
-                "email_to": student+"@walnutedu.in",
-                "subject": "Deposit Refund For for {0}".format(student),
-                "message": "Deposit Refund",
-                "reference_doctype": "Fees",
-                "reference_name": fee,
-                "party_type": "Student",
-                "party": student,
-                "bank_account": account,
-                "company": ref_doc.get("company"),
-            }
-        )
-
-        # Update dimensions
-        pr.update(
-            {
-                "cost_center": ref_doc.get("cost_center"),
-                "project": ref_doc.get("project"),
-            }
+                    "naming_series": "ACC-PAY-.YYYY.-",
+                    "payment_type": "Pay",
+                    "payment_order_status": "Initiated",
+                    "posting_date": frappe.utils.nowdate(),
+                    "company": company.name,
+                    "paid_from_account_currency": "INR",
+                    "paid_to_account_currency": "INR",
+                    "status": "Draft",
+                    "letter_head": "Default letter head",
+                    "party_type": "Student",
+                    "party": self.name,
+                    "paid_from_account_type": "Bank",
+                    "paid_from": company.default_bank_account,
+                    "paid_to_account_type": "Payable",
+                    "paid_to": company.default_deposit_account,
+                    "paid_amount": amount,
+                    "base_paid_amount": amount,
+                    "received_amount": amount,
+                    "base_received_amount": amount,
+                    "unallocated_amount": amount,
+                    "difference_amount": 0,
+                    "total_allocated_amount": 0,
+                    "base_total_allocated_amount": 0,
+                    "reference_doctype": "Fees",
+                    "reference_name": fee,
+                    "source_exchange_rate": 1,
+                    "target_exchange_rate": 1,
+                    "reference_no": fee,
+                    "reference_date": frappe.utils.nowdate(),
+                    "mode_of_payment": "Bank Draft"
+                    }
         )
 
         for dimension in get_accounting_dimensions():
-            pr.update({dimension: ref_doc.get(dimension)})
+            pe.update({dimension: ref_doc.get(dimension)})
 
-        pr.insert(ignore_permissions=True)
-        pr.submit()
-        
+        pe.insert(ignore_permissions=True)
+        pe.submit()
         #add deposit refund in student ledger
-        
         return 1
 
     @frappe.whitelist()

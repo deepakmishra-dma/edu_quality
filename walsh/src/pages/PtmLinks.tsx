@@ -131,6 +131,8 @@ export const PtmLinks = () => {
         }
     }, [error, offlinePTMError])
 
+
+
     const rows = useCallback((element: any) => {
 
         const isLinkedEnable = isTimeBeforeCurrent(element?.slot, new Date())
@@ -272,9 +274,9 @@ export const PtmLinks = () => {
                                                                         <Text sx={{ color: studentProfileColor }}>Time: {element?.slot}</Text>
                                                                     </div>
 
-                                                                    <Text sx={{ color: studentProfileColor }} style={{ display: "flex", alignItems: "start", padding: "0px 1rem", margin: '1rem auto' }}>Subject: {element?.subject}</Text>
+                                                                    <Text sx={{ color: studentProfileColor }} style={{ display: "flex", alignItems: "center", padding: "0px 1rem", margin: '1rem auto', justifyContent: "center", gap: "0.5rem" }}>Subject:  <span style={{ fontWeight: "bold" }}> {element?.subject}</span></Text>
                                                                     <div
-                                                                        style={{ margin: '0px auto', width: '250px', position: 'absolute', left: '0px', right: '0px', bottom: '0px', height: '10px', marginBottom: '1rem' }}
+                                                                        style={{ margin: '5px auto', width: '250px', position: 'absolute', left: '0px', right: '0px', bottom: '0px', height: '10px', marginBottom: '1rem' }}
                                                                     >{rows(element)}</div>
 
                                                                 </div>
