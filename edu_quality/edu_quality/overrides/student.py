@@ -85,6 +85,13 @@ class CustomStudent(Student):
             return str(series) if series > 9 else "0" + str(series)
         else:
             return "01"
+    
+    @frappe.whitelist()
+    def get_academic_years(self):
+        yr = []
+        yr.append(frappe.db.get_value("Academic Year", {"custom_current_academic_year": 1}, "name"))
+        yr.append(frappe.db.get_value("Academic Year", {"custom_next_academic_year": 1}, "name"))
+        return yr
 
 
     def validate_user(self):
