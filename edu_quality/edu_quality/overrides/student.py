@@ -85,6 +85,13 @@ class CustomStudent(Student):
             return str(series) if series > 9 else "0" + str(series)
         else:
             return "01"
+    
+    @frappe.whitelist()
+    def get_academic_years(self):
+        yr = []
+        yr.append(frappe.db.get_value("Academic Year", {"custom_current_academic_year": 1}, "name"))
+        yr.append(frappe.db.get_value("Academic Year", {"custom_next_academic_year": 1}, "name"))
+        return yr
 
 
     def validate_user(self):
@@ -220,8 +227,6 @@ class CustomStudent(Student):
                     "reference_name": fee,
                     "source_exchange_rate": 1,
                     "target_exchange_rate": 1,
-                    "reference_no": fee,
-                    "reference_date": frappe.utils.nowdate(),
                     "mode_of_payment": "Bank Draft"
                     }
         )
@@ -229,10 +234,16 @@ class CustomStudent(Student):
         for dimension in get_accounting_dimensions():
             pe.update({dimension: ref_doc.get(dimension)})
 
-        pe.insert(ignore_permissions=True)
-        pe.submit()
-        #add deposit refund in student ledger
-        return 1
+        pe.update({
+            "reference_no": fee,
+            "reference_date": frappe.utils.nowdate(),
+        })
+        try:
+            pe.insert(ignore_permissions=True)
+            pe.submit()
+            return 1
+        except Exception as e:
+            frappe.throw(e)
 
     @frappe.whitelist()
     def mark_entry(self, status, reason=None, date=None, time=None):

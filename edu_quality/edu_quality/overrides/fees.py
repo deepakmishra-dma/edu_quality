@@ -126,96 +126,136 @@ class CustomFees(Fees):
     def company_wise_pending_fees(self,deposit=0):
         result = self.company_wise_balance()
         for company in result:
-            if company.balance > 0:
-                self.reverse_partial_amount(company.company,company.balance,deposit)
+            if company.get('balance') > 0:
+                self.reverse_partial_amount(company.get('company'),company.get('balance'),deposit)
         return 1
 
     def reverse_partial_amount(self,company,amount,deposit):
-        entries = []
-
+        company = frappe.get_doc("Company",company.name)
         account = company.custom_default_concession_account
         if deposit:
-            account = company.default_cash_account
+            account = company.default_cash_account 
 
-        entries.append(self.get_gl_dict(
-                                    {
-                                        "company": company.name,
-                                        "posting_date":frappe.utils.nowdate(),
-                                        "account": account,
-                                        "party_type": "Student",
-                                        "party": self.student,
-                                        "against": company.default_receivable_account,
-                                        "debit": amount,
-                                        "debit_in_account_currency":amount,
-                                        "against_voucher": self.name,
-                                        "against_voucher_type": self.doctype,
-                                        "cost_center": company.cost_center
-                                    },
-                                    item=self,
-                                ))
-        entries.append(self.get_gl_dict(
-                                        {
-                                            "company": company.name,
-                                            "posting_date":frappe.utils.nowdate(),
-                                            "account": company.default_receivable_account,
-                                            "against": self.student,
-                                            "credit": amount,
-                                            "credit_in_account_currency":amount,
-                                            "cost_center": company.cost_center,
-                                            "against_voucher": self.name,
-                                            "against_voucher_type": self.doctype,
-                                            "party_type": "Student",
-                                            "party": self.student
-                                        },
-                                        item=self,
-                                    ))
-        make_gl_entries(
-            entries,
-            update_outstanding="No",
-            merge_entries=False,
-        )
+        je = frappe.new_doc("Journal Entry")
+        je.update({
+                    "is_system_generated": 1,
+                    "title": "Fee Concession",
+                    "voucher_type": "Journal Entry",
+                    "naming_series": "ACC-JV-.YYYY.-",
+                    "company": company.name,
+                    "posting_date": frappe.utils.nowdate(),
+                    "cheque_no": self.name,
+                    "cheque_date": frappe.utils.nowdate(),
+                    "user_remark": "Fee Concession",
+                    "total_debit": amount,
+                    "total_credit": amount,
+                    "write_off_based_on": "Accounts Receivable",
+                    "write_off_amount": 0,
+                    "letter_head": "Default letter head",
+                    "is_opening": "No",
+                    "repost_required": 0,
+                    "doctype": "Journal Entry",
+        })
+        je.append("accounts", 
+                  {
+                    "account": account,
+                    "account_type": "Expense Account",
+                    "cost_center": company.cost_center,
+                    "account_currency": "INR",
+                    "exchange_rate": 1,
+                    "debit_in_account_currency": amount,
+                    "debit": amount,
+                    "credit_in_account_currency": 0,
+                    "credit": 0,
+                    "reference_type": "Fees",
+                    "reference_name": self.name,
+                    "reference_due_date": frappe.utils.nowdate(),
+                    "is_advance": "No",
+                    "user_remark": "Fee Concession",
+                    "against_account": company.default_receivable_account
+                    })
+        je.append("accounts",
+                  {
+                        "account": company.default_receivable_account,
+                        "account_type": "",
+                        "party_type": "Student",
+                        "party": self.student,
+                        "cost_center": company.cost_center,
+                        "account_currency": "INR",
+                        "exchange_rate": 1,
+                        "debit_in_account_currency": 0,
+                        "debit": 0,
+                        "credit_in_account_currency": amount,
+                        "credit": amount,
+                        "is_advance": "No",
+                        "against_account": account
+                        })
+        je.save(ignore_permissions=True)
+        je.submit()
+
+
 
     def deposit_adjustment_entry(self,amount):
-        company = frappe.get_doc("Company","Unique Educational and Sports Foundation")
-        entries = []
+        
+        company = frappe.get_doc("Company",frappe.defaults.get_user_default("company"))
 
-        entries.append(self.get_gl_dict(
-                                    {
-                                        "company": company.name,
-                                        "posting_date":frappe.utils.nowdate(),
-                                        "account": company.default_deposit_account,
-                                        "party_type": "Student",
-                                        "party": self.student,
-                                        "against": company.default_cash_account,
-                                        "debit": amount,
-                                        "debit_in_account_currency":amount,
-                                        "against_voucher": self.name,
-                                        "against_voucher_type": self.doctype,
-                                        "cost_center": company.cost_center
-                                    },
-                                    item=self,
-                                ))
-        entries.append(self.get_gl_dict(
-                                        {
-                                            "company": company.name,
-                                            "posting_date":frappe.utils.nowdate(),
-                                            "account": company.default_cash_account,
-                                            "against": self.student,
-                                            "credit": amount,
-                                            "credit_in_account_currency":amount,
-                                            "cost_center": company.cost_center,
-                                            "against_voucher": self.name,
-                                            "against_voucher_type": self.doctype,
-                                            "party_type": "Student",
-                                            "party": self.student
-                                        },
-                                        item=self,
-                                    ))
-        make_gl_entries(
-            entries,
-            update_outstanding="No",
-            merge_entries=False,
-        )
+        je = frappe.new_doc("Journal Entry")
+        je.update({
+                    "is_system_generated": 1,
+                    "title": "Deposit Adjustment",
+                    "voucher_type": "Journal Entry",
+                    "naming_series": "ACC-JV-.YYYY.-",
+                    "company": company.name,
+                    "posting_date": frappe.utils.nowdate(),
+                    "cheque_no": self.name,
+                    "cheque_date": frappe.utils.nowdate(),
+                    "user_remark": "Deposit Adjustment",
+                    "total_debit": amount,
+                    "total_credit": amount,
+                    "write_off_based_on": "Accounts Receivable",
+                    "write_off_amount": 0,
+                    "letter_head": "Default letter head",
+                    "is_opening": "No",
+                    "repost_required": 0,
+                    "doctype": "Journal Entry",
+        })
+        je.append("accounts", 
+                  {
+                    "account": company.default_deposit_account,
+                    "account_type": "Payable",
+                    "cost_center": company.cost_center,
+                    "account_currency": "INR",
+                    "exchange_rate": 1,
+                    "debit_in_account_currency": amount,
+                    "debit": amount,
+                    "credit_in_account_currency": 0,
+                    "credit": 0,
+                    "reference_type": "Fees",
+                    "reference_name": self.name,
+                    "reference_due_date": frappe.utils.nowdate(),
+                    "is_advance": "No",
+                    "user_remark": "Deposit Adjustment",
+                    "against_account": company.default_cash_account
+                    })
+        je.append("accounts",
+                  {
+                        "account": company.default_cash_account,
+                        "account_type": "Cash",
+                        "party_type": "Student",
+                        "party": self.student,
+                        "cost_center": company.cost_center,
+                        "account_currency": "INR",
+                        "exchange_rate": 1,
+                        "debit_in_account_currency": 0,
+                        "debit": 0,
+                        "credit_in_account_currency": amount,
+                        "credit": amount,
+                        "is_advance": "No",
+                        "against_account": company.default_deposit_account
+                        })
+
+        je.save(ignore_permissions=True)
+        je.submit()
 
 
 
