@@ -277,7 +277,7 @@ def send_notification_custom(subject, guardian):
                 {
                     "to": push_token.get("token"),
                     "title": subject,
-                    "data": {"url_path": f"/ptm-links"},
+                    "data": {"url_path": f"/ptm-link"},
                     # "body": json.dumps({"url_path": f"/notice/{notice_id}?student={student_id}"})
                 }
             )
