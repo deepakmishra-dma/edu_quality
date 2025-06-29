@@ -6,8 +6,8 @@ import useStudentList from "../components/queries/useStudentList.ts";
 import useClassDetails from "../components/queries/useClassDetails.ts";
 import useStudentProfileColor from "../components/hooks/useStudentProfileColor.ts";
 import { usePTMLinksQuery, useofflinePTMLinksQuery } from "../components/queries/usePTMLinksQuery.tsx";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+
+import useWeeklyCmapList from "../components/queries/useWeeklyCmapList.ts";
 
 
 function timeToMinutes(timeStr: any) {
@@ -56,9 +56,16 @@ export const PtmLinks = () => {
 
     const { data: studentsList } = useStudentList()
     const { data: classDetails } = useClassDetails(selectedStudent)
-
+    const date = searchParams.get("date") || "";
     const students = useMemo(() => studentsList?.data?.message || [], [studentsList?.data])
+    const {
+        data: cmapList,
 
+    } = useWeeklyCmapList(
+        classDetails?.data?.message?.division?.name || "",
+        date
+    );
+    console.log("cmap list", cmapList?.data?.message)
     useEffect(() => {
         if (selectedStudent) {
             searchParams.set('student', selectedStudent || '')
@@ -112,24 +119,17 @@ export const PtmLinks = () => {
             setSuccess(false)
     }, [selectedStudent]);
     const custom_school = classDetails?.data?.message?.division?.custom_school
-    const { data: onlinePTM, refetch: onlinePTMRefetch, isLoading, error } = usePTMLinksQuery(selectedStudent)
-    const { data: offlinePTM, refetch: offlineRefetch, isLoading: offlinePtmLoading, error: offlinePTMError } = useofflinePTMLinksQuery(custom_school)
+    const { data: onlinePTM, refetch: onlinePTMRefetch, isLoading } = usePTMLinksQuery(selectedStudent)
+    const { data: offlinePTM, refetch: offlineRefetch, isLoading: offlinePtmLoading } = useofflinePTMLinksQuery(custom_school)
 
-
+    console.log("ptm online", studentsList)
     useEffect(() => {
         onlinePTMRefetch();
         offlineRefetch();
 
     }, [onlinePTMRefetch, offlineRefetch]);
 
-    useEffect(() => {
-        if (error) {
-            toast.error(error)
-        }
-        if (offlinePTMError) {
-            toast.error(offlinePTMError)
-        }
-    }, [error, offlinePTMError])
+
 
 
 
@@ -139,14 +139,19 @@ export const PtmLinks = () => {
         return (
             <>
                 {
-                    isLinkedEnable ?
-                        <a href={element.gmeet_link
-                        } target="__blank" style={{ textDecoration: 'none', }
-                        }>
-                            <Text sx={{ backgroundColor: studentProfileColor, borderRadius: '25px' }} style={{ color: 'white', padding: '1px', }}>JOIN PTM VIA LINK</Text>
-                        </a >
-                        :
-                        <span>Not Available</span>
+
+                    <a aria-disabled={!isLinkedEnable} href={element.gmeet_link
+                    } target="__blank" style={{ textDecoration: 'none', opacity: isLinkedEnable ? 1 : 0.5, cursor: isLinkedEnable ? "pointer" : "not-allowed" }
+                    }
+                        onClick={(e) => {
+                            if (!isLinkedEnable) {
+                                e.preventDefault();
+                            }
+                        }}
+                    >
+                        <Text sx={{ backgroundColor: studentProfileColor, borderRadius: '25px' }} style={{ color: 'white', padding: '1px', }}>JOIN PTM VIA LINK</Text>
+                    </a >
+
                 }
             </>
 
@@ -168,12 +173,33 @@ export const PtmLinks = () => {
             )
         }
     })
+    const renderedElements = onlinePTM?.data?.message?.map?.((element: any) => {
+        const endDate = new Date(element?.date);
+        const formattedEndDate = endDate.toLocaleDateString('en-GB').replace(/\//g, '-');
+        const colors = ['#fe7f00', '#00a8ff', '#019837', '#d21eff', '#ff0000', '#00ff00', '#0000ff'];
+        const colorIndex = element?.idx % colors.length;
+        const color = colors[colorIndex];
 
+
+        return (
+            <div key={element?.idx} style={{ borderTop: `1px solid ${color}`, marginTop: "1rem", padding: "1rem 0px", position: 'relative', marginBottom: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: "space-between", padding: '0px 1rem', gap: "1rem" }}>
+                    <Text sx={{ color: color }}>Date: {formattedEndDate} ({element?.day})</Text>
+                    <span style={{ border: `1px solid ${color}`, width: '1px', height: '30px' }}></span>
+                    <Text sx={{ color: color }}>Time: {element?.slot}</Text>
+                </div>
+                <Text sx={{ color: color }} style={{ display: "flex", alignItems: "center", padding: "0px 1rem", margin: '1rem auto', justifyContent: "center", gap: "0.5rem" }}>Subject:  <span style={{ fontWeight: "bold", padding: "0 5px" }}> {element?.subject}</span></Text>
+                <div style={{ margin: '5px auto', width: '250px', position: 'absolute', left: '0px', right: '0px', bottom: '0px', height: '10px', marginBottom: '1rem' }}>
+                    {rows(element)}
+                </div>
+            </div>
+        );
+    });
 
     return (
         <Box>
 
-            <ToastContainer />
+
             <Stack sx={{
                 whiteSpace: 'nowrap',
                 overflow: 'auto',
@@ -260,29 +286,7 @@ export const PtmLinks = () => {
 
                                             <Box sx={{ textAlign: "center" }}>
                                                 {
-                                                    onlinePTM?.data?.message?.map?.((element: any) => {
-                                                        const endDate = new Date(element?.date);
-                                                        const formattedEndDate = endDate.toLocaleDateString('en-GB').replace(/\//g, '-');
-
-                                                        return (
-                                                            <>
-
-                                                                <div style={{ borderTop: `1px solid ${studentProfileColor}`, marginTop: "1rem", padding: "1rem 0px", position: 'relative', marginBottom: '1rem' }}>
-                                                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: "space-between", padding: '0px 1rem', gap: "1rem" }}>
-                                                                        <Text sx={{ color: studentProfileColor, }}>Date: {formattedEndDate} {`(${element?.day})`}</Text>
-                                                                        <span style={{ border: `1px solid ${studentProfileColor}`, width: '1px', height: '30px' }}></span>
-                                                                        <Text sx={{ color: studentProfileColor }}>Time: {element?.slot}</Text>
-                                                                    </div>
-
-                                                                    <Text sx={{ color: studentProfileColor }} style={{ display: "flex", alignItems: "center", padding: "0px 1rem", margin: '1rem auto', justifyContent: "center", gap: "0.5rem" }}>Subject:  <span style={{ fontWeight: "bold" }}> {element?.subject}</span></Text>
-                                                                    <div
-                                                                        style={{ margin: '5px auto', width: '250px', position: 'absolute', left: '0px', right: '0px', bottom: '0px', height: '10px', marginBottom: '1rem' }}
-                                                                    >{rows(element)}</div>
-
-                                                                </div>
-                                                            </>
-                                                        )
-                                                    })
+                                                    renderedElements
                                                 }
                                             </Box>
 
