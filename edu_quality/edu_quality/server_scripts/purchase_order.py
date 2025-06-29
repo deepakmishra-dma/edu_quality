@@ -15,7 +15,7 @@ def mark_id_card_sent_to_print(self, method=None):
     if (
         self.custom_is_id_card
         and self.custom_reference_doctype
-        and self.custom_reference_name
+        and self.custom_reference_docname
     ):
         perm_id_card = frappe.get_doc(
             self.custom_reference_doctype, self.custom_reference_docname
