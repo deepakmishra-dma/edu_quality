@@ -125,27 +125,35 @@ def generate(**kwargs):
 
 
 @frappe.whitelist()
-def generate_permanent_id_cards(**kwargs):
+def generate_permanent_id_cards(enrollments):
+    enrollments = json.loads(enrollments)
     program_enrollment = frappe.db.get_all(
         "Program Enrollment",
-        filters=[["name", "in", kwargs.get("enrollments")]],
+        filters=[["name", "in", enrollments]],
         fields=["custom_school", "name", "custom_status", "academic_year"],
     )
     hash = None
     for i in program_enrollment:
         name = i.get("name")
         if i.get("custom_status") in ["Cancelled", "Alumni"]:
-            frappe.throw(
+            frappe.msgprint("ga")
+            return frappe.throw(
                 f"Cannot Create ID Card for cancelled student or alumni students {name}"
             )
         if not hash:
             hash = i
         elif hash.get("custom_school") != i.get("custom_school"):
-            frappe.throw(f"School is not same for {name}")
-        elif hash.get("academic_year") != i.get("academic_year"):
-            frappe.throw(f"School is not same for {name}")
-    frappe.enqueue(generate_permanent_id_cards_async, **kwargs, queue="long")
 
+            return frappe.throw(f"School is not same for all selected, in {name}")
+        elif hash.get("academic_year") != i.get("academic_year"):
+
+            return frappe.throw(
+                f"Academic Year is not same for all selected, in {name}"
+            )
+    frappe.enqueue(
+        generate_permanent_id_cards_async, enrollments=enrollments, queue="long"
+    )
+    return "Enqueued Successfully"
 
 
 def generate_permanent_id_cards_async(**kwargs):
@@ -211,7 +219,7 @@ def generate_permanent_id_cards_async(**kwargs):
                 {
                     "doctype": "ID Card Event",
                     "parenttype": "Student ID Card",
-                    "timestamp":frappe.utils.now(),
+                    "timestamp": frappe.utils.now(),
                     "parentfield": "events",
                     "status": "PENDING(PDF CREATED)",
                     "user": frappe.session.user,
