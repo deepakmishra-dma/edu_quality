@@ -95,9 +95,13 @@ class CustomStudent(Student):
 
 
     def validate_user(self):
-        current_user = frappe.session.user 
+        current_user = None
         login_manager = LoginManager()
-        login_manager.login_as("Administrator")
+
+        if not frappe.flags.in_import:
+            current_user = frappe.session.user
+            login_manager.login_as("Administrator")
+
         if not frappe.db.get_single_value(
             "Education Settings", "user_creation_skip"
         ) and not frappe.db.exists("User", self.student_email_id):
@@ -116,7 +120,9 @@ class CustomStudent(Student):
             student_user.save(ignore_permissions=True)
 
             self.user = student_user.name
-        login_manager.login_as(current_user)
+            
+        if not frappe.flags.in_import:
+            login_manager.login_as(current_user)
 
 
     @frappe.whitelist()
