@@ -96,10 +96,12 @@ class CustomStudent(Student):
 
     def validate_user(self):
         current_user = None
-        login_manager = LoginManager()
+        login_manager = None
 
         if not frappe.flags.in_import:
+
             current_user = frappe.session.user
+            login_manager = LoginManager()
             login_manager.login_as("Administrator")
 
         if not frappe.db.get_single_value(
