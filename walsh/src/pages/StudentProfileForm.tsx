@@ -484,7 +484,7 @@ export const StudentProfleFOrm = ({ student, selectedStudent, studentProfileColo
 
 
         }, [MotherMobile, FatherMobile])
-    const data_of_birth = studentsList?.data?.message[0]?.date_of_birth || "N/A"
+    const data_of_birth = studentsList?.data?.message?.find((i: any) => i?.name === selectedStudent)?.date_of_birth || "N/A"
     const endDate = new Date(data_of_birth);
     const formattedEndDate = endDate.toLocaleDateString('en-GB').replace(/\//g, '-');
     return (
