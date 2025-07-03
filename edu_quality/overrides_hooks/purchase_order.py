@@ -28,7 +28,7 @@ def get_selected_item_map(items):
     return {item: True for item in items}
 
 
-def transform_data(items, selected_items, purchase_receipt_items=None):
+def transform_data(items, selected_items, purchase_receipt_items=None, self=None):
     item_map = {}
     item_codes = [item.get("item_code") for item in items]
 
@@ -45,11 +45,16 @@ def transform_data(items, selected_items, purchase_receipt_items=None):
             "custom_product_url",
         ],
     )
+
     item_code_data = {}
     warehouse_to_name_map = get_warehouse_to_school_map(items)
     for data in item_data:
         item_code_data[data.get("name")] = data
-
+    if self.get("custom_is_id_card"):
+        perm_id_card = frappe.get_doc(
+            "Permanent Id Card", self.get("custom_reference_docname")
+        )
+        item_code_data["ID Card"]["custom_product_url"] = perm_id_card.file
     for item in items:
         school_name = warehouse_to_name_map.get(item.get("warehouse")) or item.get(
             "warehouse"
@@ -106,7 +111,7 @@ def before_validate(self, method=None):
     calculate_print_count(self)
 
 
-def get_columns(school_fields):
+def get_columns(school_fields, self):
     school_array = []
     for i in school_fields:
         school_array.append(
@@ -121,27 +126,8 @@ def get_columns(school_fields):
                 "width": 200,
             }
         ),
+
     columns = [
-        {
-            "name": "Subject",
-            "id": "subject",
-            "editable": False,
-            "resizable": False,
-            "sortable": False,
-            "focusable": False,
-            "dropdown": False,
-            "width": 100,
-        },
-        {
-            "name": "Chapter",
-            "id": "chapter",
-            "editable": False,
-            "resizable": False,
-            "sortable": False,
-            "focusable": False,
-            "dropdown": False,
-            "width": 100,
-        },
         {
             "name": "Code",
             "id": "item_code",
@@ -164,7 +150,31 @@ def get_columns(school_fields):
         },
         *school_array,
     ]
-    return columns
+    subject_columns = []
+    if self.get("custom_is_cmap_print"):
+        subject_columns = [
+            {
+                "name": "Subject",
+                "id": "subject",
+                "editable": False,
+                "resizable": False,
+                "sortable": False,
+                "focusable": False,
+                "dropdown": False,
+                "width": 100,
+            },
+            {
+                "name": "Chapter",
+                "id": "chapter",
+                "editable": False,
+                "resizable": False,
+                "sortable": False,
+                "focusable": False,
+                "dropdown": False,
+                "width": 100,
+            },
+        ]
+    return subject_columns + columns
 
 
 @frappe.whitelist()
@@ -182,6 +192,7 @@ def get_linked_receipts(name, item_code):
 def generate_challan_list(self, selected_items=None):
 
     self = json.loads(self) if isinstance(self, str) else self
+    old_self = self
     selected_items = (
         json.loads(selected_items)
         if isinstance(selected_items, str)
@@ -202,7 +213,9 @@ def generate_challan_list(self, selected_items=None):
         }
     else:
         purchase_receipt_items = None
-    self = transform_data(self.get("items"), selected_items, purchase_receipt_items)
+    self = transform_data(
+        self.get("items"), selected_items, purchase_receipt_items, self
+    )
     item_table = frappe.qb.DocType("Item")
     query = (
         frappe.qb.from_(item_table)
@@ -221,7 +234,7 @@ def generate_challan_list(self, selected_items=None):
 
     school_docs = frappe.db.get_list("School", filters=[["name", "in", schools_array]])
     # school_names = [name.get("name") for name in all_schools]
-    columns = get_columns(school_docs)
+    columns = get_columns(school_docs, old_self)
 
     return all_schools, columns, self
 
@@ -358,5 +371,3 @@ def convertyearMonthDate(date_input):
 
     formatted_date = date_object.strftime("%d-%m-%Y")
     return formatted_date
-
-

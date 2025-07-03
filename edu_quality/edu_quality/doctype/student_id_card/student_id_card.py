@@ -16,3 +16,18 @@ class StudentIDCard(Document):
         )
         name = make_autoname(student + "-{" + academic_year + "}-.###")
         self.name = name.replace("{", "(").replace("}", ")")
+
+    def on_update(self):
+        old_doc = self.get_doc_before_save()
+        if old_doc and old_doc.status != self.status:
+            frappe.get_doc(
+                {
+                    "doctype": "ID Card Event",
+                    "timestamp": frappe.utils.now(),
+                    "parenttype": "Student ID Card",
+                    "parentfield": "events",
+                    "status": "RECEIVED BY STUDENT",
+                    "user": frappe.session.user,
+                    "parent": self.name,
+                }
+            ).insert(ignore_permissions=True)
