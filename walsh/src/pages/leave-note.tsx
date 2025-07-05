@@ -296,8 +296,9 @@ const LeaveNote = () => {
                   icon={<IconList color={studentProfileColor} stroke={1} />}
                 />
                 <Textarea
-                  placeholder="Your Note"
+                  placeholder="Your Note (max 140 characters)"
                   label="Your Note"
+                  maxLength={140}
                   value={note}
                   onChange={(event) => setNote(event.currentTarget.value)}
                   withAsterisk

@@ -76,10 +76,13 @@ def refund_deposit(student,fee,amount):
 
 @frappe.whitelist()
 def mark_entry(student, status, reason=None, date=None, time=None):
+    current_datetime = frappe.utils.now()
+    curr_date, curr_time = current_datetime.split(" ")
+
     if not date:
-        date = getdate()
+        date = curr_date
     if not time:
-        time = datetime.datetime.now().strftime("%H:%M:%S")
+        time = curr_time
 
     try:
         if frappe.db.exists("Attendance Entry", {"student": student, "date": date}):
