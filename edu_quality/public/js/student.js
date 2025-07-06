@@ -22,7 +22,7 @@ function markLateDrop(frm) {
         method: "edu_quality.edu_quality.server_scripts.student.mark_entry",
         args: {
             student: frm.selected_doc.name,
-            reason: frm.selected_doc.reason,
+            reason: frm.selected_doc.custom_reason,
             status: "Late Drop"
         },
         callback: function (r) {
@@ -39,7 +39,7 @@ function markLateDrop(frm) {
                 });
 
             }
-            d.hide();
+       
         }
     });
 }
@@ -49,7 +49,7 @@ function markEarlyPickup(frm) {
         method: "edu_quality.edu_quality.server_scripts.student.mark_entry",
         args: {
             student: frm.selected_doc.name,
-            reason: frm.selected_doc.reason,
+            reason: frm.selected_doc.custom_reason,
             status: "Early Pickup"
         },
         callback: function (r) {
@@ -66,7 +66,7 @@ function markEarlyPickup(frm) {
                 });
 
             }
-            d.hide();
+         
         }
     });
 }
