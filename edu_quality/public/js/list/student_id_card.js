@@ -57,9 +57,9 @@ const checkIfRefNoExists = async (academicYear, school, refNo) => {
     try {
 
         const studentResponse = await frappe.db.get_list("Student", { filters: { reference_number: refNo, school }, fields: ["name"] })
-        console.log(studentResponse, 'xdada')
+
         const student = studentResponse?.[0]
-        console.log(student, 'adada')
+
         if (!student) throw new Error("Student doesn't exist")
         const enrollmentRes = await fetch(`/api/resource/Program Enrollment?fields=["name","custom_id_card"]&filters=[["student","like","${student.name}"],["academic_year","=","${academicYear}"]]`)
         const programEnrollment = (await enrollmentRes.json())?.data?.[0]
@@ -113,12 +113,13 @@ frappe.listview_settings['Student ID Card'] = {
                         fieldtype: 'Button',
                         click: async () => {
                             const images = await nativeInterface.execute('openWebViewScanner')
-                            frappe.msgprint(JSON.stringify(images?.data))
-                            const [academicYear, school, refNo] = images?.[0].data?.split("/")
+
+                            const [academicYear, school, refNo] = images?.data.split("/")
+                            // frappe.msgprint(academicYear, school, refNo)
                             d.set_value("refNo", refNo)
                             d.set_value("academic_year", academicYear)
                             d.set_value("school", school)
-                            checkIfRefNoExists(academicYear, school, refNo)
+
                         }
                     },
                     {
@@ -131,10 +132,7 @@ frappe.listview_settings['Student ID Card'] = {
                         fieldname: 'reset_btn',
                         fieldtype: 'Button',
                         click: () => {
-                            d.set_value("refNo", '')
-                            d.set_value("earlier_timestamp", "")
-                            d.set_value("earlier_status", "")
-                            d.set_value("earlier_photo_id", "")
+                            reset(d)
                         }
 
                     },
@@ -144,14 +142,19 @@ frappe.listview_settings['Student ID Card'] = {
                         fieldname: 'check_btn',
                         fieldtype: 'Button',
                         click: async function () {
+
                             academicYear = d['fields_dict']['academic_year']['input'].value
                             school = d['fields_dict']['school']['input'].value
                             refNo = d['fields_dict']['refNo']['input'].value
-                            const idCard = checkIfRefNoExists(academicYear, school, refNo)
+                            const idCard = await checkIfRefNoExists(academicYear, school, refNo)
+
                             if (idCard) {
+
+                                image = idCard.photo_taken
                                 d.set_value('earlier_timestamp', idCard.photo_taken_time)
                                 d.set_value('earlier_photo_id', idCard.id_card_given_on)
                                 d.set_value('earlier_status', idCard.status)
+                                d.set_value("photo", `<img src='${idCard.photo_taken}' style ='height:100px;width:100px;object-fit:contain;'></img>`)
 
                             }
                         }
@@ -199,28 +202,37 @@ frappe.listview_settings['Student ID Card'] = {
                 size: 'large',
                 primary_action_label: 'Upload',
                 async primary_action(values) {
-                    const idCard = await checkIfRefNoExists(values.academic_year, values.school, values.refNo)
-                    // console.log(idCard, 'ss', image)
-                    // frappe.msgprint(image)
-                    if (!image || !idCard) return frappe.msgprint("Take a photo or id card not found")
-                    await folderExists("Home", `${values.school}-${values.academic_year}`)
-                    const img = await uploadImage(image, `${values.school}-${values.academic_year}`, `${values.refNo}-${idCard.name}.jpg`)
-                    image = ""
-                    const payload = { ...idCard, photo_taken: img, status: "CLICKED", "photo_taken_time": getMysqlDate(new Date()) }
-                    const data = await updateIDCard(idCard.name, payload)
-                    const service_account = await frappe.get_single("Google Service Account")
+                    try {
+                        const idCard = await checkIfRefNoExists(values.academic_year, values.school, values.refNo)
+                        // console.log(idCard, 'ss', image)
+                        // frappe.msgprint(image)
+                        findAndToggleFooterButton(d, true, "Pending")
+                        if (!image || !idCard) return frappe.msgprint("Take a photo or id card not found")
+                        if (image == idCard.photo_taken) return frappe.msgprint("Error uploading, image uploaded has the same file url as the previous one")
+                        await folderExists("Home", `${values.school}-${values.academic_year}`)
+                        const img = await uploadImage(image, `${values.school}-${values.academic_year}`, `${values.refNo}-${idCard.name}.jpg`)
+                        image = ""
+                        const payload = { ...idCard, photo_taken: img, status: "CLICKED", "photo_taken_time": getMysqlDate(new Date()) }
+                        const data = await updateIDCard(idCard.name, payload)
+                        const service_account = await frappe.get_single("Google Service Account")
 
-                    frappe.call({
-                        method: "edu_quality.api.google_drive_upload.upload_file",
-                        args: {
-                            file_url: img,
-                            folder_name: service_account.get('products_folder'),
-                            type: "POST",
-                        }, callback: () => {
+                        await frappe.call({
+                            method: "edu_quality.api.google_drive_upload.upload_file",
+                            args: {
+                                file_url: img,
+                                folder_name: service_account.get('id_card_folder'),
+                                type: "POST",
+                            }, callback: () => {
 
-                        }
-                    })
+                            }
+                        })
 
+                    } catch (e) {
+                        findAndToggleFooterButton(d, false, "Upload")
+                    } finally {
+                        findAndToggleFooterButton(d, false, "Upload")
+
+                    }
                 },
 
             });
@@ -233,4 +245,18 @@ frappe.listview_settings['Student ID Card'] = {
 
 function getMysqlDate(jsDatetime) {
     return jsDatetime.toISOString().slice(0, 19).replace('T', ' ');
+}
+
+function findAndToggleFooterButton(d, toggle, label) {
+    const btn = $(d.footer).find('button')
+    btn.html(label)
+    btn.prop('disabled', toggle)
+}
+function reset(d) {
+    image = "<img src = '/private/files/2.png' style ='height:100px;width:100px;object-fit:contain;'></img>"
+    d.set_value("refNo", '')
+
+    d.set_value("earlier_timestamp", "")
+    d.set_value("earlier_status", "")
+    d.set_value("earlier_photo_id", "")
 }

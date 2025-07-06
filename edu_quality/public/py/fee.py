@@ -903,6 +903,7 @@ def update_program_enrollment(doc, method):
             image=%s,
             program=%s,
             custom_division=%s
+            image=%s
         WHERE name=%s
         """, 
         (
@@ -918,6 +919,7 @@ def update_program_enrollment(doc, method):
             doc.image,
             doc.program,
             division,
+            doc.image,
             doc.student
         )
     )
