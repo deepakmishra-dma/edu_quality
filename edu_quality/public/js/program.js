@@ -13,6 +13,31 @@ async function shuffleDivision(frm) {
         title: 'Shuffle Division',
         fields: [
             {
+                fieldtype: 'Button',
+                label: 'Export Student Details',
+                fieldname: 'export',
+                click: function () {
+                    frappe.call({
+                        method: 'edu_quality.api.student.export_student_details',
+                        args: {
+                            program: frm.doc.name,
+                        },
+                        callback: function(response) {
+                            var a = document.createElement('a');
+                            var filecontent = atob(response.message.filecontent);
+                            var blob = new Blob([filecontent], {type: 'application/csv'});
+                            var url = window.URL.createObjectURL(blob);
+                            a.href = url;
+                            a.download = response.message.filename;
+                            document.body.append(a);
+                            a.click();
+                            a.remove();
+                            window.URL.revokeObjectURL(url);
+                        }
+                    });
+                }
+            },
+            {
                 fieldtype: 'HTML',
                 label: 'Details',
                 fieldname: 'details',

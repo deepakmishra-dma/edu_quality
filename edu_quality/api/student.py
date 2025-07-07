@@ -1,4 +1,7 @@
+import os
 import frappe
+import base64
+import pandas as pd
 from collections import Counter
 
 
@@ -90,3 +93,43 @@ def shuffle_division_data(program):
     except Exception as e:
         frappe.log_error("Shuffle Division Data Error", frappe.get_traceback())
         return "Error while shuffling division data"
+    
+
+@frappe.whitelist()
+def export_student_details(program):
+    data = frappe.cache().get(program)
+    division_data = frappe.json.loads(data)
+    columns = ["Division Name", "Name", "First Name", "Gender", "House", "Batch"]
+    new_data = []
+
+    for division, details in division_data.items():
+        students = details.get("students")
+        for student in students:
+            new_data.append(
+                [
+                    division,
+                    student.get("name"),
+                    student.get("first_name"),
+                    student.get("gender"),
+                    student.get("school_house"),
+                    student.get("batch"),
+                ]
+            )
+
+    division_data = {columns[i]: [row[i] for row in new_data] for i in range(len(columns))}
+    # Convert the data to a pandas DataFrame
+    df = pd.DataFrame(division_data)
+    public_path = frappe.get_site_path('public', 'files')
+    filename = f"Student Details - {program}.csv"
+    filepath = os.path.join(public_path, filename)
+
+    df.to_csv(filepath, index=False)
+    with open(filepath, 'rb') as file:
+        filecontent = file.read()
+
+    response = {
+        'filename': filename,
+        'filecontent': base64.b64encode(filecontent).decode()
+    }
+
+    return response
