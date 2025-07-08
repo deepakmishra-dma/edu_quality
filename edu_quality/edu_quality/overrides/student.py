@@ -10,6 +10,11 @@ from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
 )
 
 
+
+
+
+
+
 class CustomStudent(Student):
     def autoname(self):
         school_prefixes = {
@@ -92,6 +97,10 @@ class CustomStudent(Student):
         yr.append(frappe.db.get_value("Academic Year", {"custom_current_academic_year": 1}, "name"))
         yr.append(frappe.db.get_value("Academic Year", {"custom_next_academic_year": 1}, "name"))
         return yr
+    
+    @frappe.whitelist()
+    def change_class(self,school,program,division):
+        pass
 
 
     def validate_user(self):
@@ -141,16 +150,31 @@ class CustomStudent(Student):
             frappe.db.set_value("Student",student,'enabled',0)
             frappe.db.set_value("Student",student,"student_status","Cancelled")
             if fee_collection == "Deposit Refund":
+                if self.check_pending_fee():
+                    return frappe.throw("Fee Collection is pending.for this student!\nGO to the fee document, generate pending links and collect the fees!")
                 return self.check_deposit()
             elif fee_collection == "Ignore Pending Fee":
                 self.check_deposit()
                 return self.reverse_pending_fees(academic_year)
             elif fee_collection == "Deduct from Deposit":
                 return self.deduct_from_deposit()
-            
+            elif fee_collection == "Collect Partial Fee":
+                return frappe.throw("Partial Fees Not Yet Implemented!")
+            elif fee_collection == "Collect Full Fee":
+                if self.check_pending_fee():
+                    return frappe.throw("Fee Collection is pending.for this student!\nGO to the fee document, generate pending links and collect the fees!")
+                else:
+                    return frappe.msgprint("Fee Already collected! You can proceed with deposit refund!")
+
         except Exception as e:
             frappe.logger("Cancel").exception(e)
             frappe.throw(e)
+
+    def check_pending_fee(self):
+        if frappe.db.exists("Fees",{"student":self.name,"docstatus":"1","outstanding_amount":[">",0]}):
+            return 1
+        else:
+            return 0
 
     def deduct_from_deposit(self):
         pending_fees = frappe.db.get_all("Fees",filters=[["Fees","docstatus","=","1"],["Fees","student","=",self.name],["Fees","outstanding_amount",">",0]])
