@@ -232,17 +232,18 @@
         }
         .info-container{
           position: relative;
-  
         }
         .allergies-text{
-  
           transform: rotate(270deg);
           position: absolute;
-  
-          left:-33px;
-  
-          bottom:60px;
-          /* transform: rotate(270deg); */
+        }
+        .allergies-text p{
+          font-size: 8pt;
+          height: 10px;
+          width: 20px;
+          margin-block-start: auto;
+          margin-block-end: auto;
+          white-space: nowrap;
         }
         .tiffin-text {
           transform: rotate(270deg);
@@ -284,6 +285,8 @@
           /* overflow: hidden; */
           margin-left: 2px;
           margin-right: 2px;
+          flex-grow: 0;
+          flex-shrink: 0;
         }
         .cut-mark-circle{
           height:16px;
@@ -332,10 +335,6 @@
           top:0;
           left:50%;
           background-color: black;
-         
-         
-      
-        
         }
   </style>
   <div class="parent-container">
@@ -458,7 +457,8 @@
         </div>
         {% if student_data.has_allergies %}
         <div class="allergies-text">
-          <p style="font-size: {{reduce_font_size_steps(12,1,student_data.allergies,8,8)}}px;">Alrgy: {{ student_data.allergies }}</p></div>
+          <p>Alrgy: {{ student_data.allergies }}</p>
+        </div>
         {% endif %}
       </div>
     </div>
