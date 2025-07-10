@@ -59,23 +59,24 @@ class CustomFees(Fees):
             company_list = self.company_wise_balance()
             split_amount = deposit_amount/len(company_list)
             for company in company_list:
-                if company.balance >= split_amount:
-                    self.reverse_partial_amount(company.company,split_amount,deposit=1)
-                    company.balance -= split_amount
+                if company.get('balance') >= split_amount:
+                    self.reverse_partial_amount(company.get('company'),split_amount,deposit=1)
+                    company['balance'] -= split_amount
                 else:
-                    self.reverse_partial_amount(company.company,company.balance,deposit=1)
-                    remaining_deposit += split_amount - company.balance
-                    company.balance = 0 
+                    if company.get('balance') > 0:
+                        self.reverse_partial_amount(company.get('company'),company.get('balance'),deposit=1)
+                        remaining_deposit += split_amount - company.get('balance')
+                        company['balance'] = 0 
             while remaining_deposit > 0:
                 for company in company_list:
-                    if company.balance >= remaining_deposit:
-                        self.reverse_partial_amount(company.company,remaining_deposit,deposit=1)
-                        company.balance -= remaining_deposit
+                    if company.get('balance') >= remaining_deposit:
+                        self.reverse_partial_amount(company.get('company'),remaining_deposit,deposit=1)
+                        company['balance'] -= remaining_deposit
                         remaining_deposit = 0
                     else:
-                        self.reverse_partial_amount(company.company,company.balance,deposit=1)
-                        remaining_deposit = remaining_deposit - company.balance
-                        company.balance = 0
+                        self.reverse_partial_amount(company.get('company'),company.get('balance'),deposit=1)
+                        remaining_deposit = remaining_deposit - company.get('balance')
+                        company['balance'] = 0
             
 
 
@@ -196,7 +197,7 @@ class CustomFees(Fees):
 
 
     def deposit_adjustment_entry(self,amount):
-        
+
         company = frappe.get_doc("Company",frappe.defaults.get_user_default("company"))
 
         je = frappe.new_doc("Journal Entry")

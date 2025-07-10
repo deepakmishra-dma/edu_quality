@@ -9,6 +9,7 @@ frappe.ui.form.on("Student", {
         addReferral(frm);
         swapDivisionButton(frm);
         cancelStudent(frm);
+        // changeClass(frm);
     },
 
     custom_late_drop: markLateDrop,
@@ -39,7 +40,7 @@ function markLateDrop(frm) {
                 });
 
             }
-       
+
         }
     });
 }
@@ -66,7 +67,7 @@ function markEarlyPickup(frm) {
                 });
 
             }
-         
+
         }
     });
 }
@@ -79,81 +80,80 @@ function cancelStudent(frm) {
         if (!frm.doc.custom_cancellation_letter) {
             frappe.throw("Upload Cancellation Letter to Continue!");
         }
-        frappe.call({
-            doc: frm.doc,
-            method: "validate_bank_account",
-            callback: function (response) {
-                if (!response.message) {
-                    bank_validation = false;
-                    // return frappe.throw("Bank Account is not linked to this student");
-                }
-            }
-        })
+        // frappe.call({
+        //     doc: frm.doc,
+        //     method: "validate_bank_account",
+        //     callback: function (response) {
+        //         if (!response.message) {
+        //             bank_validation = false;
+        //             // return frappe.throw("Bank Account is not linked to this student");
+        //         }
+        //     }
+        // })
 
 
         frappe.call({
             doc: frm.doc,
             method: "get_academic_years",
             callback: function (response) {
-                if (response.message) {
-                    let d = new frappe.ui.Dialog({
-                        title: 'Student Cancellation',
-                        fields: [
-                            {
-                                label: 'Academic Year',
-                                fieldname: 'academic_year',
-                                fieldtype: 'Select',
-                                options: response.message,
-                            },
-                            {
-                                label: 'Fee Collection',
-                                fieldname: 'fee_collection',
-                                fieldtype: 'Select',
-                                options: ["Ignore Pending Fee", "Collect Full Fee", "Collect Partial Fee", "Deduct from Deposit", "Deposit Refund"]
-                            }
-                        ],
-                        size: 'large',
-                        primary_action_label: 'Submit',
-                        primary_action(values) {
-                            frappe.call({
-                                doc: frm.doc,
-                                method: "cancel_student",
-                                type: "POST",
-                                args: {
-                                    academic_year: values.academic_year,
-                                    fee_collection: values.fee_collection,
-                                },
-                                callback: function (response) {
-                                    if (response.message == 1) {
-                                        frappe.show_alert({
-                                            message: __("Student Cancellation Successful!"),
-                                            indicator: 'green'
-                                        });
-                                        frm.reload_doc();
-                                    }
-                                    else {
-                                        frappe.show_alert({
-                                            message: __("Something Went Wrong!"),
-                                            indicator: 'red'
-                                        });
-                                    }
-
-                                }
-                            });
-                            d.hide();
+                let d = new frappe.ui.Dialog({
+                    title: 'Student Cancellation',
+                    fields: [
+                        {
+                            label: 'Academic Year',
+                            fieldname: 'academic_year',
+                            fieldtype: 'Select',
+                            options: response.message,
+                        },
+                        {
+                            label: 'Fee Collection',
+                            fieldname: 'fee_collection',
+                            fieldtype: 'Select',
+                            options: ["Ignore Pending Fee", "Collect Full Fee", "Collect Partial Fee", "Deduct from Deposit", "Deposit Refund"]
                         }
-                    });
-                    if (bank_validation) {
-                        d.show();
-                    }
-                    else {
+                    ],
+                    size: 'large',
+                    primary_action_label: 'Submit',
+                    primary_action(values) {
+                        frappe.call({
+                            doc: frm.doc,
+                            method: "cancel_student",
+                            type: "POST",
+                            args: {
+                                academic_year: values.academic_year,
+                                fee_collection: values.fee_collection,
+                            },
+                            callback: function (response) {
+                                if (response.message == 1) {
+                                    frappe.show_alert({
+                                        message: __("Student Cancellation Successful!"),
+                                        indicator: 'green'
+                                    });
+                                    frm.reload_doc();
+                                }
+                                else {
+                                    frappe.show_alert({
+                                        message: __("Something Went Wrong!"),
+                                        indicator: 'red'
+                                    });
+                                }
+
+                            }
+                        });
                         d.hide();
                     }
+                });
+                if (bank_validation) {
+                    d.show();
                 }
+                else {
+                    d.hide();
+                }
+
             }
         })
 
-    });
+    }, __("Action"));
 
 }
 
@@ -209,7 +209,7 @@ function addReferral(frm) {
 
         d.show();
 
-    });
+    }, __("Action"));
 }
 
 function addFeeDetails(frm) {
@@ -385,7 +385,7 @@ function swapDivisionButton(frm) {
 
         d.show();
 
-    });
+    }, __("Action"));
 }
 
 function swapDivision(frm, student, program_enrollment, division) {
@@ -413,4 +413,83 @@ function swapDivision(frm, student, program_enrollment, division) {
             }
         }
     });
+}
+
+
+function changeClass(frm) {
+    frm.add_custom_button(__('Change Class'), function () {
+        let d = new frappe.ui.Dialog({
+            title: 'Change Class',
+            fields: [
+                {
+                    label: 'School',
+                    fieldname: 'school',
+                    fieldtype: 'Link',
+                    options: "School",
+                    reqd: 1,
+                    default: frm.doc.school,
+                },
+                {
+                    label: 'Class',
+                    fieldname: 'class',
+                    fieldtype: 'Link',
+                    options: "Program",
+                    default: frm.doc.program,
+                    reqd: 1,
+                    get_query: function () {
+                        return {
+                            doctype: 'Program',
+                            filters: [["school", "=", d.get_value('school')]],
+                        };
+                    }
+                },
+                {
+                    label: 'Division',
+                    fieldname: 'division',
+                    fieldtype: 'Link',
+                    options: "Student Group",
+                    default: frm.doc.custom_division + "-" + frm.doc.program,
+                    reqd: 1,
+                    get_query: function () {
+                        return {
+                            doctype: 'Student Group',
+                            filters: [["program", "=", d.get_value('class')], ["academic_year", "=", frm.doc.custom_academic_year]],
+                        };
+                    }
+                },
+            ],
+            size: 'large',
+            primary_action_label: 'Submit',
+            primary_action(values) {
+                frappe.call({
+                    doc: frm.doc,
+                    method: "change_class",
+                    type: "POST",
+                    args: {
+                        school: values.school,
+                        program: values.class,
+                        division: values.division
+                    },
+                    callback: function (response) {
+                        if (response.message == 1) {
+                            frappe.show_alert({
+                                message: __("Class Change Successful!"),
+                                indicator: 'green'
+                            });
+                            frm.reload_doc();
+                        }
+                        else {
+                            frappe.show_alert({
+                                message: __("Something Went Wrong!"),
+                                indicator: 'red'
+                            });
+                        }
+
+                    }
+                });
+                d.hide();
+            }
+        });
+        d.show();
+    }, __("Action"));
 }
