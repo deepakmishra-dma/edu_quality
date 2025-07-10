@@ -2,6 +2,8 @@
 # For license information, please see license.txt
 
 import frappe
+from datetime import date
+from weasyprint import HTML
 from frappe.model.document import Document
 from edu_quality.edu_quality.server_scripts.student_applicant import generate_hash
 from frappe.auth import LoginManager
@@ -75,4 +77,37 @@ def set_guardian_permissions(doc):
             perm.insert(ignore_permissions=True)
 
 
+@frappe.whitelist()
+def print_birthday_card(birthday_card):
+    try: 
+        base_url = frappe.utils.get_url()
+        birthday_card = frappe.get_doc("Birthday Card", birthday_card)
+        dob = frappe.get_value("Student", birthday_card.student, "date_of_birth")
+        today = date.today()
+        age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+        program_name = frappe.get_value("Program", birthday_card.program, "program_name")
+        student_name = frappe.get_value("Student", birthday_card.student, "student_name")
 
+        template = frappe.render_template(
+            "edu_quality/templates/pdf/birthday_card.html",
+            {
+                "traits": birthday_card.traits,
+                "student_name": student_name,
+                "dob": dob.strftime("%d-%m-%Y"),
+                "age": abs(age),
+                "program_name": program_name,
+            },
+        )
+
+        html = HTML(string=template, base_url=base_url)
+        main_doc = html.render()
+        main_pdf = main_doc.write_pdf()
+
+        filename = f"Birthday Card ({birthday_card.student}).pdf".replace(" ", "-").replace("/", "-")
+
+        frappe.local.response.filename = filename
+        frappe.local.response.filecontent = main_pdf
+        frappe.local.response.type = "pdf"
+        return main_pdf
+    except Exception as e:
+        frappe.log_error("Print Birthday Card Error", frappe.get_traceback())
