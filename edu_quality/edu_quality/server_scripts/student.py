@@ -133,6 +133,7 @@ def swap_division(**kwargs):
             remove_from_division(pe_doc)
             # update student group in program enrollment
             frappe.db.set_value("Program Enrollment", pe, "student_group", division) 
+            frappe.db.set_value("Program Enrollment", pe, "tiffin_rack_no", None) 
             # add to new division 
             add_to_division(pe_doc, division)
             return True
@@ -294,7 +295,7 @@ def update_program_enrollments(pe_doc_1, pe_doc_2):
     # update student group, tiffin rack no, and batch in program enrollment
     to_update = {
         "student_group": pe_doc_2.student_group,
-        "tiffin_rack_no": pe_doc_2.tiffin_rack_no,
+        "tiffin_rack_no": None,
         "student_batch_name": pe_doc_2.student_batch_name
     }
     frappe.db.set_value("Program Enrollment", pe_doc_1.name, to_update)
