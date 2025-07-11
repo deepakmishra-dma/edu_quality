@@ -42,11 +42,12 @@ def name(self):
         self = json.loads(self) if isinstance(self, str) else self
 
         if not self.get("item_group"):
-            return
+            return self.item_code
 
         current_item_group = frappe.get_doc("Item Group", self.get("item_group"))
-        if current_item_group.get("parent_item_group") != "CMAP":
-            return
+
+        if not self.get("custom_is_cmap"):
+            return self.item_code
 
         short_code = current_item_group.custom_group_code
         subject = frappe.get_doc("Course", self.get("custom_subject"))
@@ -70,7 +71,8 @@ def name(self):
 
 
 def autoname(self, method=None):
-    self.item_code = name(self)
+    if self.get("custom_is_cmap"):
+        self.item_code = name(self)
     self.name = self.item_code
     self.item_name = self.item_code
 
@@ -81,8 +83,7 @@ def calculate_sheet_number(self):
     if not self.get("item_group"):
         return
 
-    current_item_group = frappe.get_doc("Item Group", self.get("item_group"))
-    if current_item_group.get("parent_item_group") != "CMAP":
+    if not self.get("custom_is_cmap"):
         return
 
     sheet_number = 1
@@ -111,6 +112,8 @@ def before_insert(self, method=None):
     if frappe.flags.in_import:
         self.custom_product_url = ""
         self.custom_is_imported = 1
+    if not self.custom_is_cmap:
+        return
     if not frappe.flags.in_import:
         self.custom_sheet_number = calculate_sheet_number(self)
     create_item_directory(self)

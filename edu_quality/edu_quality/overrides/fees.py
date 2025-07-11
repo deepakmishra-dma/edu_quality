@@ -3,7 +3,7 @@ import erpnext
 from education.education.doctype.fees.fees import Fees
 from erpnext.accounts.utils import get_account_currency, get_fiscal_years, validate_fiscal_year
 from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
-	get_accounting_dimensions,
+    get_accounting_dimensions,
 )
 from frappe.utils import (
     add_days,
@@ -22,13 +22,243 @@ from frappe import _, bold, throw
 from erpnext.accounts.general_ledger import make_gl_entries
 from erpnext.accounts.general_ledger import make_reverse_gl_entries
 from edu_quality.edu_quality.server_scripts.payment_split import generate_split_payment
+from frappe.desk.query_report import run
+
 
 class CustomFees(Fees):
+    @frappe.whitelist()
+    def get_uncreated_payment_terms(self):
+        terms = []
+        for term in self.payment_schedule:
+            if not frappe.db.exists("Payment Request",{'reference_name':self.name,'payment_term':term.payment_term,'docstatus':1}):
+                terms.append(term.payment_term)
+        return terms
+
+    @frappe.whitelist()
+    def create_payment_request(self,payment_term):
+        if not payment_term:
+            return frappe.throw("Invalid Payment Term!")
+        elif frappe.db.exists("Payment Request",{'reference_name':self.name,'payment_term':payment_term,'docstatus':1}):
+            return frappe.throw("Payment Request already created!")
+        else:
+            frappe.enqueue(
+                "edu_quality.public.py.student.create_payment_request",
+                fee=self,
+                term = payment_term,
+                is_async=True,
+                queue="long",
+                timeout=1800,
+            )
+            return frappe.msgprint("Payment Request Generation is enqueued!")
+    
+    def deduct_from_deposit(self,deposit_amount,deposit_account):
+        if self.outstanding_amount <=deposit_amount:
+            pending_fees = self.company_wise_pending_fees()
+        else:
+            remaining_deposit = 0
+            company_list = self.company_wise_balance()
+            split_amount = deposit_amount/len(company_list)
+            for company in company_list:
+                if company.get('balance') >= split_amount:
+                    self.reverse_partial_amount(company.get('company'),split_amount,deposit=1)
+                    company['balance'] -= split_amount
+                else:
+                    if company.get('balance') > 0:
+                        self.reverse_partial_amount(company.get('company'),company.get('balance'),deposit=1)
+                        remaining_deposit += split_amount - company.get('balance')
+                        company['balance'] = 0 
+            while remaining_deposit > 0:
+                for company in company_list:
+                    if company.get('balance') >= remaining_deposit:
+                        self.reverse_partial_amount(company.get('company'),remaining_deposit,deposit=1)
+                        company['balance'] -= remaining_deposit
+                        remaining_deposit = 0
+                    else:
+                        self.reverse_partial_amount(company.get('company'),company.get('balance'),deposit=1)
+                        remaining_deposit = remaining_deposit - company.get('balance')
+                        company['balance'] = 0
+            
+
+
+
+
     def generate_split(self):
         generate_split_payment(self)
 
     def update_split(self):
         generate_split_payment(self,update=1)
+        
+    def on_cancel(self):
+        self.ignore_linked_doctypes = ("GL Entry", "Payment Ledger Entry","Journal Entry")
+        make_reverse_gl_entries(voucher_type=self.doctype, voucher_no=self.name)
+        # frappe.db.set(self, 'status', 'Cancelled')
+
+    def reverse_pending_fees(self):
+        if not self.outstanding_amount < self.grand_total:
+            return frappe.throw("Fees has not been paid!")
+        return self.company_wise_pending_fees()
+    
+    def company_wise_balance(self):
+        result = []
+        company_list = frappe.get_all("Company")
+        for company in company_list:
+            company_doc = frappe.get_doc("Company",company.name)
+            filter = {
+                "company":company.name,
+                "from_date":str(self.posting_date),
+                "to_date":frappe.utils.nowdate(),
+                "account":[company_doc.default_receivable_account],
+                "party_type":"Student",
+                "party":[self.student],
+                "party_name":self.student,
+                "group_by":"Group by Voucher (Consolidated)",
+                "cost_center":[],
+                "school":[],
+                "program":[],
+                "project":[],
+                "include_dimensions":1,
+                "include_default_book_entries":1,
+                "show_remarks":1}
+            report = run(report_name="General Ledger",filters=filter,user="Administrator")
+            balance = report['result'][-1]['balance']
+            result.append({"company":company,"balance":balance})
+        return result
+        
+    def company_wise_pending_fees(self,deposit=0):
+        result = self.company_wise_balance()
+        for company in result:
+            if company.get('balance') > 0:
+                self.reverse_partial_amount(company.get('company'),company.get('balance'),deposit)
+        return 1
+
+    def reverse_partial_amount(self,company,amount,deposit):
+        company = frappe.get_doc("Company",company.name)
+        account = company.custom_default_concession_account
+        if deposit:
+            account = company.default_cash_account 
+
+        je = frappe.new_doc("Journal Entry")
+        je.update({
+                    "is_system_generated": 1,
+                    "title": "Fee Concession",
+                    "voucher_type": "Journal Entry",
+                    "naming_series": "ACC-JV-.YYYY.-",
+                    "company": company.name,
+                    "posting_date": frappe.utils.nowdate(),
+                    "cheque_no": self.name,
+                    "cheque_date": frappe.utils.nowdate(),
+                    "user_remark": "Fee Concession",
+                    "total_debit": amount,
+                    "total_credit": amount,
+                    "write_off_based_on": "Accounts Receivable",
+                    "write_off_amount": 0,
+                    "letter_head": "Default letter head",
+                    "is_opening": "No",
+                    "repost_required": 0,
+                    "doctype": "Journal Entry",
+        })
+        je.append("accounts", 
+                  {
+                    "account": account,
+                    "account_type": "Expense Account",
+                    "cost_center": company.cost_center,
+                    "account_currency": "INR",
+                    "exchange_rate": 1,
+                    "debit_in_account_currency": amount,
+                    "debit": amount,
+                    "credit_in_account_currency": 0,
+                    "credit": 0,
+                    "reference_type": "Fees",
+                    "reference_name": self.name,
+                    "reference_due_date": frappe.utils.nowdate(),
+                    "is_advance": "No",
+                    "user_remark": "Fee Concession",
+                    "against_account": company.default_receivable_account
+                    })
+        je.append("accounts",
+                  {
+                        "account": company.default_receivable_account,
+                        "account_type": "",
+                        "party_type": "Student",
+                        "party": self.student,
+                        "cost_center": company.cost_center,
+                        "account_currency": "INR",
+                        "exchange_rate": 1,
+                        "debit_in_account_currency": 0,
+                        "debit": 0,
+                        "credit_in_account_currency": amount,
+                        "credit": amount,
+                        "is_advance": "No",
+                        "against_account": account
+                        })
+        je.save(ignore_permissions=True)
+        je.submit()
+
+
+
+    def deposit_adjustment_entry(self,amount):
+
+        company = frappe.get_doc("Company",frappe.defaults.get_user_default("company"))
+
+        je = frappe.new_doc("Journal Entry")
+        je.update({
+                    "is_system_generated": 1,
+                    "title": "Deposit Adjustment",
+                    "voucher_type": "Journal Entry",
+                    "naming_series": "ACC-JV-.YYYY.-",
+                    "company": company.name,
+                    "posting_date": frappe.utils.nowdate(),
+                    "cheque_no": self.name,
+                    "cheque_date": frappe.utils.nowdate(),
+                    "user_remark": "Deposit Adjustment",
+                    "total_debit": amount,
+                    "total_credit": amount,
+                    "write_off_based_on": "Accounts Receivable",
+                    "write_off_amount": 0,
+                    "letter_head": "Default letter head",
+                    "is_opening": "No",
+                    "repost_required": 0,
+                    "doctype": "Journal Entry",
+        })
+        je.append("accounts", 
+                  {
+                    "account": company.default_deposit_account,
+                    "account_type": "Payable",
+                    "cost_center": company.cost_center,
+                    "account_currency": "INR",
+                    "exchange_rate": 1,
+                    "debit_in_account_currency": amount,
+                    "debit": amount,
+                    "credit_in_account_currency": 0,
+                    "credit": 0,
+                    "reference_type": "Fees",
+                    "reference_name": self.name,
+                    "reference_due_date": frappe.utils.nowdate(),
+                    "is_advance": "No",
+                    "user_remark": "Deposit Adjustment",
+                    "against_account": company.default_cash_account
+                    })
+        je.append("accounts",
+                  {
+                        "account": company.default_cash_account,
+                        "account_type": "Cash",
+                        "party_type": "Student",
+                        "party": self.student,
+                        "cost_center": company.cost_center,
+                        "account_currency": "INR",
+                        "exchange_rate": 1,
+                        "debit_in_account_currency": 0,
+                        "debit": 0,
+                        "credit_in_account_currency": amount,
+                        "credit": amount,
+                        "is_advance": "No",
+                        "against_account": company.default_deposit_account
+                        })
+
+        je.save(ignore_permissions=True)
+        je.submit()
+
+
 
 
     def make_gl_entries(self):
@@ -280,36 +510,36 @@ def update_fee_components(doc):
 
 @erpnext.allow_regional
 def update_gl_dict_with_regional_fields(doc, gl_dict):
-	pass
+    pass
 
 def set_balance_in_account_currency(
-	gl_dict, account_currency=None, conversion_rate=None, company_currency=None
+    gl_dict, account_currency=None, conversion_rate=None, company_currency=None
 ):
-	if (not conversion_rate) and (account_currency != company_currency):
-		frappe.throw(
-			_("Account: {0} with currency: {1} can not be selected").format(
-				gl_dict.account, account_currency
-			)
-		)
+    if (not conversion_rate) and (account_currency != company_currency):
+        frappe.throw(
+            _("Account: {0} with currency: {1} can not be selected").format(
+                gl_dict.account, account_currency
+            )
+        )
 
-	gl_dict["account_currency"] = (
-		company_currency if account_currency == company_currency else account_currency
-	)
+    gl_dict["account_currency"] = (
+        company_currency if account_currency == company_currency else account_currency
+    )
 
-	# set debit/credit in account currency if not provided
-	if flt(gl_dict.debit) and not flt(gl_dict.debit_in_account_currency):
-		gl_dict.debit_in_account_currency = (
-			gl_dict.debit
-			if account_currency == company_currency
-			else flt(gl_dict.debit / conversion_rate, 2)
-		)
+    # set debit/credit in account currency if not provided
+    if flt(gl_dict.debit) and not flt(gl_dict.debit_in_account_currency):
+        gl_dict.debit_in_account_currency = (
+            gl_dict.debit
+            if account_currency == company_currency
+            else flt(gl_dict.debit / conversion_rate, 2)
+        )
 
-	if flt(gl_dict.credit) and not flt(gl_dict.credit_in_account_currency):
-		gl_dict.credit_in_account_currency = (
-			gl_dict.credit
-			if account_currency == company_currency
-			else flt(gl_dict.credit / conversion_rate, 2)
-		)
+    if flt(gl_dict.credit) and not flt(gl_dict.credit_in_account_currency):
+        gl_dict.credit_in_account_currency = (
+            gl_dict.credit
+            if account_currency == company_currency
+            else flt(gl_dict.credit / conversion_rate, 2)
+        )
           
 
 def get_fee_advance_entries(fees):

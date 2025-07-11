@@ -30,7 +30,7 @@ export const Header: React.FC<HeaderProps> = ({ setNavbarOpen }) => {
             w={50}
             sx={{
               position: "absolute",
-              left: 0,
+              left: 45,
               top: 0,
               bottom: 0,
               cursor: "pointer",
@@ -48,7 +48,7 @@ export const Header: React.FC<HeaderProps> = ({ setNavbarOpen }) => {
           mr={10}
           sx={{
             position: "absolute",
-            right: 0,
+            left: 0,
             top: 0,
             bottom: 0,
             cursor: "pointer",
@@ -60,6 +60,7 @@ export const Header: React.FC<HeaderProps> = ({ setNavbarOpen }) => {
           sx={{
             fontSize: 20,
             fontWeight: "bold",
+            marginLeft: "3rem"
           }}
         >
           {location.pathname === "/"
@@ -92,7 +93,11 @@ export const Header: React.FC<HeaderProps> = ({ setNavbarOpen }) => {
                                       ? "Weekly Updates"
                                       : /^\/result/.test(location.pathname)
                                         ? "Result"
-                                        : ""}
+                                        : location.pathname === "/ptm-link"
+                                          ? "PTM Links"
+                                          : location.pathname === "/student-profile"
+                                            ? "Student Profile"
+                                            : ""}
         </Box>
       </Stack>
     </MantineHeader>

@@ -13,7 +13,8 @@
   "photo_taken_time",
   "id_card_given_on",
   "qr_code",
-  "qr_code_preview"
+  "qr_code_preview",
+  "events"
  ],
  "fields": [
   {
@@ -25,7 +26,7 @@
    "fieldname": "status",
    "fieldtype": "Select",
    "label": "Status",
-   "options": "PENDING\nCLICKED\nPRINTED"
+   "options": "PENDING\nPENDING(PDF CREATED)\nCLICKED\nPRINTED\nSENT TO PRINT\nRECEIVED BY SCHOOL\nRECEIVED BY STUDENT"
   },
   {
    "fieldname": "program_enrolled_in",
@@ -54,12 +55,18 @@
    "fieldtype": "HTML",
    "label": "Qr Code Preview",
    "options": "<p>QR Code stored in field <i>QR Code</i>:</p>\n<img src=\"{{ doc.qr_code }}\" alt=\"{{ doc.title }}\">"
+  },
+  {
+   "fieldname": "events",
+   "fieldtype": "Table",
+   "label": "Events",
+   "options": "ID Card Event"
   }
  ],
  "image_field": "photo_taken",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-11-17 13:38:51.481522",
+ "modified": "2024-04-29 18:03:15.260011",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Student ID Card",
@@ -80,5 +87,6 @@
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": []
+ "states": [],
+ "track_changes": 1
 }

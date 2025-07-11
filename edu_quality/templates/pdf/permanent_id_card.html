@@ -70,7 +70,7 @@
   
           right:-25%;
           transform: rotate(135deg);
-          top:14%;
+          top:16.85%;
         }
         .allergies-logo{
           border: solid 40px;
@@ -220,8 +220,9 @@
         .address-info p {
           text-transform:uppercase;
           font-size: 9px;
-          margin-left: 4px;
+          margin-left: 10px;
           font-weight: 500;
+          width: 90%;
         }
   
         .school-data {
@@ -231,27 +232,26 @@
         }
         .info-container{
           position: relative;
-  
         }
         .allergies-text{
-  
           transform: rotate(270deg);
           position: absolute;
-  
-          left:-12px;
-  
-          bottom:28px;
-          /* transform: rotate(270deg); */
+        }
+        .allergies-text p{
           font-size: 8pt;
-          font-weight: 600;
+          height: 10px;
+          width: 20px;
+          margin-block-start: auto;
+          margin-block-end: auto;
+          white-space: nowrap;
         }
         .tiffin-text {
           transform: rotate(270deg);
           position: absolute;
   
-          right:0px;
+          right:-20px;
   
-          bottom:28px;
+          bottom:60px;
           /* transform: rotate(270deg); */
           font-size: 8pt;
           font-weight: 600;
@@ -285,6 +285,8 @@
           /* overflow: hidden; */
           margin-left: 2px;
           margin-right: 2px;
+          flex-grow: 0;
+          flex-shrink: 0;
         }
         .cut-mark-circle{
           height:16px;
@@ -333,10 +335,6 @@
           top:0;
           left:50%;
           background-color: black;
-         
-         
-      
-        
         }
   </style>
   <div class="parent-container">
@@ -397,9 +395,10 @@
         </div>
       </div>
       <div class="detail-container">
+        {% set font_size = reduce_font_size_steps(18,1.2,student_data,10,5)%}
         <div class="student-name">
-          <p style='font-size: {{reduce_font_size_steps(18,1,student_data.first_name,10,5)}}px;'>{{student_data.first_name.replace(" ", "&nbsp;")}}</p>
-          <p style='font-size: {{reduce_font_size_steps(18,1,student_data.first_name,10,5)}}px;'>{{student_data.last_name}}</p>
+          <p style='font-size: {{font_size}}px;'>{{student_data.first_name.replace(" ", "&nbsp;")}}</p>
+          <p style='font-size: {{font_size}}px;'>{{student_data.last_name}}</p>
         </div>
         <div class="academic-details">
           <div class="academic-year">
@@ -436,8 +435,7 @@
         <div class="address-info">
           <p>{{student_data.address_line_1[:60] if student_data.address_line_1 else ''}}</p>
           <p>{{student_data.address_line_2[:50] if student_data.address_line_2 else ''}}</p>
-          <p>{{student_data.city or ''}}</p>
-          <p>{{student_data.pincode or ''}}</p>
+          <p>{{student_data.city or ''}} {{student_data.pincode or ''}}</p>
         </div>
       </div>
       <div class="info-container">
@@ -458,7 +456,9 @@
           <p>{{doc.tiffin_rack_no or ""}}</p>
         </div>
         {% if student_data.has_allergies %}
-        <div class="allergies-text"><p>Allergies</p></div>
+        <div class="allergies-text">
+          <p>Alrgy: {{ student_data.allergies }}</p>
+        </div>
         {% endif %}
       </div>
     </div>

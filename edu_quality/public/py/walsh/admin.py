@@ -28,7 +28,7 @@ def get_guardian_emails(student):
     return guardian_emails
 
 
-def send_notification(student_id, subject, notice_id="",cmap=False):
+def send_notification(student_id, subject="", notice_id="",cmap=False,custom=None):
     student_guardians = frappe.get_all(
         "Student Guardian",
         filters={'parent': student_id, 'parenttype': 'Student'},
@@ -53,6 +53,9 @@ def send_notification(student_id, subject, notice_id="",cmap=False):
                         "data": {"url_path": f"/cmap/"},
                         # "body": json.dumps({"url_path": f"/notice/{notice_id}?student={student_id}"})
                     })
+                elif custom and isinstance(custom, dict):
+                    custom["to"] = push_token.get("token")
+                    payload = json.dumps(custom)
                 else:  
                     payload = json.dumps({
                         "to": push_token.get("token"),
@@ -671,3 +674,48 @@ def get_student_count(**kwargs):
                     and student_status in %(student_statuses)s
                 ''', values=students_values, as_dict=1)
     return students[0].get("count")
+
+# renders a email template with provided data, with subject of template as notice subject.
+@frappe.whitelist()
+def create_notice_from_email_template(data, email_template,send_notif=False):
+    try:
+        data = json.loads(data) if isinstance(data, str) else data
+        email_temp_doc = frappe.get_doc("Email Template", email_template)
+        subject = email_temp_doc.subject
+        content = ""
+        if email_temp_doc.use_html == 1:
+            content = email_temp_doc.response_html
+        else:
+            content = email_temp_doc.response
+        content = render_jinja(content, data)
+        subject = render_jinja(subject, data)
+        student = data.get("student")
+        notice = frappe.get_doc(
+            {
+                "doctype": "School Notice",
+                "class": data.get("program"),
+                "is_generic_notice": data.get("is_generic_notice") or 0,
+                "school": data.get("school"),
+                "subject":subject,
+                "student": student,
+                "division":data.get("division"),
+                "student_status": data.get("student_status"),
+                "notice": content,
+                "academic_year": data.get("academic_year"),
+                "is_raw_html": 1,
+            }
+        ).insert(ignore_permissions=True)
+        
+        frappe.enqueue(
+            send_notification,
+            queue="long",
+            student_id=student,
+            custom={
+                "title": subject,
+                "data": {"url_path": f"/notice/{notice.name}?student={student}"},
+            },
+        )
+        
+    except Exception as e:
+        frappe.logger("Notice Email").exception(e)
+        raise e

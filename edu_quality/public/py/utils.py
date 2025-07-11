@@ -275,11 +275,13 @@ def handle_undertaking_submission(**kwargs):
         student = doc.student
         doctype = "Fees"
         docname = doc.name
+        payment_term = kwargs.get("payment_term")
     elif kwargs.get("fee_advance"):
         doc = frappe.get_doc("Fee Advance", kwargs.get("fee_advance"))
         student = doc.student
         doctype = "Fee Advance"
         docname = doc.name
+        payment_term = kwargs.get("payment_term")
     else:
         payment_hash = kwargs.get("payment_request")
         student, doctype, docname, payment_term = frappe.get_value(
@@ -520,7 +522,11 @@ def email_recipients(variables, student, case):
     variables["recipients_str"] = recipients_str
 
 
-def reduce_font_size_steps(initial_size, step, txt, initial_char_length, lowest):
+def reduce_font_size_steps(initial_size, step, data, initial_char_length, lowest):
+    if isinstance(data, str):
+        txt = data
+    elif isinstance(data, frappe.model.document.Document):
+        txt = data.first_name if len(data.first_name) > len(data.last_name) else data.last_name
     if len(txt) <= initial_char_length:
         return initial_size
     rem = len(txt) % int(initial_char_length)

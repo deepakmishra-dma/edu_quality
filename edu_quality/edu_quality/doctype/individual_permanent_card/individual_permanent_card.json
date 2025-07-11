@@ -1,0 +1,50 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-04-24 01:39:19.504661",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "program_enrollment",
+  "id_card",
+  "school"
+ ],
+ "fields": [
+  {
+   "fetch_from": "program_enrollment.custom_id_card",
+   "fieldname": "id_card",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Id card",
+   "options": "Student ID Card"
+  },
+  {
+   "fetch_from": ".program_enrolled_in",
+   "fieldname": "program_enrollment",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Program Enrollment",
+   "options": "Program Enrollment"
+  },
+  {
+   "fetch_from": "program_enrollment.custom_school",
+   "fieldname": "school",
+   "fieldtype": "Link",
+   "label": "School",
+   "options": "School"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-04-26 15:22:57.405137",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "Individual Permanent Card",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

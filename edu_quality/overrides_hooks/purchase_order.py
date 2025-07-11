@@ -28,10 +28,10 @@ def get_selected_item_map(items):
     return {item: True for item in items}
 
 
-def transform_data(items, selected_items, purchase_receipt_items=None):
+def transform_data(items, selected_items, purchase_receipt_items=None, self=None):
     item_map = {}
     item_codes = [item.get("item_code") for item in items]
-    frappe.errprint(selected_items)
+
     item_data = frappe.db.get_list(
         "Item",
         filters=[["item_code", "in", item_codes]],
@@ -45,11 +45,16 @@ def transform_data(items, selected_items, purchase_receipt_items=None):
             "custom_product_url",
         ],
     )
+
     item_code_data = {}
     warehouse_to_name_map = get_warehouse_to_school_map(items)
     for data in item_data:
         item_code_data[data.get("name")] = data
-
+    if self.get("custom_is_id_card"):
+        perm_id_card = frappe.get_doc(
+            "Permanent Id Card", self.get("custom_reference_docname")
+        )
+        item_code_data["ID Card"]["custom_product_url"] = perm_id_card.file
     for item in items:
         school_name = warehouse_to_name_map.get(item.get("warehouse")) or item.get(
             "warehouse"
@@ -91,15 +96,13 @@ def transform_data(items, selected_items, purchase_receipt_items=None):
     selected_items_hash = {}
     if selected_items:
         selected_items_hash = {i: True for i in selected_items}
-    frappe.errprint(item_map)
-    frappe.errprint(selected_items_hash)
 
     transformed_items = [
         item_map.get(item)
         for item in item_map
-        if selected_items_hash.get(item) or selected_items == None
+        if selected_items_hash.get(item) or selected_items == None or not selected_items
     ]
-    frappe.errprint(transformed_items)
+
     return transformed_items
 
 
@@ -108,7 +111,7 @@ def before_validate(self, method=None):
     calculate_print_count(self)
 
 
-def get_columns(school_fields):
+def get_columns(school_fields, self):
     school_array = []
     for i in school_fields:
         school_array.append(
@@ -123,27 +126,8 @@ def get_columns(school_fields):
                 "width": 200,
             }
         ),
+
     columns = [
-        {
-            "name": "Subject",
-            "id": "subject",
-            "editable": False,
-            "resizable": False,
-            "sortable": False,
-            "focusable": False,
-            "dropdown": False,
-            "width": 100,
-        },
-        {
-            "name": "Chapter",
-            "id": "chapter",
-            "editable": False,
-            "resizable": False,
-            "sortable": False,
-            "focusable": False,
-            "dropdown": False,
-            "width": 100,
-        },
         {
             "name": "Code",
             "id": "item_code",
@@ -166,7 +150,31 @@ def get_columns(school_fields):
         },
         *school_array,
     ]
-    return columns
+    subject_columns = []
+    if self.get("custom_is_cmap_print"):
+        subject_columns = [
+            {
+                "name": "Subject",
+                "id": "subject",
+                "editable": False,
+                "resizable": False,
+                "sortable": False,
+                "focusable": False,
+                "dropdown": False,
+                "width": 100,
+            },
+            {
+                "name": "Chapter",
+                "id": "chapter",
+                "editable": False,
+                "resizable": False,
+                "sortable": False,
+                "focusable": False,
+                "dropdown": False,
+                "width": 100,
+            },
+        ]
+    return subject_columns + columns
 
 
 @frappe.whitelist()
@@ -184,27 +192,30 @@ def get_linked_receipts(name, item_code):
 def generate_challan_list(self, selected_items=None):
 
     self = json.loads(self) if isinstance(self, str) else self
+    old_self = self
     selected_items = (
         json.loads(selected_items)
         if isinstance(selected_items, str)
         else selected_items
     )
     purchase_receipt_items = None
-    # purchase_receipt_item_doc = frappe.qb.docType("Purchase Receipt Item")
+
     purchase_receipt_items = frappe.db.get_list(
         "Purchase Receipt Item",
         filters={"purchase_order": self.get("name")},
         fields=["name", "item_code"],
         ignore_permissions=True,
     )
-    frappe.errprint(purchase_receipt_items)
+
     if len(purchase_receipt_items):
         purchase_receipt_items = {
             i.get("item_code"): True for i in purchase_receipt_items
         }
     else:
         purchase_receipt_items = None
-    self = transform_data(self.get("items"), selected_items, purchase_receipt_items)
+    self = transform_data(
+        self.get("items"), selected_items, purchase_receipt_items, self
+    )
     item_table = frappe.qb.DocType("Item")
     query = (
         frappe.qb.from_(item_table)
@@ -223,7 +234,7 @@ def generate_challan_list(self, selected_items=None):
 
     school_docs = frappe.db.get_list("School", filters=[["name", "in", schools_array]])
     # school_names = [name.get("name") for name in all_schools]
-    columns = get_columns(school_docs)
+    columns = get_columns(school_docs, old_self)
 
     return all_schools, columns, self
 
@@ -246,26 +257,26 @@ def create_purchase_receipt(self, school, selected_items=[]):
         fields=["name", "item_code", "warehouse"],
         ignore_permissions=True,
     )
-    frappe.errprint("hh")
-    frappe.errprint(selected_items)
+
     selected_item_map = get_selected_item_map(selected_items)
+
     warehouse_to_item_map = get_warehouse_to_item_map(purchase_receipt_items)
     warehouse_to_name_map = get_warehouse_to_school_map(self.get("items"))
     receipt = make_purchase_receipt(source_name=self.get("name"))
-    frappe.errprint(selected_item_map)
-    frappe.errprint(warehouse_to_item_map)
-    frappe.errprint(warehouse_to_name_map)
-    frappe.errprint(purchase_receipt_items)
+
     filtered_items = list(
         filter(
             lambda item: warehouse_to_name_map.get(item.get("warehouse")) == school
             and f"{item.get('item_code')}-{item.get('warehouse')}"
             not in warehouse_to_item_map
-            and item.get("item_code") in selected_item_map,
+            and (
+                item.get("item_code") in selected_item_map
+                or (not self.get("custom_is_cmap_print") and not selected_item_map)
+            ),
             receipt.get("items"),
         )
     )
-    frappe.errprint(filtered_items)
+
     if len(filtered_items) == 0:
         frappe.msgprint(
             f"Quantity is 0 or receipt already created for the selected {school} and selected items, Please create receipt for another one"
@@ -273,7 +284,7 @@ def create_purchase_receipt(self, school, selected_items=[]):
         return
     receipt.items = filtered_items
     receipt.rounded_total = 0
-    frappe.errprint(receipt.as_dict())
+
     last = self.get("name").split("-")[-1]
     receipt.naming_series = f"MAT-PRE-.YYYY.-{last}-{school_prefix}-"
     receipt.insert()
@@ -303,7 +314,7 @@ def send_test_order_email(self, user):
 
         from nextai.funnel.custom_trigger import trigger_event
 
-        if self.get("custom_is_cmap_print"):
+        if self.get("custom_is_cmap_print") or self.get("custom_is_id_card"):
             doc = frappe.get_doc("Purchase Order", self.get("name"))
             doc.custom_user_email = user
             doc.save(ignore_permissions=True)

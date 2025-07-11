@@ -37,6 +37,11 @@ def before_insert(doc,method=None):
     if validate_name(doc):
         create_user(doc)
         set_student_permissions(doc)
+
+
+def after_insert(doc,method=None):
+    # Give permission to guardian for guardian doctype
+    create_permission(doc.name, doc.user)
         
 
 def on_update(doc,method=None):
@@ -101,3 +106,14 @@ def set_student_permissions(doc,patch=0):
             perm.for_value = applicant.parent
             perm.insert(ignore_permissions=True)
             
+
+def create_permission(guardian, user):
+    if not user:
+        return
+
+    if not frappe.db.exists("User Permission", {"user": user, "allow": "Guardian", "for_value": guardian}):
+        perm = frappe.new_doc("User Permission")
+        perm.user = user
+        perm.allow = "Guardian"
+        perm.for_value = guardian
+        perm.insert(ignore_permissions=True)

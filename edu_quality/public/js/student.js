@@ -7,64 +7,158 @@ frappe.ui.form.on("Student", {
         addFeeDetails(frm);
         addParentDetails(frm);
         addReferral(frm);
+        swapDivisionButton(frm);
+        cancelStudent(frm);
+        // changeClass(frm);
     },
 
-    late_drop: function (frm) {
-        frappe.call({
-            method: "edu_quality.edu_quality.server_scripts.student.mark_entry",
-            args: {
-                student: frm.selected_doc.name,
-                reason: frm.selected_doc.reason,
-                status: "Late Drop"
-            },
-            callback: function (r) {
-                if (r.message) {
-                    frappe.show_alert({
-                        message: __("Marked Entry!"),
-                        indicator: 'green'
-                    });
-                }
-                else{
-                    frappe.show_alert({
-                        message: __("Something went wrong!"),
-                        indicator: 'red'
-                    });
-
-                }
-                d.hide();
-            }
-        });
-    },
-    early_pickup: function (frm) {
-        frappe.call({
-            method: "edu_quality.edu_quality.server_scripts.student.mark_entry",
-            args: {
-                student: frm.selected_doc.name,
-                reason: frm.selected_doc.reason,
-                status: "Early Pickup"
-            },
-            callback: function (r) {
-                if (r.message) {
-                    frappe.show_alert({
-                        message: __("Marked Entry!"),
-                        indicator: 'green'
-                    });
-                }
-                else{
-                    frappe.show_alert({
-                        message: __("Something went wrong!"),
-                        indicator: 'red'
-                    });
-
-                }
-                d.hide();
-            }
-        });
-    }
+    custom_late_drop: markLateDrop,
+    custom_early_pickup: markEarlyPickup,
+    late_drop: markLateDrop,
+    early_pickup: markEarlyPickup
 });
+function markLateDrop(frm) {
+
+    frappe.call({
+        method: "edu_quality.edu_quality.server_scripts.student.mark_entry",
+        args: {
+            student: frm.selected_doc.name,
+            reason: frm.selected_doc.custom_reason,
+            status: "Late Drop"
+        },
+        callback: function (r) {
+            if (r.message) {
+                frappe.show_alert({
+                    message: __("Marked Entry!"),
+                    indicator: 'green'
+                });
+            }
+            else {
+                frappe.show_alert({
+                    message: __("Something went wrong!"),
+                    indicator: 'red'
+                });
+
+            }
+
+        }
+    });
+}
+
+function markEarlyPickup(frm) {
+    frappe.call({
+        method: "edu_quality.edu_quality.server_scripts.student.mark_entry",
+        args: {
+            student: frm.selected_doc.name,
+            reason: frm.selected_doc.custom_reason,
+            status: "Early Pickup"
+        },
+        callback: function (r) {
+            if (r.message) {
+                frappe.show_alert({
+                    message: __("Marked Entry!"),
+                    indicator: 'green'
+                });
+            }
+            else {
+                frappe.show_alert({
+                    message: __("Something went wrong!"),
+                    indicator: 'red'
+                });
+
+            }
+
+        }
+    });
+}
+function cancelStudent(frm) {
+    if (frm.doc.student_status == "Cancelled") {
+        return 1
+    }
+    frm.add_custom_button(__('Cancel Student'), function () {
+        let bank_validation = true;
+        if (!frm.doc.custom_cancellation_letter) {
+            frappe.throw("Upload Cancellation Letter to Continue!");
+        }
+        // frappe.call({
+        //     doc: frm.doc,
+        //     method: "validate_bank_account",
+        //     callback: function (response) {
+        //         if (!response.message) {
+        //             bank_validation = false;
+        //             // return frappe.throw("Bank Account is not linked to this student");
+        //         }
+        //     }
+        // })
 
 
-function addReferral(frm){
+        frappe.call({
+            doc: frm.doc,
+            method: "get_academic_years",
+            callback: function (response) {
+                let d = new frappe.ui.Dialog({
+                    title: 'Student Cancellation',
+                    fields: [
+                        {
+                            label: 'Academic Year',
+                            fieldname: 'academic_year',
+                            fieldtype: 'Select',
+                            options: response.message,
+                        },
+                        {
+                            label: 'Fee Collection',
+                            fieldname: 'fee_collection',
+                            fieldtype: 'Select',
+                            options: ["Ignore Pending Fee", "Collect Full Fee", "Collect Partial Fee", "Deduct from Deposit", "Deposit Refund"]
+                        }
+                    ],
+                    size: 'large',
+                    primary_action_label: 'Submit',
+                    primary_action(values) {
+                        frappe.call({
+                            doc: frm.doc,
+                            method: "cancel_student",
+                            type: "POST",
+                            args: {
+                                academic_year: values.academic_year,
+                                fee_collection: values.fee_collection,
+                            },
+                            callback: function (response) {
+                                if (response.message == 1) {
+                                    frappe.show_alert({
+                                        message: __("Student Cancellation Successful!"),
+                                        indicator: 'green'
+                                    });
+                                    frm.reload_doc();
+                                }
+                                else {
+                                    frappe.show_alert({
+                                        message: __("Something Went Wrong!"),
+                                        indicator: 'red'
+                                    });
+                                }
+
+                            }
+                        });
+                        d.hide();
+                    }
+                });
+                if (bank_validation) {
+                    d.show();
+                }
+                else {
+                    d.hide();
+                }
+
+            }
+        })
+
+    }, __("Action"));
+
+}
+
+
+function addReferral(frm) {
     frm.add_custom_button(__('Add Referral'), function () {
         let d = new frappe.ui.Dialog({
             title: 'Add Referral',
@@ -77,7 +171,7 @@ function addReferral(frm){
                     get_query: function () {
                         return {
                             doctype: 'Student',
-                            filters: [["Student","referred_by","is","not set"]],
+                            filters: [["Student", "referred_by", "is", "not set"]],
                         };
                     }
                 }
@@ -93,20 +187,20 @@ function addReferral(frm){
                         referred_by: frm.doc.name
                     },
                     callback: function (response) {
-                        if(response.message==1){
-                        frappe.show_alert({
-                            message: __("Referral Added"),
-                            indicator: 'green'
-                        });
-                        frm.reload_doc();
-                    }
-                    else{
-                        frappe.show_alert({
-                            message: __("Something Went Wrong!"),
-                            indicator: 'red'
-                        });
-                    }
-                        
+                        if (response.message == 1) {
+                            frappe.show_alert({
+                                message: __("Referral Added"),
+                                indicator: 'green'
+                            });
+                            frm.reload_doc();
+                        }
+                        else {
+                            frappe.show_alert({
+                                message: __("Something Went Wrong!"),
+                                indicator: 'red'
+                            });
+                        }
+
                     }
                 });
                 d.hide();
@@ -115,11 +209,11 @@ function addReferral(frm){
 
         d.show();
 
-    });
+    }, __("Action"));
 }
 
 function addFeeDetails(frm) {
-    if(!frm.is_new()){
+    if (!frm.is_new()) {
         frappe.call({
             method: "edu_quality.public.py.student.get_fees_details",
             args: {
@@ -163,16 +257,16 @@ function addFeeDetails(frm) {
     }
 }
 
-function addParentDetails(frm){
-    if(!frm.is_new()){
-        frappe.call({ 
+function addParentDetails(frm) {
+    if (!frm.is_new()) {
+        frappe.call({
             method: "edu_quality.public.py.student.get_parents_details",
             args: {
-                student: frm.selected_doc.name 
+                student: frm.selected_doc.name
             },
-            callback: function(r) {
+            callback: function (r) {
                 let data = '';
-                if(r.message){
+                if (r.message) {
                     r.message.forEach((item, index) => {
                         console.log(item);
                         data += `<tr>
@@ -188,7 +282,7 @@ function addParentDetails(frm){
                         </tr>`;
                     });
 
-                    if (data){
+                    if (data) {
                         frm.$wrapper[0].querySelector("#parents").innerHTML = `
                         <table class="table table-bordered">
                             <tr>
@@ -214,4 +308,188 @@ function addParentDetails(frm){
             }
         });
     }
+}
+
+
+function swapDivisionButton(frm) {
+    frm.add_custom_button(__('Swap/Change Division'), async function () {
+        let cur_ay = await frappe.db.get_value('Academic Year', { custom_current_academic_year: 1 }, ['name']);
+        let cur_pe = await frappe.db.get_value('Program Enrollment', { student: frm.doc.name, program: frm.doc.program, academic_year: cur_ay.name }, ['name', 'student_group']);
+        let division = cur_pe.message.student_group.split('-')[0];
+        let cur_batch = await frappe.db.get_value('Student Group', { "name": cur_pe.message.student_group }, "batch")
+        let d = new frappe.ui.Dialog({
+            title: 'Swap/Change Division',
+            fields: [
+                {
+                    label: 'Swap With Student',
+                    fieldname: 'student_check',
+                    fieldtype: 'Check',
+                    default: 0,
+                    onchange: function () {
+                        if (d.get_value('student_check')) {
+                            d.set_df_property('student', 'hidden', 0);
+                            d.set_df_property('division', 'hidden', 1);
+                        } else {
+                            d.set_df_property('student', 'hidden', 1);
+                            d.set_df_property('division', 'hidden', 0);
+                        }
+                    }
+                },
+                {
+                    label: 'Division',
+                    fieldname: 'division',
+                    fieldtype: 'Link',
+                    options: "Student Group",
+                    get_query: function () {
+                        return {
+                            doctype: 'Student Group',
+                            filters: [["program", "=", frm.doc.program], ["academic_year", "=", cur_ay.message.name], ["name", "!=", cur_pe.message.student_group]],
+                        };
+                    }
+                },
+                {
+                    label: 'Student',
+                    fieldname: 'student',
+                    fieldtype: 'Link',
+                    options: "Student",
+                    hidden: 1,
+                    get_query: function () {
+                        return {
+                            doctype: 'Student',
+                            filters: [["program", "=", frm.doc.program], ["name", "!=", frm.doc.name], ["custom_division", "!=", division]],
+                        };
+                    }
+                }
+            ],
+            size: 'large',
+            primary_action_label: 'Submit',
+            primary_action: async function (values) {
+                let new_batch = await frappe.db.get_value('Student Group', { "name": values.division }, "batch");
+
+                if (cur_batch.message.batch == new_batch.message.batch) {
+                    swapDivision(frm, values.student, cur_pe.message.name, values.division);
+                } else {
+                    frappe.confirm('Change in batches, Are you sure you want to proceed?',
+                        () => { swapDivision(frm, values.student, cur_pe.message.name, values.division); },
+                        () => {
+                            frappe.show_alert({
+                                message: __("Action Cancelled"),
+                                indicator: 'orange'
+                            });
+                        }
+                    )
+                }
+                d.hide();
+            }
+        });
+
+        d.show();
+
+    }, __("Action"));
+}
+
+function swapDivision(frm, student, program_enrollment, division) {
+    frappe.call({
+        method: "edu_quality.edu_quality.server_scripts.student.swap_division",
+        type: "POST",
+        args: {
+            program_enrollment: program_enrollment,
+            division: division,
+            student_to_swap: student,
+        },
+        callback: function (response) {
+            if (response.message) {
+                frappe.show_alert({
+                    message: __("Division Swapped"),
+                    indicator: 'green'
+                });
+                frm.reload_doc();
+            }
+            else {
+                frappe.show_alert({
+                    message: __("Something Went Wrong! Please check Error log"),
+                    indicator: 'red'
+                });
+            }
+        }
+    });
+}
+
+
+function changeClass(frm) {
+    frm.add_custom_button(__('Change Class'), function () {
+        let d = new frappe.ui.Dialog({
+            title: 'Change Class',
+            fields: [
+                {
+                    label: 'School',
+                    fieldname: 'school',
+                    fieldtype: 'Link',
+                    options: "School",
+                    reqd: 1,
+                    default: frm.doc.school,
+                },
+                {
+                    label: 'Class',
+                    fieldname: 'class',
+                    fieldtype: 'Link',
+                    options: "Program",
+                    default: frm.doc.program,
+                    reqd: 1,
+                    get_query: function () {
+                        return {
+                            doctype: 'Program',
+                            filters: [["school", "=", d.get_value('school')]],
+                        };
+                    }
+                },
+                {
+                    label: 'Division',
+                    fieldname: 'division',
+                    fieldtype: 'Link',
+                    options: "Student Group",
+                    default: frm.doc.custom_division + "-" + frm.doc.program,
+                    reqd: 1,
+                    get_query: function () {
+                        return {
+                            doctype: 'Student Group',
+                            filters: [["program", "=", d.get_value('class')], ["academic_year", "=", frm.doc.custom_academic_year]],
+                        };
+                    }
+                },
+            ],
+            size: 'large',
+            primary_action_label: 'Submit',
+            primary_action(values) {
+                frappe.call({
+                    doc: frm.doc,
+                    method: "change_class",
+                    type: "POST",
+                    args: {
+                        school: values.school,
+                        program: values.class,
+                        division: values.division
+                    },
+                    callback: function (response) {
+                        if (response.message == 1) {
+                            frappe.show_alert({
+                                message: __("Class Change Successful!"),
+                                indicator: 'green'
+                            });
+                            frm.reload_doc();
+                        }
+                        else {
+                            frappe.show_alert({
+                                message: __("Something Went Wrong!"),
+                                indicator: 'red'
+                            });
+                        }
+
+                    }
+                });
+                d.hide();
+            }
+        });
+        d.show();
+    }, __("Action"));
 }

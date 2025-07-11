@@ -1,32 +1,68 @@
-import { Box, Button, Stack, Text } from "@mantine/core";
+import { Box, Button, Stack, Text, Table } from "@mantine/core";
 import { useEffect, useMemo, useState } from "react";
 import useStudentList from "../components/queries/useStudentList";
 import useClassDetails from "../components/queries/useClassDetails";
 import useStudentProfileColor from "../components/hooks/useStudentProfileColor";
 import { useSearchParams } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
+// import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import useBonafideList from "../components/queries/useBonafideList";
 
 export const BonafideCertificate = () => {
     const [selectedStudent, setSelectedStudent] = useState<string>('')
     const [selectedSubject, setSelectedSubject] = useState<string>('')
     const [selectedUnit, setSelectedUnit] = useState<string>('unit 1')
-
+    const [, setDownloadFile] = useState(false)
     const [searchParams] = useSearchParams()
 
     const searchedStudent = searchParams.get('student')
 
 
     const { data: studentsList } = useStudentList()
+    const { data: bonafideList, refetch } = useBonafideList()
     const { data: classDetails } = useClassDetails(selectedStudent)
     const students = useMemo(() => studentsList?.data?.message || [], [studentsList?.data])
     const studentProfileColor = useStudentProfileColor(selectedStudent)
+    const bonafide_name_id = bonafideList?.data?.message?.find((i) => i.student_name === selectedStudent)?.student_name
+
     const subjectOptions = useMemo(() => {
         return classDetails?.data?.message?.class?.subject?.map?.(subject => ({
             label: subject.subject,
             value: subject.subject
         })) || []
     }, [classDetails?.data?.message?.class?.subject])
+    const reGenerateBonafide = () => {
+        const myHeaders = new Headers();
+        myHeaders.append("Content-Type", "application/json");
+        fetch("/api/method/edu_quality.public.py.walsh.bonafide.send_bonafide", {
+            method: 'POST',
+            headers: myHeaders,
+            body: JSON.stringify({
+                "student_id": selectedStudent,
+            }),
+        })
+            .then(response => response.json())
+            .then(result => result.message)
+            .then((message) => {
+                if (message) {
+                    console.log("success ", message);
+
+                    refetch()
+
+                } else if (message) {
+                    console.log("error-message ", message);
+                    // Handle error message
+                } else {
+                    console.log("Unexpected response format:", message);
+                }
+
+            })
+            .catch(error => console.log('error', error))
+            .finally(() => {
+                // setSendingOtp(false)
+            })
+    };
+
     const requestBonafide = () => {
         const myHeaders = new Headers();
         myHeaders.append("Content-Type", "application/json");
@@ -42,14 +78,14 @@ export const BonafideCertificate = () => {
             .then((message) => {
                 if (message) {
                     console.log("success ", message);
+                    setDownloadFile(true)
+                    refetch()
 
                 } else if (message) {
                     console.log("error-message ", message);
                     // Handle error message
                 } else {
                     console.log("Unexpected response format:", message);
-
-
                 }
 
             })
@@ -57,7 +93,6 @@ export const BonafideCertificate = () => {
             .finally(() => {
                 // setSendingOtp(false)
             })
-
     };
     const unitOptions = useMemo(() => {
         return [...Array(4)].map((_, i) => ({
@@ -65,6 +100,9 @@ export const BonafideCertificate = () => {
             value: `${i + 1}`
         }))
     }, [])
+
+
+
     useEffect(() => {
         const studentNames = students?.map(student => student.name) || []
         if (!selectedStudent && searchedStudent && (selectedStudent != searchedStudent) && studentNames.includes(searchedStudent)) {
@@ -87,11 +125,53 @@ export const BonafideCertificate = () => {
             setSelectedUnit(unitNames[0])
         }
     }, [selectedUnit, unitOptions]);
-    const showToastMessage = () => {
-        toast.success("Please Check Your Email!", {
-            position: "top-right"
-        });
-    };
+
+    const rows1 = bonafideList?.data?.message?.filter((i) => i.student_name == selectedStudent)
+
+    const rows = rows1?.map((i) => {
+        const formatDate = new Date(i.creation);
+        const formattedStartDate = formatDate.toLocaleDateString('en-GB').replace(/\//g, '-');
+        return (
+            <>
+                <tr>
+
+                    <td> <Text sx={{
+                        borderBottom: `1px solid #dee2e6`,
+                        color: studentProfileColor,
+                        fontWeight: "bold",
+                        marginBottom: 10,
+                        marginTop: 10,
+                        marginLeft: 10,
+                        borderRadius: 10,
+
+                    }} style={{ width: "152px", margin: "0px auto" }}>{formattedStartDate}</Text></td>
+
+
+                    <td>
+                        <a href={i.bonafide_pdf} download={i?.bonafide_pdf}>
+
+                            <Button
+                                sx={{
+                                    marginBottom: 10,
+                                    marginTop: 10,
+                                    marginLeft: 5,
+                                    borderRadius: 10,
+                                    backgroundColor: studentProfileColor,
+                                }}
+                                onClick={() => {
+
+                                }}
+                            > Download</Button>
+
+                        </a>
+                    </td>
+                </tr>
+
+            </>
+        )
+    })
+
+
 
     return (
         <>
@@ -164,25 +244,86 @@ export const BonafideCertificate = () => {
                     </Stack>
                     <Box sx={{
                         textAlign: 'center',
+
                     }}>
-                        <Button
-                            sx={{
-                                marginBottom: 10,
-                                marginTop: 10,
-                                marginLeft: 5,
-                                borderRadius: 10,
-                                backgroundColor: studentProfileColor,
-                            }}
-                            onClick={() => {
-                                requestBonafide()
-                                showToastMessage()
-                            }
-                            }
-                        >Request Bonafide</Button>
-                        <ToastContainer />
+
+
+                        {
+                            bonafide_name_id === selectedStudent ?
+                                (
+                                    <>
+                                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "1rem", overflow: "auto" }}>
+
+                                            <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                                                <Button
+                                                    sx={{
+                                                        marginBottom: 10,
+                                                        marginTop: 10,
+                                                        marginLeft: 5,
+                                                        borderRadius: 10,
+                                                        backgroundColor: studentProfileColor,
+                                                    }}
+                                                    onClick={() => {
+                                                        reGenerateBonafide();
+
+                                                    }}
+                                                > ReGenerate Bonafide</Button>
+
+
+                                            </div>
+
+
+                                        </div>
+                                        <Box sx={{
+                                            display: "flex", alignItems: "center", flexDirection: "column", justifyContent: "center",
+                                            overflowX: "auto",
+                                            margin: "0px auto"
+                                        }}>
+                                            <Table horizontalSpacing="xl" style={{ margin: "0px auto" }}>
+                                                <thead style={{ backgroundColor: studentProfileColor + "22" }}>
+                                                    <tr>
+                                                        <td> <Text sx={{
+                                                            borderBottom: `1px solid #dee2e6`,
+                                                            color: studentProfileColor,
+                                                            fontWeight: "bold"
+                                                        }}>Created on</Text></td>
+
+                                                        <td> <Text sx={{
+                                                            borderBottom: `1px solid #dee2e6`,
+                                                            color: studentProfileColor,
+                                                            fontWeight: "bold"
+                                                        }}>Download Link</Text></td>
+
+                                                    </tr>
+                                                </thead>
+                                                <tbody>{rows}</tbody>
+                                            </Table>
+                                        </Box>
+                                    </>
+                                )
+                                :
+                                <Button
+                                    sx={{
+                                        marginBottom: 10,
+                                        marginTop: 10,
+                                        marginLeft: 5,
+                                        borderRadius: 10,
+                                        backgroundColor: studentProfileColor,
+                                    }}
+                                    onClick={() => {
+                                        requestBonafide();
+
+
+                                    }}
+                                > Request Bonafide</Button>
+
+                        }
+
+
                     </Box>
-                </Box>
-            </Box>
+                </Box >
+            </Box >
         </>
     )
 }
+

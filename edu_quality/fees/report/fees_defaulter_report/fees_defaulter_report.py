@@ -2,6 +2,7 @@ import frappe
 from frappe.utils.data import getdate, nowdate
 from edu_quality.api.google_admin import suspend_google_user
 
+
 def execute(filters=None):
     columns, data = [], []
     columns = get_columns()
@@ -216,7 +217,7 @@ def payment_reminder(data):
                     "reference_name": row.get("fees"),
                     "docstatus": 1,
                     "status": ["!=", "Paid"],
-                    "payment_term": row.get('payment_term')
+                    "payment_term": row.get("payment_term"),
                 },
             )
             trigger_event(doc=payment_request, event_name="payment_link_remainder")
@@ -284,7 +285,9 @@ def mark_student_as_defaulter(data):
                     "Google Mark as Defaulter Failure", frappe.get_traceback()
                 )
                 frappe.logger("mark_student_as_defaulter").exception(e)
-                
+
+            
+
     except Exception as e:
         frappe.log_error("Google Mark as Defaulter Failure", frappe.get_traceback())
         frappe.logger("mark_student_as_defaulter").exception(e)
@@ -294,6 +297,7 @@ def mark_student_as_defaulter(data):
 def mark_as_defaulter(data):
     try:
         data = frappe.json.loads(data)
+
         frappe.enqueue(
             method=mark_student_as_defaulter,
             data=data,

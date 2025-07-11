@@ -13,7 +13,7 @@ def get_students():
     return students
 
 
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=True)
 def get_student_class_details(student):
     current_yr = frappe.db.get_value(
         "Academic Year", {"custom_current_academic_year": 1}
@@ -45,7 +45,6 @@ def get_all_cmap_in_range(date, division):
     begin_date, end_date = list(map(lambda x: x.strip(), date.split(",")))
 
     values = {"begin_date": begin_date, "division": division, "end_date": end_date}
-    print(values, "bro")
 
     cmaps = frappe.db.sql(
         """
@@ -61,7 +60,7 @@ def get_all_cmap_in_range(date, division):
         as_dict=1,
         values=values,
     )
-    print(cmaps, "sda")
+
     modified_cmaps = generate_cmap_data_from_query(cmaps)
     result_hash = {}
     for cmap in modified_cmaps:

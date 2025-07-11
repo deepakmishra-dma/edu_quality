@@ -33,6 +33,7 @@ app_include_js = [
 
 # include js in doctype views
 doctype_js = {
+    "Payment Entry": "public/js/payment_entry.js",
     "Student Applicant": "public/js/application.js",
     "Reference Number Settings": "public/js/reference_number.js",
     "Fees": "public/js/fees.js",
@@ -46,6 +47,7 @@ doctype_js = {
     "Instructor": "public/js/instructor.js",
     "Payment Request": "public/js/payment_request.js",
     "Program Enrollment": "public/js/program_enrollment.js",
+    "Program": "public/js/program.js",
     "Employee": "public/js/employee.js",
 }
 doctype_list_js = {
@@ -142,6 +144,7 @@ override_doctype_class = {
     "Student": "edu_quality.edu_quality.overrides.student.CustomStudent",
     "Payment Entry": "edu_quality.edu_quality.overrides.payment_entry.CustomPaymentEntry",
     "Lead": "edu_quality.public.py.lead.CustomLead",
+    "Instructor": "edu_quality.edu_quality.overrides.instructor.CustomInstructor",
     "HD Ticket": "edu_quality.edu_quality.overrides.hd_ticket.CustomHDTicket",
 }
 
@@ -150,11 +153,12 @@ override_doctype_class = {
 # Hook on document methods and events
 
 doc_events = {
-    "HD Ticket":{
+    "HD Ticket": {
         "after_insert": "edu_quality.edu_quality.server_scripts.hd_ticket.after_insert",
     },
     "Guardian": {
         "before_insert": "edu_quality.edu_quality.server_scripts.guardian.before_insert",
+        "after_insert": "edu_quality.edu_quality.server_scripts.guardian.after_insert",
         "on_update": "edu_quality.edu_quality.server_scripts.guardian.on_update",
     },
     "Student Applicant": {
@@ -172,6 +176,7 @@ doc_events = {
         "after_insert": [
             "edu_quality.public.py.fee.append_program_enrollment",
             "edu_quality.public.py.fee.create_id_card",
+            "edu_quality.public.py.fee.create_birthday_card",
         ],
         "on_trash": "edu_quality.public.py.fee.remove_program_enrollment",
         "on_update_after_submit": "edu_quality.public.py.fee.update_program_enrollment",
@@ -192,8 +197,6 @@ doc_events = {
         "on_submit": "edu_quality.public.py.payment_request.on_submit",
     },
     "Student": {
-        "autoname": "edu_quality.public.py.student.autoname",
-        "before_insert": "edu_quality.public.py.student.before_insert",
         "after_insert": "edu_quality.public.py.student.after_insert",
         "before_save": "edu_quality.public.py.student.before_save",
         "on_update": "edu_quality.public.py.student.on_update",
@@ -213,7 +216,10 @@ doc_events = {
     },
     "Purchase Order": {
         "before_validate": "edu_quality.overrides_hooks.purchase_order.before_validate",
-        "on_submit": "edu_quality.edu_quality.server_scripts.purchase_order.on_submit",
+        "on_submit": [
+            "edu_quality.edu_quality.server_scripts.purchase_order.on_submit",
+            "edu_quality.edu_quality.server_scripts.purchase_order.mark_id_card_sent_to_print",
+        ],
     },
     # "Instructor": {
     #     "after_insert": "edu_quality.overrides_hooks.instructor.after_insert",
@@ -224,12 +230,15 @@ doc_events = {
         "before_validate": "edu_quality.overrides_hooks.purchase_order.before_validate",
     },
     "Employee": {
+        "before_save": "edu_quality.edu_quality.server_scripts.employee.before_save",
         "after_insert": "edu_quality.edu_quality.server_scripts.employee.after_insert",
+        "before_insert": "edu_quality.edu_quality.server_scripts.employee.before_insert",
         "on_update": "edu_quality.edu_quality.server_scripts.employee.on_update",
     },
     "Student Group": {
         "on_update": "edu_quality.overrides_hooks.student_group.on_update",
-    }
+        "before_save":"edu_quality.overrides_hooks.student_group.before_save"
+    },
 }
 
 # Scheduled Tasks
@@ -241,7 +250,9 @@ scheduler_events = {
     ],
     "cron": {
         "0 * * * *": ["edu_quality.tasks.cron"],
-        "0 19 * * *":["edu_quality.tasks.send_bulk_notification_cmap_to_guardian"]
+        "0 19 * * *": ["edu_quality.tasks.send_bulk_notification_cmap_to_guardian"],
+        "0 6 * * *": ["edu_quality.tasks.schedule_birthday_greeting"],
+        "* * * * *": ["edu_quality.cmap_jobs.send_ptm_notifications_to_students","edu_quality.cmap_jobs.notify_teacher_before_half_hour_job"]
     },
     "daily": [
         "edu_quality.tasks.time_based",
@@ -341,17 +352,12 @@ override_whitelisted_methods = {
 # 	"edu_quality.auth.validate"
 # ]
 
-fixtures = [
-    {"dt": "Custom DocPerm"}
-
-]
-
-
+fixtures = [{"dt": "Custom DocPerm"}]
 
 
 after_migrate = [
     "edu_quality.public.py.utils.migrate",
-    "edu_quality.edu_quality.server_scripts.after_migrate.after_migrate"
+    "edu_quality.edu_quality.server_scripts.after_migrate.after_migrate",
 ]
 
 website_route_rules = [

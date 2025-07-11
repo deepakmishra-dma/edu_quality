@@ -7,18 +7,32 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "file"
+  "file",
+  "id_cards",
+  "orders"
  ],
  "fields": [
   {
    "fieldname": "file",
    "fieldtype": "Attach",
    "label": "File"
+  },
+  {
+   "fieldname": "id_cards",
+   "fieldtype": "Table",
+   "label": "Id Cards",
+   "options": "Individual Permanent Card"
+  },
+  {
+   "fieldname": "orders",
+   "fieldtype": "Table",
+   "label": "Orders",
+   "options": "Id Card Order"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-07 20:25:46.596704",
+ "modified": "2024-04-25 01:15:16.378086",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Permanent Id Card",
