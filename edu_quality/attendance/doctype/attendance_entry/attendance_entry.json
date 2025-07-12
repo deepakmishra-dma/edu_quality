@@ -1,5 +1,6 @@
 {
  "actions": [],
+ "allow_import": 1,
  "allow_rename": 1,
  "autoname": "format:{student}-{date}",
  "creation": "2024-03-04 17:25:46.836952",
@@ -38,6 +39,7 @@
   },
   {
    "fetch_from": "student.program",
+   "fetch_if_empty": 1,
    "fieldname": "class",
    "fieldtype": "Link",
    "label": "Class",
@@ -77,6 +79,7 @@
   },
   {
    "fetch_from": "student.custom_division",
+   "fetch_if_empty": 1,
    "fieldname": "division",
    "fieldtype": "Data",
    "label": "Division"
@@ -94,7 +97,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-03-18 12:03:46.904811",
+ "modified": "2024-05-13 17:35:56.665989",
  "modified_by": "Administrator",
  "module": "Attendance",
  "name": "Attendance Entry",
