@@ -87,10 +87,12 @@ def print_birthday_card(birthday_card):
         age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
         program_name = frappe.get_value("Program", birthday_card.program, "program_name")
         student_name = frappe.get_value("Student", birthday_card.student, "student_name")
+        has_traits = any(trait.description for trait in birthday_card.traits)
 
         template = frappe.render_template(
             "edu_quality/templates/pdf/birthday_card.html",
             {
+                "has_traits": has_traits,
                 "traits": birthday_card.traits,
                 "student_name": student_name,
                 "dob": dob.strftime("%d-%m-%Y"),
