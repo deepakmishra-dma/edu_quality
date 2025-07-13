@@ -30,7 +30,7 @@
   .content {
     width: 50%;
     padding-top: 175px;
-    padding-left: 125px;
+    padding-left: 135px;
   }
 
   .content p {
@@ -60,9 +60,8 @@
   <div class="content">
     <p id="name">{{student_name}}</p>
     <p id="dob">The Special Day: {{dob}}</p>
-    {% if traits[0].description %}
+    {% if has_traits %}
         <p id="traits">These are a few of my favourite things </p>
-    {% endif %}
     {% for trait in traits%}
         {% if trait.description %}
           {% if trait.trait_type =="Food" %}
@@ -82,6 +81,7 @@
           {% endif %}
         {% endif %}
     {% endfor %}
-    <p id="info"> I am {{age}} year old and studying in class {{program_name}} </p>
+    {% endif %}
+    <p id="info"> I am {{age}} years old and studying in class {{program_name}} </p>
   </div>
 </div>
