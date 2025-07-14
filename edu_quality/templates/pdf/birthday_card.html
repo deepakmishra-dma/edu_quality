@@ -1,19 +1,9 @@
-{%- block head_include %}
-<link rel="stylesheet" href="{{site_url}}/assets/frappe/css/fonts/fontawesome/font-awesome.min.css">
-{% endblock -%}
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Marko+One&display=swap');
   @page {
     size: A4 Landscape;
     margin: 0;
     padding: 0;
-  }
-
-  .page {
-    display: flex;
-    padding-left: 12px;
-    padding-right: 12px;
-    width: 100%;
   }
 
   .row {
@@ -56,13 +46,14 @@
   }
 </style>
 
+{% for card in cards %}
 <div class="content-container">
   <div class="content">
-    <p id="name">{{student_name}}</p>
-    <p id="dob">The Special Day: {{dob}}</p>
-    {% if has_traits %}
+    <p id="name">{{card.student_name}}</p>
+    <p id="dob">The Special Day: {{card.dob}}</p>
+    {% if card.has_traits %}
         <p id="traits">These are a few of my favourite things </p>
-    {% for trait in traits%}
+    {% for trait in card.traits%}
         {% if trait.description %}
           {% if trait.trait_type =="Food" %}
             <p style="color: rgb(250, 1, 70);">{{trait.trait_type}}: {{trait.description}}</p>
@@ -82,6 +73,10 @@
         {% endif %}
     {% endfor %}
     {% endif %}
-    <p id="info"> I am {{age}} years old and studying in class {{program_name}} </p>
+    <p id="info"> I am {{card.age}} years old and studying in class {{card.program_name}} </p>
   </div>
 </div>
+{% if not loop.last %}
+<p style="break-before: page;"></p>
+{% endif %}
+{% endfor %}
