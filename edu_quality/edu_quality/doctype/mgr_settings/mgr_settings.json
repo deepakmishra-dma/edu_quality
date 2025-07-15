@@ -10,7 +10,8 @@
   "username",
   "password",
   "url",
-  "enable_birthday_greeting_scheduler"
+  "enable_birthday_greeting_scheduler",
+  "email_domain"
  ],
  "fields": [
   {
@@ -33,12 +34,17 @@
    "fieldname": "enable_birthday_greeting_scheduler",
    "fieldtype": "Check",
    "label": "Enable Birthday Greeting Scheduler"
+  },
+  {
+   "fieldname": "email_domain",
+   "fieldtype": "Data",
+   "label": "Email Domain"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-04-18 02:41:48.792745",
+ "modified": "2024-05-16 10:48:21.406509",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "MGR Settings",
