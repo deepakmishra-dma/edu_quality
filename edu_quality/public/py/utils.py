@@ -183,13 +183,15 @@ def get_undertaking_template(doc=None, is_deposit=False, fee=None):
         )
     if doctype == "Fee Advance":
         class_name, academic_year, student, school = frappe.get_value(
-            doctype, docname, ["next_program", "academic_year", "student","school"]
+            doctype, docname, ["next_program", "academic_year", "student", "school"]
         )
     else:
         class_name, academic_year, student, school = frappe.get_value(
-            doctype, docname, ["program", "academic_year", "student","custom_school"]
+            doctype, docname, ["program", "academic_year", "student", "custom_school"]
         )
-    if not frappe.get_value("School", school,"custom_require_otp_for_accepting_rules_and_regulations"):
+    if not frappe.get_value(
+        "School", school, "custom_require_otp_for_accepting_rules_and_regulations"
+    ):
         return None
     status = is_old_student(student, academic_year)
     filter_dict = {"class": class_name, "academic_year": academic_year}
@@ -241,15 +243,23 @@ def get_submitted_undertaking(payment_request):
     docname = payment_request.reference_name
     payment_term = payment_request.payment_term
     if doctype == "Fees":
-        class_name, school = frappe.get_value("Fees", docname, ["program","custom_school"])
+        class_name, school = frappe.get_value(
+            "Fees", docname, ["program", "custom_school"]
+        )
     elif doctype == "Fee Advance":
-        class_name, school = frappe.get_value("Fee Advance", docname, ["next_program","school"])
-    if frappe.get_value("School", school,"custom_otp_for_every_installment_showing_rules_and_regulations"):
+        class_name, school = frappe.get_value(
+            "Fee Advance", docname, ["next_program", "school"]
+        )
+    if frappe.get_value(
+        "School",
+        school,
+        "custom_otp_for_every_installment_showing_rules_and_regulations",
+    ):
         if frappe.db.exists(
             "Rules and Regulation Submission",
-            {"student": student, "program": class_name,"payment_term":payment_term},
+            {"student": student, "program": class_name, "payment_term": payment_term},
             "name",
-            ):
+        ):
             return True
         else:
             return False
@@ -287,12 +297,16 @@ def handle_undertaking_submission(**kwargs):
         student, doctype, docname, payment_term = frappe.get_value(
             "Payment Request",
             {"payment_hash": payment_hash},
-            ["party", "reference_doctype", "reference_name","payment_term"],
+            ["party", "reference_doctype", "reference_name", "payment_term"],
         )
     if doctype == "Fees":
-        class_name, school = frappe.get_value("Fees", docname, ["program","custom_school"])
+        class_name, school = frappe.get_value(
+            "Fees", docname, ["program", "custom_school"]
+        )
     elif doctype == "Fee Advance":
-        class_name, school = frappe.get_value("Fee Advance", docname, ["next_program","school"])
+        class_name, school = frappe.get_value(
+            "Fee Advance", docname, ["next_program", "school"]
+        )
 
     template = frappe.get_value(
         "Rules and Regulation Template", {"class": class_name}, "name"
@@ -304,10 +318,18 @@ def handle_undertaking_submission(**kwargs):
     mothers_name = frappe.get_value(
         "Student Guardian", {"parent": student, "relation": "Mother"}, "guardian_name"
     )
-    if frappe.get_value("School", school,"custom_otp_for_every_installment_showing_rules_and_regulations"):
+    if frappe.get_value(
+        "School",
+        school,
+        "custom_otp_for_every_installment_showing_rules_and_regulations",
+    ):
         if not frappe.db.exists(
-        "Rules and Regulation Submission",
-        {"student": student_doc.name, "program": class_name,"payment_term":payment_term},
+            "Rules and Regulation Submission",
+            {
+                "student": student_doc.name,
+                "program": class_name,
+                "payment_term": payment_term,
+            },
         ):
             new_doc = frappe.new_doc("Rules and Regulation Submission")
             new_doc.student = student_doc.name
@@ -473,6 +495,15 @@ def gen_qr_code_b64_transparent(str):
     return im_2_b64_png(qr_img)
 
 
+def to_snake_case(input_string=""):
+    print(input_string)
+    input_string = input_string.replace(" ", "_")
+
+    input_string = input_string.lower()
+
+    return input_string
+
+
 def remove_indian_country_code(number):
     if not number:
         return ""
@@ -523,7 +554,11 @@ def email_recipients(variables, student, case):
 
 
 def reduce_font_size_steps(initial_size, step, data, initial_char_length, lowest):
-    txt = data.first_name if len(data.first_name) > len(data.last_name) else data.last_name
+    txt = (
+        data.first_name
+        if len(data.first_name) > len(data.last_name)
+        else data.last_name
+    )
     if len(txt) <= initial_char_length:
         return initial_size
     rem = len(txt) % int(initial_char_length)
