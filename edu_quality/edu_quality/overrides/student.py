@@ -225,9 +225,9 @@ class CustomStudent(Student):
                         return fee.name,deposit,account
                     return self.refund_deposit(fee.name,deposit,account)
                 
-        return self.check_previous_deposits()
+        return self.check_previous_deposits(deduct)
 
-    def check_previous_deposits(self):
+    def check_previous_deposits(self,deduct=0):
         company = frappe.get_doc("Company",frappe.defaults.get_user_default("company"))
         filters = {
                 "company": company.name,
@@ -260,7 +260,10 @@ class CustomStudent(Student):
         report = run(report_name="General Ledger",filters=filters,user="Administrator")
         balance = report['result'][0]['credit']
         if balance > 0:
-            return None,balance,company.default_deposit_account
+            if deduct:
+                return None,balance,company.default_deposit_account
+            else:
+                return self.refund_deposit(None,balance,company.default_deposit_account)
         else:
             return frappe.throw("No Deposit Found!")
         
