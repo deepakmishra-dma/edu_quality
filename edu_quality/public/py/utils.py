@@ -554,11 +554,10 @@ def email_recipients(variables, student, case):
 
 
 def reduce_font_size_steps(initial_size, step, data, initial_char_length, lowest):
-    txt = (
-        data.first_name
-        if len(data.first_name) > len(data.last_name)
-        else data.last_name
-    )
+    if isinstance(data, str):
+        txt = data
+    elif isinstance(data, frappe.model.document.Document):
+        txt = data.first_name if len(data.first_name) > len(data.last_name) else data.last_name
     if len(txt) <= initial_char_length:
         return initial_size
     rem = len(txt) % int(initial_char_length)

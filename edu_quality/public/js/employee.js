@@ -33,7 +33,7 @@ frappe.ui.form.on('Employee', {
             let school = await frappe.db.get_value('Instructor', {employee: frm.doc.name}, 'custom_school');
             frm.add_custom_button(__('Migrate Data'), function () {
                 let d = new frappe.ui.Dialog({
-                    title: 'Migrate Employee Data to Another Employee',
+                    title: 'Migrate Instructor Data to Another Instructor',
                     fields: [
                         {
                             label: 'Employee',

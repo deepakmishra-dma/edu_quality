@@ -70,7 +70,7 @@
   
           right:-25%;
           transform: rotate(135deg);
-          top:14%;
+          top:16.85%;
         }
         .allergies-logo{
           border: solid 40px;
@@ -232,25 +232,25 @@
         }
         .info-container{
           position: relative;
-  
         }
         .allergies-text{
-  
           transform: rotate(270deg);
           position: absolute;
-  
-          left:-12px;
-  
-          bottom:28px;
-          /* transform: rotate(270deg); */
+          margin-top: -35px;
+        }
+        .allergies-text p{
           font-size: 8pt;
-          font-weight: 600;
+          height: 10px;
+          width: 20px;
+          margin-block-start: auto;
+          margin-block-end: auto;
+          white-space: nowrap;
         }
         .tiffin-text {
           transform: rotate(270deg);
           position: absolute;
   
-          right:-28px;
+          right:-17.5px;
   
           bottom:60px;
           /* transform: rotate(270deg); */
@@ -286,6 +286,8 @@
           /* overflow: hidden; */
           margin-left: 2px;
           margin-right: 2px;
+          flex-grow: 0;
+          flex-shrink: 0;
         }
         .cut-mark-circle{
           height:16px;
@@ -334,10 +336,6 @@
           top:0;
           left:50%;
           background-color: black;
-         
-         
-      
-        
         }
   </style>
   <div class="parent-container">
@@ -398,7 +396,7 @@
         </div>
       </div>
       <div class="detail-container">
-        {% set font_size = reduce_font_size_steps(18,1,student_data,10,5)%}
+        {% set font_size = reduce_font_size_steps(18,1.2,student_data,10,5)%}
         <div class="student-name">
           <p style='font-size: {{font_size}}px;'>{{student_data.first_name.replace(" ", "&nbsp;")}}</p>
           <p style='font-size: {{font_size}}px;'>{{student_data.last_name}}</p>
@@ -459,7 +457,9 @@
           <p>{{doc.tiffin_rack_no or ""}}</p>
         </div>
         {% if student_data.has_allergies %}
-        <div class="allergies-text"><p>Allergies</p></div>
+        <div class="allergies-text">
+          <p>Alrgy: {{ student_data.allergies }}</p>
+        </div>
         {% endif %}
       </div>
     </div>
