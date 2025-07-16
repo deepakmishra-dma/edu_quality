@@ -73,6 +73,29 @@ frappe.listview_settings['Program Enrollment'] = {
 
 
         });
+        list_view.page.add_action_item("Create Birthday Cards", async () => {
+            const selectedEnrollments = list_view?.get_checked_items(true);
+
+            frappe.call({
+                method: "edu_quality.edu_quality.doctype.birthday_card.birthday_card.create_birthday_card",
+                args: { "program_enrollments": selectedEnrollments},
+                callback: function (r) {
+                    if (r.message) {
+                        frappe.msgprint({
+                            title: __("Birthday Cards Creation"),
+                            message: __('Birthday Cards Created Successfully. <a href="/app/birthday-card" target="_blank">Click Here</a>'),
+                            primary_action: {
+                                label: __("OK"),
+                                action: function () {
+                                    frappe.hide_msgprint();
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+
+        });
         frappe.db.get_list("Academic Year", { filters: { "custom_current_academic_year": 1 }, fields: ["name"] }).then((response) => {
             if (!frappe.route_options) {
                 const result = response?.[0]?.name
