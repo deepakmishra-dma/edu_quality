@@ -116,3 +116,22 @@ def get_birthday_card_data(birthday_card):
         "age": abs(age),
         "program_name": program_name,
     }
+
+
+@frappe.whitelist()
+def create_birthday_card(program_enrollments):
+    """
+    this function will create birthday card for all the students in the selected program enrollments
+    Args:
+        program_enrollments: list of program enrollments
+    """
+    program_enrollments = frappe.parse_json(program_enrollments)
+    try:
+        for program_enrollment in program_enrollments:
+            frappe.get_doc(
+                {"doctype": "Birthday Card", "program_enrollment": program_enrollment}
+            ).insert(ignore_permissions=True)
+        return "Birthday Card Created Successfully!"
+    except Exception as e:
+        frappe.log_error("Create Birthday Card Error", frappe.get_traceback())
+        return "Error while creating birthday card!"
