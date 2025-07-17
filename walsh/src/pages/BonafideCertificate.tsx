@@ -19,7 +19,7 @@ export const BonafideCertificate = () => {
 
 
     const { data: studentsList } = useStudentList()
-    const { data: bonafideList, refetch } = useBonafideList()
+    const { data: bonafideList, refetch } = useBonafideList(selectedStudent)
     const { data: classDetails } = useClassDetails(selectedStudent)
     const students = useMemo(() => studentsList?.data?.message || [], [studentsList?.data])
     const studentProfileColor = useStudentProfileColor(selectedStudent)
