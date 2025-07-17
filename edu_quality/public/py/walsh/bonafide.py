@@ -12,7 +12,8 @@ def send_bonafide(student_id):
             {"student_name": student_id, "academic_year": ay},
         ):
             doc = frappe.get_doc(
-                "Bonafide Certificate", {"student_name": student_id, "academic_year": ay}
+                "Bonafide Certificate",
+                {"student_name": student_id, "academic_year": ay},
             )
             bonafide_pdf = save_bonafide_pdf(student_id, doc.name)
             if not doc.bonafide_pdf:
@@ -92,7 +93,9 @@ def save_bonafide_pdf(student_id, bonafide_name):
     return saved_file.file_url
 
 
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=True)
 def bonafide_list(student_id):
-    bonafide_doc = frappe.get_all("Bonafide Certificate", filters={"student_name": student_id}, fields=["*"])
+    bonafide_doc = frappe.get_all(
+        "Bonafide Certificate", filters={"student_name": student_id}, fields=["*"]
+    )
     return bonafide_doc
