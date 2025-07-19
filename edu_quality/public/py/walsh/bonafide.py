@@ -7,14 +7,14 @@ from edu_quality.edu_quality.server_scripts.utils import current_academic_year
 @frappe.whitelist(allow_guest=True)
 def send_bonafide(student_id):
     try:
-        ay = current_academic_year()
+        academic_year = current_academic_year()
         if frappe.db.exists(
             "Bonafide Certificate",
-            {"student_name": student_id, "academic_year": ay},
+            {"student_name": student_id, "academic_year": academic_year},
         ):
             doc = frappe.get_doc(
                 "Bonafide Certificate",
-                {"student_name": student_id, "academic_year": ay},
+                {"student_name": student_id, "academic_year": academic_year},
             )
             bonafide_pdf = save_bonafide_pdf(student_id, doc.name)
             if not doc.bonafide_pdf:
