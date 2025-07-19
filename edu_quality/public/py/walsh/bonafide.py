@@ -1,4 +1,5 @@
 import frappe
+from frappe.auth import LoginManager
 from frappe.utils.file_manager import save_file
 from edu_quality.edu_quality.server_scripts.utils import current_academic_year
 
@@ -73,11 +74,12 @@ def send_bonafide(student_id):
 
 def get_pdf_content(student_id):
     current_user = frappe.session.user
-    frappe.set_user("Administrator")
+    login_manager = LoginManager()
+    login_manager.login_as("Administrator")
     pdf_content = frappe.get_print(
         "Student", student_id, print_format="Bonafide Certificate", as_pdf=True
     )
-    frappe.set_user(current_user)
+    login_manager.login_as(current_user)
     return pdf_content
 
 
@@ -93,7 +95,7 @@ def save_bonafide_pdf(student_id, bonafide_name):
     return saved_file.file_url
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist()
 def bonafide_list(student_id):
     bonafide_doc = frappe.get_all(
         "Bonafide Certificate", filters={"student_name": student_id}, fields=["*"]
