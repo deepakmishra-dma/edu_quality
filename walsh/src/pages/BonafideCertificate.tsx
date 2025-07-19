@@ -19,7 +19,7 @@ export const BonafideCertificate = () => {
 
 
     const { data: studentsList } = useStudentList()
-    const { data: bonafideList, refetch } = useBonafideList()
+    const { data: bonafideList, refetch } = useBonafideList(selectedStudent)
     const { data: classDetails } = useClassDetails(selectedStudent)
     const students = useMemo(() => studentsList?.data?.message || [], [studentsList?.data])
     const studentProfileColor = useStudentProfileColor(selectedStudent)
@@ -128,7 +128,7 @@ export const BonafideCertificate = () => {
 
     const rows1 = bonafideList?.data?.message?.filter((i) => i.student_name == selectedStudent)
 
-    const rows = rows1?.map((i) => {
+    const rows = rows1?.map?.((i) => {
         const formatDate = new Date(i.creation);
         const formattedStartDate = formatDate.toLocaleDateString('en-GB').replace(/\//g, '-');
         return (
@@ -183,7 +183,7 @@ export const BonafideCertificate = () => {
                     // borderBottom: '1px solid  #0005',
                     gap: 0
                 }}>
-                    {students.map((student, index) => {
+                    {students?.map?.((student, index) => {
                         const isSelected = selectedStudent === student.name
                         return <Box
                             key={index}
@@ -227,7 +227,7 @@ export const BonafideCertificate = () => {
                         <Text sx={{
                             color: studentProfileColor,
                             fontWeight: 'bold'
-                        }}>{classDetails?.data?.message?.program.program_name} - {classDetails?.data?.message?.division.student_group_name}</Text>
+                        }}>{classDetails?.data?.message?.program?.program_name} - {classDetails?.data?.message?.division?.student_group_name}</Text>
                         {students.find(student => student.name === selectedStudent)?.reference_number && <Text sx={{
                             borderRadius: 50,
                             backgroundColor: studentProfileColor + '22',
