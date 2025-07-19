@@ -116,7 +116,6 @@ def before_insert(self, method=None):
         return
     if not frappe.flags.in_import:
         self.custom_sheet_number = calculate_sheet_number(self)
-    create_item_directory(self)
 
 
 def search_file_id(url):
