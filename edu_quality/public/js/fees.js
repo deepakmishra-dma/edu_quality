@@ -19,7 +19,7 @@ frappe.ui.form.on('Fees', {
                 }
             });
 
-        },__("Action"));
+        }, __("Action"));
 
         frm.add_custom_button(__('Add Discount'), function () {
             let d = new frappe.ui.Dialog({
@@ -167,7 +167,7 @@ frappe.ui.form.on('Fees', {
                             }
                         });
                         dialog.show();
-                    },__("Action"));
+                    }, __("Action"));
                 }
             }
         });
@@ -460,7 +460,7 @@ function manualCollection(frm) {
             }
             d.hide();
         }
-    },__("Action"));
+    }, __("Action"));
 
     function sendOtp(frm) {
         frappe.call({
@@ -515,13 +515,9 @@ function manualCollection(frm) {
 }
 
 
-function generate_payment_link(frm){
+function generate_payment_link(frm) {
     frm.add_custom_button(__("Generate Payment Link"), function () {
-    frappe.call({
-        doc: frm.doc,
-        method: "get_uncreated_payment_terms",
-        type: "GET",
-        callback: function (response) {
+        frm.call("get_uncreated_payment_terms").then(response => {
             let terms = response.message
             let d = new frappe.ui.Dialog({
                 title: 'Generate Payment Link',
@@ -549,7 +545,7 @@ function generate_payment_link(frm){
                 }
             });
             d.show();
-        }
-    });
-    },__("Action"));
+        })
+    }, __("Action"));
 }
+
