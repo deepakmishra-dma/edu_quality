@@ -8,6 +8,8 @@ from erpnext.accounts.party import get_party_bank_account
 from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
     get_accounting_dimensions,
 )
+from frappe.desk.query_report import run
+
 
 
 
@@ -52,7 +54,7 @@ class CustomStudent(Student):
             else:
                 prefix = prefix + ref_id
             self.name = prefix
-            self.student_email_id = self.name + "@walnutedu.in"
+            self.student_email_id = self.name + "@" + frappe.get_single_value("MGR Settings", "email_domain")
             self.reference_number = self.name[2:]
     
     def get_reference(self):
@@ -222,13 +224,56 @@ class CustomStudent(Student):
                     if deduct:
                         return fee.name,deposit,account
                     return self.refund_deposit(fee.name,deposit,account)
-                return frappe.throw("Deposit Not Paid!")
-        return 1
+                
+        return self.check_previous_deposits(deduct)
+
+    def check_previous_deposits(self,deduct=0):
+        company = frappe.get_doc("Company",frappe.defaults.get_user_default("company"))
+        filters = {
+                "company": company.name,
+                "from_date": "2024-01-01",
+                "to_date": frappe.utils.nowdate(),
+                "account": [
+                    company.default_deposit_account
+                ],
+                "party_type": "Student",
+                "party": [
+                    self.name
+                ],
+                "party_name": self.name,
+                "group_by": "Group by Voucher (Consolidated)",
+                "cost_center": [
+                    
+                ],
+                "school": [
+                    
+                ],
+                "program": [
+                    
+                ],
+                "project": [
+                    
+                ],
+                "include_dimensions": 1,
+                "include_default_book_entries": 1
+                }
+        report = run(report_name="General Ledger",filters=filters,user="Administrator")
+        balance = report['result'][0]['credit']
+        if balance > 0:
+            if deduct:
+                return None,balance,company.default_deposit_account
+            else:
+                return self.refund_deposit(None,balance,company.default_deposit_account)
+        else:
+            return frappe.throw("No Deposit Found!")
+        
 
     def refund_deposit(self,fee,amount,account):
         company = frappe.get_doc("Company",frappe.defaults.get_user_default("company"))
         student = self.name
-        ref_doc = frappe.get_doc("Fees",fee)
+        ref_doc = None
+        if fee:
+            ref_doc = frappe.get_doc("Fees",fee)
         pe = frappe.new_doc("Payment Entry")
         pe.update(
             {
@@ -255,19 +300,19 @@ class CustomStudent(Student):
                     "difference_amount": 0,
                     "total_allocated_amount": 0,
                     "base_total_allocated_amount": 0,
-                    "reference_doctype": "Fees",
-                    "reference_name": fee,
+                    "reference_doctype": "Fees" if fee else "",
+                    "reference_name": fee if fee else "",
                     "source_exchange_rate": 1,
                     "target_exchange_rate": 1,
                     "mode_of_payment": "Bank Draft"
                     }
         )
-
-        for dimension in get_accounting_dimensions():
-            pe.update({dimension: ref_doc.get(dimension)})
+        if ref_doc:
+            for dimension in get_accounting_dimensions():
+                pe.update({dimension: ref_doc.get(dimension)})
 
         pe.update({
-            "reference_no": fee,
+            "reference_no": fee if fee else "",
             "reference_date": frappe.utils.nowdate(),
         })
         try:

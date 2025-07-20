@@ -78,32 +78,19 @@ def set_guardian_permissions(doc):
 
 
 @frappe.whitelist()
-def print_birthday_card(birthday_card):
+def print_birthday_card(birthday_cards):
     try: 
         base_url = frappe.utils.get_url()
-        birthday_card = frappe.get_doc("Birthday Card", birthday_card)
-        dob = frappe.get_value("Student", birthday_card.student, "date_of_birth")
-        today = date.today()
-        age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
-        program_name = frappe.get_value("Program", birthday_card.program, "program_name")
-        student_name = frappe.get_value("Student", birthday_card.student, "student_name")
-
+        cards = [get_birthday_card_data(card) for card in birthday_cards]
         template = frappe.render_template(
-            "edu_quality/templates/pdf/birthday_card.html",
-            {
-                "traits": birthday_card.traits,
-                "student_name": student_name,
-                "dob": dob.strftime("%d-%m-%Y"),
-                "age": abs(age),
-                "program_name": program_name,
-            },
+            "edu_quality/templates/pdf/birthday_card.html", {"cards": cards},
         )
 
         html = HTML(string=template, base_url=base_url)
         main_doc = html.render()
         main_pdf = main_doc.write_pdf()
 
-        filename = f"Birthday Card ({birthday_card.student}).pdf".replace(" ", "-").replace("/", "-")
+        filename = f"Birthday Card ({frappe.utils.today()}).pdf".replace(" ", "-").replace("/", "-")
 
         frappe.local.response.filename = filename
         frappe.local.response.filecontent = main_pdf
@@ -111,3 +98,40 @@ def print_birthday_card(birthday_card):
         return main_pdf
     except Exception as e:
         frappe.log_error("Print Birthday Card Error", frappe.get_traceback())
+
+
+def get_birthday_card_data(birthday_card):
+    birthday_card = frappe.get_doc("Birthday Card", birthday_card)
+    dob = frappe.get_value("Student", birthday_card.student, "date_of_birth")
+    today = date.today()
+    age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+    program_name = frappe.get_value("Program", birthday_card.program, "program_name")
+    student_name = frappe.get_value("Student", birthday_card.student, "student_name")
+    has_traits = any(trait.description for trait in birthday_card.traits)
+    return {
+        "has_traits": has_traits,
+        "traits": birthday_card.traits,
+        "student_name": student_name,
+        "dob": dob.strftime("%d-%m-%Y"),
+        "age": abs(age),
+        "program_name": program_name,
+    }
+
+
+@frappe.whitelist()
+def create_birthday_card(program_enrollments):
+    """
+    this function will create birthday card for all the students in the selected program enrollments
+    Args:
+        program_enrollments: list of program enrollments
+    """
+    program_enrollments = frappe.parse_json(program_enrollments)
+    try:
+        for program_enrollment in program_enrollments:
+            frappe.get_doc(
+                {"doctype": "Birthday Card", "program_enrollment": program_enrollment}
+            ).insert(ignore_permissions=True)
+        return "Birthday Card Created Successfully!"
+    except Exception as e:
+        frappe.log_error("Create Birthday Card Error", frappe.get_traceback())
+        return "Error while creating birthday card!"

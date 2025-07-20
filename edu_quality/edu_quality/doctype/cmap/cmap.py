@@ -6,7 +6,7 @@ from frappe.model.document import Document
 from frappe.query_builder.functions import Count
 from frappe.utils import parse_json
 import json
-from edu_quality.public.py.utils import check_admin_roles
+from edu_quality.public.py.utils import check_admin_roles, to_snake_case
 import string
 import random
 
@@ -29,19 +29,28 @@ class CMAP(Document):
 
     def autoname(self, method=None):
         self.name_func()
-        
+
     def before_save(self):
         if not self.is_new():
             doc_before_save = frappe.get_doc(self.doctype, self.name)
-            for original_child in doc_before_save.table_vwbr:    
+            for original_child in doc_before_save.table_vwbr:
                 for child in self.table_vwbr:
-                    if  child.name == original_child.name and child.real_date and not original_child.get('real_date'):
+                    if (
+                        child.name == original_child.name
+                        and child.real_date
+                        and not original_child.get("real_date")
+                    ):
                         child.real_date_updated_on = frappe.utils.now_datetime()
                         break
-                    elif child.name == original_child.name and original_child.get('real_date') and child.real_date and frappe.utils.getdate(child.real_date) != frappe.utils.getdate(original_child.get("real_date")):
+                    elif (
+                        child.name == original_child.name
+                        and original_child.get("real_date")
+                        and child.real_date
+                        and frappe.utils.getdate(child.real_date)
+                        != frappe.utils.getdate(original_child.get("real_date"))
+                    ):
                         child.real_date_updated_on = frappe.utils.now_datetime()
                         break
-                
 
     def before_validate(self, method=None):
 
@@ -82,11 +91,9 @@ class CMAP(Document):
 
     def on_update(self, method=None):
         old_doc = self.get_doc_before_save()
-        if (
-            old_doc
-            and (self.reserved_for_portion_circular
-            != old_doc.reserved_for_portion_circular
-            or self.period != old_doc.period)
+        if old_doc and (
+            self.reserved_for_portion_circular != old_doc.reserved_for_portion_circular
+            or self.period != old_doc.period
         ):
             frappe.rename_doc("CMAP", old_doc.name, self.name_func())
 
@@ -340,10 +347,64 @@ def get_product_materials(item_id):
         # unique only
         elif result[material_type] and description not in result[material_type]:
             result[material_type].append(description)
-                   
+
     return result
 
 
 @frappe.whitelist()
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     return "".join(random.choice(chars) for _ in range(size))
+
+
+"""
+
+Plan Date	Period	Chapter Name	Comment	Section	Sub-section	Lesson plan code	Worksheet code	Answer sheet code	PPT code	E-Learning code	Audio code	MCQs Test code	Assignment Instructions header	Solve Assignment Instructions	Assignment Instructions footer	Grading	Broadcast	Parent Note	Homework	Classwork	Material Required	"""
+
+
+@frappe.whitelist()
+def get_cmap_creation_headers():
+
+    item_group_qb = frappe.qb.DocType("Item Group")
+
+    item_group_query = (
+        frappe.qb.from_(item_group_qb)
+        .where((item_group_qb.parent_item_group == "CMAP"))
+        .select(item_group_qb.name)
+    )
+    item_group_data = item_group_query.run(as_dict=True)
+
+    item_group_headers = [
+        {"fieldname": to_snake_case(group.get("name")), "label": group.get("name")}
+        for group in item_group_data
+    ]
+    meta = frappe.get_meta("CMAP")
+    meta_for_materials = frappe.get_meta("Item CMAP Material")
+
+    fields = meta.get("fields", None)
+
+    material_types = meta_for_materials.get("fields")[0].get("options").split("\n")
+    material_types_list = [
+        {"fieldname": to_snake_case(i), "label": i} for i in material_types
+    ]
+
+    columns = [
+        {"fieldname": "academic_year", "label": "Academic Year"},
+        {"fieldname": "subject", "label": "Subject"},
+        {"fieldname": "period", "label": "Period"},
+        {
+            "fieldname": "reserved_for_portion_circular",
+            "label": "Reserved For Portion Circular",
+        },
+        {"fieldname": "class", "label": "Class"},
+        {"fieldname": "unit", "label": "Unit"},
+        {"fieldname": "plan_date", "label": "Plan Date"},
+        {"fieldname": "last_period_of_the_unit", "label": "Last Period of the Unit"},
+        {"fieldname": "textbook", "label": "Textbook"},
+        {
+            "fieldname": "chapter",
+            "label": "Chapter",
+        },
+        *item_group_headers,
+        *material_types_list,
+    ]
+    return columns
