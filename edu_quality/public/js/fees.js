@@ -520,7 +520,6 @@ function generate_payment_link(frm) {
         frappe.call({
             doc: frm.doc,
             method: "get_uncreated_payment_terms",
-            type: "POST",
             callback: function (response) {
                 let terms = response.message
                 let d = new frappe.ui.Dialog({
