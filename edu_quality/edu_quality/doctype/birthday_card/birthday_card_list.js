@@ -86,7 +86,7 @@ async function handleFileResponse(file, values) {
         const from_date = new Date(values.from_date);
         const fromMonthName = from_date.toLocaleString('default', { month: 'long' });
         const from_day = from_date.getDate();
-        const to_date = new Date(values.from_date);
+        const to_date = new Date(values.to_date);
         const toMonthName = to_date.toLocaleString('default', { month: 'long' });
         const to_day = to_date.getDate();
 
