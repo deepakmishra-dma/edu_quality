@@ -19,7 +19,7 @@ frappe.ui.form.on('Fees', {
                 }
             });
 
-        },__("Action"));
+        }, __("Action"));
 
         frm.add_custom_button(__('Add Discount'), function () {
             let d = new frappe.ui.Dialog({
@@ -167,7 +167,7 @@ frappe.ui.form.on('Fees', {
                             }
                         });
                         dialog.show();
-                    },__("Action"));
+                    }, __("Action"));
                 }
             }
         });
@@ -460,7 +460,7 @@ function manualCollection(frm) {
             }
             d.hide();
         }
-    },__("Action"));
+    }, __("Action"));
 
     function sendOtp(frm) {
         frappe.call({
@@ -515,41 +515,40 @@ function manualCollection(frm) {
 }
 
 
-function generate_payment_link(frm){
+function generate_payment_link(frm) {
     frm.add_custom_button(__("Generate Payment Link"), function () {
-    frappe.call({
-        doc: frm.doc,
-        method: "get_uncreated_payment_terms",
-        type: "GET",
-        callback: function (response) {
-            let terms = response.message
-            let d = new frappe.ui.Dialog({
-                title: 'Generate Payment Link',
-                fields: [
-                    {
-                        label: 'Payment Term',
-                        fieldname: 'payment_term',
-                        fieldtype: 'Select',
-                        options: terms,
-                        reqd: 1
-                    }
-                ],
-                size: 'small',
-                primary_action_label: 'Create Link',
-                primary_action(values) {
-                    frappe.call({
-                        doc: frm.doc,
-                        method: "create_payment_request",
-                        type: "POST",
-                        args: {
-                            payment_term: values.payment_term
+        frappe.call({
+            doc: frm.doc,
+            method: "get_uncreated_payment_terms",
+            callback: function (response) {
+                let terms = response.message
+                let d = new frappe.ui.Dialog({
+                    title: 'Generate Payment Link',
+                    fields: [
+                        {
+                            label: 'Payment Term',
+                            fieldname: 'payment_term',
+                            fieldtype: 'Select',
+                            options: terms,
+                            reqd: 1
                         }
-                    });
-                    d.hide();
-                }
-            });
-            d.show();
-        }
-    });
-    },__("Action"));
+                    ],
+                    size: 'small',
+                    primary_action_label: 'Create Link',
+                    primary_action(values) {
+                        frappe.call({
+                            doc: frm.doc,
+                            method: "create_payment_request",
+                            type: "POST",
+                            args: {
+                                payment_term: values.payment_term
+                            }
+                        });
+                        d.hide();
+                    }
+                });
+                d.show();
+            }
+        });
+    }, __("Action"));
 }
