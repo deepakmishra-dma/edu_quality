@@ -3,33 +3,7 @@
 let pdfUrl;
 frappe.listview_settings["Birthday Card"] = {
     refresh: function (listview) {
-        listview.page.add_action_item(__("Print Birthday Cards"), async function () {
-            const selectedBirthdayCards = listview?.get_checked_items(true);
-
-            let pdfUrl
-            try {
-                const headers = new Headers()
-                headers.append('X-Frappe-CSRF-Token', frappe.csrf_token)
-                headers.append('Content-Type', 'application/json')
-                const payload = { "birthday_cards": selectedBirthdayCards, type: "POST" }
-                const generated = await fetch(`/api/method/edu_quality.edu_quality.doctype.birthday_card.birthday_card.print_birthday_card`, {
-                    method: 'POST',
-                    headers: headers, body: JSON.stringify(payload)
-                })
-                const file = await generated.blob()
-                pdfUrl = URL.createObjectURL(file);
-                window.open(pdfUrl, '_blank');
-            } catch (e) {
-                console.error(e)
-            }
-            finally {
-                if (pdfUrl) {
-                    URL.revokeObjectURL(pdfUrl)
-                }
-            }
-        })
-
-        listview.page.add_inner_button(__("Print Todays Birthday Cards"), async function () {
+        listview.page.add_inner_button(__("Print Birthday Cards"), async function () {
             const dialog = new frappe.ui.Dialog({
                 title: __('Print Todays Birthday Cards'),
                 fields: [
@@ -66,7 +40,6 @@ frappe.listview_settings["Birthday Card"] = {
                     } catch (e) {
                         console.error("An error occurred while trying to print today's birthday cards:", e);
                     } finally {
-                        console.log(pdfUrl)
                         if (pdfUrl) {
                             URL.revokeObjectURL(pdfUrl);
                         }
@@ -76,7 +49,7 @@ frappe.listview_settings["Birthday Card"] = {
             });
 
             dialog.show();
-        });
+        }).addClass('btn-primary');
     }
 }
 
