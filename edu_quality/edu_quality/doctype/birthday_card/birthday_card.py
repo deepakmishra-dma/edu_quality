@@ -119,7 +119,11 @@ def print_todays_birthday_card(from_date, to_date):
             AND academic_year = %(academic_year)s
         """,
         as_dict=True,
-        values={"academic_year": academic_year, "from_date": from_date, "to_date": to_date},
+        values={
+            "academic_year": academic_year,
+            "from_date": from_date,
+            "to_date": to_date,
+        },
     )
     birthday_cards = [i.name for i in all_birthdays]
     if not birthday_cards:
@@ -147,18 +151,29 @@ def get_birthday_card_data(birthday_card):
 
 @frappe.whitelist()
 def create_birthday_card(program_enrollments):
+    frappe.enqueue(create_birthday_card_async, program_enrollments=program_enrollments)
+
+
+def create_birthday_card_async(program_enrollments):
     """
-    this function will create birthday card for all the students in the selected program enrollments
+    Create birthday cards for all the students in the selected program enrollments.
+    This function is designed to run asynchronously.
+
     Args:
-        program_enrollments: list of program enrollments
+        program_enrollments (list): A list of program enrollments.
+
     """
     program_enrollments = frappe.parse_json(program_enrollments)
-    try:
-        for program_enrollment in program_enrollments:
-            frappe.get_doc(
-                {"doctype": "Birthday Card", "program_enrollment": program_enrollment}
-            ).insert(ignore_permissions=True)
-        return "Birthday Card Created Successfully!"
-    except Exception as e:
-        frappe.log_error("Create Birthday Card Error", frappe.get_traceback())
-        return "Error while creating birthday card!"
+    existing_cards = frappe.get_all(
+        "Birthday Card",
+        filters={"program_enrollment": ["in", program_enrollments]},
+        pluck="program_enrollment",
+    )
+    for program_enrollment in program_enrollments:
+        try:
+            if program_enrollment not in existing_cards:
+                new_card = frappe.new_doc("Birthday Card")
+                new_card.program_enrollment = program_enrollment
+                new_card.insert(ignore_permissions=True)
+        except:
+            frappe.log_error("Create Birthday Card Error", frappe.get_traceback())
