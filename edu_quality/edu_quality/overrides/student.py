@@ -54,7 +54,7 @@ class CustomStudent(Student):
             else:
                 prefix = prefix + ref_id
             self.name = prefix
-            self.student_email_id = self.name + "@" + frappe.get_single_value("MGR Settings", "email_domain")
+            self.student_email_id = self.name + "@walnutedu.in"
             self.reference_number = self.name[2:]
     
     def get_reference(self):

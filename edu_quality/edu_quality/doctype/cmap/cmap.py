@@ -3,14 +3,15 @@
 
 import frappe
 from frappe.model.document import Document
-from frappe.query_builder.functions import Count
+from frappe.query_builder.functions import Count, GROUP_CONCAT, Concat, Cast
 from frappe.utils import parse_json
 import json
 from edu_quality.public.py.utils import check_admin_roles, to_snake_case
 import string
 import random
-
+from edu_quality.edu_quality.server_scripts.utils import current_academic_year
 import frappe.utils
+from frappe.query_builder import Order
 
 # edu_quality.edu_quality.doctype.cmap.cmap
 
@@ -356,11 +357,6 @@ def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     return "".join(random.choice(chars) for _ in range(size))
 
 
-"""
-
-Plan Date	Period	Chapter Name	Comment	Section	Sub-section	Lesson plan code	Worksheet code	Answer sheet code	PPT code	E-Learning code	Audio code	MCQs Test code	Assignment Instructions header	Solve Assignment Instructions	Assignment Instructions footer	Grading	Broadcast	Parent Note	Homework	Classwork	Material Required	"""
-
-
 @frappe.whitelist()
 def get_cmap_creation_headers():
 
@@ -378,14 +374,6 @@ def get_cmap_creation_headers():
         for group in item_group_data
     ]
     meta = frappe.get_meta("CMAP")
-    meta_for_materials = frappe.get_meta("Item CMAP Material")
-
-    fields = meta.get("fields", None)
-
-    material_types = meta_for_materials.get("fields")[0].get("options").split("\n")
-    material_types_list = [
-        {"fieldname": to_snake_case(i), "label": i} for i in material_types
-    ]
 
     columns = [
         {"fieldname": "academic_year", "label": "Academic Year"},
@@ -404,7 +392,111 @@ def get_cmap_creation_headers():
             "fieldname": "chapter",
             "label": "Chapter",
         },
+        {"fieldname": "broadcast", "label": "Broadcast"},
+        {"fieldname": "parent_note", "label": "Parent Note"},
+        {"fieldname": "home_work", "label": "Home Work"},
+        {"fieldname": "class_work", "label": "Class Work"},
+        {"fieldname": "material_required", "label": "Material Required"},
         *item_group_headers,
-        *material_types_list,
     ]
     return columns
+
+
+@frappe.whitelist(allow_guest=True)
+def get_cmap_list(academic_year, program, subject, unit, from_date=None, end_date=None):
+    if not academic_year:
+        academic_year = current_academic_year()
+    acad_year_doc = frappe.get_doc("Academic Year", academic_year)
+
+    if not from_date:
+        from_date = acad_year_doc.year_start_date
+
+    if not end_date:
+        end_date = acad_year_doc.year_end_date
+    cmap_qb = frappe.qb.DocType("CMAP")
+
+    unit_cond = cmap_qb.unit.isin(unit or [None])
+
+    if isinstance(unit, str):
+        unit_cond = cmap_qb.unit == unit
+
+    subject_cond = cmap_qb.subject.isin(subject or [None])
+
+    if isinstance(subject, str):
+        subject_cond = cmap_qb.subject == subject
+
+    item_detail_qb = frappe.qb.DocType("Item Detail")
+
+    cmap_query = (
+        frappe.qb.from_(cmap_qb)
+        .where(
+            (cmap_qb.academic_year == academic_year)
+            & (cmap_qb["class"] == program)
+            & (cmap_qb.reserved_for_portion_circular == 0)
+            & (unit_cond)
+            & (subject_cond)
+            # & ((cmap_qb.plan_date.isnull()) | (cmap_qb.plan_date[from_date:end_date]))
+        )
+        .select(
+            cmap_qb.name,
+            cmap_qb.academic_year,
+            cmap_qb.plan_date,
+            cmap_qb.unit,
+            cmap_qb.subject,
+            cmap_qb.period,
+            cmap_qb["class"],
+            cmap_qb.last_period_of_the_unit,
+            cmap_qb.reserved_for_portion_circular,
+        )
+    )
+
+    final_query = (
+        frappe.qb.from_(cmap_query)
+        .inner_join(item_detail_qb)
+        .on(
+            (item_detail_qb.parent == cmap_query.name)
+            & (item_detail_qb.parenttype == "CMAP")
+        )
+        .groupby((cmap_query.period))
+        .orderby(Cast(cmap_query.period, "UNSIGNED"), Order.asc)
+        .select(
+            cmap_query.star,
+            GROUP_CONCAT(item_detail_qb.item).as_("item_names"),
+            item_detail_qb.item_group,
+            GROUP_CONCAT(item_detail_qb.chapter).as_("chapter"),
+            GROUP_CONCAT(item_detail_qb.textbook).as_("textbook"),
+        )
+    )
+
+    return merge_different_item_group(final_query.run(as_dict=True))
+
+
+def merge_different_item_group(data=[]):
+    hashmap = {}
+    for cmap in data:
+        name = cmap.get("name")
+
+        if name not in hashmap:
+            hashmap[name] = cmap
+            cmap[to_snake_case(cmap.item_group)] = cmap.item_names
+            del cmap.item_names
+            del cmap.item_group
+        else:
+            hashmap[name][to_snake_case(cmap.item_group)] = cmap.item_names
+            del cmap.item_names
+            del cmap.item_group
+    return [value for key, value in hashmap.items()]
+
+
+@frappe.whitelist()
+def update_cmap(row):
+    row = json.loads(row) if isinstance(row, str) else row
+
+    if frappe.db.exists("CMAP", row.name):
+        cmap_doc = frappe.get_doc("CMAP", row.name)
+
+    else:
+        pass
+
+
+# def add_cmap():

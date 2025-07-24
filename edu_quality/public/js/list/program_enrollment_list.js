@@ -56,13 +56,9 @@ frappe.listview_settings['Program Enrollment'] = {
                 const file = await generated.blob()
                 pdfUrl = URL.createObjectURL(file);
                 window.open(pdfUrl, '_blank');
-
-
             }
-
             catch (e) {
                 console.error(e)
-
             }
             finally {
                 if (pdfUrl) {
@@ -70,28 +66,24 @@ frappe.listview_settings['Program Enrollment'] = {
                 }
 
             }
-
-
         });
         list_view.page.add_action_item("Create Birthday Cards", async () => {
             const selectedEnrollments = list_view?.get_checked_items(true);
 
             frappe.call({
                 method: "edu_quality.edu_quality.doctype.birthday_card.birthday_card.create_birthday_card",
-                args: { "program_enrollments": selectedEnrollments},
+                args: { "program_enrollments": selectedEnrollments },
                 callback: function (r) {
-                    if (r.message) {
-                        frappe.msgprint({
-                            title: __("Birthday Cards Creation"),
-                            message: __('Birthday Cards Created Successfully. <a href="/app/birthday-card" target="_blank">Click Here</a>'),
-                            primary_action: {
-                                label: __("OK"),
-                                action: function () {
-                                    frappe.hide_msgprint();
-                                }
+                    frappe.msgprint({
+                        title: __("Birthday Cards Creation"),
+                        message: __('Birthday Cards Creation Scheduled Successfully. <a href="/app/birthday-card" target="_blank">Click Here</a>'),
+                        primary_action: {
+                            label: __("OK"),
+                            action: function () {
+                                frappe.hide_msgprint();
                             }
-                        });
-                    }
+                        }
+                    });
                 }
             });
 

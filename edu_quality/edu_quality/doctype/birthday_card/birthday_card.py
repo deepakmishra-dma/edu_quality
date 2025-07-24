@@ -5,6 +5,7 @@ import frappe
 from datetime import date
 from weasyprint import HTML
 from frappe.model.document import Document
+from edu_quality.edu_quality.server_scripts.utils import current_academic_year
 from edu_quality.edu_quality.server_scripts.student_applicant import generate_hash
 from frappe.auth import LoginManager
 from edu_quality.public.py.walsh.admin import render_jinja, send_notification
@@ -100,6 +101,36 @@ def print_birthday_card(birthday_cards):
         frappe.log_error("Print Birthday Card Error", frappe.get_traceback())
 
 
+@frappe.whitelist()
+def print_todays_birthday_card(from_date, to_date):
+    academic_year = current_academic_year()
+    all_birthdays = frappe.db.sql(
+        """
+        SELECT name
+        FROM `tabBirthday Card`
+        WHERE 
+            MONTH(CONVERT_TZ(date_of_birth, '+00:00', '+05:30')) 
+                BETWEEN 
+                    MONTH(CONVERT_TZ(%(from_date)s, '+00:00', '+05:30')) AND MONTH(CONVERT_TZ(%(to_date)s, '+00:00', '+05:30'))
+            AND 
+            DAY(CONVERT_TZ(date_of_birth, '+00:00', '+05:30')) 
+                BETWEEN 
+                    DAY(CONVERT_TZ(%(from_date)s, '+00:00', '+05:30')) AND DAY(CONVERT_TZ(%(to_date)s, '+00:00', '+05:30'))
+            AND academic_year = %(academic_year)s
+        """,
+        as_dict=True,
+        values={
+            "academic_year": academic_year,
+            "from_date": from_date,
+            "to_date": to_date,
+        },
+    )
+    birthday_cards = [i.name for i in all_birthdays]
+    if not birthday_cards:
+        return False
+    return print_birthday_card(birthday_cards)
+
+
 def get_birthday_card_data(birthday_card):
     birthday_card = frappe.get_doc("Birthday Card", birthday_card)
     dob = frappe.get_value("Student", birthday_card.student, "date_of_birth")
@@ -120,18 +151,29 @@ def get_birthday_card_data(birthday_card):
 
 @frappe.whitelist()
 def create_birthday_card(program_enrollments):
+    frappe.enqueue(create_birthday_card_async, program_enrollments=program_enrollments)
+
+
+def create_birthday_card_async(program_enrollments):
     """
-    this function will create birthday card for all the students in the selected program enrollments
+    Create birthday cards for all the students in the selected program enrollments.
+    This function is designed to run asynchronously.
+
     Args:
-        program_enrollments: list of program enrollments
+        program_enrollments (list): A list of program enrollments.
+
     """
     program_enrollments = frappe.parse_json(program_enrollments)
-    try:
-        for program_enrollment in program_enrollments:
-            frappe.get_doc(
-                {"doctype": "Birthday Card", "program_enrollment": program_enrollment}
-            ).insert(ignore_permissions=True)
-        return "Birthday Card Created Successfully!"
-    except Exception as e:
-        frappe.log_error("Create Birthday Card Error", frappe.get_traceback())
-        return "Error while creating birthday card!"
+    existing_cards = frappe.get_all(
+        "Birthday Card",
+        filters={"program_enrollment": ["in", program_enrollments]},
+        pluck="program_enrollment",
+    )
+    for program_enrollment in program_enrollments:
+        try:
+            if program_enrollment not in existing_cards:
+                new_card = frappe.new_doc("Birthday Card")
+                new_card.program_enrollment = program_enrollment
+                new_card.insert(ignore_permissions=True)
+        except:
+            frappe.log_error("Create Birthday Card Error", frappe.get_traceback())
