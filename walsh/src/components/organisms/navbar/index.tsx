@@ -157,11 +157,11 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
             icon: IconLink,
             location: "/ptm-link",
           },
-          {
-            label: "Student Profile",
-            icon: IconUser,
-            location: "/student-profile",
-          },
+          // {
+          //   label: "Student Profile",
+          //   icon: IconUser,
+          //   location: "/student-profile",
+          // },
           {
             label: "School Calendar",
             icon: IconCalendar,
