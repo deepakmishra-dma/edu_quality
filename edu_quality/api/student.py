@@ -70,6 +70,7 @@ def get_students(program, ay):
         ON p.student_group = d.name
         WHERE p.program = %s and p.academic_year = %s and s.student_status != 'Cancelled' 
         GROUP BY d.batch, p.school_house, s.gender, s.name
+        ORDER BY d.batch, p.school_house, s.gender, RAND()
         """,
         (program, ay),
         as_dict=True,
