@@ -625,7 +625,7 @@ def send_test_mail(**kwargs):
         content=notice_content,
         send_email=True,
         read_receipt=True,
-
+        now=True
     )
 
 
