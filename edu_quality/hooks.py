@@ -209,6 +209,7 @@ doc_events = {
         "autoname": "edu_quality.overrides_hooks.item.autoname",
         "before_insert": "edu_quality.overrides_hooks.item.before_insert",
         "after_delete": "edu_quality.overrides_hooks.item.after_delete",
+        "before_save": "edu_quality.overrides_hooks.item.before_save",
     },
     "Program": {"validate": "edu_quality.public.py.program.validate"},
     "Topic": {
