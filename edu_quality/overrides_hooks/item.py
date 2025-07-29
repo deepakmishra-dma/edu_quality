@@ -119,9 +119,7 @@ def before_insert(self, method=None):
 
 
 def before_save(doc, method=None):
-    if not doc.custom_is_cmap and not doc.is_test:
-        return
-    if doc.upload_to_erp:
+    if doc.custom_is_cmap and doc.is_test and doc.upload_to_erp:
         doc.custom_product_url = doc.upload_to_erp
 
 
