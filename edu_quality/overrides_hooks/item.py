@@ -118,6 +118,11 @@ def before_insert(self, method=None):
         self.custom_sheet_number = calculate_sheet_number(self)
 
 
+def before_save(doc, method=None):
+    if doc.custom_is_cmap and doc.is_test and doc.upload_to_erp:
+        doc.custom_product_url = doc.upload_to_erp
+
+
 def search_file_id(url):
     try:
         file_id = re.search(drive_url_id_re, url).group(1)
