@@ -315,6 +315,19 @@ function swapDivisionButton(frm) {
     frm.add_custom_button(__('Swap/Change Division'), async function () {
         let cur_ay = await frappe.db.get_value('Academic Year', { custom_current_academic_year: 1 }, ['name']);
         let cur_pe = await frappe.db.get_value('Program Enrollment', { student: frm.doc.name, program: frm.doc.program, academic_year: cur_ay.name }, ['name', 'student_group']);
+        if (!cur_pe.message || Object.keys(cur_pe.message).length === 0) {
+            frappe.msgprint({
+                title: __("Program Enrollment Error"),
+                message: __('Program Enrollment not found for this student! for current academic year. Please check and try again.'),
+                primary_action: {
+                    label: __("OK"),
+                    action: function () {
+                        frappe.hide_msgprint();
+                    }
+                }
+            });
+            return;
+        }
         let division = cur_pe.message.student_group.split('-')[0];
         let cur_batch = await frappe.db.get_value('Student Group', { "name": cur_pe.message.student_group }, "batch")
         let d = new frappe.ui.Dialog({

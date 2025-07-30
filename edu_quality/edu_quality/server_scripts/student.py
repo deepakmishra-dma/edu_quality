@@ -213,7 +213,8 @@ def swap_student_division(pe_doc_1, pe_doc_2):
     # add student 2 to student 1 division
     add_to_division(pe_doc_2, division_1.name, rno1)
     # generate permanent id cards
-    generate_permanent_id_cards(enrollments=[pe_doc_1.name, pe_doc_2.name])
+    enrollments = frappe.json.dumps([pe_doc_1.name, pe_doc_2.name])
+    generate_permanent_id_cards(enrollments=enrollments)
 
     # send email to bcc admin of school
     send_email_for_division_swap(pe_doc_1)
