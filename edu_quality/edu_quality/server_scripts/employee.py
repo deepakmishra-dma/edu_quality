@@ -415,9 +415,8 @@ def employee_query(doctype, txt, searchfield, start, page_len, filters):
                         `tabInstructor` instructor
                     WHERE instructor.custom_school = '{school}'
                 )
-            AND emp.name LIKE %(txt)s
+            AND emp.name LIKE %(txt)s OR emp.employee_name LIKE %(txt)s
             ORDER BY
                 emp.name
-            LIMIT {start}, {page_len}
         """
     return frappe.db.sql(query, {"txt": "%{}%".format(txt)})
