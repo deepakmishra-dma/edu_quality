@@ -7,8 +7,12 @@ from collections import Counter
 
 @frappe.whitelist(allow_guest=True)
 def get_student_data(student):
-    student = frappe.get_doc("Student", student, ignore_permissions=True)
-    return student.as_dict()
+    student = frappe.get_doc("Student", student)
+    data = student.as_dict()
+    data["guardians"] = [
+        frappe.get_doc("Guardian", g.guardian).as_dict() for g in student.guardians
+    ]
+    return data
 
 
 @frappe.whitelist()
