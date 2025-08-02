@@ -136,6 +136,8 @@ def swap_division(**kwargs):
             frappe.db.set_value("Program Enrollment", pe, "tiffin_rack_no", None) 
             # add to new division 
             add_to_division(pe_doc, division)
+            update_linked_docs(pe_doc, division, pe_doc.student_batch_name)
+            send_email_for_division_swap(pe_doc, is_swap=False)
             return True
         elif student:
             # get the program enrollment of the student to swap
@@ -203,11 +205,11 @@ def swap_student_division(pe_doc_1, pe_doc_2):
     # remove student 1 from current division
     rno1 = remove_from_division(pe_doc_1)
     # update details in program enrollment of student 1
-    update_program_enrollments(pe_doc_1, pe_doc_2)
+    update_linked_docs(pe_doc_1, pe_doc_2.student_group, pe_doc_2.student_batch_name)
     # remove student 2 from current division
     rno2 = remove_from_division(pe_doc_2)
     # update details in program enrollment of student 2
-    update_program_enrollments(pe_doc_2, pe_doc_1)
+    update_linked_docs(pe_doc_2, pe_doc_1.student_group, pe_doc_1.student_batch_name)
     # add student 1 to student 2 division
     add_to_division(pe_doc_1, division_2.name, rno2)
     # add student 2 to student 1 division
@@ -222,7 +224,7 @@ def swap_student_division(pe_doc_1, pe_doc_2):
     return True
 
 
-def send_email_for_division_swap(pe_doc_1):
+def send_email_for_division_swap(pe_doc_1, is_swap=True):
     """
     pe_doc_1: Program Enrollment of student 1
     this function sends email to students for division swap
@@ -237,11 +239,15 @@ def send_email_for_division_swap(pe_doc_1):
     recipients = [i.email_address for i in guardian]
     school_details = frappe.get_doc("School", pe_doc_1.custom_school)
     bcc_admin = school_details.get("bcc_email_address")
+    if is_swap:
+        message=f"Dear {student.student_name},\n\nYour division has been swapped successfully. Please find the details below:\n\nDivision: {pe_doc_1.student_group}\n\nRegards,\n{school_details.name}",
+    else:
+        message=f"Dear {student.student_name},\n\nYou have been added to division {pe_doc_1.student_group}. Please find the details below:\n\nDivision: {pe_doc_1.student_group}\n\nRegards,\n{school_details.name}",
     frappe.sendmail(
         recipients=recipients,
         bcc=[bcc_admin],
         subject="Division Swap",
-        message=f"Dear {student.student_name},\n\nYour division has been swapped successfully. Please find the details below:\n\nDivision: {pe_doc_1.student_group}\n\nRegards,\n{school_details.name}",
+        message=message,
     )
 
 
@@ -292,11 +298,21 @@ def add_student_log(doc, division, is_removed=False):
     frappe.get_doc(doc_info).insert(ignore_permissions=True)
 
 
-def update_program_enrollments(pe_doc_1, pe_doc_2):
+def update_linked_docs(pe_doc, student_group, batch_name, tiffin_rack_no=None):
+    """
+    pe_doc: Program Enrollment
+    student_group: Student Group
+    batch_name: Batch Name
+    this function updates linked documents like student, program enrollment
+    """
     # update student group, tiffin rack no, and batch in program enrollment
     to_update = {
-        "student_group": pe_doc_2.student_group,
-        "tiffin_rack_no": None,
-        "student_batch_name": pe_doc_2.student_batch_name
+        "student_group": student_group,
+        "tiffin_rack_no": tiffin_rack_no,
+        "student_batch_name": batch_name
     }
-    frappe.db.set_value("Program Enrollment", pe_doc_1.name, to_update)
+    frappe.db.set_value("Program Enrollment", pe_doc.name, to_update)
+    to_update = {
+        "custom_division": frappe.get_value("Student Group", student_group, "student_group_name"),
+    }
+    frappe.db.set_value("Student", pe_doc.student, to_update)

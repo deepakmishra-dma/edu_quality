@@ -43,13 +43,12 @@ def send_bonafide(student_id):
                 doc.bonafide_pdf = bonafide_pdf
                 doc.save()
 
-            guardian_email = [i.guardian_name for i in student.guardians]
-            guardian = frappe.get_all(
+            guardians = [i.guardian for i in student.guardians]
+            recipients = frappe.get_all(
                 doctype="Guardian",
-                fields=["email_address"],
-                filters=[["guardian_name", "in", guardian_email]],
+                filters=[["name", "in", guardians]],
+                pluck="email_address",
             )
-            recipients = [i.email_address for i in guardian]
             school_details = frappe.get_doc("School", student.school)
             bcc_admin = school_details.get("bcc_email_address")
             frappe.sendmail(
