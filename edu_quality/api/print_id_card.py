@@ -130,12 +130,14 @@ def generate_permanent_id_cards(enrollments):
     program_enrollment = frappe.db.get_all(
         "Program Enrollment",
         filters=[["name", "in", enrollments]],
-        fields=["custom_school", "name", "custom_status", "academic_year"],
+        fields=["custom_school", "name", "custom_status", "academic_year", "student"],
     )
     hash = None
+    STATUSES = ["Cancelled", "Alumni"]
     for i in program_enrollment:
+        student_status = frappe.get_value("Student", i.student, "student_status")
         name = i.get("name")
-        if i.get("custom_status") in ["Cancelled", "Alumni"]:
+        if i.get("custom_status") in STATUSES or student_status in STATUSES:
             frappe.msgprint("ga")
             return frappe.throw(
                 f"Cannot Create ID Card for cancelled student or alumni students {name}"

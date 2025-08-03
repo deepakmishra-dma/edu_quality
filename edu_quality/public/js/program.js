@@ -22,10 +22,14 @@ async function shuffleDivision(frm) {
                         args: {
                             program: frm.doc.name,
                         },
-                        callback: function(response) {
+                        callback: function (response) {
+                            if (!response.message) {
+                                displayMessage("Error while exporting student details, Please click on 'Shuffle Division' and Try again.");
+                                return;
+                            }
                             var a = document.createElement('a');
                             var filecontent = atob(response.message.filecontent);
-                            var blob = new Blob([filecontent], {type: 'application/csv'});
+                            var blob = new Blob([filecontent], { type: 'application/csv' });
                             var url = window.URL.createObjectURL(blob);
                             a.href = url;
                             a.download = response.message.filename;
@@ -53,6 +57,10 @@ async function shuffleDivision(frm) {
                     program: frm.doc.name,
                 },
                 callback: function (r) {
+                    if (!r.message) {
+                        displayMessage("Error while shuffling division data, Please click on 'Shuffle Division' and Try again.");
+                        return;
+                    }
                     if (r.message) {
                         frappe.show_alert({
                             message: __(r.message),
@@ -75,6 +83,9 @@ async function getDivisionMessage(frm) {
             program: frm.doc.name,
         }
     });
+    if (!data.message) {
+        return "Error while getting student details";
+    }
 
     data.message = Object.keys(data.message).sort().reduce(
         (obj, key) => {
@@ -103,8 +114,8 @@ async function getDivisionMessage(frm) {
                     <summary>Students</summary>
                     <div style="display: grid; grid-template-columns: 1fr 1fr;">
                         ${details.students.map(student => {
-                            return `<p>${student.name}: ${student.first_name}-${student.school_house}</p>`;
-                        }).join('')}
+            return `<p>${student.name}: ${student.first_name}-${student.school_house}</p>`;
+        }).join('')}
                     </div>
                 </details>
             </details>
@@ -112,4 +123,17 @@ async function getDivisionMessage(frm) {
     }).join('');
 
     return `<div style="display: grid; grid-template-columns: 1fr 1fr;">${html_content}</div>`;
+}
+
+function displayMessage(message) {
+    frappe.msgprint({
+        title: __("Error!"),
+        message: __(message),
+        primary_action: {
+            label: __("OK"),
+            action: function () {
+                frappe.hide_msgprint();
+            }
+        }
+    });
 }
