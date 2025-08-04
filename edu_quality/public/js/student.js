@@ -76,83 +76,24 @@ function cancelStudent(frm) {
         return 1
     }
     frm.add_custom_button(__('Cancel Student'), function () {
-        let bank_validation = true;
-        if (!frm.doc.custom_cancellation_letter) {
-            frappe.throw("Upload Cancellation Letter to Continue!");
-        }
-        // frappe.call({
-        //     doc: frm.doc,
-        //     method: "validate_bank_account",
-        //     callback: function (response) {
-        //         if (!response.message) {
-        //             bank_validation = false;
-        //             // return frappe.throw("Bank Account is not linked to this student");
-        //         }
-        //     }
-        // })
-
 
         frappe.call({
             doc: frm.doc,
-            method: "get_academic_years",
-            callback: function (response) {
-                let d = new frappe.ui.Dialog({
-                    title: 'Student Cancellation',
-                    fields: [
-                        {
-                            label: 'Academic Year',
-                            fieldname: 'academic_year',
-                            fieldtype: 'Select',
-                            options: response.message,
-                        },
-                        {
-                            label: 'Fee Collection',
-                            fieldname: 'fee_collection',
-                            fieldtype: 'Select',
-                            options: ["Ignore Pending Fee", "Collect Full Fee", "Collect Partial Fee", "Deduct from Deposit", "Deposit Refund"]
-                        }
-                    ],
-                    size: 'large',
-                    primary_action_label: 'Submit',
-                    primary_action(values) {
-                        frappe.call({
-                            doc: frm.doc,
-                            method: "cancel_student",
-                            type: "POST",
-                            args: {
-                                academic_year: values.academic_year,
-                                fee_collection: values.fee_collection,
-                            },
-                            callback: function (response) {
-                                if (response.message == 1) {
-                                    frappe.show_alert({
-                                        message: __("Student Cancellation Successful!"),
-                                        indicator: 'green'
-                                    });
-                                    frm.reload_doc();
-                                }
-                                else {
-                                    frappe.show_alert({
-                                        message: __("Something Went Wrong!"),
-                                        indicator: 'red'
-                                    });
-                                }
-
-                            }
-                        });
-                        d.hide();
-                    }
-                });
-                if (bank_validation) {
-                    d.show();
+            async: true,
+            freeze: true,
+            method: "create_student_exit",
+            callback: function (r) {
+                if (r.message) {
+                    window.location = "/app/student-exit/" + frm.doc.name;
                 }
                 else {
-                    d.hide();
+                    frappe.show_alert({
+                        message: __("Something went wrong!"),
+                        indicator: 'red'
+                    });
                 }
-
             }
-        })
-
+        });
     }, __("Action"));
 
 }

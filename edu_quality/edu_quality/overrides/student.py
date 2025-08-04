@@ -10,13 +10,6 @@ from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
 )
 from frappe.desk.query_report import run
 
-
-
-
-
-
-
-
 class CustomStudent(Student):
     def autoname(self):
         school_prefixes = {
@@ -105,6 +98,14 @@ class CustomStudent(Student):
         pass
 
 
+    @frappe.whitelist()
+    def create_student_exit(self):
+        exit = frappe.new_doc("Student Exit")
+        exit.student = self.name
+        exit.academic_year = frappe.db.get_value("Academic Year",{'custom_current_academic_year':1})
+        exit.insert(ignore_permissions=True)
+        return exit.name 
+
     def validate_user(self):
         current_user = None
         login_manager = None
@@ -174,7 +175,7 @@ class CustomStudent(Student):
 
     def check_pending_fee(self):
         if frappe.db.exists("Fees",{"student":self.name,"docstatus":"1","outstanding_amount":[">",0]}):
-            return 1
+            return frappe.db.get_value("Fees",{"student":self.name,"docstatus":"1","outstanding_amount":[">",0]},'outstanding_amount')
         else:
             return 0
 

@@ -1,33 +1,60 @@
 {
  "actions": [],
- "allow_rename": 1,
+ "autoname": "field:student",
  "creation": "2024-05-20 14:20:55.637922",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
   "section_break_jlkr",
   "student",
-  "amended_from",
-  "column_break_ufyi",
   "academic_year",
-  "column_break_jxfb",
+  "column_break_ufyi",
   "fees_status",
+  "amended_from",
   "cancellation_details_section",
   "requested_on",
   "date_of_leaving",
   "cancellation_letter",
   "column_break_axrs",
   "cancellation_type",
-  "leaving_certificate_number",
+  "date_of_issue",
+  "remark",
   "column_break_lrhn",
   "cancellation_status",
   "leaving_certificate",
+  "reason",
   "refund_details_section",
   "deposit_amount",
   "column_break_edui",
   "pending_fees",
   "column_break_nmiz",
-  "refund_amount"
+  "refund_amount",
+  "other_details_section",
+  "school",
+  "letter_head",
+  "last_class_studied",
+  "failed",
+  "dob_in_words",
+  "fees_paid_upto",
+  "total_working_days",
+  "extra_curricular",
+  "column_break_tmke",
+  "signature",
+  "father_name",
+  "mother_name",
+  "promotion_class",
+  "promotion_in_words",
+  "discount_details",
+  "days_present",
+  "general_conduct",
+  "subjects_section",
+  "subject_1",
+  "subject_2",
+  "subject_3",
+  "column_break_seca",
+  "subject_4",
+  "subject_5",
+  "subject_6"
  ],
  "fields": [
   {
@@ -51,7 +78,8 @@
    "in_list_view": 1,
    "label": "Student",
    "options": "Student",
-   "reqd": 1
+   "reqd": 1,
+   "unique": 1
   },
   {
    "fieldname": "fees_status",
@@ -72,10 +100,6 @@
    "label": "Academic Year",
    "options": "Academic Year",
    "reqd": 1
-  },
-  {
-   "fieldname": "column_break_jxfb",
-   "fieldtype": "Column Break"
   },
   {
    "fieldname": "cancellation_details_section",
@@ -107,11 +131,6 @@
    "fieldtype": "Select",
    "label": "Cancellation Type",
    "options": "Ignore Pending Fee\nCollect Full Fee\nCollect Partial Fee\nDeduct from Deposit\nDeposit Refund"
-  },
-  {
-   "fieldname": "leaving_certificate_number",
-   "fieldtype": "Data",
-   "label": "Leaving Certificate Number"
   },
   {
    "fieldname": "column_break_lrhn",
@@ -159,15 +178,164 @@
    "fieldtype": "Currency",
    "label": "Refund Amount",
    "read_only": 1
+  },
+  {
+   "fieldname": "other_details_section",
+   "fieldtype": "Section Break",
+   "label": "Other Details"
+  },
+  {
+   "fetch_from": "student.school",
+   "fieldname": "school",
+   "fieldtype": "Link",
+   "label": "School",
+   "options": "School"
+  },
+  {
+   "fetch_from": "school.letter_head",
+   "fieldname": "letter_head",
+   "fieldtype": "Link",
+   "label": "Letter Head",
+   "options": "Letter Head"
+  },
+  {
+   "fetch_from": "school.signature",
+   "fieldname": "signature",
+   "fieldtype": "Attach Image",
+   "label": "Signature"
+  },
+  {
+   "fieldname": "last_class_studied",
+   "fieldtype": "Data",
+   "label": "Last Class Studied"
+  },
+  {
+   "fieldname": "column_break_tmke",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "father_name",
+   "fieldtype": "Data",
+   "label": "Father Name"
+  },
+  {
+   "fieldname": "mother_name",
+   "fieldtype": "Data",
+   "label": "Mother Name"
+  },
+  {
+   "fieldname": "subjects_section",
+   "fieldtype": "Section Break",
+   "label": "Subjects"
+  },
+  {
+   "fieldname": "subject_1",
+   "fieldtype": "Data",
+   "label": "Subject 1"
+  },
+  {
+   "fieldname": "subject_2",
+   "fieldtype": "Data",
+   "label": "Subject 2"
+  },
+  {
+   "fieldname": "subject_3",
+   "fieldtype": "Data",
+   "label": "Subject 3"
+  },
+  {
+   "fieldname": "column_break_seca",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "subject_4",
+   "fieldtype": "Data",
+   "label": "Subject 4"
+  },
+  {
+   "fieldname": "subject_5",
+   "fieldtype": "Data",
+   "label": "Subject 5"
+  },
+  {
+   "fieldname": "subject_6",
+   "fieldtype": "Data",
+   "label": "Subject 6"
+  },
+  {
+   "fieldname": "failed",
+   "fieldtype": "Data",
+   "label": "Failed"
+  },
+  {
+   "fieldname": "dob_in_words",
+   "fieldtype": "Data",
+   "label": "DOB in Words"
+  },
+  {
+   "fieldname": "promotion_class",
+   "fieldtype": "Data",
+   "label": "Promotion Class"
+  },
+  {
+   "fieldname": "promotion_in_words",
+   "fieldtype": "Data",
+   "label": "Promotion in words"
+  },
+  {
+   "fieldname": "fees_paid_upto",
+   "fieldtype": "Data",
+   "label": "Fees Paid Upto"
+  },
+  {
+   "fieldname": "date_of_issue",
+   "fieldtype": "Date",
+   "label": "Date of Issue"
+  },
+  {
+   "fieldname": "total_working_days",
+   "fieldtype": "Int",
+   "label": "Total working days"
+  },
+  {
+   "fieldname": "extra_curricular",
+   "fieldtype": "Data",
+   "label": "Extra Curricular"
+  },
+  {
+   "fieldname": "discount_details",
+   "fieldtype": "Code",
+   "label": "Discount details"
+  },
+  {
+   "fieldname": "days_present",
+   "fieldtype": "Int",
+   "label": "Days Present"
+  },
+  {
+   "fieldname": "general_conduct",
+   "fieldtype": "Data",
+   "label": "General Conduct"
+  },
+  {
+   "fieldname": "remark",
+   "fieldtype": "Data",
+   "label": "Remark"
+  },
+  {
+   "fieldname": "reason",
+   "fieldtype": "Data",
+   "label": "Reason"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-05-20 14:54:57.646831",
+ "modified": "2024-05-22 22:20:12.491851",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Student Exit",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {
@@ -186,5 +354,6 @@
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": []
+ "states": [],
+ "track_changes": 1
 }
