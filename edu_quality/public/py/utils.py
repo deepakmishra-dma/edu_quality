@@ -557,7 +557,7 @@ def reduce_font_size_steps(initial_size, step, data, initial_char_length, lowest
     if isinstance(data, str):
         txt = data
     elif isinstance(data, frappe.model.document.Document):
-        txt = data.first_name if len(data.first_name) > len(data.last_name) else data.last_name
+        txt = (data.first_name or "") if len(data.first_name or "") > len(data.last_name or "") else (data.last_name or "")
     if len(txt) <= initial_char_length:
         return initial_size
     rem = len(txt) % int(initial_char_length)
