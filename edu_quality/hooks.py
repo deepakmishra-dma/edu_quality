@@ -137,6 +137,7 @@ permission_query_conditions = {
 # Override standard doctype classes
 
 override_doctype_class = {
+    "Program": "edu_quality.edu_quality.overrides.program.customProgram",
     "Journal Entry": "edu_quality.edu_quality.overrides.journal_entry.customJournalEntry",
     "Payment Request": "edu_quality.overrides.CustomPaymentRequest",
     "Fee Schedule": "edu_quality.public.py.fee_schedule.CustomFeeSchedule",
