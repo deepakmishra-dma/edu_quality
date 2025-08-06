@@ -17,13 +17,13 @@ class customProgram(Program):
         )
         # get all students in the program
         students = self.get_students(academic_year)
-        divisions = frappe.db.get_all('Student Group', filters={'program': self.name}, fields=['name','batch','max_strength'])
+        divisions = frappe.db.get_all('Student Group', filters={'program': self.name,'academic_year':academic_year,'disabled':0}, fields=['name','batch','max_strength'])
         allocation = self.allocate_students_to_divisions(students, divisions)
         frappe.logger('allocation').exception(allocation)
         return allocation
         
 
-    def allocate_students_to_divisions(students, divisions):
+    def allocate_students_to_divisions(self, students, divisions):
         # Group divisions by batch
         divisions_by_batch = defaultdict(list)
         for division in divisions:
