@@ -6,6 +6,7 @@ from frappe.model.document import Document
 import calendar
 from datetime import datetime, timedelta
 import json
+from weasyprint import  HTML
 
 
 class StudentAttendanceSheet(Document):
@@ -59,7 +60,7 @@ def get_data(month_name, academic_year, program, division):
     year = int(academic_year.split("-")[0])
     month = datetime.strptime(month_name, "%B").month
     day_numbers = [int(day["textContent"]) for day in days]
-    event_days = []
+    holidays = []
 
     start_date = datetime(year, month, 1).strftime("%Y-%m-%d")
     end_date = (
@@ -70,19 +71,28 @@ def get_data(month_name, academic_year, program, division):
 
     events = frappe.db.get_list(
         "Event",
-        filters={"class": program, "starts_on": ["between", [start_date, end_date]]},
-        fields=["starts_on", "ends_on"],
+        filters={
+            "class": program,
+            "starts_on": ["between", [start_date, end_date]],
+            "custom_holiday": 1,
+        },
+        fields=[
+            "starts_on",
+            "ends_on",
+        ],
     )
 
     if len(events) != 0:
         for event in events:
             days = get_included_days(event.starts_on, event.ends_on)
-            event_days.extend(days)
+            holidays.extend(days)
 
     result = {}
     for student in students:
-        student_days = [{day: "H" if day in event_days else ""} for day in day_numbers]
+
+        student_days = [{day: "H" if day in holidays else ""} for day in day_numbers]
         result[student["reference_number"]] = student_days
+
     attendance_data = frappe.get_all(
         "Attendance Entry",
         filters={
@@ -90,7 +100,7 @@ def get_data(month_name, academic_year, program, division):
             "date": ["between", [start_date, end_date]],
             "status": ["!=", "Holiday"],
         },
-        fields=["status", "date", "student.reference_number"],
+        fields=["status", "date", "student.reference_number", "name", "docstatus"],
     )
     if attendance_data:
         filtered_data = [
@@ -101,7 +111,11 @@ def get_data(month_name, academic_year, program, division):
         for entry in filtered_data:
 
             ref_number = entry["reference_number"]
-            status = get_attendance_status(entry["status"], "code")
+            status = (
+                get_attendance_status(entry["status"], "code")
+                if entry.docstatus
+                else get_latest_status(entry)
+            )
             day = str(entry["date"].day)
             if ref_number not in result:
                 continue
@@ -110,7 +124,7 @@ def get_data(month_name, academic_year, program, division):
                     day_status[day] = status
                     break
 
-    return result
+    return {"table_data": result, "holidays": holidays}
 
 
 @frappe.whitelist()
@@ -120,7 +134,7 @@ def save_attendance(**data):
     month = datetime.strptime(month_name, "%B").month
     year = int(academic_year.split("-")[0])
     program = data.get("program")
-    division = data.get("division")
+
     attendance_data = json.loads(data.get("attendance_data"))
 
     for ref, days in attendance_data.items():
@@ -139,6 +153,8 @@ def save_attendance(**data):
                 if existing_entry:
                     continue
 
+                # if
+
                 doc = frappe.get_doc(
                     {
                         "doctype": "Attendance Entry",
@@ -149,9 +165,42 @@ def save_attendance(**data):
                 )
 
                 doc.insert()
-                doc.submit()
+
             except:
                 pass
+
+    return "Attendance saved successfully"
+
+
+@frappe.whitelist()
+def submit_attendance(**data):
+    month_name = data.get("month_name")
+    academic_year = data.get("academic_year")
+    month = datetime.strptime(month_name, "%B").month
+    year = int(academic_year.split("-")[0])
+    program = data.get("program")
+    start_date = datetime(year, month, 1).strftime("%Y-%m-%d")
+    end_date = (
+        (datetime(year, month + 1, 1) - timedelta(days=1)).strftime("%Y-%m-%d")
+        if month < 12
+        else datetime(year, month, 31).strftime("%Y-%m-%d")
+    )
+
+    attendance_entries = frappe.get_all(
+        "Attendance Entry",
+        {
+            "date": ["between", [start_date, end_date]],
+            "docstatus": 0,
+            "class": program,
+        },
+    )
+    for entry in attendance_entries:
+        # Load the document
+        attendance_entry = frappe.get_doc("Attendance Entry", entry.name)
+        # Submit the document
+        attendance_entry.submit()
+
+    return "Attendance submitted successfully"
 
 
 @frappe.whitelist()
@@ -185,3 +234,45 @@ def get_attendance_status(val, return_type):
         return name_mapping.get(val.upper(), "")
     else:
         return short_mapping.get(val, "")
+
+
+@frappe.whitelist()
+def generate(**kwargs):
+    base_url = frappe.utils.get_url()
+
+    # enrollment_in_chunks = divide_into_subarrays(program_enrollment, 4)
+    tables = kwargs.get("tables")
+
+    template = frappe.render_template(
+        "edu_quality/templates/pdf/student_attendance_sheet.html",
+        {"tables": tables},
+    )
+    html = HTML(string=template, base_url=base_url)
+
+    main_doc = html.render()
+    main_pdf = main_doc.write_pdf()
+
+    frappe.local.response.filename = "Temporary Id Card.pdf".format(
+        name="Temporary Id Card.pdf".replace(" ", "-").replace("/", "-")
+    )
+    frappe.local.response.filecontent = main_pdf
+    frappe.local.response.type = "pdf"
+
+
+def get_latest_status(entry):
+    latest_entry = frappe.get_all(
+        "Absent and Delay",
+        filters={
+            "parent": entry["name"],
+        },
+        fields=["status"],
+        order_by="timestamp desc",
+        limit=1,
+    )
+
+    if latest_entry:
+        status = latest_entry[0]["status"]
+        if status and status[0].upper() in {"E", "S", "L"}:
+            return status[0].upper()
+    else:
+        return get_attendance_status(entry["status"], "code")

@@ -2,6 +2,9 @@ const updatedAttendance = {};
 let saveButtonAdded = false;
 let globalFrm = null;
 let showBtnEnable = false;
+let tables = [];
+let holidays = [];
+let showInfoTable = false;
 
 frappe.ui.form.on("Student Attendance Sheet", {
   onload(frm) {
@@ -28,6 +31,34 @@ frappe.ui.form.on("Student Attendance Sheet", {
     }
     const monthName = getCurrentMonthName();
     if (monthName) frm.set_value("month", monthName);
+    globalFrm.page.add_inner_button(__("Print"), async () => {
+      let pdfUrl;
+      try {
+        const headers = new Headers();
+        headers.append("X-Frappe-CSRF-Token", frappe.csrf_token);
+        headers.append("Content-Type", "application/json");
+        const payload = { tables: tables, type: "POST" };
+        const generated = await fetch(
+          `/api/method/edu_quality.edu_quality.doctype.student_attendance_sheet.student_attendance_sheet.generate`,
+          {
+            method: "POST",
+
+            headers: headers,
+            body: JSON.stringify(payload),
+          }
+        );
+        const file = await generated.blob();
+        pdfUrl = URL.createObjectURL(file);
+
+        window.open(pdfUrl, "_blank");
+      } catch (e) {
+        console.error(e, "error message from pdf");
+      } finally {
+        if (pdfUrl) {
+          URL.revokeObjectURL(pdfUrl);
+        }
+      }
+    });
   },
   year: function (frm) {
     if (!showBtnEnable) frm.trigger("class");
@@ -41,18 +72,20 @@ frappe.ui.form.on("Student Attendance Sheet", {
       const attendanceContainer = document.querySelector(
         "#attendance_table_container"
       );
-
       attendanceContainer.className = "d-flex flex-column";
+
+      const infoTableContainer = document.createElement("div");
+      infoTableContainer.id = "info-table-container";
 
       const tableContainer = document.createElement("div");
       tableContainer.id = "report-table-container";
-
       const showBtn = document.createElement("button");
       showBtn.className = "btn btn-default btn-sm my-4";
       showBtn.innerText = "Show";
       showBtn.addEventListener("click", async () => {
         if (frm.doc.division) {
           setupDataTable(frm, frm.doc.division);
+          tables = [];
         } else {
           const pageBreakDiv = document.createElement("div");
           pageBreakDiv.style = "page-break-before: always;";
@@ -64,15 +97,21 @@ frappe.ui.form.on("Student Attendance Sheet", {
               program: frm.doc.class,
             },
           });
+
           divisions.message.forEach((division, index) => {
             setupDataTable(frm, division.name);
           });
+        }
+        if (!showInfoTable) {
+          infoTableContainer.appendChild(infoTable());
+          showInfoTable = true;
         }
       });
       showBtn.style.backgroundColor = "#3B84C3";
       showBtn.style.color = "#fff";
       showBtn.style.alignSelf = "center";
       attendanceContainer.appendChild(showBtn);
+      attendanceContainer.appendChild(infoTableContainer);
       attendanceContainer.appendChild(tableContainer);
     }
     frm.set_query("division", function () {
@@ -90,7 +129,8 @@ frappe.ui.form.on("Student Attendance Sheet", {
 function addSaveButton() {
   if (saveButtonAdded) return;
   saveButtonAdded = true;
-  globalFrm.page.add_inner_button(__("Submit"), saveAttendance);
+  globalFrm.page.remove_inner_button(__("Submit"));
+  globalFrm.page.add_inner_button(__("Save"), saveAttendance);
 }
 function changeHandler(e) {
   const dataset = e.target.dataset;
@@ -116,7 +156,7 @@ async function setupDataTable(frm, division) {
   const container = document.getElementById("report-table-container");
   container.innerHTML = "";
 
-  const tableData = await frappe.call({
+  const attendanceData = await frappe.call({
     method:
       "edu_quality.edu_quality.doctype.student_attendance_sheet.student_attendance_sheet.get_data",
     args: {
@@ -126,6 +166,10 @@ async function setupDataTable(frm, division) {
       division: division,
     },
   });
+
+  if (attendanceData.message.holidays) {
+    holidays = attendanceData.message.holidays;
+  }
 
   const studentsList = await frappe.call({
     method:
@@ -154,7 +198,12 @@ async function setupDataTable(frm, division) {
   ];
 
   container.appendChild(
-    createTable(headers, studentsList.message, days.message, tableData.message)
+    createTable(
+      headers,
+      studentsList.message,
+      days.message,
+      attendanceData.message.table_data
+    )
   );
   if (!frm.doc.division && division) {
     const pageBreakDiv = document.createElement("div");
@@ -171,6 +220,7 @@ function createTable(headers, studentsList, days, data) {
   thead.style.color = "#fff";
   const tbody = document.createElement("tbody");
   const headerRow = document.createElement("tr");
+  const curTableData = { columns: [], rows: [] };
 
   headers.forEach((header) => {
     const headerCell = document.createElement("th");
@@ -182,6 +232,10 @@ function createTable(headers, studentsList, days, data) {
       headerCell.colSpan = header.colSpan;
     }
     headerRow.appendChild(headerCell);
+
+    if (!holidays.includes(Number(header.textContent))) {
+      curTableData.columns.push(header);
+    }
   });
 
   if (studentsList.length != 0) {
@@ -195,6 +249,7 @@ function createTable(headers, studentsList, days, data) {
         data
       );
       tbody.innerHTML += row_html;
+      curTableData.rows.push(row_html);
     });
   }
   tbody.addEventListener("change", changeHandler);
@@ -202,6 +257,7 @@ function createTable(headers, studentsList, days, data) {
   table.appendChild(thead);
 
   table.appendChild(tbody);
+  tables.push(curTableData);
   return table;
 }
 
@@ -214,7 +270,9 @@ function createRow(ref_no, first_name, last_name, roll_no, days, data) {
 
   // Generate empty <td> elements for each day
   for (let i = 0; i < days.length; i++) {
-    rowHtml += `<td  class='empty-td' style={width: 100px;}><input type='text' class='empty-input' data-day=${
+    rowHtml += `<td  class='empty-td ${
+      holidays.includes(i + 1) ? "holiday" : ""
+    }' style={width: 100px;}><input type='text' class='empty-input' data-day=${
       i + 1
     } data-ref=${ref_no} style='width: 25px;' value=${
       data[ref_no][i][i + 1]
@@ -237,6 +295,32 @@ function saveAttendance() {
       attendance_data: JSON.stringify(updatedAttendance),
     },
     callback: function (response) {
+      if (response.message) {
+        saveButtonAdded = false;
+        globalFrm.page.remove_inner_button(__("Save"));
+        showSubmitBtn(true);
+      }
+      frappe.show_alert({
+        message: __(response.message),
+        indicator: "green",
+      });
+    },
+  });
+}
+
+function submitAttendance() {
+  frappe.call({
+    method:
+      "edu_quality.edu_quality.doctype.student_attendance_sheet.student_attendance_sheet.submit_attendance",
+    args: {
+      month_name: globalFrm.doc.month,
+      academic_year: globalFrm.doc.year,
+      program: globalFrm.doc.class,
+    },
+    callback: function (response) {
+      if (response.message) {
+        showSubmitBtn(false);
+      }
       frappe.show_alert({
         message: __(response.message),
         indicator: "green",
@@ -249,4 +333,56 @@ function saveAttendance() {
 function getCurrentMonthName() {
   const currentDate = new Date();
   return currentDate.toLocaleString("default", { month: "long" });
+}
+
+function showSubmitBtn(showSubmitBtn) {
+  if (showSubmitBtn) {
+    globalFrm.page.add_inner_button(__("Submit"), submitAttendance);
+  } else {
+    frm.page.remove_inner_button(__("Submit"));
+  }
+}
+
+function infoTable() {
+  const table = document.createElement("table");
+  table.className = "table table-bordered table-responsive";
+  table.style.width = "fit-content";
+  table.style.margin = "auto";
+  table.style.textAlign = "center";
+  const thead = document.createElement("thead");
+  thead.style.backgroundColor = "#3B84C3";
+
+  thead.style.color = "#fff";
+
+  const columns = ["P", "A", "L", "E", "S"];
+  const rowContent = [
+    "Present",
+    "Absent",
+    "Late Pickup",
+    "Early Pickup",
+    "Sick",
+  ];
+
+  const headerRow = document.createElement("tr");
+  columns.forEach((column) => {
+    const th = document.createElement("th");
+    th.textContent = column.trim();
+    headerRow.appendChild(th);
+  });
+  thead.appendChild(headerRow);
+
+  const tbody = document.createElement("tbody");
+
+  const contentRow = document.createElement("tr");
+  rowContent.forEach((content) => {
+    const td = document.createElement("td");
+    td.textContent = content.trim();
+    contentRow.appendChild(td);
+  });
+  tbody.appendChild(contentRow);
+
+  table.appendChild(thead);
+  table.appendChild(tbody);
+
+  return table;
 }
