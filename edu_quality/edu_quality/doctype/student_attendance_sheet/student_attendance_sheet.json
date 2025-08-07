@@ -1,0 +1,95 @@
+{
+ "actions": [],
+ "allow_copy": 1,
+ "allow_rename": 1,
+ "creation": "2024-05-15 15:56:52.794621",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "month",
+  "column_break_rhzo",
+  "year",
+  "column_break_kcop",
+  "class",
+  "column_break_nxfq",
+  "division",
+  "section_break_aptv",
+  "attendance_html"
+ ],
+ "fields": [
+  {
+   "fetch_from": ".program",
+   "fieldname": "class",
+   "fieldtype": "Link",
+   "label": "Class",
+   "options": "Program"
+  },
+  {
+   "fieldname": "column_break_rhzo",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": ".",
+   "fieldname": "division",
+   "fieldtype": "Link",
+   "label": "Division",
+   "options": "Student Group"
+  },
+  {
+   "fieldname": "month",
+   "fieldtype": "Select",
+   "label": "Month",
+   "options": "January\nFebruary\nMarch\nApril\nMay\nJune\nJuly\nAugust\nSeptember\nOctober\nNovember\nDecember"
+  },
+  {
+   "fieldname": "year",
+   "fieldtype": "Link",
+   "label": "Year",
+   "options": "Academic Year"
+  },
+  {
+   "fieldname": "column_break_kcop",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_nxfq",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_aptv",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "attendance_html",
+   "fieldtype": "HTML",
+   "label": "Attendance HTML",
+   "options": "<div id=\"attendance_table_container\"></div>"
+  }
+ ],
+ "hide_toolbar": 1,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2024-05-21 09:43:01.159230",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "Student Attendance Sheet",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
