@@ -1,26 +1,52 @@
-import frappe 
-from education.education.doctype.program.program import Program
-from collections import Counter, defaultdict
+import os
 import random
+import base64
+import frappe 
+import pandas as pd
+from education.education.doctype.program.program import Program
+from collections import defaultdict
+
 
 class customProgram(Program):
-    def shuffle_divisions(self):
+    @frappe.whitelist()
+    def get_possible_allocations(self):
         academic_year = frappe.get_value(
             "Academic Year", {"custom_current_academic_year": 1}, "name"
         )
-        batches = set(
-            frappe.get_all(
-                "Student Group",
-                {"program": self.name, "academic_year": academic_year},
-                pluck="batch",
-            )
-        )
         # get all students in the program
         students = self.get_students(academic_year)
-        divisions = frappe.db.get_all('Student Group', filters={'program': self.name,'academic_year':academic_year,'disabled':0}, fields=['name','batch','max_strength'])
+        divisions = frappe.db.get_all('Student Group', filters={'program': self.name, 'academic_year': academic_year, 'disabled': 0}, fields=['name','batch','max_strength'])
         allocation = self.allocate_students_to_divisions(students, divisions)
-        frappe.logger('allocation').exception(allocation)
+
+        # Cache the allocation for 5 minutes
+        rs = frappe.cache()
+        data = frappe.json.dumps(allocation)
+        rs.set(self.name, data, 300)
         return allocation
+    
+
+    @frappe.whitelist()
+    def shuffle_divisions(self):
+        try:
+            data = frappe.cache().get(self.name)
+            allocation = frappe.json.loads(data)
+            for division, students in allocation.items():
+                div = frappe.get_doc("Student Group", division)
+                div.students = []
+                for student in students:
+                    div.append(
+                        "students",
+                        {
+                            "student": student.get("name"),
+                        },
+                    )
+                    # update student details after shuffling
+                    self.update_student_details(student, div)
+                div.save()
+            return "Division shuffled successfully"
+        except Exception as e:
+            frappe.log_error("Shuffle Division Data Error", frappe.get_traceback())
+            return False
         
 
     def allocate_students_to_divisions(self, students, divisions):
@@ -72,10 +98,90 @@ class customProgram(Program):
             ON s.name = p.student
             LEFT JOIN `tabStudent Group` as d
             ON p.student_group = d.name
-            WHERE p.program = %s and p.academic_year = %s and s.student_status != 'Cancelled' 
+            WHERE p.program = %s and p.academic_year = %s and s.student_status != 'Cancelled' and s.enabled = 1
             GROUP BY d.batch, p.school_house, s.gender, s.name
             ORDER BY d.batch, p.school_house, s.gender, RAND()
             """,
             (self.name, academic_year),
             as_dict=True,
+        )
+   
+    
+    @frappe.whitelist()
+    def export_student_details(self):
+        try:
+            data = frappe.cache().get(self.name)
+            allocation = frappe.json.loads(data)
+            academic_year = frappe.get_value(
+                "Academic Year", {"custom_current_academic_year": 1}, "name"
+            )
+            columns = [
+                "Previous Division",
+                "New Division",
+                "Name",
+                "First Name",
+                "Gender",
+                "House",
+                "Batch",
+            ]
+            new_data = []
+
+            for division, students in allocation.items():
+                for student in students:
+                    student_name = student.get("name")
+                    prev_division = frappe.get_value(
+                        "Program Enrollment",
+                        {"student": student_name, "academic_year": academic_year},
+                        "student_group",
+                    )
+                    new_data.append(
+                        [
+                            prev_division,
+                            division,
+                            student.get("name"),
+                            student.get("first_name"),
+                            student.get("gender"),
+                            student.get("school_house"),
+                            student.get("batch"),
+                        ]
+                    )
+
+            division_data = {
+                columns[i]: [row[i] for row in new_data] for i in range(len(columns))
+            }
+            # Convert the data to a pandas DataFrame
+            df = pd.DataFrame(division_data)
+            public_path = frappe.get_site_path("public", "files")
+            filename = f"Student Details - {self.name}.csv"
+            filepath = os.path.join(public_path, filename)
+
+            df.to_csv(filepath, index=False)
+            with open(filepath, "rb") as file:
+                filecontent = file.read()
+
+            response = {
+                "filename": filename,
+                "filecontent": base64.b64encode(filecontent).decode(),
+            }
+
+            return response
+        except:
+            frappe.log_error("Error While Exporting Student Details", frappe.get_traceback())
+            return False
+        
+
+    def update_student_details(self, student, division):
+        """
+        student: dict
+        (name, first_name, gender, house, program_enrollment(pname))
+        """
+        # update student group and tiffin rack no in program enrollment
+        frappe.db.set_value(
+            "Program Enrollment",
+            student.get("pname"),
+            {"student_group": division.name, "tiffin_rack_no": ""},
+        )
+        # update student group in student
+        frappe.db.set_value(
+            "Student", student.get("name"), {"custom_division": division.student_group_name}
         )

@@ -18,7 +18,8 @@ async function shuffleDivision(frm) {
                 fieldname: 'export',
                 click: function () {
                     frappe.call({
-                        method: 'edu_quality.api.student.export_student_details',
+                        doc: frm.doc,
+                        method: "export_student_details",
                         args: {
                             program: frm.doc.name,
                         },
@@ -52,7 +53,10 @@ async function shuffleDivision(frm) {
         primary_action_label: 'Okay',
         primary_action: function () {
             frappe.call({
-                method: 'edu_quality.api.student.shuffle_division_data',
+                doc: frm.doc,
+                async: true,
+                freeze: true,
+                method: "shuffle_divisions",
                 args: {
                     program: frm.doc.name,
                 },
@@ -78,11 +82,13 @@ async function shuffleDivision(frm) {
 
 async function getDivisionMessage(frm) {
     const data = await frappe.call({
-        method: 'edu_quality.api.student.get_student_details',
+        doc: frm.doc,
+        method: "get_possible_allocations",
         args: {
             program: frm.doc.name,
-        }
+        },
     });
+
     if (!data.message) {
         return "Error while getting student details";
     }
@@ -97,24 +103,29 @@ async function getDivisionMessage(frm) {
 
     const html_content = Object.keys(data.message).map(key => {
         const details = data.message[key];
+        let boysCount = details.filter(detail => detail.gender === 'Male').length;
+        let girlsCount = details.filter(detail => detail.gender === 'Female').length;
+        let blueHouseCount = details.filter(detail => detail.house === 'Blue').length;
+        let redHouseCount = details.filter(detail => detail.house === 'Red').length;
+        let greenHouseCount = details.filter(detail => detail.house === 'Green').length;
+        let yellowHouseCount = details.filter(detail => detail.house === 'Yellow').length;
         return `
             <details>
                 <summary>${key}</summary>
-                <p>Total Students: ${details.no_of_students}</p>
-
+                <p>Total Students: ${details.length}</p>
                 <div style="display: grid; grid-template-columns: 1fr 1fr;">
-                    <p>Boys: ${details.boys}</p>
-                    <p>Girls: ${details.girls}</p>
-                    <p>Yellow: ${details.yellow}</p>
-                    <p>Green: ${details.green}</p>
-                    <p>Red: ${details.red}</p>
-                    <p>Blue: ${details.blue}</p>
+                    <p>Boys: ${boysCount}</p>
+                    <p>Girls: ${girlsCount}</p>
+                    <p>Yellow: ${yellowHouseCount}</p>
+                    <p>Green: ${greenHouseCount}</p>
+                    <p>Red: ${redHouseCount}</p>
+                    <p>Blue: ${blueHouseCount}</p>
                 </div>
                 <details>
                     <summary>Students</summary>
                     <div style="display: grid; grid-template-columns: 1fr 1fr;">
-                        ${details.students.map(student => {
-            return `<p>${student.name}: ${student.first_name}-${student.school_house}</p>`;
+                        ${details.map(student => {
+            return `<p>${student.name}: ${student.first_name}-${student.house}</p>`;
         }).join('')}
                     </div>
                 </details>
