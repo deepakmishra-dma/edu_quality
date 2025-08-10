@@ -236,3 +236,21 @@ def generate_permanent_id_cards_async(**kwargs):
         frappe.log_error(
             "Permanent Id Card Generation Failed", str(frappe.get_traceback())
         )
+
+
+@frappe.whitelist()
+def send_id_card_mail(**kwargs):
+
+    try:
+
+        frappe.sendmail(
+            subject=kwargs.get("subject"),
+            recipients=kwargs.get("recipients"),
+            bcc=kwargs.get("bcc"),
+            content=kwargs.get("content"),
+            attachments=kwargs.get("attachments"),
+        )
+    except Exception as e:
+        frappe.log_error("Sending Id Card Mail", str(e))
+        frappe.logger("sending purchase order").exception(e)
+        raise e
