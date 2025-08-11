@@ -43,6 +43,7 @@ class customProgram(Program):
                     # update student details after shuffling
                     self.update_student_details(student, div)
                 div.save()
+            self.sync_details()
             return "Division shuffled successfully"
         except Exception as e:
             frappe.log_error("Shuffle Division Data Error", frappe.get_traceback())
@@ -185,3 +186,48 @@ class customProgram(Program):
         frappe.db.set_value(
             "Student", student.get("name"), {"custom_division": division.student_group_name}
         )
+
+    def sync_details(self):
+        """
+        This method syncs the division details from the student group to the program enrollment 
+        and student doctype for the program and enabled student groups.
+        """
+        try:
+            academic_year = frappe.get_value(
+                "Academic Year", {"custom_current_academic_year": 1}, "name"
+            )
+            students = frappe.db.sql(
+                """
+                SELECT 
+                    student.name AS student, 
+                    enrollment.name AS enrollment_name, 
+                    enrollment.student_group AS enrollment_division,
+                    student_group.name AS student_group,
+                    student_group.student_group_name AS student_group_name
+                FROM 
+                    `tabStudent` AS student
+                LEFT JOIN 
+                    `tabProgram Enrollment` AS enrollment ON student.name = enrollment.student
+                LEFT JOIN 
+                    `tabStudent Group Student` AS group_student ON student.name = group_student.student
+                LEFT JOIN 
+                    `tabStudent Group` AS student_group ON group_student.parent = student_group.name
+                WHERE 
+                    student.name = enrollment.student AND
+                    enrollment.program = %s AND 
+                    enrollment.academic_year = %s AND 
+                    enrollment.custom_status != 'Cancelled' AND 
+                    student.enabled = 1 AND 
+                    student_group.academic_year = %s AND
+                    student_group.disabled = 0
+                """,
+                (self.name, academic_year, academic_year),
+                as_dict=True,
+            )
+
+            for student in students:
+                if student['student_group'] != student['enrollment_division']:
+                    frappe.set_value('Program Enrollment', student['enrollment_name'], 'student_group', student['student_group'])
+                    frappe.set_value('Student', student['student'], 'custom_division', student['student_group_name'])
+        except:
+            frappe.log_error("Error While Syncing Division Details", frappe.get_traceback())
