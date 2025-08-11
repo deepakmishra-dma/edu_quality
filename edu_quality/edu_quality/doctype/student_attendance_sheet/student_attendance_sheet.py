@@ -6,7 +6,7 @@ from frappe.model.document import Document
 import calendar
 from datetime import datetime, timedelta
 import json
-from weasyprint import  HTML
+from weasyprint import HTML
 
 
 class StudentAttendanceSheet(Document):
@@ -146,14 +146,23 @@ def save_attendance(**data):
                 )
                 date = frappe.utils.data.getdate(f"{year}-{month:02d}-{day}")
 
-                existing_entry = frappe.db.exists(
-                    "Attendance Entry", {"date": date, "student": student.name}
+                existing_entry = frappe.db.get_value(
+                    "Attendance Entry",
+                    {"date": date, "student": student.name},
+                    ["docstatus", "name"],
                 )
 
                 if existing_entry:
+                    doc_status = existing_entry[0]
+                    name = existing_entry[1]
+                    if doc_status == 0:
+                        frappe.db.set_value(
+                            "Attendance Entry",
+                            name,
+                            "status",
+                            get_attendance_status(value, "name"),
+                        )
                     continue
-
-                # if
 
                 doc = frappe.get_doc(
                     {
@@ -174,11 +183,13 @@ def save_attendance(**data):
 
 @frappe.whitelist()
 def submit_attendance(**data):
+
     month_name = data.get("month_name")
     academic_year = data.get("academic_year")
     month = datetime.strptime(month_name, "%B").month
     year = int(academic_year.split("-")[0])
     program = data.get("program")
+    division = data.get("division")
     start_date = datetime(year, month, 1).strftime("%Y-%m-%d")
     end_date = (
         (datetime(year, month + 1, 1) - timedelta(days=1)).strftime("%Y-%m-%d")
@@ -188,17 +199,57 @@ def submit_attendance(**data):
 
     attendance_entries = frappe.get_all(
         "Attendance Entry",
-        {
+        filters={
             "date": ["between", [start_date, end_date]],
             "docstatus": 0,
             "class": program,
         },
+        fields=["date", "name", "student"],
     )
+
     for entry in attendance_entries:
-        # Load the document
-        attendance_entry = frappe.get_doc("Attendance Entry", entry.name)
-        # Submit the document
+        attendance_entry = frappe.get_doc("Attendance Entry", entry["name"])
         attendance_entry.submit()
+
+    unique_dates = {entry["date"] for entry in attendance_entries}
+
+    all_students = frappe.get_all(
+        "Program Enrollment",
+        filters={"student_group": division, "program": program},
+        fields=["student"],
+    )
+
+    all_student_names = {student["student"] for student in all_students}
+    for date in unique_dates:
+        marked_students = {
+            entry["student"] for entry in attendance_entries if entry["date"] == date
+        }
+        unmarked_students = all_student_names - marked_students
+
+        for student in unmarked_students:
+            existing_entry = frappe.get_all(
+                "Attendance Entry",
+                filters={
+                    "student": student,
+                    "date": date,
+                    "docstatus": 1,  # Check for already submitted entries
+                },
+                fields=["name"],
+            )
+
+            if not existing_entry:
+                new_entry = frappe.get_doc(
+                    {
+                        "doctype": "Attendance Entry",
+                        "student": student,
+                        "date": date,
+                        "status": "Present",
+                        "class": program,
+                        "docstatus": 1,  # Assuming 1 is the status for submitted
+                    }
+                )
+                new_entry.insert()
+                new_entry.submit()
 
     return "Attendance submitted successfully"
 
@@ -274,5 +325,60 @@ def get_latest_status(entry):
         status = latest_entry[0]["status"]
         if status and status[0].upper() in {"E", "S", "L"}:
             return status[0].upper()
-    else:
-        return get_attendance_status(entry["status"], "code")
+    return get_attendance_status(entry.get("status", ""), "code")
+
+
+# def submit_attendance(entry):
+#     attendance_entry = frappe.get_doc("Attendance Entry", entry["name"])
+#     if entry["status"] not in {"Present", "Absent"}:
+#         frappe.confirm(
+#             f'There is a student with status "{entry["status"]}". Do you want to change it to "Present"?',
+#             function() {
+#                 frappe.call({
+#                     method: 'frappe.client.set_value',
+#                     args: {
+#                         'doctype': 'Attendance Entry',
+#                         'name': entry["name"],
+#                         'fieldname': 'status',
+#                         'value': 'Present'
+#                     },
+#                     callback: function(response) {
+#                         attendance_entry.reload();
+#                         attendance_entry.submit();
+#                     }
+#                 });
+#             },
+#             function() {
+#                 console.log('Skipping entry:', entry["name"]);
+#             }
+#         );
+#     else:
+#         attendance_entry.submit();
+# @frappe.whitelist()
+# def check_non_standard_status_exists(**data):
+
+#     month_name = data.get("month_name")
+#     academic_year = data.get("academic_year")
+#     month = datetime.strptime(month_name, "%B").month
+#     year = int(academic_year.split("-")[0])
+#     program = data.get("program")
+#     start_date = datetime(year, month, 1).strftime("%Y-%m-%d")
+#     end_date = (
+#         (datetime(year, month + 1, 1) - timedelta(days=1)).strftime("%Y-%m-%d")
+#         if month < 12
+#         else datetime(year, month, 31).strftime("%Y-%m-%d")
+#     )
+#     non_standard_entries = frappe.get_all(
+#         "Attendance Entry",
+#         filters={
+#             "status": ["not in", ["Present", "Absent", "Holiday"]],
+#             "docstatus": 0,
+#         },
+#         fields=["name"],
+#     )
+
+#     return {
+#         "non_standard_entries": non_standard_entries,
+#         "start_date": start_date,
+#         "end_date": end_date,
+#     }

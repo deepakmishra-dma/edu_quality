@@ -123,6 +123,7 @@ frappe.ui.form.on("Student Attendance Sheet", {
         filters: filters,
       };
     });
+    frm.set_value("division", "");
   },
 });
 
@@ -316,6 +317,7 @@ function submitAttendance() {
       month_name: globalFrm.doc.month,
       academic_year: globalFrm.doc.year,
       program: globalFrm.doc.class,
+      division: globalFrm.doc.division,
     },
     callback: function (response) {
       if (response.message) {
@@ -339,7 +341,7 @@ function showSubmitBtn(showSubmitBtn) {
   if (showSubmitBtn) {
     globalFrm.page.add_inner_button(__("Submit"), submitAttendance);
   } else {
-    frm.page.remove_inner_button(__("Submit"));
+    globalFrm.page.remove_inner_button(__("Submit"));
   }
 }
 
