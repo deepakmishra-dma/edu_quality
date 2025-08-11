@@ -229,27 +229,25 @@ def send_email_for_division_swap(pe_doc_1, is_swap=True):
     pe_doc_1: Program Enrollment of student 1
     this function sends email to students for division swap
     """
-    student = frappe.get_doc("Student", pe_doc_1.student)
-    guardian_email = [i.guardian_name for i in student.guardians]
-    guardian = frappe.get_all(
-        doctype="Guardian",
-        fields=["email_address"],
-        filters=[["guardian_name", "in", guardian_email]],
-    )
-    recipients = [i.email_address for i in guardian]
-    school_details = frappe.get_doc("School", pe_doc_1.custom_school)
-    bcc_admin = school_details.get("bcc_email_address")
-    if is_swap:
-        message=f"Dear {student.student_name},\n\nYour division has been swapped successfully. Please find the details below:\n\nDivision: {pe_doc_1.student_group}\n\nRegards,\n{school_details.name}",
-    else:
-        message=f"Dear {student.student_name},\n\nYou have been added to division {pe_doc_1.student_group}. Please find the details below:\n\nDivision: {pe_doc_1.student_group}\n\nRegards,\n{school_details.name}",
-    frappe.sendmail(
-        recipients=recipients,
-        bcc=[bcc_admin],
-        subject="Division Swap",
-        message=message,
-    )
+    try:
+        student = frappe.get_doc("Student", pe_doc_1.student)
+        school = frappe.get_doc("School", pe_doc_1.custom_school)
+        bcc_emails = [eg.email for eg in frappe.get_all(
+            "Email Group Member",
+            filters={"email_group": school.admin_group},
+            fields=["email"]
+        )] if school.admin_group else []
+        
+        message = f"Division of Student: {student.student_name}({student.name}) has been {'swapped' if is_swap else 'added to division'} successfully. Please find the details below:\n\nDivision: {pe_doc_1.student_group}"
 
+        frappe.sendmail(
+            recipients=[school.bcc_email_address],
+            bcc= bcc_emails,
+            subject="Division Swap",
+            message=message,
+        )
+    except:
+        frappe.log_error("Error in Sending Email While Division Swap", frappe.get_traceback())
 
 def add_comment_in_division(student, division, is_removed=False):
     """
