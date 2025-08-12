@@ -107,6 +107,7 @@ frappe.ui.form.on("Student Attendance Sheet", {
           infoTableContainer.appendChild(infoTable());
           showInfoTable = true;
         }
+        displayNotes(infoTableContainer);
       });
       showBtn.style.backgroundColor = "#3B84C3";
       showBtn.style.color = "#fff";
@@ -279,7 +280,7 @@ function createRow(ref_no, first_name, last_name, roll_no, days, data) {
   for (let i = 0; i < days.length; i++) {
     rowHtml += `<td  class='empty-td ${
       holidays.includes(i + 1) ? "holiday" : ""
-    }' style={width: 42px; min-width: 42px !important;}><input type='text' class='empty-input' data-day=${
+    }' style='width: 42px; min-width: 42px !important;'><input type='text' class='empty-input' data-day=${
       i + 1
     } data-ref=${ref_no} style='width: 25px;' value=${
       data[ref_no][i][i + 1]
@@ -417,4 +418,20 @@ function infoTable() {
   table.appendChild(tbody);
 
   return table;
+}
+
+function displayNotes(container) {
+  const combinedMessage = `
+  <div >
+  <strong>Note:</strong>
+<ul style="font-size: smaller;">
+  <li> Please enter only Absent. Present will be populated for the blank entries.</li>
+  <li>You can't edit submitted entries.</li>
+</ul>
+</div>`;
+
+  const noteContainer = document.createElement("div");
+  noteContainer.className = "d-flex justify-content-center mt-2";
+  noteContainer.innerHTML = combinedMessage;
+  container.appendChild(noteContainer);
 }
