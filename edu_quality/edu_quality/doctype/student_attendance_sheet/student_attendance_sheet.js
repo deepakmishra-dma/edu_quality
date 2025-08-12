@@ -199,7 +199,7 @@ async function setupDataTable(frm, division) {
     ...days.message,
   ];
 
-  if (studentsList.length > 0) {
+  if (studentsList.message.length > 0) {
     container.appendChild(
       createTable(
         headers,
