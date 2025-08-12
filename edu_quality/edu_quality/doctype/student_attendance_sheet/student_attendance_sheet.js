@@ -105,9 +105,10 @@ frappe.ui.form.on("Student Attendance Sheet", {
         }
         if (!showInfoTable) {
           infoTableContainer.appendChild(infoTable());
+          displayNotes(infoTableContainer);
           showInfoTable = true;
         }
-        displayNotes(infoTableContainer);
+        
       });
       showBtn.style.backgroundColor = "#3B84C3";
       showBtn.style.color = "#fff";
@@ -209,7 +210,8 @@ async function setupDataTable(frm, division) {
         attendanceData.message.table_data
       )
     );
-  } else {
+  } else if(studentsList.message.length === 0 && !frm.doc.division) return
+  else {
     container.innerHTML = "<p>No students found for selected division</p>";
   }
 
@@ -271,16 +273,16 @@ function createTable(headers, studentsList, days, data) {
 
 function createRow(ref_no, first_name, last_name, roll_no, days, data) {
   let rowHtml = `<tr>
-  <td style='min-width: fit-content !important;'>${ref_no}</td>
-    <td colspan="2" style='text-wrap:nowrap;min-width: fit-content !important;'>${first_name}</td>
-    <td colspan="2" style='text-wrap:nowrap;min-width: fit-content !important;'>${last_name}</td>
-    <td style='min-width: fit-content !important;'>${roll_no}</td>`;
+  <td style='white-space: nowrap; min-width: fit-content !important;'>${ref_no}</td>
+    <td colspan="2" style='text-wrap:nowrap;min-width: fit-content !important;'>${first_name.toUpperCase()}</td>
+    <td colspan="2" style='text-wrap:nowrap;min-width: fit-content !important;'>${last_name.toUpperCase()}</td>
+    <td style='white-space: nowrap; min-width: fit-content !important;'>${roll_no}</td>`;
 
   // Generate empty <td> elements for each day
   for (let i = 0; i < days.length; i++) {
     rowHtml += `<td  class='empty-td ${
       holidays.includes(i + 1) ? "holiday" : ""
-    }' style='width: 42px; min-width: 42px !important;'><input type='text' class='empty-input' data-day=${
+    }' style='width: 42px; min-width: 42px;'><input type='text' class='empty-input' data-day=${
       i + 1
     } data-ref=${ref_no} style='width: 25px;' value=${
       data[ref_no][i][i + 1]
