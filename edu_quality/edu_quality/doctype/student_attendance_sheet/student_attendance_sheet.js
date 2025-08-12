@@ -1,4 +1,4 @@
-const updatedAttendance = {};
+let updatedAttendance = {};
 let saveButtonAdded = false;
 let globalFrm = null;
 let showBtnEnable = false;
@@ -83,9 +83,10 @@ frappe.ui.form.on("Student Attendance Sheet", {
       showBtn.className = "btn btn-default btn-sm my-4";
       showBtn.innerText = "Show";
       showBtn.addEventListener("click", async () => {
+        tables = [];
+        updatedAttendance = {};
         if (frm.doc.division) {
           setupDataTable(frm, frm.doc.division);
-          tables = [];
         } else {
           const pageBreakDiv = document.createElement("div");
           pageBreakDiv.style = "page-break-before: always;";
@@ -198,14 +199,19 @@ async function setupDataTable(frm, division) {
     ...days.message,
   ];
 
-  container.appendChild(
-    createTable(
-      headers,
-      studentsList.message,
-      days.message,
-      attendanceData.message.table_data
-    )
-  );
+  if (studentsList.length > 0) {
+    container.appendChild(
+      createTable(
+        headers,
+        studentsList.message,
+        days.message,
+        attendanceData.message.table_data
+      )
+    );
+  } else {
+    container.innerHTML = "<p>No students found for selected division</p>";
+  }
+
   if (!frm.doc.division && division) {
     const pageBreakDiv = document.createElement("div");
     pageBreakDiv.style = "page-break-before: always;";
@@ -264,16 +270,16 @@ function createTable(headers, studentsList, days, data) {
 
 function createRow(ref_no, first_name, last_name, roll_no, days, data) {
   let rowHtml = `<tr>
-  <td>${ref_no}</td>
-    <td colspan="2" style='text-wrap:nowrap;'>${first_name}</td>
-    <td colspan="2" style='text-wrap:nowrap;'>${last_name}</td>
-    <td>${roll_no}</td>`;
+  <td style='min-width: fit-content !important;'>${ref_no}</td>
+    <td colspan="2" style='text-wrap:nowrap;min-width: fit-content !important;'>${first_name}</td>
+    <td colspan="2" style='text-wrap:nowrap;min-width: fit-content !important;'>${last_name}</td>
+    <td style='min-width: fit-content !important;'>${roll_no}</td>`;
 
   // Generate empty <td> elements for each day
   for (let i = 0; i < days.length; i++) {
     rowHtml += `<td  class='empty-td ${
       holidays.includes(i + 1) ? "holiday" : ""
-    }' style={width: 100px;}><input type='text' class='empty-input' data-day=${
+    }' style={width: 42px; min-width: 42px !important;}><input type='text' class='empty-input' data-day=${
       i + 1
     } data-ref=${ref_no} style='width: 25px;' value=${
       data[ref_no][i][i + 1]
@@ -309,6 +315,30 @@ function saveAttendance() {
   });
 }
 
+function checkAttendance() {
+  frappe.call({
+    method:
+      "edu_quality.edu_quality.doctype.student_attendance_sheet.student_attendance_sheet.check_attendance_entry",
+    args: {
+      month_name: globalFrm.doc.month,
+      academic_year: globalFrm.doc.year,
+      program: globalFrm.doc.class,
+    },
+    callback: function (response) {
+      if (response.message) {
+        frappe.confirm(
+          __(
+            "There is a Sick or Early Pickup or Late attendance entry. You are allowed to submit Absent or Present. If you continue, we'll mark early pick up and late as present and sick as absent. Do you want to continue?"
+          ),
+          function () {
+            submitAttendance();
+          }
+        );
+      }
+    },
+  });
+}
+
 function submitAttendance() {
   frappe.call({
     method:
@@ -339,7 +369,7 @@ function getCurrentMonthName() {
 
 function showSubmitBtn(showSubmitBtn) {
   if (showSubmitBtn) {
-    globalFrm.page.add_inner_button(__("Submit"), submitAttendance);
+    globalFrm.page.add_inner_button(__("Submit"), checkAttendance);
   } else {
     globalFrm.page.remove_inner_button(__("Submit"));
   }

@@ -113,7 +113,7 @@ def get_data(month_name, academic_year, program, division):
             ref_number = entry["reference_number"]
             status = (
                 get_attendance_status(entry["status"], "code")
-                if entry.docstatus
+                if entry.docstatus and not entry["status"]
                 else get_latest_status(entry)
             )
             day = str(entry["date"].day)
@@ -208,7 +208,14 @@ def submit_attendance(**data):
     )
 
     for entry in attendance_entries:
-        attendance_entry = frappe.get_doc("Attendance Entry", entry["name"])
+        attendance_entry = frappe.get_doc(
+            "Attendance Entry", entry["name"], ["name", "status"]
+        )
+        attendance_entry.status = (
+            "Present"
+            if attendance_entry.get("status") not in ["Absent", "Sick"]
+            else "Absent"
+        )
         attendance_entry.submit()
 
     unique_dates = {entry["date"] for entry in attendance_entries}
@@ -255,6 +262,40 @@ def submit_attendance(**data):
 
 
 @frappe.whitelist()
+def check_attendance_entry(**data):
+    month_name = data.get("month_name")
+    academic_year = data.get("academic_year")
+    month = datetime.strptime(month_name, "%B").month
+    year = int(academic_year.split("-")[0])
+    program = data.get("program")
+    start_date = datetime(year, month, 1).strftime("%Y-%m-%d")
+    end_date = (
+        (datetime(year, month + 1, 1) - timedelta(days=1)).strftime("%Y-%m-%d")
+        if month < 12
+        else datetime(year, month, 31).strftime("%Y-%m-%d")
+    )
+    filters = {
+        "date": ["between", [start_date, end_date]],
+        "docstatus": 0,
+        "class": program,
+        "status": ["in", ["Sick", "Early Pickup", "Late"]],
+    }
+
+    # Query to check if any document exists with the given filters
+    attendance_entries = frappe.get_list(
+        "Attendance Entry",
+        filters=filters,
+        fields=["name"],  # Only retrieve the document name for existence check
+    )
+
+    # Check if the list is not empty
+    if attendance_entries:
+        return True
+    else:
+        return False
+
+
+@frappe.whitelist()
 def get_divisions(academic_year, program):
     return frappe.get_all(
         "Student Group",
@@ -277,7 +318,14 @@ def get_included_days(start_on, end_on):
 
 
 def get_attendance_status(val, return_type):
-    name_mapping = {"P": "Present", "H": "Holiday", "L": "Late", "A": "Absent"}
+    name_mapping = {
+        "P": "Present",
+        "H": "Holiday",
+        "L": "Late",
+        "A": "Absent",
+        "E": "Early Pickup",
+        "S": "Sick",
+    }
 
     short_mapping = {v: k for k, v in name_mapping.items()}
 
@@ -326,59 +374,3 @@ def get_latest_status(entry):
         if status and status[0].upper() in {"E", "S", "L"}:
             return status[0].upper()
     return get_attendance_status(entry.get("status", ""), "code")
-
-
-# def submit_attendance(entry):
-#     attendance_entry = frappe.get_doc("Attendance Entry", entry["name"])
-#     if entry["status"] not in {"Present", "Absent"}:
-#         frappe.confirm(
-#             f'There is a student with status "{entry["status"]}". Do you want to change it to "Present"?',
-#             function() {
-#                 frappe.call({
-#                     method: 'frappe.client.set_value',
-#                     args: {
-#                         'doctype': 'Attendance Entry',
-#                         'name': entry["name"],
-#                         'fieldname': 'status',
-#                         'value': 'Present'
-#                     },
-#                     callback: function(response) {
-#                         attendance_entry.reload();
-#                         attendance_entry.submit();
-#                     }
-#                 });
-#             },
-#             function() {
-#                 console.log('Skipping entry:', entry["name"]);
-#             }
-#         );
-#     else:
-#         attendance_entry.submit();
-# @frappe.whitelist()
-# def check_non_standard_status_exists(**data):
-
-#     month_name = data.get("month_name")
-#     academic_year = data.get("academic_year")
-#     month = datetime.strptime(month_name, "%B").month
-#     year = int(academic_year.split("-")[0])
-#     program = data.get("program")
-#     start_date = datetime(year, month, 1).strftime("%Y-%m-%d")
-#     end_date = (
-#         (datetime(year, month + 1, 1) - timedelta(days=1)).strftime("%Y-%m-%d")
-#         if month < 12
-#         else datetime(year, month, 31).strftime("%Y-%m-%d")
-#     )
-#     non_standard_entries = frappe.get_all(
-#         "Attendance Entry",
-#         filters={
-#             "status": ["not in", ["Present", "Absent", "Holiday"]],
-#             "docstatus": 0,
-#         },
-#         fields=["name"],
-#     )
-
-#     return {
-#         "non_standard_entries": non_standard_entries,
-#         "start_date": start_date,
-#         "end_date": end_date,
-#     }
