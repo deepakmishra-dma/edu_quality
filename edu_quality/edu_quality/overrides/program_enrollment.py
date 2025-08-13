@@ -2,6 +2,7 @@ import frappe
 from education.education.doctype.program_enrollment.program_enrollment import ProgramEnrollment
 from frappe.utils import comma_and, get_link_to_form, getdate
 from frappe import _
+from frappe.utils.data import cstr
 
 class CustomProgramEnrollment(ProgramEnrollment):
     def validate_academic_year(self):
@@ -41,4 +42,4 @@ class CustomProgramEnrollment(ProgramEnrollment):
                         get_link_to_form("Academic Term", self.academic_term)
                     )
                 )
-    
+
