@@ -108,7 +108,6 @@ frappe.ui.form.on("Student Attendance Sheet", {
           displayNotes(infoTableContainer);
           showInfoTable = true;
         }
-        
       });
       showBtn.style.backgroundColor = "#3B84C3";
       showBtn.style.color = "#fff";
@@ -207,10 +206,11 @@ async function setupDataTable(frm, division) {
         headers,
         studentsList.message,
         days.message,
-        attendanceData.message.table_data
+        attendanceData.message.table_data,
+        division
       )
     );
-  } else if(studentsList.message.length === 0 && !frm.doc.division) return
+  } else if (studentsList.message.length === 0 && !frm.doc.division) return;
   else {
     container.innerHTML = "<p>No students found for selected division</p>";
   }
@@ -222,7 +222,7 @@ async function setupDataTable(frm, division) {
   }
 }
 
-function createTable(headers, studentsList, days, data) {
+function createTable(headers, studentsList, days, data, division) {
   const table = document.createElement("table");
   table.className = "table table-bordered table-responsive";
   const thead = document.createElement("thead");
@@ -267,7 +267,15 @@ function createTable(headers, studentsList, days, data) {
   table.appendChild(thead);
 
   table.appendChild(tbody);
-  tables.push(curTableData);
+  division;
+  const tableObj = {
+    table: curTableData,
+    class: globalFrm.doc.class,
+    division: division,
+    month: globalFrm.doc.month,
+    year: globalFrm.doc.year,
+  };
+  tables.push(tableObj);
   return table;
 }
 

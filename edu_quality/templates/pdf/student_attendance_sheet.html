@@ -1,8 +1,32 @@
 <style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
   @page {
     size: A4 Landscape;
     margin: 20px;
     padding: 20px;
+  }
+
+  .page {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  .filter-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.625rem;
+    margin-bottom: 1rem;
+  }
+
+  .fitler-container div {
+    padding: 0.5rem;
+    border-radius: 4px;
+    background-color: "#F3F3F3";
   }
   .table {
     width: 100%;
@@ -40,27 +64,35 @@
     width: 10px !important;
     height: 10px !important;
     margin: auto;
+    border: none;
   }
   .table td.holiday {
     display: none;
   }
 </style>
-
-{% for table in tables %}
-<table class="page table" style="height: 210mm" cellspacing="0" cellpadding="0">
-  <thead>
-    <tr>
-      {% for header in table.columns %}
-      <th colspan="{{ header.colSpan }}">{{ header.textContent }}</th>
+{% for tableObj in tables %}
+<div class="page">
+  <div class="filter-container">
+    <div>Month: {{tableObj.month}}</div>
+    <div>Year: {{tableObj.year}}</div>
+    <div>Class: {{tableObj.class}}</div>
+    <div>Division: {{tableObj.division}}</div>
+  </div>
+  <table class="table" cellspacing="0" cellpadding="0">
+    <thead>
+      <tr>
+        {% for header in tableObj.table.columns %}
+        <th colspan="{{ header.colSpan }}">{{ header.textContent }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in tableObj.table.rows %}
+      <tr class="row-entry">
+        {{ row }}
+      </tr>
       {% endfor %}
-    </tr>
-  </thead>
-  <tbody>
-    {% for row in table.rows %}
-    <tr class="row-entry">
-      {{ row }}
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+    </tbody>
+  </table>
+</div>
 {% endfor %}
