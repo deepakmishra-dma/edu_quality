@@ -19,13 +19,19 @@ frappe.ui.form.on("Student Attendance Sheet", {
         ],
       };
     });
+
+
+
   },
   refresh(frm) {
     frm.disable_save();
-
+    const currentYear = new Date().getFullYear().toString();
+    const nextYear = (parseInt(currentYear) + 1).toString();
+    const academicYear = `${currentYear}-${nextYear}`;
+    frm.set_value("year", academicYear);
     var isUpdated = frm.doc.__unsaved;
     if (isUpdated) {
-      frm.add_custom_button(__("teste"), function () {
+      frm.add_custom_button(__("save"), function () {
         saveAttendance();
       });
     }
@@ -138,19 +144,19 @@ function addSaveButton() {
 function changeHandler(e) {
   const dataset = e.target.dataset;
 
-  if (dataset.day && dataset.ref) {
-    if (updatedAttendance.hasOwnProperty(dataset.ref)) {
-      const existingDayIndex = updatedAttendance[dataset.ref].findIndex(
+  if (dataset.day && dataset.id) {
+    if (updatedAttendance.hasOwnProperty(dataset.id)) {
+      const existingDayIndex = updatedAttendance[dataset.id].findIndex(
         (item) => Object.keys(item)[0] === dataset.day
       );
       if (existingDayIndex !== -1) {
-        updatedAttendance[dataset.ref][existingDayIndex][dataset.day] =
+        updatedAttendance[dataset.id][existingDayIndex][dataset.day] =
           e.target.value;
       } else {
-        updatedAttendance[dataset.ref].push({ [dataset.day]: e.target.value });
+        updatedAttendance[dataset.id].push({ [dataset.day]: e.target.value });
       }
     } else {
-      updatedAttendance[dataset.ref] = [{ [dataset.day]: e.target.value }];
+      updatedAttendance[dataset.id] = [{ [dataset.day]: e.target.value }];
     }
   }
   addSaveButton();
@@ -254,9 +260,10 @@ function createTable(headers, studentsList, days, data, division) {
         row.reference_number,
         row.first_name,
         row.last_name,
-        index + 1,
+        row.roll_no,
         days,
-        data
+        data,
+        row.name
       );
       tbody.innerHTML += row_html;
       curTableData.rows.push(row_html);
@@ -279,7 +286,7 @@ function createTable(headers, studentsList, days, data, division) {
   return table;
 }
 
-function createRow(ref_no, first_name, last_name, roll_no, days, data) {
+function createRow(ref_no, first_name, last_name, roll_no, days, data,name) {
   let rowHtml = `<tr>
   <td style='white-space: nowrap; min-width: fit-content !important;'>${ref_no}</td>
     <td colspan="2" style='text-wrap:nowrap;min-width: fit-content !important;'>${first_name.toUpperCase()}</td>
@@ -292,7 +299,7 @@ function createRow(ref_no, first_name, last_name, roll_no, days, data) {
       holidays.includes(i + 1) ? "holiday" : ""
     }' style='width: 42px; min-width: 42px;'><input type='text' class='empty-input' data-day=${
       i + 1
-    } data-ref=${ref_no} style='width: 25px;' value=${
+    } data-ref=${ref_no} data-id=${name} style='width: 25px;' value=${
       data[ref_no][i][i + 1]
     } ></input></td>`;
   }
@@ -313,15 +320,22 @@ function saveAttendance() {
       attendance_data: JSON.stringify(updatedAttendance),
     },
     callback: function (response) {
-      if (response.message) {
+      
+      if (!response.message.error) {
         saveButtonAdded = false;
         globalFrm.page.remove_inner_button(__("Save"));
         showSubmitBtn(true);
+        frappe.show_alert({
+          message: __(response.message.msg),
+          indicator: "green",
+        });
       }
-      frappe.show_alert({
-        message: __(response.message),
-        indicator: "green",
-      });
+      else{
+        frappe.show_alert({
+          message: __(response.message.msg),
+          indicator: "red",
+        });
+      }
     },
   });
 }
@@ -345,7 +359,10 @@ function checkAttendance() {
             submitAttendance();
           }
         );
+      }else{
+        submitAttendance();
       }
+
     },
   });
 }
@@ -363,12 +380,18 @@ function submitAttendance() {
     callback: function (response) {
       if (response.message) {
         showSubmitBtn(false);
+        frappe.show_alert({
+          message: __(response.message),
+          indicator: "green",
+        });
       }
-      frappe.show_alert({
-        message: __(response.message),
-        indicator: "green",
-      });
-      frm.reload_doc();
+      else{
+        frappe.show_alert({
+          message: __("Attendance already submitted"),
+          indicator: "red",
+        });
+      }
+      
     },
   });
 }

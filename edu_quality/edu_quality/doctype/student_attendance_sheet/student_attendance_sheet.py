@@ -46,11 +46,20 @@ def get_students(
     program,
     division,
 ):
-    return frappe.get_all(
+    students= frappe.get_all(
         "Program Enrollment",
         filters={"student_group": division, "program": program},
-        fields=["student.reference_number", "student.first_name", "student.last_name"],
+        fields=[
+            "student.reference_number",
+            "student.first_name",
+            "student.last_name",
+            "roll_no",
+            "student.name",
+        ],
+        order_by="roll_no ASC",
     )
+
+    return sorted(students, key=lambda x: int(x['roll_no']))
 
 
 @frappe.whitelist()
@@ -134,21 +143,22 @@ def save_attendance(**data):
     month = datetime.strptime(month_name, "%B").month
     year = int(academic_year.split("-")[0])
     program = data.get("program")
-
+    division = data.get("division")
     attendance_data = json.loads(data.get("attendance_data"))
+    error = {}
 
-    for ref, days in attendance_data.items():
+    for student_id, days in attendance_data.items():
         for day_obj in days:
             day, value = next(iter(day_obj.items()))
             try:
                 student = frappe.get_doc(
-                    "Student", {"reference_number": ref, "program": program}
+                    "Student", {"name": student_id}
                 )
                 date = frappe.utils.data.getdate(f"{year}-{month:02d}-{day}")
 
                 existing_entry = frappe.db.get_value(
                     "Attendance Entry",
-                    {"date": date, "student": student.name},
+                    {"date": date, "student": student.name, "class": program,"division": division},
                     ["docstatus", "name"],
                 )
 
@@ -162,6 +172,8 @@ def save_attendance(**data):
                             "status",
                             get_attendance_status(value, "name"),
                         )
+                    elif doc_status == 1:
+                        error = {'msg': "Submitted entries cannot be modified",'error':1}
                     continue
 
                 doc = frappe.get_doc(
@@ -170,6 +182,9 @@ def save_attendance(**data):
                         "date": date,
                         "student": student.name,
                         "status": get_attendance_status(value, "name"),
+                        "class": program,
+                        "division": division
+                        
                     }
                 )
 
@@ -178,12 +193,14 @@ def save_attendance(**data):
             except:
                 pass
 
-    return "Attendance saved successfully"
+    if(error):
+        return error
+    return {'msg':  "Attendance saved successfully",'error':0}
 
 
 @frappe.whitelist()
 def submit_attendance(**data):
-
+    
     month_name = data.get("month_name")
     academic_year = data.get("academic_year")
     month = datetime.strptime(month_name, "%B").month
@@ -206,6 +223,7 @@ def submit_attendance(**data):
         },
         fields=["date", "name", "student"],
     )
+ 
 
     for entry in attendance_entries:
         attendance_entry = frappe.get_doc(
