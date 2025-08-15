@@ -49,6 +49,8 @@ doctype_js = {
     "Program Enrollment": "public/js/program_enrollment.js",
     "Program": "public/js/program.js",
     "Employee": "public/js/employee.js",
+    "Assessment Plan": "public/js/assessment_plan.js",
+    "Assessment Group": "public/js/assessment_group.js",
 }
 doctype_list_js = {
     "Student Applicant": "public/js/list/student_applicant_list.js",
@@ -240,7 +242,7 @@ doc_events = {
     },
     "Student Group": {
         "on_update": "edu_quality.overrides_hooks.student_group.on_update",
-        "before_save":"edu_quality.overrides_hooks.student_group.before_save"
+        "before_save": "edu_quality.overrides_hooks.student_group.before_save",
     },
 }
 
@@ -255,7 +257,10 @@ scheduler_events = {
         "0 * * * *": ["edu_quality.tasks.cron"],
         "0 19 * * *": ["edu_quality.tasks.send_bulk_notification_cmap_to_guardian"],
         "0 6 * * *": ["edu_quality.tasks.schedule_birthday_greeting"],
-        "* * * * *": ["edu_quality.cmap_jobs.send_ptm_notifications_to_students","edu_quality.cmap_jobs.notify_teacher_before_half_hour_job"]
+        "* * * * *": [
+            "edu_quality.cmap_jobs.send_ptm_notifications_to_students",
+            "edu_quality.cmap_jobs.notify_teacher_before_half_hour_job",
+        ],
     },
     "daily": [
         "edu_quality.tasks.time_based",
@@ -367,4 +372,6 @@ website_route_rules = [
     {"from_route": "/walsh/<path:app_path>", "to_route": "walsh"},
 ]
 
-website_route_rules = [{'from_route': '/ui/<path:app_path>', 'to_route': 'ui'},]
+website_route_rules = [
+    {"from_route": "/ui/<path:app_path>", "to_route": "ui"},
+]
