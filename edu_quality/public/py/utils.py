@@ -557,7 +557,11 @@ def reduce_font_size_steps(initial_size, step, data, initial_char_length, lowest
     if isinstance(data, str):
         txt = data
     elif isinstance(data, frappe.model.document.Document):
-        txt = (data.first_name or "") if len(data.first_name or "") > len(data.last_name or "") else (data.last_name or "")
+        txt = (
+            (data.first_name or "")
+            if len(data.first_name or "") > len(data.last_name or "")
+            else (data.last_name or "")
+        )
     if len(txt) <= initial_char_length:
         return initial_size
     rem = len(txt) % int(initial_char_length)
@@ -587,3 +591,10 @@ def check_roles(roles, roles_to_check):
         if role in roles:
             return True
     return False
+
+
+def extract_year_from_academic_year_name(year: str):
+    # assuming 2024-2025
+    years = year.strip().split("-")
+    short_forms = [str(year[-2:]) for year in years]
+    return "-".join(short_forms)
