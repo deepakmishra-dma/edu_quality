@@ -150,6 +150,7 @@ override_doctype_class = {
     "Lead": "edu_quality.public.py.lead.CustomLead",
     "Instructor": "edu_quality.edu_quality.overrides.instructor.CustomInstructor",
     "HD Ticket": "edu_quality.edu_quality.overrides.hd_ticket.CustomHDTicket",
+    "Email Template": "edu_quality.edu_quality.overrides.email_templates.CustomEmailTemplate",
 }
 
 # Document Events
