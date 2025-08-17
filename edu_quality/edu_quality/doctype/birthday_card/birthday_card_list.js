@@ -20,13 +20,20 @@ frappe.listview_settings["Birthday Card"] = {
                         fieldname: 'to_date',
                         default: frappe.datetime.nowdate()
                     },
+                    {fieldtype: 'Section Break'},
+                    {
+                        fieldtype: 'Select',
+                        label: __('Student Status'),
+                        fieldname: 'student_status',
+                        options: ['New student', 'Current student', 'Cancelled', 'Not attending', 'Defaulter', 'Alumni'],
+                    },
                 ],
                 primary_action_label: __('Submit'),
                 primary_action: async function (values) {
                     const headers = new Headers();
                     headers.append('X-Frappe-CSRF-Token', frappe.csrf_token);
                     headers.append('Content-Type', 'application/json');
-                    const payload = { "from_date": values.from_date, "to_date": values.to_date }
+                    const payload = { "from_date": values.from_date, "to_date": values.to_date, "student_status": values.student_status}
 
                     try {
                         const response = await fetch(`/api/method/edu_quality.edu_quality.doctype.birthday_card.birthday_card.print_todays_birthday_card`, {
