@@ -7,7 +7,9 @@ import calendar
 from datetime import datetime, timedelta
 import json
 from weasyprint import HTML
-
+from edu_quality.public.py.utils import (
+    gen_qr_code_b64_transparent,  
+)
 
 class StudentAttendanceSheet(Document):
     pass
@@ -357,8 +359,9 @@ def get_attendance_status(val, return_type):
 def generate(**kwargs):
     base_url = frappe.utils.get_url()
 
-    # enrollment_in_chunks = divide_into_subarrays(program_enrollment, 4)
     tables = kwargs.get("tables")
+
+    update_tables_with_qr_code(tables)
 
     template = frappe.render_template(
         "edu_quality/templates/pdf/student_attendance_sheet.html",
@@ -375,6 +378,15 @@ def generate(**kwargs):
     frappe.local.response.filecontent = main_pdf
     frappe.local.response.type = "pdf"
 
+def update_tables_with_qr_code(tables):
+    for table in tables:
+        qr_data = {
+            "class": table["class"],
+            "division": table["division"],
+            "month": table["month"],
+            "year": table["year"],
+        }
+        table["qr_code"] = gen_qr_code_b64_transparent(qr_data)
 
 def get_latest_status(entry):
     latest_entry = frappe.get_all(
