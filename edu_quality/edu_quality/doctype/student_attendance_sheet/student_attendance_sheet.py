@@ -48,7 +48,7 @@ def get_students(
 ):
     students= frappe.get_all(
         "Program Enrollment",
-        filters={"student_group": division, "program": program},
+        filters={"student_group": division, "program": program ,"custom_status": ["in", ["Current student", "Defaulter"]],},
         fields=[
             "student.reference_number",
             "student.first_name",
