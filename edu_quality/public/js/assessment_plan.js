@@ -3,7 +3,7 @@ frappe.ui.form.on('Assessment Plan', {
         frm.set_query("course", function () {
             return { filters: { "custom_hide_in_portion": 0 }, query: "" }
         })
-        get_textbooks()
+        get_textbooks(frm)
     },
 
     academic_year: getAssessmentName,
@@ -32,7 +32,7 @@ async function getAssessmentName(frm) {
 frappe.ui.form.on("Assessment Plan Criteria", {
     "assessment_criteria": function (frm, cdt, cdn) {
         checkDuplicates(frm, cdt, cdn)
-        get_textbooks()
+        get_textbooks(frm)
     },
     "custom_exam_type": checkDuplicates,
     "custom_textbook": checkDuplicates,
@@ -58,7 +58,7 @@ function checkDuplicates(frm, cdt, cdn) {
     });
 }
 
-async function get_textbooks() {
+async function get_textbooks(frm) {
 
     const EXISTING_ROWS_IN_CHILD_TABLE = cur_frm.fields_dict["assessment_criteria"].grid.grid_rows
     const res = await frappe.call({
@@ -67,11 +67,21 @@ async function get_textbooks() {
     })
     for (row in EXISTING_ROWS_IN_CHILD_TABLE) {
 
-        const field = frappe.meta.get_docfield("Assessment Plan Criteria", "custom_textbook", EXISTING_ROWS_IN_CHILD_TABLE[row].doc.name)
-        field.options = res?.message || [];
-        console.log(field)
+        const res = await frappe.call({
+            method: "edu_quality.edu_quality.overrides.assessment_plan.get_assessment_cr_textbooks",
 
+        })
+
+
+        const field = frappe.meta.get_docfield("Assessment Plan Criteria", "custom_textbook", EXISTING_ROWS_IN_CHILD_TABLE[row].doc.name)
+
+        frm.fields_dict.assessment_criteria.grid.update_docfield_property("custom_textbook", "options", res?.message)
+        console.log(row, EXISTING_ROWS_IN_CHILD_TABLE[row].doc.name)
+        field.options = [null, ...res?.message] || [null];
+        // field.set_options([null, ...res?.message] || [null])
+        cur_frm.refresh_field("assessment_criteria")
+        // cur_frm.refresh()
     }
-    cur_frm.refresh_field("assessment_criteria")
+
 
 }

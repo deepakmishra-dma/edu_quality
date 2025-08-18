@@ -7,13 +7,15 @@ import json
 
 class CustomAssessmentPlan(AssessmentPlan):
     def before_validate(self, method=None):
+
         if frappe.db.exists(
             "Assessment Plan",
             {
                 "assessment_group": self.assessment_group,
                 "academic_year": self.academic_year,
-                "course": self.subject,
+                "course": self.course,
                 "student_group": self.student_group,
+                "name": ["!=", self.name],
             },
         ):
             frappe.throw(
@@ -48,7 +50,7 @@ def name_func(assessment_plan_doc):
 
 def check_for_duplicates(assessment_plan_doc):
     dup_cr_hash = {}
-    for criteria in assessment_plan_doc.asessesment_criteria:
+    for criteria in assessment_plan_doc.assessment_criteria:
         criteria_name = (
             f"{criteria.get('assessment_criteria')}-{criteria.get('custom_exam_type')}"
         )

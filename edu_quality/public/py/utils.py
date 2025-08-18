@@ -598,3 +598,17 @@ def extract_year_from_academic_year_name(year: str):
     years = year.strip().split("-")
     short_forms = [str(year[-2:]) for year in years]
     return "-".join(short_forms)
+
+
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def academic_year_query(doctype, txt, searchfield, start, page_len, filters):
+    acad_year_qb = frappe.qb.DocType("Academic Year")
+    return (
+        frappe.qb.from_(acad_year_qb)
+        .where(
+            (acad_year_qb.custom_current_academic_year == 1)
+            | (acad_year_qb.custom_next_academic_year == 1)
+        )
+        .select("name")
+    ).run()

@@ -149,6 +149,8 @@ override_doctype_class = {
     "Lead": "edu_quality.public.py.lead.CustomLead",
     "Instructor": "edu_quality.edu_quality.overrides.instructor.CustomInstructor",
     "HD Ticket": "edu_quality.edu_quality.overrides.hd_ticket.CustomHDTicket",
+    "Assessment Group": "edu_quality.edu_quality.overrides.assessment_group.CustomAssessmentGroup",
+    "Assessment Plan": "edu_quality.edu_quality.overrides.assessment_plan.CustomAssessmentPlan",
 }
 
 # Document Events
