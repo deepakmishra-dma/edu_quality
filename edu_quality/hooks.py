@@ -240,7 +240,7 @@ doc_events = {
         "on_update": "edu_quality.edu_quality.server_scripts.employee.on_update",
     },
     "Student Group": {
-        "on_update": "edu_quality.overrides_hooks.student_group.on_update",
+        # "on_update": "edu_quality.overrides_hooks.student_group.on_update",
         "before_save": "edu_quality.overrides_hooks.student_group.before_save",
     },
 }
