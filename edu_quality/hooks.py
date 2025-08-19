@@ -175,7 +175,6 @@ doc_events = {
     "Program Enrollment": {
         "on_submit": [
             "edu_quality.public.py.fee.create_fees",
-            "edu_quality.public.py.fee.update_program_enrollment",
         ],
         "before_insert": "edu_quality.public.py.fee.sync_student_data",
         "after_insert": [
@@ -184,7 +183,6 @@ doc_events = {
             "edu_quality.public.py.fee.create_birthday_card",
         ],
         "on_trash": "edu_quality.public.py.fee.remove_program_enrollment",
-        "on_update_after_submit": "edu_quality.public.py.fee.update_program_enrollment",
         "on_cancel": "edu_quality.edu_quality.server_scripts.program_enrollment.on_cancel",
     },
     "Contact": {
@@ -242,7 +240,7 @@ doc_events = {
         "on_update": "edu_quality.edu_quality.server_scripts.employee.on_update",
     },
     "Student Group": {
-        "on_update": "edu_quality.overrides_hooks.student_group.on_update",
+        # "on_update": "edu_quality.overrides_hooks.student_group.on_update",
         "before_save": "edu_quality.overrides_hooks.student_group.before_save",
     },
 }

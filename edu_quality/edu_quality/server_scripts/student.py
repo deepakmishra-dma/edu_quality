@@ -170,7 +170,7 @@ def remove_from_division(doc):
     return roll_no
 
 
-def add_to_division(doc, division, roll_no=None):
+def add_to_division(doc, division, roll_no=None, add_log=True):
     """
     doc: Program Enrollment
     division: Division
@@ -190,8 +190,10 @@ def add_to_division(doc, division, roll_no=None):
         "active": 1
     })
     sg.save()
-    add_comment_in_division(doc, division)
-    add_student_log(doc, division)
+    if add_log:
+        add_comment_in_division(doc, division)
+        add_student_log(doc, division)
+    return next_roll_number
 
 
 def swap_student_division(pe_doc_1, pe_doc_2):

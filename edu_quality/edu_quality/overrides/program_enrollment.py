@@ -1,10 +1,23 @@
 import frappe
-from education.education.doctype.program_enrollment.program_enrollment import ProgramEnrollment
+from education.education.doctype.program_enrollment.program_enrollment import (
+    ProgramEnrollment,
+)
 from frappe.utils import comma_and, get_link_to_form, getdate
 from frappe import _
 from frappe.utils.data import cstr
+from edu_quality.edu_quality.server_scripts.student import add_to_division
+
 
 class CustomProgramEnrollment(ProgramEnrollment):
+    def on_submit(self):
+        super().on_submit()
+        self.sync_division_data()
+        self.update_student_data()
+
+    def on_update_after_submit(self):
+        self.sync_division_data()
+        self.update_student_data()
+
     def validate_academic_year(self):
         start_date, end_date = frappe.db.get_value(
             "Academic Year", self.academic_year, ["year_start_date", "year_end_date"]
@@ -19,9 +32,9 @@ class CustomProgramEnrollment(ProgramEnrollment):
 
             if end_date and getdate(self.enrollment_date) > getdate(end_date):
                 frappe.throw(
-                    _("Enrollment Date cannot be after the End Date of the Academic Term {0}").format(
-                        get_link_to_form("Academic Year", self.academic_year)
-                    )
+                    _(
+                        "Enrollment Date cannot be after the End Date of the Academic Term {0}"
+                    ).format(get_link_to_form("Academic Year", self.academic_year))
                 )
 
     def validate_academic_term(self):
@@ -38,16 +51,15 @@ class CustomProgramEnrollment(ProgramEnrollment):
 
             if end_date and getdate(self.enrollment_date) > getdate(end_date):
                 frappe.throw(
-                    _("Enrollment Date cannot be after the End Date of the Academic Term {0}").format(
-                        get_link_to_form("Academic Term", self.academic_term)
-                    )
+                    _(
+                        "Enrollment Date cannot be after the End Date of the Academic Term {0}"
+                    ).format(get_link_to_form("Academic Term", self.academic_term))
                 )
-
 
     def _validate_selects(self):
         if frappe.flags.in_import:
-            self.update_student_data()
             self.sync_division_data()
+            self.update_student_data()
             return
 
         for df in self.meta.get_select_fields():
@@ -84,26 +96,30 @@ class CustomProgramEnrollment(ProgramEnrollment):
                     )
                 )
 
-
     def update_student_data(self):
-        division = frappe.get_value("Student Group", self.student_group, "student_group_name")
+        division = frappe.get_value(
+            "Student Group", self.student_group, "student_group_name"
+        )
         fields = {
-            'roll_no': self.roll_no,
-            'tiffin_rack_no': self.tiffin_rack_no,
-            'bus_service_required': self.transport_service_required,
-            'school_house': self.school_house,
-            'pickup_bus': self.pickup_bus,
-            'drop_bus': self.drop_bus,
-            'pickup_address': self.pickup_address,
-            'drop_address': self.drop_address,
-            'image': self.image,
-            'program': self.program,
-            'custom_division': division,
+            "roll_no": self.roll_no,
+            "tiffin_rack_no": self.tiffin_rack_no,
+            "bus_service_required": self.transport_service_required,
+            "school_house": self.school_house,
+            "pickup_bus": self.pickup_bus,
+            "drop_bus": self.drop_bus,
+            "pickup_address": self.pickup_address,
+            "drop_address": self.drop_address,
+            "image": self.image,
+            "program": self.program,
+            "custom_division": division,
         }
         frappe.db.set_value("Student", self.student, fields)
 
-
     def sync_division_data(self):
-        division = frappe.get_value("Student Group Student", {"student": self.student}, "parent")
-        if self.student_group != division:
-            self.student_group = division
+        if frappe.db.exists('Student Group Student', {"parent": self.student_group, "student":self.student}):
+            return
+        roll_no = add_to_division(self, self.student_group, add_log=False)
+        self.roll_no = roll_no
+        self.save(ignore_permissions=True)
+        self.reload()
+    
