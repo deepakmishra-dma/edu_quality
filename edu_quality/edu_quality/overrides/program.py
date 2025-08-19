@@ -177,14 +177,11 @@ class customProgram(Program):
         (name, first_name, gender, house, program_enrollment(pname))
         """
         # update student group and tiffin rack no in program enrollment
+        roll_no = frappe.db.get_value("Student Group Student", {"student": student.get("name")}, "group_roll_number")
         frappe.db.set_value(
             "Program Enrollment",
             student.get("pname"),
-            {"student_group": division.name, "tiffin_rack_no": ""},
-        )
-        # update student group in student
-        frappe.db.set_value(
-            "Student", student.get("name"), {"custom_division": division.student_group_name}
+            {"student_group": division.name, "tiffin_rack_no": "", "roll_no": roll_no},
         )
 
     def sync_details(self):
