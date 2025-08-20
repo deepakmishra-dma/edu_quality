@@ -122,47 +122,67 @@ def update_student_details(student, division):
         {"student_group": division.name, "tiffin_rack_no": ""},
     )
     # update student group in student
-    frappe.db.set_value("Student", student.get("name"), {"custom_division": division.student_group_name})
+    frappe.db.set_value(
+        "Student", student.get("name"), {"custom_division": division.student_group_name}
+    )
 
 
 @frappe.whitelist()
 def export_student_details(program):
-    data = frappe.cache().get(program)
-    division_data = frappe.json.loads(data)
-    columns = ["Division Name", "Name", "First Name", "Gender", "House", "Batch"]
-    new_data = []
+    try:
+        data = frappe.cache().get(program)
+        division_data = frappe.json.loads(data)
+        academic_year = frappe.get_value(
+            "Academic Year", {"custom_current_academic_year": 1}, "name"
+        )
+        columns = [
+            "Previous Division",
+            "New Division",
+            "Name",
+            "First Name",
+            "Gender",
+            "House",
+            "Batch",
+        ]
+        new_data = []
 
-    for division, details in division_data.items():
-        students = details.get("students")
-        for student in students:
-            new_data.append(
-                [
-                    division,
-                    student.get("name"),
-                    student.get("first_name"),
-                    student.get("gender"),
-                    student.get("school_house"),
-                    student.get("batch"),
-                ]
-            )
+        for division, details in division_data.items():
+            students = details.get("students")
+            for student in students:
+                prev_division = frappe.get_value(
+                    "Program Enrollment",
+                    {"student": student.get("name"), "academic_year": academic_year},
+                    "student_group",
+                )
+                new_data.append(
+                    [
+                        prev_division,
+                        division,
+                        student.get("name"),
+                        student.get("first_name"),
+                        student.get("gender"),
+                        student.get("school_house"),
+                        student.get("batch"),
+                    ]
+                )
 
-    division_data = {
-        columns[i]: [row[i] for row in new_data] for i in range(len(columns))
-    }
-    # Convert the data to a pandas DataFrame
-    df = pd.DataFrame(division_data)
-    public_path = frappe.get_site_path("public", "files")
-    filename = f"Student Details - {program}.csv"
-    filepath = os.path.join(public_path, filename)
+        division_data = {
+            columns[i]: [row[i] for row in new_data] for i in range(len(columns))
+        }
+        # Convert the data to a pandas DataFrame
+        df = pd.DataFrame(division_data)
+        public_path = frappe.get_site_path("public", "files")
+        filename = f"Student Details - {program}.csv"
+        filepath = os.path.join(public_path, filename)
 
-    df.to_csv(filepath, index=False)
-    with open(filepath, "rb") as file:
-        filecontent = file.read()
+        df.to_csv(filepath, index=False)
+        with open(filepath, "rb") as file:
+            filecontent = file.read()
 
-    response = {
-        "filename": filename,
-        "filecontent": base64.b64encode(filecontent).decode(),
-    }
+        response = {
+            "filename": filename,
+            "filecontent": base64.b64encode(filecontent).decode(),
+        }
 
         return response
     except:

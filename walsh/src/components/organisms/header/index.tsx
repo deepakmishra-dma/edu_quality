@@ -73,9 +73,9 @@ export const Header: React.FC<HeaderProps> = ({ setNavbarOpen }) => {
             ? "Starred Messages"
             : location.pathname === "/early-pickup"
             ? "Early Pick Up"
-            : // : location.pathname === "/bonafide"
-            // ? "Request Bonafide"
-            location.pathname === "/leave-note"
+            : location.pathname === "/bonafide"
+            ? "Bonafide"
+            : location.pathname === "/leave-note"
             ? "Absent Note"
             : /^\/notice\/([0-9a-f]+)$/.test(location.pathname)
             ? ""

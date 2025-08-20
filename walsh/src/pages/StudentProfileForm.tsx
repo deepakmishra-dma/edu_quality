@@ -251,7 +251,6 @@ export const StudentProfleFOrm = ({
             setOtpVerify(" ");
             setVerificationStatus("");
           }, 2000);
-          // Proceed with further actions like updating email address, etc.
         } else {
           setVerificationStatus("Invalid OTP. Please try again.");
           setStatusColor("red");
@@ -406,7 +405,6 @@ export const StudentProfleFOrm = ({
             if (message.success) {
               setErrorMessage("");
               setOtpMessage(message.message);
-              console.log("Message ", message.message);
             } else {
               setErrorMessage(message.error_message);
               console.log("Error ", message.error);
@@ -433,7 +431,6 @@ export const StudentProfleFOrm = ({
             if (message.success) {
               setErrorMessage("");
               setOtpMessage(message.message);
-              console.log("Message ", message.message);
             } else {
               setErrorMessage(message.error_message);
               console.log("Error ", message.error);
@@ -465,7 +462,6 @@ export const StudentProfleFOrm = ({
             if (message.success) {
               setErrorMessage("");
               setOtpMessage(message.message);
-              console.log("Message ", message.message);
             } else {
               setErrorMessage(message.error_message);
               console.log("Error ", message.error);
@@ -492,7 +488,6 @@ export const StudentProfleFOrm = ({
             if (message.success) {
               setErrorMessage("");
               setOtpMessage(message.message);
-              console.log("Message ", message.message);
             } else {
               setErrorMessage(message.error_message);
               console.log("Error ", message.error);
@@ -802,8 +797,6 @@ export const StudentProfleFOrm = ({
                     }}
                   >
                     <IconSend
-                      //  style={{ position: "relative", bottom: "0.8rem", left: "21.2rem", display: sendOtp.mother_email ? "none" : "inline" }} stroke={2}
-
                       onClick={() => {
                         if (MotherMobile === "N/A") {
                           mutateAsync({
@@ -839,8 +832,6 @@ export const StudentProfleFOrm = ({
                       sx={{
                         backgroundColor: "red",
                       }}
-                      // style={{ position: "absolute", bottom: "0.5rem", left: "23.5rem", display: sendOtp.mother_email ? "none" : "inline" }}
-
                       onClick={() => {
                         setIsEditable((prevState) => ({
                           ...prevState,
@@ -1000,8 +991,6 @@ export const StudentProfleFOrm = ({
                     }}
                   >
                     <IconSend
-                      // style={{ display: sendOtp.mother_number ? "none" : "inline", position: "absolute", left: "21.2rem" }} stroke={2}
-
                       onClick={() => {
                         if (MotherEmail === "N/A") {
                           mutateAsyncNumber({
@@ -1036,8 +1025,6 @@ export const StudentProfleFOrm = ({
                       sx={{
                         backgroundColor: "red",
                       }}
-                      // style={{ display: sendOtp.mother_email ? "none" : "inline", marginLeft: "3rem" }}
-
                       onClick={() => {
                         setIsEditable((prevState) => ({
                           ...prevState,
