@@ -108,6 +108,8 @@ def get_data(month_name, academic_year, program, division):
         "Attendance Entry",
         filters={
             "class": program,
+            "division": division,
+            "division": division,
             "date": ["between", [start_date, end_date]],
             "status": ["!=", "Holiday"],
         },
@@ -124,7 +126,7 @@ def get_data(month_name, academic_year, program, division):
             ref_number = entry["reference_number"]
             status = (
                 get_attendance_status(entry["status"], "code")
-                if entry.docstatus and not entry["status"]
+                if entry.docstatus or entry["status"]
                 else get_latest_status(entry)
             )
             day = str(entry["date"].day)
@@ -152,6 +154,8 @@ def save_attendance(**data):
     for student_id, days in attendance_data.items():
         for day_obj in days:
             day, value = next(iter(day_obj.items()))
+            if value not in ["P", "A"]:
+                error = {'msg': "Attendance entry is invalid. Please input either 'P' for present or 'A' for absent.",'error':1}
             try:
                 student = frappe.get_doc(
                     "Student", {"name": student_id}
@@ -164,7 +168,7 @@ def save_attendance(**data):
                     ["docstatus", "name"],
                 )
 
-                if existing_entry:
+                if existing_entry :
                     doc_status = existing_entry[0]
                     name = existing_entry[1]
                     if doc_status == 0:
@@ -222,6 +226,7 @@ def submit_attendance(**data):
             "date": ["between", [start_date, end_date]],
             "docstatus": 0,
             "class": program,
+            "division": division,
         },
         fields=["date", "name", "student"],
     )
@@ -229,13 +234,14 @@ def submit_attendance(**data):
 
     for entry in attendance_entries:
         attendance_entry = frappe.get_doc(
-            "Attendance Entry", entry["name"], ["name", "status"]
+            "Attendance Entry", entry["name"], ["name", "status",]
         )
-        attendance_entry.status = (
-            "Present"
-            if attendance_entry.get("status") not in ["Absent", "Sick"]
-            else "Absent"
-        )
+
+        if not attendance_entry.get("status"):
+            status = get_latest_status(entry)
+            attendance_entry.status = (
+                "Present" if status not in ["A", "S"] else "Absent"
+            )
         attendance_entry.submit()
 
     unique_dates = {entry["date"] for entry in attendance_entries}
@@ -273,6 +279,7 @@ def submit_attendance(**data):
                         "status": "Present",
                         "class": program,
                         "docstatus": 1,  # Assuming 1 is the status for submitted
+                        "division": division
                     }
                 )
                 new_entry.insert()
@@ -298,14 +305,14 @@ def check_attendance_entry(**data):
         "date": ["between", [start_date, end_date]],
         "docstatus": 0,
         "class": program,
-        "status": ["in", ["Sick", "Early Pickup", "Late"]],
+        "status": ["=", ""],
     }
 
     # Query to check if any document exists with the given filters
     attendance_entries = frappe.get_list(
         "Attendance Entry",
         filters=filters,
-        fields=["name"],  # Only retrieve the document name for existence check
+        fields=["name","absent_and_delays.status"],  # Only retrieve the document name for existence check
     )
 
     # Check if the list is not empty
@@ -401,6 +408,16 @@ def get_latest_status(entry):
 
     if latest_entry:
         status = latest_entry[0]["status"]
-        if status and status[0].upper() in {"E", "S", "L"}:
-            return status[0].upper()
-    return get_attendance_status(entry.get("status", ""), "code")
+        if status:
+            status_upper = status.upper()
+            if "EARLY_PICKUP" in status_upper:
+                return "E"
+            elif "LATE_DROP" in status_upper:
+                return "L"
+            elif "SICK" in status_upper:
+                return "S"
+            elif "ABSENT" in status_upper:
+                return "A"
+    
+    return ""
+    
