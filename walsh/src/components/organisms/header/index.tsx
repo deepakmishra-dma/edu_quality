@@ -95,9 +95,9 @@ export const Header: React.FC<HeaderProps> = ({ setNavbarOpen }) => {
             ? "Result"
             : location.pathname === "/ptm-link"
             ? "PTM Links"
-            : // : location.pathname === "/student-profile"
-              // ? "Student Profile"
-              ""}
+            : location.pathname === "/student-profile"
+            ? "Student Profile"
+            : ""}
         </Box>
       </Stack>
     </MantineHeader>

@@ -7,8 +7,16 @@ from collections import Counter
 
 @frappe.whitelist(allow_guest=True)
 def get_student_data(student):
-    student = frappe.get_doc("Student", student, ignore_permissions=True)
-    return student.as_dict()
+    student = frappe.get_doc("Student", student)
+    data = student.as_dict()
+    data["guardians"] = []
+    for g in student.guardians:
+        guardian_doc = frappe.get_doc("Guardian", g.guardian).as_dict()
+        guardian_doc["relation"] = g.relation
+        guardian_doc["guardian"] = g.guardian
+        data["guardians"].append(guardian_doc)
+
+    return data
 
 
 @frappe.whitelist()
@@ -156,4 +164,9 @@ def export_student_details(program):
         "filecontent": base64.b64encode(filecontent).decode(),
     }
 
-    return response
+        return response
+    except:
+        frappe.log_error(
+            "Error While Exporting Student Details", frappe.get_traceback()
+        )
+        return False
