@@ -199,7 +199,7 @@ def transform_data(
 
 def check_if_academic_year_is_next(academic_year):
     try:
-        academic_year = frappe.db.get_doc(
+        academic_year = frappe.get_doc(
             "Academic Year", filters={"name": academic_year}, fields=["year_start_date"]
         )
         if getdate(academic_year.get("year_start_date"), "") > today():

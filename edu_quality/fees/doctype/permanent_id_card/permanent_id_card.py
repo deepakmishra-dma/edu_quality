@@ -158,6 +158,6 @@ def mark_permanent_id_card_received(id_cards, qr_scan=False):
                 },
                 fieldname="custom_id_Card",
             )
-        id_card = frappe.db.get_doc("Student ID Card", id_card_id)
+        id_card = frappe.get_doc("Student ID Card", id_card_id)
         id_card.status = "RECEIVED BY STUDENT"
         id_card.save(ignore_permissions=True)
