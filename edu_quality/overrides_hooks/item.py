@@ -118,9 +118,15 @@ def before_insert(self, method=None):
         self.custom_sheet_number = calculate_sheet_number(self)
 
 
-def before_save(doc, method=None):
-    if doc.custom_is_cmap and doc.is_test and doc.upload_to_erp:
-        doc.custom_product_url = doc.upload_to_erp
+def on_update(doc, method=None):
+    old_doc = doc.get_doc_before_save()
+    if (
+        doc.custom_is_cmap
+        and doc.is_test
+        and doc.custom_product_url
+        and old_doc.custom_product_url != doc.custom_product_url
+    ):
+        delete_old_files_on_erp(doc)
 
 
 def search_file_id(url):
@@ -547,3 +553,32 @@ def upload_to_drive_from_filesystem(docname, file):
         frappe.log_error("Error while syncing item to drive", str(e))
     finally:
         item_doc.save(ignore_permissions=True)
+
+
+# edu_quality.overrides_hooks.item.delete_old_files_on_erp
+
+
+def delete_old_files_on_erp(self):
+    doctype = self.doctype
+    docname = self.name
+    fieldname = "custom_product_url"
+    last_attached_file = frappe.get_last_doc(
+        "File",
+        filters={
+            "attached_to_doctype": doctype,
+            "attached_to_name": docname,
+            "attached_to_field": fieldname,
+        },
+    )
+    all_attachs = frappe.db.get_all(
+        "File",
+        filters={
+            "attached_to_doctype": doctype,
+            "attached_to_name": docname,
+            "attached_to_field": fieldname,
+        },
+    )
+    for attach in all_attachs:
+        if attach.get("name") != last_attached_file.get("name"):
+            frappe.delete_doc("File", attach.get("name"))
+    return "Success"

@@ -10,6 +10,8 @@ from frappe.utils import flt
 
 @frappe.whitelist()
 def get_columns(assessment_group, filters):
+    if not assessment_group:
+        return []
     assess_group = frappe.get_doc("Assessment Group", assessment_group)
     if assess_group.is_group:
         frappe.throw("Can't calculate result of a assessment group of group type")
@@ -84,25 +86,38 @@ def get_div_students(division):
         filters={"docstatus": 1, "student_group": ["in", division or [None]]},
         fields=["student_name", "name", "student"],
     )
-    frappe.errprint(data)
+
     return [
         {"ref_no": student.get("student"), "student_name": student.get("student_name")}
         for student in data
     ]
 
 
-def get_data(filters):
+def get_data(filters, criterias):
     division = filters.get("division")
-    return get_div_students(division)
+    students = get_div_students(division)
+    get_earlier_marks(filters, students, criterias)
+    return students
+
+def get_earlier_marks(filters, students, criterias):
+    cr_hash = gen_hash(criterias)
+    assess_res_qb = frappe.qb.DocType("Assessment Result")
+    assessment_result_qb = frappe.qb.DocType("Assessment Result Detail")
+
+    pass
 
 
 def execute(filters=None):
     assessment_group = filters.get("assessment_group")
-    columns, data = [
+    criterias = get_columns(assessment_group, filters)
+    columns = [
         {"fieldname": "ref_no", "label": "Ref No"},
         {"fieldname": "student_name", "label": "Name"},
-        *get_columns(assessment_group, filters),
-    ], get_data(filters)
+        *criterias,
+    ]
+    data = get_data(filters, criterias)
+    if not criterias:
+        return [], []
     return columns, data
 
 

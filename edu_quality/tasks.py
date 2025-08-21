@@ -102,8 +102,8 @@ def get_student_ids_by_division(division):
         WHERE
             stud.active = 1
             AND d.name = %(division)s"""
-    student_list = frappe.db.sql(sql_query, {'division': division}, as_dict=True)
-    
+    student_list = frappe.db.sql(sql_query, {"division": division}, as_dict=True)
+
     if student_list:  # Check if student_list is not empty
         return [student.get("student") for student in student_list]
 
@@ -263,27 +263,46 @@ def schedule_birthday_greeting(schedule_now=False):
         "MGR Settings", "enable_birthday_greeting_scheduler"
     ):
         return None
+    valid_statuses = [i for i in valid_student_statuses]
     academic_year = current_academic_year()
-    all_birthdays = frappe.db.sql(
+    program_enrollments = frappe.db.sql(
         """
-  SELECT * 
-FROM `tabBirthday Card`
+  SELECT pe.name as name 
+FROM `tabStudent` as su INNER JOIN `tabProgram Enrollment` as pe  on pe.student = su.name
 WHERE 
-    MONTH(CONVERT_TZ(date_of_birth, 'UTC', 'Asia/Kolkata')) = MONTH(CONVERT_TZ(NOW(), 'UTC', 'Asia/Kolkata'))
-    AND DAY(CONVERT_TZ(date_of_birth, 'UTC', 'Asia/Kolkata')) = DAY(CONVERT_TZ(NOW(), 'UTC', 'Asia/Kolkata')) AND academic_year = %(academic_year)s
+    MONTH(CONVERT_TZ(su.date_of_birth, 'UTC', 'Asia/Kolkata')) = MONTH(CONVERT_TZ(NOW(), 'UTC', 'Asia/Kolkata'))
+    AND DAY(CONVERT_TZ(su.date_of_birth, 'UTC', 'Asia/Kolkata')) = DAY(CONVERT_TZ(NOW(), 'UTC', 'Asia/Kolkata')) AND pe.academic_year = %(academic_year)s AND pe.docstatus=1 AND su.student_status IN %(statuses)s
 """,
         as_dict=True,
-        values={"academic_year": academic_year},
+        values={"academic_year": academic_year, "statuses": valid_statuses},
     )
 
-    for birthday in all_birthdays:
+    for program_enrollment in program_enrollments:
         try:
+            pe_name = program_enrollment.get("name")
+            if not frappe.db.exists(
+                "Birthday Card",
+                {"program_enrollment": pe_name},
+            ):
+                name = (
+                    frappe.get_doc(
+                        {
+                            "doctype": "Birthday Card",
+                            "program_enrollment": pe_name,
+                        }
+                    )
+                    .insert(ignore_permissions=True)
+                    .name
+                )
+            else:
+                name = frappe.db.get_value(
+                    "Birthday Card", {"program_enrollment": pe_name}, "name"
+                )
+
             from nextai.funnel.custom_trigger import trigger_event
+            birthday_doc = frappe.get_doc("Birthday Card", name)
+            trigger_event(doc=birthday_doc, event_name="birthday_greeting")
 
-            birthday_doc = frappe.get_doc("Birthday Card", birthday)
-            student_doc = frappe.get_doc("Student", birthday_doc.student)
-
-            if student_doc.student_status in valid_student_statuses:
-                trigger_event(doc=birthday_doc, event_name="birthday_greeting")
         except Exception as e:
             frappe.logger("Birthday Card").exception(e)
+  

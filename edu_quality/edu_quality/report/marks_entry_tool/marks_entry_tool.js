@@ -7,7 +7,7 @@ function changeMarksData(value, columnId, rowIndex, maximum_score) {
 
 
 		inputEl.value = maximum_score
-		frappe.query_report.data[rowIndex][columnId] = maximum_score
+		frappe.query_report.data[rowIndex][columnId] = undefined
 		return
 	}
 	frappe.query_report.data[rowIndex][columnId] = value.value
@@ -47,27 +47,6 @@ frappe.query_reports["Marks Entry Tool"] = {
 
 		},
 		{
-			"fieldname": "division",
-			"label": __("Division"),
-			"fieldtype": "MultiSelectList",
-			"reqd": 1,
-			get_data: async function (txt) {
-
-				const res = await frappe.call({
-					"method": "edu_quality.edu_quality.report.marks_entry_tool.marks_entry_tool.get_divisions_class_type", args: {
-						"txt": txt,
-						"filters": {
-							"school": frappe.query_report.get_filter_value("school"),
-							"class": frappe.query_report.get_filter_value("program"),
-							"academic_year": frappe.query_report.get_filter_value("academic_year")
-						}
-					}
-				})
-				return res?.message
-			}
-
-		},
-		{
 			"fieldname": "assessment_group",
 			"label": __("Assessment Group"),
 			"fieldtype": "Link",
@@ -75,8 +54,30 @@ frappe.query_reports["Marks Entry Tool"] = {
 			"options": "Assessment Group"
 
 		},
+		{
+			"fieldname": "division",
+			"label": __("Division"),
+			"fieldtype": "Link",
+			"options": "Student Group",
+			"reqd": 1,
 
+			// const res = await frappe.call({
+			// 		"method": "edu_quality.edu_quality.report.marks_entry_tool.marks_entry_tool.get_divisions_class_type", args: {
+			// 			"txt": txt,
+			// 			"filters": {
+			// 				"school": frappe.query_report.get_filter_value("school"),
+			// 				"class": frappe.query_report.get_filter_value("program"),
+			// 				"academic_year": frappe.query_report.get_filter_value("academic_year")
+			// 			}
+			// 		}
+			// 	})
+			// return res?.message
+			// }
+
+
+		},
 	],
+
 	"formatter": function (value, row, column, data, default_formatter) {
 		value = default_formatter(value, row, column, data)
 		if (column.is_criteria) {
@@ -88,18 +89,25 @@ frappe.query_reports["Marks Entry Tool"] = {
 	}, "onload": function (report) {
 
 		report.page.add_inner_button(__('Save Marks Entry'), () => {
-			console.log(frappe.query_report.column, frappe.query_report)
-			console.log(frappe.query_report.data)
-			const filters = {}; frappe.query_report.filters.forEach((filter) => {
-				filters[filter.fieldname] = frappe.query_report.get_filter_value(filter.fieldname)
-			}
-			)
-			frappe.call({
-				"method": "edu_quality.edu_quality.report.marks_entry_tool.marks_entry_tool.do_mark_entry",
-				args: {
-					data: frappe.query_report.data,
-					filters: filters,
+			let message = `
+			<div>	
+				<p>Are you sure you want to Save Marks Entered?</p>
+			</div>`;
+
+
+
+			frappe.confirm(__(message), () => {
+				const filters = {}; frappe.query_report.filters.forEach((filter) => {
+					filters[filter.fieldname] = frappe.query_report.get_filter_value(filter.fieldname)
 				}
+				)
+				frappe.call({
+					"method": "edu_quality.edu_quality.report.marks_entry_tool.marks_entry_tool.do_mark_entry",
+					args: {
+						data: frappe.query_report.data,
+						filters: filters,
+					}
+				})
 			})
 		})
 

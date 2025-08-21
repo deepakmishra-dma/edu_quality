@@ -15,11 +15,12 @@ class CustomAssessmentPlan(AssessmentPlan):
                 "academic_year": self.academic_year,
                 "course": self.course,
                 "student_group": self.student_group,
+                "custom_textbook": ["in", ["All", self.custom_textbook]],
                 "name": ["!=", self.name],
             },
         ):
             frappe.throw(
-                f"{self.custom_type} Exam for this subject,division and assessment group already exists"
+                f"{self.custom_type} Exam for this subject,division,textbook and assessment group already exists"
             )
         check_for_duplicates(self)
 
@@ -36,6 +37,7 @@ def name_func(assessment_plan_doc):
     )
     division = frappe.get_doc("Student Group", assessment_plan_doc.get("student_group"))
     program = frappe.get_doc("Program", division.get("program"))
+    textbook = frappe.get_doc("Textbook", assessment_plan_doc.get("custom_textbook"))
     academic_year = extract_year_from_academic_year_name(
         assessment_plan_doc.get("academic_year") or current_academic_year()
     )
@@ -45,7 +47,7 @@ def name_func(assessment_plan_doc):
         type = "S"
     if assessment_plan_doc.get("custom_type") == "Formative":
         type = "F"
-    return f"{assessment_plan_doc.get('assessment_group')} {academic_year} {type}{subject.get('custom_short_code')}{program.get('program_name')}{division.get('student_group_name')}"
+    return f"{assessment_plan_doc.get('assessment_group')} {academic_year} {type}{subject.get('custom_short_code')}{textbook.get('short_code')}{program.get('program_name')}{division.get('student_group_name')}"
 
 
 def check_for_duplicates(assessment_plan_doc):
