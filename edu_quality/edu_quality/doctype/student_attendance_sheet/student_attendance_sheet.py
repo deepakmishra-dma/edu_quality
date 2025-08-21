@@ -112,6 +112,7 @@ def get_data(month_name, academic_year, program, division):
             "division": division,
             "date": ["between", [start_date, end_date]],
             "status": ["!=", "Holiday"],
+           "docstatus": ["in", [0, 1]],
         },
         fields=["status", "date", "student.reference_number", "name", "docstatus"],
     )
@@ -248,7 +249,7 @@ def submit_attendance(**data):
 
     all_students = frappe.get_all(
         "Program Enrollment",
-        filters={"student_group": division, "program": program},
+        filters={"student_group": division, "program": program,"custom_status": ["in", ["Current student", "Defaulter"]]},
         fields=["student"],
     )
 
