@@ -612,3 +612,20 @@ def academic_year_query(doctype, txt, searchfield, start, page_len, filters):
         )
         .select("name")
     ).run()
+
+
+frappe.utils.logger.set_log_level("DEBUG")
+patch_logger = frappe.logger("Create ID Card Div")
+
+
+def render_template_with_exception(template, data):
+    try:
+        return frappe.render_template(template, data)
+    except Exception as e:
+        frappe.log_error("Error rendering template for data", frappe.get_traceback())
+        frappe.logger("Error Rendering Template").exception(e)
+
+        patch_logger.info(
+            f"Failed rendering id card for data {data}",
+        )
+        return ""

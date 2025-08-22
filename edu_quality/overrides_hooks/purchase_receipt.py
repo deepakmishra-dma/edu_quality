@@ -41,7 +41,7 @@ def before_save(self, method=None):
                         "parenttype": "Student ID Card",
                         "timestamp": frappe.utils.now(),
                         "parentfield": "events",
-                        "status": "SENT TO PRINT",
+                        "status": "RECEIVED BY SCHOOL",
                         "user": frappe.session.user,
                         "parent": card.id_card,
                     }
