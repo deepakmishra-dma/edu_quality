@@ -151,6 +151,8 @@ override_doctype_class = {
     "Instructor": "edu_quality.edu_quality.overrides.instructor.CustomInstructor",
     "HD Ticket": "edu_quality.edu_quality.overrides.hd_ticket.CustomHDTicket",
     "Email Template": "edu_quality.edu_quality.overrides.email_templates.CustomEmailTemplate",
+    "Assessment Group": "edu_quality.edu_quality.overrides.assessment_group.CustomAssessmentGroup",
+    "Assessment Plan": "edu_quality.edu_quality.overrides.assessment_plan.CustomAssessmentPlan",
 }
 
 # Document Events
@@ -211,7 +213,7 @@ doc_events = {
         "autoname": "edu_quality.overrides_hooks.item.autoname",
         "before_insert": "edu_quality.overrides_hooks.item.before_insert",
         "after_delete": "edu_quality.overrides_hooks.item.after_delete",
-        "before_save": "edu_quality.overrides_hooks.item.before_save",
+        "on_update": "edu_quality.overrides_hooks.item.on_update",
     },
     "Program": {"validate": "edu_quality.public.py.program.validate"},
     "Topic": {
