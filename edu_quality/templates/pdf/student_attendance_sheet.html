@@ -1,8 +1,32 @@
 <style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
   @page {
     size: A4 Landscape;
-    margin: 20px;
-    padding: 20px;
+    margin: 15px;
+    padding: 15px;
+  }
+
+  .page {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  .filter-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.625rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .fitler-container div {
+    padding: 0.5rem;
+    border-radius: 4px;
+    background-color: "#F3F3F3";
   }
   .table {
     width: 100%;
@@ -18,7 +42,7 @@
   .table td,
   .table td input {
     border: 1px solid #dee2e6; /* Light gray border */
-    font-size: 0.65rem;
+    font-size: 0.5rem;
   }
   .no-spacing {
     border-spacing: 0;
@@ -26,34 +50,49 @@
   }
 
   .table tbody td {
+    padding: 0.1rem 0.2rem !important;
+    min-width: 20px !important;
+    width: 20px !important;
+  }
+
+  .table thead th {
+    white-space: nowrap;
     padding: 0.2rem !important;
   }
 
   .table td input {
-    width: 12px !important;
-    height: 12px !important;
+    width: 20px !important;
+    height: 10px !important;
     margin: auto;
+    border: none;
   }
   .table td.holiday {
     display: none;
   }
 </style>
-
-{% for table in tables %}
-<table class="page table" style="height: 210mm" cellspacing="0" cellpadding="0">
-  <thead>
-    <tr>
-      {% for header in table.columns %}
-      <th colspan="{{ header.colSpan }}">{{ header.textContent }}</th>
+{% for tableObj in tables %}
+<div class="page">
+  <div class="filter-container">
+    <div>Month: {{tableObj.month}}</div>
+    <div>Year: {{tableObj.year}}</div>
+    <div>Class: {{tableObj.class}}</div>
+    <div>Division: {{tableObj.division}}</div>
+  </div>
+  <table class="table" cellspacing="0" cellpadding="0">
+    <thead>
+      <tr>
+        {% for header in tableObj.table.columns %}
+        <th colspan="{{ header.colSpan }}">{{ header.textContent }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in tableObj.table.rows %}
+      <tr class="row-entry">
+        {{ row }}
+      </tr>
       {% endfor %}
-    </tr>
-  </thead>
-  <tbody>
-    {% for row in table.rows %}
-    <tr class="row-entry">
-      {{ row }}
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+    </tbody>
+  </table>
+</div>
 {% endfor %}

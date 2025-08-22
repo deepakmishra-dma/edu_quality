@@ -42,6 +42,26 @@ export const useStudentDataList = (props: Student_ID) => {
         url: `/api/resource/Student/${props.student_id}`,
     })
 }
+export const useDetailsList = (student_id: string) => {
+    return useCustom({
+        config: {
+            query: {
+                student: student_id
+            }
+        },
+        errorNotification: undefined,
+        method: "get",
+        queryOptions: {
+            queryKey: ["DetailsDataList", student_id],
+        },
+        successNotification: undefined,
+        url: `/api/method/edu_quality.api.student.get_student_data`,
+    })
+}
+
+
+
+
 export const useMotherGuardianList = (props: MotherId) => {
     return useCustom({
         config: {
@@ -257,6 +277,7 @@ export const updateBloodGroup = () => {
         mutateAsync: mutationAsyncFunction
     }
 }
+
 
 
 export const updateAnnualIncome = () => {

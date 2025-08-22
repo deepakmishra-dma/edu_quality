@@ -3,15 +3,19 @@
 
 import frappe
 from frappe.model.document import Document
+from datetime import datetime
 
 
 def date_to_words(date):
-	return 1
+	return date.strftime('%d %B %Y')
 
 
 class StudentExit(Document):
 	def before_insert(self):
 		self.requested_on = frappe.utils.nowdate()
+		self.update_details()
+	
+	def before_save(self):
 		self.update_details()
 
 	def update_details(self):
@@ -35,20 +39,73 @@ class StudentExit(Document):
 				self.father_name = guardian_name		
 			self.dob_in_words = date_to_words(student.date_of_birth)	
 			self.get_fee_details()
+			if self.cancellation_type!= "Deduct from Deposit":
+				self.refund_amount = self.deposit_amount  
+			elif self.deposit_amount>=self.pending_fees:
+				self.refund_amount = self.deposit_amount - self.pending_fees
+			else:
+				self.refund_amount = 0
+			self.get_attendance_details()
+			self.get_subjects()
 		except Exception as e:
+			frappe.logger('dep').exception(e)
 			self.deposit_amount = 0 
 			self.refund_amount = 0
 	
-
+	def get_attendance_details(self):
+		academic_yr = frappe.get_doc("Academic Year",{'custom_current_academic_year':1})
+		total_days = frappe.db.count("Attendance Entry",[["Attendance Entry","date","Between",[academic_yr.year_start_date,academic_yr.year_end_date]],["Attendance Entry","student","=",self.student]])
+		total_present = frappe.db.count("Attendance Entry",[["Attendance Entry","date","Between",[academic_yr.year_start_date,academic_yr.year_end_date]],["Attendance Entry","student","=",self.student],['Attendance Entry','status','=',"Present"]])
+		self.total_working_days = total_days
+		self.days_present = total_present 
+		if self.total_working_days:
+			self.attendance_percentage = (self.days_present/self.total_working_days) *100
+	
+	def get_subjects(self):
+		current_yr = frappe.db.get_value("Academic Year",{'custom_current_academic_year':1})
+		current_division = frappe.db.get_value("Program Enrollment",{'academic_year':current_yr,'student':self.student,'docstatus':1},'student_group')
+		self.last_class_studied = frappe.db.get_value("Program Enrollment",{'academic_year':current_yr,'student':self.student,'docstatus':1},'program')
+		assignments = frappe.db.get_all("CMAP Assignment",{'division':current_division},'parent',as_list=True)
+		short_codes = frappe.db.get_all("Course",fields=['course_name','custom_short_code'])
+		subject_map = {}
+		for sub in short_codes:
+			subject_map[sub.custom_short_code] = sub.course_name
+		subjects_studied = []
+		for s in assignments:
+			cmap = s[0]
+			cmap = cmap[10:13]
+			subjects_studied.append(cmap)
+		subjects_studied = set(subjects_studied)
+		i=1
+		for s in subjects_studied:
+			if subject_map.get(s):
+				if i ==1:
+					self.subject_1 = subject_map.get(s)
+					i+=1
+				elif i ==2:
+					self.subject_2 = subject_map.get(s)
+					i+=1
+				elif i ==3:
+					self.subject_3 = subject_map.get(s)
+					i+=1
+				elif i ==4:
+					self.subject_4 = subject_map.get(s)
+					i+=1
+				elif i ==5:
+					self.subject_5 = subject_map.get(s)
+					i+=1
+				else:
+						self.subject_6 = subject_map.get(s)
+				
 	def get_fee_details(self):
-		last_paid_fee = frappe.db.get_all("Fees",filters=[["Fees","student","=","SHFA21"],["Payment Schedule","outstanding","=",0]],order_by="creation desc",limit=1)
+		last_paid_fee = frappe.db.get_all("Fees",filters=[["Fees","student","=","SHFA21"],["Payment Schedule","outstanding","=",0]],order_by="academic_year desc",limit=1)
 		if last_paid_fee:
-			self.fees_paid_upto = frappe.db.get_all("Payment Schedule",{'parent':last_paid_fee[0].name,'outstanding':0},'due_date',order_by="payment_term desc",limit=1)[0]
+			self.fees_paid_upto = frappe.db.get_all("Payment Schedule",{'parent':last_paid_fee[0].name,'outstanding':0},'due_date',order_by="payment_term desc",limit=1)[0].due_date
 			fee = frappe.get_doc("Fees",last_paid_fee[0].name)
 			for component in fee.components:
 				if component.custom_discounts:
 					self.discount_details = self.discount_details + ", "+component.custom_discounts
-			self.discount_details = self.discount_details + "Total Amount - " + str(fee.total_discount)
+			self.discount_details = self.discount_details or "" + "Total Amount - " + str(fee.total_discount)
 
 
 	def on_submit(self):

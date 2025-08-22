@@ -9,9 +9,13 @@ from collections import Counter, defaultdict
 def get_student_data(student):
     student = frappe.get_doc("Student", student)
     data = student.as_dict()
-    data["guardians"] = [
-        frappe.get_doc("Guardian", g.guardian).as_dict() for g in student.guardians
-    ]
+    data["guardians"] = []
+    for g in student.guardians:
+        guardian_doc = frappe.get_doc("Guardian", g.guardian).as_dict()
+        guardian_doc["relation"] = g.relation
+        guardian_doc["guardian"] = g.guardian
+        data["guardians"].append(guardian_doc)
+
     return data
 
 
@@ -218,5 +222,7 @@ def export_student_details(program):
 
         return response
     except:
-        frappe.log_error("Error While Exporting Student Details", frappe.get_traceback())
+        frappe.log_error(
+            "Error While Exporting Student Details", frappe.get_traceback()
+        )
         return False

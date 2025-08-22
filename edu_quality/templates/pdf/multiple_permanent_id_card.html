@@ -54,10 +54,43 @@
   
     {% for enrollment in range(0,(enrollment_array|length)) %}
     {% set enroll_template =
-    frappe.render_template("edu_quality/templates/pdf/permanent_id_card.html",{'doc':enrollment_array[enrollment],
+    render_template_with_exception("edu_quality/templates/pdf/permanent_id_card.html",{'doc':enrollment_array[enrollment],
     'bg_image': background_images[enrollment_array[enrollment].name], 'div_name': divisions[enrollment_array[enrollment].name],
-    'house': house_colors[enrollment_array[enrollment].name], 'site_url': site_url, 'batch_num': batch_numbers[enrollment_array[enrollment].name]}) %}
- {{enroll_template}}
+    'house': house_colors[enrollment_array[enrollment].name], 'site_url': site_url, 'batch_num': batch_numbers[enrollment_array[enrollment].name]})  %}
+    {% if enroll_template %}
+        {{enroll_template}}
+        {% else %}
+        <div class="parent-container">
+          <div class="cut-mark-container" style="margin-top:10px;padding-bottom: 5px;"><div class="left"><div class="cut-mark-circle"><div class="horizontal"></div><div class="vertical"></div></div></div><div class="right"><div class="cut-mark-circle"><div class="horizontal"></div><div class="vertical"></div></div></div></div>
+          <div class="front">
+      
+         
+          </div>
+          <div class="cut-mark-container" style="padding-bottom: 5px;padding-top: 5px;">
+            <div class="cut-mark-container-two">
+              <div class="left">
+              <div class="cut-mark-circle "><div class="horizontal"></div><div class="vertical"></div></div>
+              <div class="cut-mark-circle "><div class="horizontal"></div><div class="vertical"></div></div></div>
+            </div>
+        
+            <div class="cut-mark-container-two">
+              <div class="right">
+              <div class="cut-mark-circle"><div class="horizontal"></div><div class="vertical"></div></div>
+              <div class="cut-mark-circle"><div class="horizontal"></div><div class="vertical"></div></div></div>
+            </div>
+        
+          </div>
+          <div
+            class="back"
+            
+          >
+         
+          
+          </div>
+          <div class="cut-mark-container" style="padding-top: 5px;" ><div class="left"><div class="cut-mark-circle"><div class="horizontal"></div><div class="vertical"></div></div></div><div class="right"><div class="cut-mark-circle"><div class="horizontal"></div><div class="vertical"></div></div></div></div>
+        </div>
+        
+        {% endif %}
     {% endfor %}
   </div>
 </div>

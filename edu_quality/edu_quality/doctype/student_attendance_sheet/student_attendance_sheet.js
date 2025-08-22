@@ -1,4 +1,4 @@
-const updatedAttendance = {};
+let updatedAttendance = {};
 let saveButtonAdded = false;
 let globalFrm = null;
 let showBtnEnable = false;
@@ -19,13 +19,19 @@ frappe.ui.form.on("Student Attendance Sheet", {
         ],
       };
     });
+
+
+
   },
   refresh(frm) {
     frm.disable_save();
-
+    const currentYear = new Date().getFullYear().toString();
+    const nextYear = (parseInt(currentYear) + 1).toString();
+    const academicYear = `${currentYear}-${nextYear}`;
+    frm.set_value("year", academicYear);
     var isUpdated = frm.doc.__unsaved;
     if (isUpdated) {
-      frm.add_custom_button(__("teste"), function () {
+      frm.add_custom_button(__("save"), function () {
         saveAttendance();
       });
     }
@@ -83,9 +89,10 @@ frappe.ui.form.on("Student Attendance Sheet", {
       showBtn.className = "btn btn-default btn-sm my-4";
       showBtn.innerText = "Show";
       showBtn.addEventListener("click", async () => {
+        tables = [];
+        updatedAttendance = {};
         if (frm.doc.division) {
           setupDataTable(frm, frm.doc.division);
-          tables = [];
         } else {
           const pageBreakDiv = document.createElement("div");
           pageBreakDiv.style = "page-break-before: always;";
@@ -104,6 +111,7 @@ frappe.ui.form.on("Student Attendance Sheet", {
         }
         if (!showInfoTable) {
           infoTableContainer.appendChild(infoTable());
+          displayNotes(infoTableContainer);
           showInfoTable = true;
         }
       });
@@ -123,6 +131,7 @@ frappe.ui.form.on("Student Attendance Sheet", {
         filters: filters,
       };
     });
+    frm.set_value("division", "");
   },
 });
 
@@ -135,19 +144,19 @@ function addSaveButton() {
 function changeHandler(e) {
   const dataset = e.target.dataset;
 
-  if (dataset.day && dataset.ref) {
-    if (updatedAttendance.hasOwnProperty(dataset.ref)) {
-      const existingDayIndex = updatedAttendance[dataset.ref].findIndex(
+  if (dataset.day && dataset.id) {
+    if (updatedAttendance.hasOwnProperty(dataset.id)) {
+      const existingDayIndex = updatedAttendance[dataset.id].findIndex(
         (item) => Object.keys(item)[0] === dataset.day
       );
       if (existingDayIndex !== -1) {
-        updatedAttendance[dataset.ref][existingDayIndex][dataset.day] =
+        updatedAttendance[dataset.id][existingDayIndex][dataset.day] =
           e.target.value;
       } else {
-        updatedAttendance[dataset.ref].push({ [dataset.day]: e.target.value });
+        updatedAttendance[dataset.id].push({ [dataset.day]: e.target.value });
       }
     } else {
-      updatedAttendance[dataset.ref] = [{ [dataset.day]: e.target.value }];
+      updatedAttendance[dataset.id] = [{ [dataset.day]: e.target.value }];
     }
   }
   addSaveButton();
@@ -197,14 +206,21 @@ async function setupDataTable(frm, division) {
     ...days.message,
   ];
 
-  container.appendChild(
-    createTable(
-      headers,
-      studentsList.message,
-      days.message,
-      attendanceData.message.table_data
-    )
-  );
+  if (studentsList.message.length > 0) {
+    container.appendChild(
+      createTable(
+        headers,
+        studentsList.message,
+        days.message,
+        attendanceData.message.table_data,
+        division
+      )
+    );
+  } else if (studentsList.message.length === 0 && !frm.doc.division) return;
+  else {
+    container.innerHTML = "<p>No students found for selected division</p>";
+  }
+
   if (!frm.doc.division && division) {
     const pageBreakDiv = document.createElement("div");
     pageBreakDiv.style = "page-break-before: always;";
@@ -212,7 +228,7 @@ async function setupDataTable(frm, division) {
   }
 }
 
-function createTable(headers, studentsList, days, data) {
+function createTable(headers, studentsList, days, data, division) {
   const table = document.createElement("table");
   table.className = "table table-bordered table-responsive";
   const thead = document.createElement("thead");
@@ -244,9 +260,10 @@ function createTable(headers, studentsList, days, data) {
         row.reference_number,
         row.first_name,
         row.last_name,
-        index + 1,
+        row.roll_no,
         days,
-        data
+        data,
+        row.name
       );
       tbody.innerHTML += row_html;
       curTableData.rows.push(row_html);
@@ -257,24 +274,32 @@ function createTable(headers, studentsList, days, data) {
   table.appendChild(thead);
 
   table.appendChild(tbody);
-  tables.push(curTableData);
+  division;
+  const tableObj = {
+    table: curTableData,
+    class: globalFrm.doc.class,
+    division: division,
+    month: globalFrm.doc.month,
+    year: globalFrm.doc.year,
+  };
+  tables.push(tableObj);
   return table;
 }
 
-function createRow(ref_no, first_name, last_name, roll_no, days, data) {
+function createRow(ref_no, first_name, last_name, roll_no, days, data,name) {
   let rowHtml = `<tr>
-  <td>${ref_no}</td>
-    <td colspan="2" style='text-wrap:nowrap;'>${first_name}</td>
-    <td colspan="2" style='text-wrap:nowrap;'>${last_name}</td>
-    <td>${roll_no}</td>`;
+  <td style='white-space: nowrap; min-width: fit-content !important;'>${ref_no}</td>
+    <td colspan="2" style='text-wrap:nowrap;min-width: fit-content !important;'>${first_name.toUpperCase()}</td>
+    <td colspan="2" style='text-wrap:nowrap;min-width: fit-content !important;'>${last_name.toUpperCase()}</td>
+    <td style='white-space: nowrap; min-width: fit-content !important;'>${roll_no}</td>`;
 
   // Generate empty <td> elements for each day
   for (let i = 0; i < days.length; i++) {
     rowHtml += `<td  class='empty-td ${
       holidays.includes(i + 1) ? "holiday" : ""
-    }' style={width: 100px;}><input type='text' class='empty-input' data-day=${
+    }' style='width: 42px; min-width: 42px;'><input type='text' class='empty-input' data-day=${
       i + 1
-    } data-ref=${ref_no} style='width: 25px;' value=${
+    } data-ref=${ref_no} data-id=${name} style='width: 25px;' value=${
       data[ref_no][i][i + 1]
     } ></input></td>`;
   }
@@ -295,15 +320,49 @@ function saveAttendance() {
       attendance_data: JSON.stringify(updatedAttendance),
     },
     callback: function (response) {
-      if (response.message) {
+      
+      if (!response.message.error) {
         saveButtonAdded = false;
         globalFrm.page.remove_inner_button(__("Save"));
         showSubmitBtn(true);
+        frappe.show_alert({
+          message: __(response.message.msg),
+          indicator: "green",
+        });
       }
-      frappe.show_alert({
-        message: __(response.message),
-        indicator: "green",
-      });
+      else{
+        frappe.show_alert({
+          message: __(response.message.msg),
+          indicator: "red",
+        });
+      }
+    },
+  });
+}
+
+function checkAttendance() {
+  frappe.call({
+    method:
+      "edu_quality.edu_quality.doctype.student_attendance_sheet.student_attendance_sheet.check_attendance_entry",
+    args: {
+      month_name: globalFrm.doc.month,
+      academic_year: globalFrm.doc.year,
+      program: globalFrm.doc.class,
+    },
+    callback: function (response) {
+      if (response.message) {
+        frappe.confirm(
+          __(
+            "There is a Sick or Early Pickup or Late attendance entry. You are allowed to submit Absent or Present. If you continue, we'll mark early pick up and late as present and sick as absent. Do you want to continue?"
+          ),
+          function () {
+            submitAttendance();
+          }
+        );
+      }else{
+        submitAttendance();
+      }
+
     },
   });
 }
@@ -316,16 +375,23 @@ function submitAttendance() {
       month_name: globalFrm.doc.month,
       academic_year: globalFrm.doc.year,
       program: globalFrm.doc.class,
+      division: globalFrm.doc.division,
     },
     callback: function (response) {
       if (response.message) {
         showSubmitBtn(false);
+        frappe.show_alert({
+          message: __(response.message),
+          indicator: "green",
+        });
       }
-      frappe.show_alert({
-        message: __(response.message),
-        indicator: "green",
-      });
-      frm.reload_doc();
+      else{
+        frappe.show_alert({
+          message: __("Attendance already submitted"),
+          indicator: "red",
+        });
+      }
+      
     },
   });
 }
@@ -337,9 +403,9 @@ function getCurrentMonthName() {
 
 function showSubmitBtn(showSubmitBtn) {
   if (showSubmitBtn) {
-    globalFrm.page.add_inner_button(__("Submit"), submitAttendance);
+    globalFrm.page.add_inner_button(__("Submit"), checkAttendance);
   } else {
-    frm.page.remove_inner_button(__("Submit"));
+    globalFrm.page.remove_inner_button(__("Submit"));
   }
 }
 
@@ -385,4 +451,20 @@ function infoTable() {
   table.appendChild(tbody);
 
   return table;
+}
+
+function displayNotes(container) {
+  const combinedMessage = `
+  <div >
+  <strong>Note:</strong>
+<ul style="font-size: smaller;">
+  <li> Please enter only Absent. Present will be populated for the blank entries.</li>
+  <li>You can't edit submitted entries.</li>
+</ul>
+</div>`;
+
+  const noteContainer = document.createElement("div");
+  noteContainer.className = "d-flex justify-content-center mt-2";
+  noteContainer.innerHTML = combinedMessage;
+  container.appendChild(noteContainer);
 }

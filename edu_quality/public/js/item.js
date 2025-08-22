@@ -99,7 +99,24 @@ function uploadFileButton(frm) {
         };
         input.click();
     }
+    frm.get_field('custom_upload_file_to_erp').onclick = async function () {
+        console.log(frm.doc.doctype)
+        const options = {
+            allow_multiple: false,
 
+            on_success: (file) => {
+                frm.set_value("custom_product_url", file.file_url)
+                frm.save("Save")
+
+            },
+            doctype: frm.doc.doctype,
+            docname: frm.doc.name,
+            fieldname: "custom_product_url"
+
+        };
+        const file_ui = new frappe.ui.FileUploader(options);
+
+    }
 
 }
 function queryTopic(frm) {

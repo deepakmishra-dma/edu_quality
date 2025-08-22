@@ -10,10 +10,22 @@ from edu_quality.public.py.term import get_first_unpaid_term,get_last_term
 def get_discount_applicable_term(dis):
     if dis.type == "Payment Plan":
         return -1
+    elif dis.type == "One Time":
+        return 1
     return "All"
 
+
+
+def validate_term(fees,term,dis):
+    for t in fees.payment_schedule:
+        if t.payment_term == term:
+            if t.outstanding<dis.discount_amount:
+                return frappe.throw("Discount amount cannot be greater than Outstanding Amount") 
+            return 
+    return frappe.throw("Invalid Term!")
+
 @frappe.whitelist()
-def add_discount(fee_name, discount, fees=None, doctype="Fees"):
+def add_discount(fee_name, discount, fees=None, doctype="Fees",term=None):
     try:
         discount_applied = False
         grand_discount_amount = 0
@@ -21,9 +33,13 @@ def add_discount(fee_name, discount, fees=None, doctype="Fees"):
             fees = frappe.get_doc(doctype, fee_name)
         dis = frappe.get_doc("Discount Configuration", discount)
         company = None
+        if term:
+            validate_term(fees, term,dis)
         for component in fees.components:
             if component.fees_category == dis.fee_category:
-                update_breakups(dis,component,fees,term=get_discount_applicable_term(dis),update=1)
+                if not term:
+                    term = get_discount_applicable_term(dis)
+                update_breakups(dis,component,fees,term=term,update=1)
                 fees.reload()
                 company = component.custom_company
                 discount_name = component.custom_discounts
@@ -104,7 +120,6 @@ def add_discount(fee_name, discount, fees=None, doctype="Fees"):
 @frappe.whitelist()
 def remove_discount(fee_name, discount, update_payment_request=True, doctype="Fees",custom_payment_plan=0):
     try:
-        frappe.logger('remove').exception('removed')
         discount_removed = False
         grand_discount_amount = 0
         fees = frappe.get_doc(doctype, fee_name)
@@ -614,7 +629,7 @@ def update_breakups(dis, component, fees, term="All", update=0,remove=0,custom=0
         elif term == -1:
             term = get_last_term(fees)
 
-        if term !="All":
+        elif term !="All":
             for schedule in fees.payment_schedule:
                 if term == schedule.payment_term:
                     discount_amount = dis.discount_amount

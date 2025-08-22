@@ -30,6 +30,7 @@ frappe.ui.form.on('Fees', {
                         fieldname: 'discount_name',
                         fieldtype: 'Link',
                         options: "Discount Configuration",
+                        reqd: 1,
                         get_query: function () {
                             return {
                                 doctype: 'Discount Configuration',
@@ -39,6 +40,13 @@ frappe.ui.form.on('Fees', {
                                 },
                             };
                         }
+                    },
+                    {
+                        label: 'Term',
+                        fieldname: 'term',
+                        fieldtype: 'Link',
+                        reqd: 1,
+                        options: "Payment Term",
                     }
                 ],
                 size: 'large',
@@ -49,7 +57,8 @@ frappe.ui.form.on('Fees', {
                         type: "POST",
                         args: {
                             discount: values.discount_name,
-                            fee_name: frm.doc.name
+                            fee_name: frm.doc.name,
+                            term: values.term
                         },
                         callback: function (response) {
                             frappe.show_alert({

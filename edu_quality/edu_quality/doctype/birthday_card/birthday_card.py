@@ -102,29 +102,33 @@ def print_birthday_card(birthday_cards):
 
 
 @frappe.whitelist()
-def print_todays_birthday_card(from_date, to_date):
+def print_todays_birthday_card(from_date, to_date, student_status=None):
     academic_year = current_academic_year()
-    all_birthdays = frappe.db.sql(
-        """
-        SELECT name
-        FROM `tabBirthday Card`
+    query = """
+        SELECT birthday_card.name
+        FROM `tabBirthday Card` AS birthday_card
+        LEFT JOIN `tabStudent` AS student ON birthday_card.student = student.name
         WHERE 
-            MONTH(CONVERT_TZ(date_of_birth, '+00:00', '+05:30')) 
+            MONTH(CONVERT_TZ(birthday_card.date_of_birth, '+00:00', '+05:30')) 
                 BETWEEN 
                     MONTH(CONVERT_TZ(%(from_date)s, '+00:00', '+05:30')) AND MONTH(CONVERT_TZ(%(to_date)s, '+00:00', '+05:30'))
             AND 
-            DAY(CONVERT_TZ(date_of_birth, '+00:00', '+05:30')) 
+            DAY(CONVERT_TZ(birthday_card.date_of_birth, '+00:00', '+05:30')) 
                 BETWEEN 
                     DAY(CONVERT_TZ(%(from_date)s, '+00:00', '+05:30')) AND DAY(CONVERT_TZ(%(to_date)s, '+00:00', '+05:30'))
-            AND academic_year = %(academic_year)s
-        """,
-        as_dict=True,
-        values={
-            "academic_year": academic_year,
-            "from_date": from_date,
-            "to_date": to_date,
-        },
-    )
+            AND birthday_card.academic_year = %(academic_year)s
+        """
+    values = {
+        "academic_year": academic_year,
+        "from_date": from_date,
+        "to_date": to_date,
+    }
+
+    if student_status:
+        query += "AND student.student_status = %(student_status)s"
+        values["student_status"] = student_status
+
+    all_birthdays = frappe.db.sql(query=query, as_dict=True, values=values)
     birthday_cards = [i.name for i in all_birthdays]
     if not birthday_cards:
         return False
