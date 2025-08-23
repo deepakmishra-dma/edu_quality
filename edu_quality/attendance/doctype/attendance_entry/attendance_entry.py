@@ -9,6 +9,7 @@ class AttendanceEntry(Document):
 
     def on_update(self):
         self.send_email_to_admins()
+        self.assign_doc_to_admins()
 
     def send_email_to_admins(self):
         admin_emails = self.get_admin_emails()
@@ -22,6 +23,23 @@ class AttendanceEntry(Document):
             frappe.sendmail(
                 recipients=admin_emails, subject="Attendance Entry", message=message
             )
+
+    def assign_doc_to_admins(self):
+        admin_emails = self.get_admin_emails()
+        for email in admin_emails:
+            user = frappe.get_value("User", email, "name")
+            if not user:
+                continue
+            assignments = {
+                "doctype": "ToDo",
+                "description": f"Assignment for {self.doctype}: {self.name}",
+                "reference_type": self.doctype,
+                "reference_name": self.name,
+                "allocated_to": user,
+                "status": "Open",
+                "priority": "Medium",
+            }
+            frappe.get_doc(assignments).insert()
 
     def get_admin_emails(self):
         school = frappe.get_value("Program", getattr(self, "class"), "school")
