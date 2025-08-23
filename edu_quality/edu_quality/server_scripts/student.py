@@ -131,12 +131,9 @@ def swap_division(**kwargs):
         if division:
             # remove from current division
             remove_from_division(pe_doc)
-            # update student group in program enrollment
-            frappe.db.set_value("Program Enrollment", pe, "student_group", division) 
-            frappe.db.set_value("Program Enrollment", pe, "tiffin_rack_no", None) 
             # add to new division 
-            add_to_division(pe_doc, division)
-            update_linked_docs(pe_doc, division, pe_doc.student_batch_name)
+            roll_no = add_to_division(pe_doc, division)
+            update_linked_docs(pe_doc, division, pe_doc.student_batch_name, roll_no=roll_no)
             send_email_for_division_swap(pe_doc, is_swap=False)
             return True
         elif student:
@@ -204,16 +201,16 @@ def swap_student_division(pe_doc_1, pe_doc_2):
     division_2 = frappe.get_doc("Student Group", pe_doc_2.student_group)
     # remove student 1 from current division
     rno1 = remove_from_division(pe_doc_1)
-    # update details in program enrollment of student 1
-    update_linked_docs(pe_doc_1, pe_doc_2.student_group, pe_doc_2.student_batch_name)
     # remove student 2 from current division
     rno2 = remove_from_division(pe_doc_2)
-    # update details in program enrollment of student 2
-    update_linked_docs(pe_doc_2, pe_doc_1.student_group, pe_doc_1.student_batch_name)
     # add student 1 to student 2 division
     add_to_division(pe_doc_1, division_2.name, rno2)
+    # update details in program enrollment of student 1
+    update_linked_docs(pe_doc_1, pe_doc_2.student_group, pe_doc_2.student_batch_name, roll_no=rno2)
     # add student 2 to student 1 division
     add_to_division(pe_doc_2, division_1.name, rno1)
+    # update details in program enrollment of student 2
+    update_linked_docs(pe_doc_2, pe_doc_1.student_group, pe_doc_1.student_batch_name, roll_no=rno1)
     # generate permanent id cards
     generate_permanent_id_cards(enrollments=[pe_doc_1.name, pe_doc_2.name])
 
@@ -297,7 +294,7 @@ def add_student_log(doc, division, is_removed=False):
     frappe.get_doc(doc_info).insert(ignore_permissions=True)
 
 
-def update_linked_docs(pe_doc, student_group, batch_name, tiffin_rack_no=None):
+def update_linked_docs(pe_doc, student_group, batch_name, tiffin_rack_no=None, roll_no=None):
     """
     pe_doc: Program Enrollment
     student_group: Student Group
@@ -305,13 +302,8 @@ def update_linked_docs(pe_doc, student_group, batch_name, tiffin_rack_no=None):
     this function updates linked documents like student, program enrollment
     """
     # update student group, tiffin rack no, and batch in program enrollment
-    to_update = {
-        "student_group": student_group,
-        "tiffin_rack_no": tiffin_rack_no,
-        "student_batch_name": batch_name
-    }
-    frappe.db.set_value("Program Enrollment", pe_doc.name, to_update)
-    to_update = {
-        "custom_division": frappe.get_value("Student Group", student_group, "student_group_name"),
-    }
-    frappe.db.set_value("Student", pe_doc.student, to_update)
+    pe_doc.student_group = student_group
+    pe_doc.tiffin_rack_no = tiffin_rack_no
+    pe_doc.student_batch_name = batch_name
+    pe_doc.roll_no = roll_no
+    pe_doc.save()
