@@ -117,6 +117,7 @@ def get_data(filters):
         .where(
             (item_detail_table.item_group.isin(item_group_names or [None]))
             & (item_table.custom_hide_in_walsh == 0)
+            & (item_detail_table.hide_in_portion_circular == 0)
         )
         .groupby(
             all_assigned_cmap.subject,
