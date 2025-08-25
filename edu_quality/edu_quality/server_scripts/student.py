@@ -132,8 +132,8 @@ def swap_division(**kwargs):
             # remove from current division
             remove_from_division(pe_doc)
             # add to new division 
-            roll_no = add_to_division(pe_doc, division)
-            update_linked_docs(pe_doc, division, pe_doc.student_batch_name, roll_no=roll_no)
+            add_to_division(pe_doc, division)
+            update_linked_docs(pe_doc, division, pe_doc.student_batch_name)
             send_email_for_division_swap(pe_doc, is_swap=False)
             return True
         elif student:
@@ -155,19 +155,16 @@ def remove_from_division(doc):
     this function removes the student from the division
     """
     division = frappe.get_doc("Student Group", doc.student_group)
-    roll_no = 0
     for d in division.students:
         if d.student == doc.student:
             division.remove(d)
-            roll_no = d.group_roll_number
             break
     division.save()
     add_comment_in_division(doc, doc.student_group, True)
     add_student_log(doc, doc.student_group, True)
-    return roll_no
 
 
-def add_to_division(doc, division, roll_no=None):
+def add_to_division(doc, division, add_log=True):
     """
     doc: Program Enrollment
     division: Division
@@ -175,10 +172,7 @@ def add_to_division(doc, division, roll_no=None):
     """
     sg = frappe.get_doc("Student Group", division)
     roll_numbers = set(d.group_roll_number for d in sg.students if d.group_roll_number)
-    if not roll_no:
-        next_roll_number = next((i for i in range(1, len(roll_numbers) + 2) if i not in roll_numbers), 1)
-    else:
-        next_roll_number = roll_no
+    next_roll_number = next((i for i in range(1, len(roll_numbers) + 2) if i not in roll_numbers), 1)
     
     sg.append("students", {
         "student": doc.student,
@@ -187,8 +181,10 @@ def add_to_division(doc, division, roll_no=None):
         "active": 1
     })
     sg.save()
-    add_comment_in_division(doc, division)
-    add_student_log(doc, division)
+    if add_log:
+        add_comment_in_division(doc, division)
+        add_student_log(doc, division)
+    return next_roll_number
 
 
 def swap_student_division(pe_doc_1, pe_doc_2):
@@ -200,19 +196,20 @@ def swap_student_division(pe_doc_1, pe_doc_2):
     division_1 = frappe.get_doc("Student Group", pe_doc_1.student_group)
     division_2 = frappe.get_doc("Student Group", pe_doc_2.student_group)
     # remove student 1 from current division
-    rno1 = remove_from_division(pe_doc_1)
+    remove_from_division(pe_doc_1)
     # remove student 2 from current division
-    rno2 = remove_from_division(pe_doc_2)
+    remove_from_division(pe_doc_2)
     # add student 1 to student 2 division
-    add_to_division(pe_doc_1, division_2.name, rno2)
+    add_to_division(pe_doc_1, division_2.name)
     # update details in program enrollment of student 1
-    update_linked_docs(pe_doc_1, pe_doc_2.student_group, pe_doc_2.student_batch_name, roll_no=rno2)
+    update_linked_docs(pe_doc_1, pe_doc_2.student_group, pe_doc_2.student_batch_name)
     # add student 2 to student 1 division
-    add_to_division(pe_doc_2, division_1.name, rno1)
+    add_to_division(pe_doc_2, division_1.name)
     # update details in program enrollment of student 2
-    update_linked_docs(pe_doc_2, pe_doc_1.student_group, pe_doc_1.student_batch_name, roll_no=rno1)
+    update_linked_docs(pe_doc_2, pe_doc_1.student_group, pe_doc_1.student_batch_name)
     # generate permanent id cards
-    generate_permanent_id_cards(enrollments=[pe_doc_1.name, pe_doc_2.name])
+    enrollments = frappe.json.dumps([pe_doc_1.name, pe_doc_2.name])
+    generate_permanent_id_cards(enrollments=enrollments)
 
     # send email to bcc admin of school
     send_email_for_division_swap(pe_doc_1)
@@ -225,27 +222,25 @@ def send_email_for_division_swap(pe_doc_1, is_swap=True):
     pe_doc_1: Program Enrollment of student 1
     this function sends email to students for division swap
     """
-    student = frappe.get_doc("Student", pe_doc_1.student)
-    guardian_email = [i.guardian_name for i in student.guardians]
-    guardian = frappe.get_all(
-        doctype="Guardian",
-        fields=["email_address"],
-        filters=[["guardian_name", "in", guardian_email]],
-    )
-    recipients = [i.email_address for i in guardian]
-    school_details = frappe.get_doc("School", pe_doc_1.custom_school)
-    bcc_admin = school_details.get("bcc_email_address")
-    if is_swap:
-        message=f"Dear {student.student_name},\n\nYour division has been swapped successfully. Please find the details below:\n\nDivision: {pe_doc_1.student_group}\n\nRegards,\n{school_details.name}",
-    else:
-        message=f"Dear {student.student_name},\n\nYou have been added to division {pe_doc_1.student_group}. Please find the details below:\n\nDivision: {pe_doc_1.student_group}\n\nRegards,\n{school_details.name}",
-    frappe.sendmail(
-        recipients=recipients,
-        bcc=[bcc_admin],
-        subject="Division Swap",
-        message=message,
-    )
+    try:
+        student = frappe.get_doc("Student", pe_doc_1.student)
+        school = frappe.get_doc("School", pe_doc_1.custom_school)
+        bcc_emails = [eg.email for eg in frappe.get_all(
+            "Email Group Member",
+            filters={"email_group": school.admin_group},
+            fields=["email"]
+        )] if school.admin_group else []
+        
+        message = f"Division of Student: {student.student_name}({student.name}) has been {'swapped' if is_swap else 'added to division'} successfully. Please find the details below:\n\nDivision: {pe_doc_1.student_group}"
 
+        frappe.sendmail(
+            recipients=[school.bcc_email_address],
+            bcc= bcc_emails,
+            subject="Division Swap",
+            message=message,
+        )
+    except:
+        frappe.log_error("Error in Sending Email While Division Swap", frappe.get_traceback())
 
 def add_comment_in_division(student, division, is_removed=False):
     """

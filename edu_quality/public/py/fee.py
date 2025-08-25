@@ -886,41 +886,5 @@ def component_wise(
     return component_wise_split
 
 
-def update_program_enrollment(doc, method):
-    division = frappe.get_value("Student Group", doc.student_group, "student_group_name")
-    frappe.db.sql(
-        """
-        UPDATE `tabStudent` 
-        SET roll_no=%s,
-            tiffin_rack_no=%s,
-            bus_service_required=%s,
-            school_house=%s,
-            custom_division=%s,
-            pickup_bus=%s,
-            drop_bus=%s,
-            pickup_address=%s,
-            drop_address=%s,
-            image=%s,
-            program=%s,
-            custom_division=%s
-        WHERE name=%s
-        """, 
-        (
-            doc.roll_no, 
-            doc.tiffin_rack_no, 
-            doc.transport_service_required, 
-            doc.school_house, 
-            doc.student_group, 
-            doc.pickup_bus, 
-            doc.drop_bus, 
-            doc.pickup_address, 
-            doc.drop_address, 
-            doc.image,
-            doc.program,
-            division,
-            doc.student
-        )
-    )
-
 def create_birthday_card(self,method=None):
     frappe.get_doc({"doctype":"Birthday Card","program_enrollment":self.name}).insert(ignore_permissions=True)

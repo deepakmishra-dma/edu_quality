@@ -2,7 +2,7 @@ import os
 import frappe
 import base64
 import pandas as pd
-from collections import Counter
+from collections import Counter, defaultdict
 
 
 @frappe.whitelist(allow_guest=True)
@@ -21,53 +21,89 @@ def get_student_data(student):
 
 @frappe.whitelist()
 def get_student_details(program):
-    ay = frappe.get_value("Academic Year", {"custom_current_academic_year": 1}, "name")
-    batches = set(
-        frappe.get_all(
-            "Student Group", {"program": program, "academic_year": ay}, pluck="batch"
+    try:
+        academic_year = frappe.get_value(
+            "Academic Year", {"custom_current_academic_year": 1}, "name"
         )
-    )
-    # get all students in the program
-    students = get_students(program, ay)
-    division_data = {}
-
-    for batch in batches:
-        # filter student by batch
-        st_data = [s for s in students if s.batch == batch]
-        divs = frappe.get_all(
-            "Student Group",
-            {"batch": batch, "program": program, "academic_year": ay},
-            ["name"],
+        batches = set(
+            frappe.get_all(
+                "Student Group",
+                {"program": program, "academic_year": academic_year},
+                pluck="batch",
+            )
         )
-        no_of_divs = len(divs)
-        # split students to fit in the divisions
-        split_students = [st_data[i::no_of_divs] for i in range(no_of_divs)]
+        # get all students in the program
+        students = get_students(program, academic_year)
+        frappe.logger('div_1').exception(len(students))
 
-        for div in divs:
-            student_data = split_students.pop(0)
-            gender_counts = Counter(s.gender for s in student_data)
-            house_counts = Counter(s.school_house for s in student_data)
-            division_data.setdefault(div.name, {}).update(
-                {
-                    "students": student_data,
-                    "no_of_students": len(student_data),
-                    "boys": gender_counts["Male"],
-                    "girls": gender_counts["Female"],
-                    "yellow": house_counts["Yellow"],
-                    "green": house_counts["Green"],
-                    "red": house_counts["Red"],
-                    "blue": house_counts["Blue"],
-                }
+        # Group students by batch, house, and gender
+        student_groups = defaultdict(lambda: defaultdict(list))
+        for student in students:
+            student_groups[student.batch][student.school_house, student.gender].append(
+                student
             )
 
-    # Cache the data for 5 minutes to use if clicked okay in the dialog
-    rs = frappe.cache()
-    data = frappe.json.dumps(division_data)
-    rs.set(program, data, 300)
-    return division_data
+        division_data = {}
+
+        for batch in batches:
+            # Get student groups for this batch
+            batch_groups = student_groups[batch]
+
+            # Create a list of groups in the order we want to assign them to divisions
+            house_lists = [
+                batch_groups[house, gender]
+                for house in ["Red", "Blue", "Green", "Yellow"]
+                for gender in ["Female", "Male"]
+            ]
+
+            divs = frappe.get_all(
+                "Student Group",
+                filters={
+                    "batch": batch,
+                    "program": program,
+                    "academic_year": academic_year,
+                    "disabled": 0,
+                },
+                fields=["name", "max_strength"],
+                order_by="max_strength",
+            )
+            for div in divs:
+                student_data = []
+                for i in range(div.max_strength):
+                    house_list = house_lists[i % len(house_lists)]
+                    if not house_list:
+                        continue
+                    student_data.append(house_list.pop(0))
+
+                gender_counts = Counter(s.gender for s in student_data)
+                house_counts = Counter(s.school_house for s in student_data)
+                division_data.setdefault(div.name, {}).update(
+                    {
+                        "students": student_data,
+                        "no_of_students": len(student_data),
+                        "boys": gender_counts["Male"],
+                        "girls": gender_counts["Female"],
+                        "yellow": house_counts["Yellow"],
+                        "green": house_counts["Green"],
+                        "red": house_counts["Red"],
+                        "blue": house_counts["Blue"],
+                    }
+                )
+
+        # Cache the data for 5 minutes to use if clicked okay in the dialog
+        rs = frappe.cache()
+        data = frappe.json.dumps(division_data)
+        rs.set(program, data, 300)
+        return division_data
+    except Exception as e:
+        frappe.log_error(
+            "Error While Getting Student data During Division Shuffle",
+            frappe.get_traceback(),
+        )
+        return False
 
 
-def get_students(program, ay):
+def get_students(program, academic_year):
     return frappe.db.sql(
         """
         SELECT s.name, s.first_name, s.gender, p.name as pname, p.school_house, d.batch
@@ -80,7 +116,7 @@ def get_students(program, ay):
         GROUP BY d.batch, p.school_house, s.gender, s.name
         ORDER BY d.batch, p.school_house, s.gender, RAND()
         """,
-        (program, ay),
+        (program, academic_year),
         as_dict=True,
     )
 
@@ -107,7 +143,7 @@ def shuffle_division_data(program):
         return "Division shuffled successfully"
     except Exception as e:
         frappe.log_error("Shuffle Division Data Error", frappe.get_traceback())
-        return "Error while shuffling division data"
+        return False
 
 
 def update_student_details(student, division):
