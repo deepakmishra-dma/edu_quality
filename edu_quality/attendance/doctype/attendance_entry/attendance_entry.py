@@ -8,10 +8,10 @@ from edu_quality.public.py.walsh.admin import notification_sender
 
 class AttendanceEntry(Document):
 
-    def on_update(self):
-        self.send_email_to_admins()
-        self.assign_doc_to_admins()
-        self.send_notification_to_councellor()
+    # def on_update(self):
+    #     self.send_email_to_admins()
+    #     self.assign_doc_to_admins()
+    #     self.send_notification_to_councellor()
 
     def send_email_to_admins(self):
         admin_emails = self.get_admin_emails()
@@ -54,38 +54,9 @@ class AttendanceEntry(Document):
 
     def send_notification_to_councellor(self):
         try:
-            academic_year = frappe.get_value(
-                "Academic Year", {"custom_current_academic_year": 1}, "name"
-            )
             class_attr = getattr(self, "class")
             school = frappe.get_value("Program", class_attr, "school")
-            division = frappe.get_value(
-                "Student Group Student", {"student": self.student}, "parent"
-            )
-            timestamp = frappe.get_value(
-                "Absent and Delay",
-                {"parent": self.name, "status": "early_pickup"},
-                "timestamp",
-            )
-            student_status = frappe.get_value("Student", self.student, "student_status")
             subject = "Attendance Entry for Early Pickup - " + self.student
-            notice_text = f"Early Attendance Entry has been created/updated for student {self.student_name}({self.student}) of class {class_attr} on {timestamp}"
-
-            notice = frappe.get_doc(
-                {
-                    "doctype": "School Notice",
-                    "class": class_attr,
-                    "is_generic_notice": 0,
-                    "school": school,
-                    "subject": subject,
-                    "student": self.student,
-                    "division": division,
-                    "student_status": student_status,
-                    "notice": notice_text,
-                    "academic_year": academic_year,
-                    "is_raw_html": 1,
-                }
-            ).insert(ignore_permissions=True)
 
             users = [
                 user.user
@@ -96,8 +67,9 @@ class AttendanceEntry(Document):
                 )
                 if check_councellor_role(user.user)
             ]
+            url_path = f"/attendance-entry/{self.name}?student={self.student}"
             for user in users:
-                notification_sender(user, self.student, subject, notice_id=notice.name)
+                notification_sender(user, self.student, subject=subject, url_path=url_path)
         except:
             frappe.log_error(
                 "Error Sending Notification to Councellor", frappe.get_traceback()
