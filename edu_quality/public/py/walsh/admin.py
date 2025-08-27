@@ -67,6 +67,23 @@ def send_notification(student_id, subject="", notice_id="",cmap=False,custom=Non
                 requests.request("POST", url, headers=headers, data=payload)
 
 
+def notification_sender(user, student, subject="", url_path=""):
+    push_tokens = frappe.get_all(
+        "Mobile Push Token", filters={"user_id": user}, fields=["token"]
+    )
+    for push_token in push_tokens:
+        url = "https://exp.host/--/api/v2/push/send"
+        payload = json.dumps(
+            {
+                "to": push_token.get("token"),
+                "title": subject + " - " + student,
+                "data": {"url_path": url_path}
+            }
+        )
+        headers = {"Content-Type": "application/json"}
+        requests.request("POST", url, headers=headers, data=payload)
+
+
 def enqueued_specific_notice_emails(__args):
     csv_file = __args.get("csv_file")
     subject = __args.get("subject")

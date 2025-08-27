@@ -145,6 +145,7 @@ def mark_permanent_id_card_received(id_cards, qr_scan=False):
                 filters={
                     "academic_year": academic_year,
                     "student": f"{school_doc.get('prefix','')}{ref_no}",
+                    "docstatus": 1,
                 },
                 fieldname="custom_id_Card",
             )
@@ -155,6 +156,7 @@ def mark_permanent_id_card_received(id_cards, qr_scan=False):
                 filters={
                     "academic_year": academic_year,
                     "student": card,
+                    "docstatus": 1,
                 },
                 fieldname="custom_id_Card",
             )

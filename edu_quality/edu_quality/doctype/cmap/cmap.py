@@ -457,7 +457,7 @@ def get_cmap_list(academic_year, program, subject, unit, from_date=None, end_dat
             (item_detail_qb.parent == cmap_query.name)
             & (item_detail_qb.parenttype == "CMAP")
         )
-        .groupby((cmap_query.period))
+        .groupby(item_detail_qb.item_group, cmap_query.period)
         .orderby(Cast(cmap_query.period, "UNSIGNED"), Order.asc)
         .select(
             cmap_query.star,

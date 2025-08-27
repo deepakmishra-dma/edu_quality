@@ -14,7 +14,8 @@
   "parent_note",
   "home_work",
   "class_work",
-  "material_required"
+  "material_required",
+  "hide_in_portion_circular"
  ],
  "fields": [
   {
@@ -27,6 +28,7 @@
    "options": "Item"
   },
   {
+   "columns": 1,
    "fetch_from": "item.item_group",
    "fieldname": "item_group",
    "fieldtype": "Link",
@@ -86,12 +88,20 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Material Required"
+  },
+  {
+   "columns": 1,
+   "default": "0",
+   "fieldname": "hide_in_portion_circular",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Hide in portion circular"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-03-27 12:54:20.420650",
+ "modified": "2024-05-30 17:00:34.587957",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Item Detail",

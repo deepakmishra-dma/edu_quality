@@ -131,11 +131,10 @@ def swap_division(**kwargs):
         if division:
             # remove from current division
             remove_from_division(pe_doc)
-            # update student group in program enrollment
-            frappe.db.set_value("Program Enrollment", pe, "student_group", division) 
-            frappe.db.set_value("Program Enrollment", pe, "tiffin_rack_no", None) 
             # add to new division 
             add_to_division(pe_doc, division)
+            enrollments = frappe.json.dumps([pe_doc.name])
+            generate_permanent_id_cards(enrollments=enrollments)
             update_linked_docs(pe_doc, division, pe_doc.student_batch_name)
             send_email_for_division_swap(pe_doc, is_swap=False)
             return True
@@ -158,19 +157,16 @@ def remove_from_division(doc):
     this function removes the student from the division
     """
     division = frappe.get_doc("Student Group", doc.student_group)
-    roll_no = 0
     for d in division.students:
         if d.student == doc.student:
             division.remove(d)
-            roll_no = d.group_roll_number
             break
     division.save()
     add_comment_in_division(doc, doc.student_group, True)
     add_student_log(doc, doc.student_group, True)
-    return roll_no
 
 
-def add_to_division(doc, division, roll_no=None, add_log=True):
+def add_to_division(doc, division, add_log=True):
     """
     doc: Program Enrollment
     division: Division
@@ -178,10 +174,7 @@ def add_to_division(doc, division, roll_no=None, add_log=True):
     """
     sg = frappe.get_doc("Student Group", division)
     roll_numbers = set(d.group_roll_number for d in sg.students if d.group_roll_number)
-    if not roll_no:
-        next_roll_number = next((i for i in range(1, len(roll_numbers) + 2) if i not in roll_numbers), 1)
-    else:
-        next_roll_number = roll_no
+    next_roll_number = next((i for i in range(1, len(roll_numbers) + 2) if i not in roll_numbers), 1)
     
     sg.append("students", {
         "student": doc.student,
@@ -202,20 +195,22 @@ def swap_student_division(pe_doc_1, pe_doc_2):
     pe_doc_2: Program Enrollment of student 2
     this function swaps the student division
     """
-    division_1 = frappe.get_doc("Student Group", pe_doc_1.student_group)
-    division_2 = frappe.get_doc("Student Group", pe_doc_2.student_group)
+    division_1 = pe_doc_1.student_group
+    division_2 = pe_doc_2.student_group
+    batch_1 = pe_doc_1.student_batch_name
+    batch_2 = pe_doc_2.student_batch_name
     # remove student 1 from current division
-    rno1 = remove_from_division(pe_doc_1)
-    # update details in program enrollment of student 1
-    update_linked_docs(pe_doc_1, pe_doc_2.student_group, pe_doc_2.student_batch_name)
+    remove_from_division(pe_doc_1)
     # remove student 2 from current division
-    rno2 = remove_from_division(pe_doc_2)
-    # update details in program enrollment of student 2
-    update_linked_docs(pe_doc_2, pe_doc_1.student_group, pe_doc_1.student_batch_name)
+    remove_from_division(pe_doc_2)
     # add student 1 to student 2 division
-    add_to_division(pe_doc_1, division_2.name, rno2)
+    add_to_division(pe_doc_1, division_2)
+    # update details in program enrollment of student 1
+    update_linked_docs(pe_doc_1, division_2, batch_2)
     # add student 2 to student 1 division
-    add_to_division(pe_doc_2, division_1.name, rno1)
+    add_to_division(pe_doc_2, division_1)
+    # update details in program enrollment of student 2
+    update_linked_docs(pe_doc_2, division_1, batch_1)
     # generate permanent id cards
     enrollments = frappe.json.dumps([pe_doc_1.name, pe_doc_2.name])
     generate_permanent_id_cards(enrollments=enrollments)
@@ -298,7 +293,7 @@ def add_student_log(doc, division, is_removed=False):
     frappe.get_doc(doc_info).insert(ignore_permissions=True)
 
 
-def update_linked_docs(pe_doc, student_group, batch_name, tiffin_rack_no=None):
+def update_linked_docs(pe_doc, student_group, batch_name, tiffin_rack_no=None, roll_no=None):
     """
     pe_doc: Program Enrollment
     student_group: Student Group
@@ -306,13 +301,8 @@ def update_linked_docs(pe_doc, student_group, batch_name, tiffin_rack_no=None):
     this function updates linked documents like student, program enrollment
     """
     # update student group, tiffin rack no, and batch in program enrollment
-    to_update = {
-        "student_group": student_group,
-        "tiffin_rack_no": tiffin_rack_no,
-        "student_batch_name": batch_name
-    }
-    frappe.db.set_value("Program Enrollment", pe_doc.name, to_update)
-    to_update = {
-        "custom_division": frappe.get_value("Student Group", student_group, "student_group_name"),
-    }
-    frappe.db.set_value("Student", pe_doc.student, to_update)
+    pe_doc.student_group = student_group
+    pe_doc.tiffin_rack_no = tiffin_rack_no
+    pe_doc.student_batch_name = batch_name
+    pe_doc.roll_no = roll_no
+    pe_doc.save()
