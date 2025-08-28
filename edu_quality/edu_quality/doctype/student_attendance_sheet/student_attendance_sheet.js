@@ -143,23 +143,28 @@ function addSaveButton() {
 }
 function changeHandler(e) {
   const dataset = e.target.dataset;
-
-  if (dataset.day && dataset.id) {
+  const enteredValue = e.target.value;
+  if (
+    dataset.day &&
+    dataset.id && (enteredValue === 'P' || enteredValue === 'A' || updatedAttendance[dataset.id]?.[0]?.[dataset.day])
+  ) {
     if (updatedAttendance.hasOwnProperty(dataset.id)) {
       const existingDayIndex = updatedAttendance[dataset.id].findIndex(
         (item) => Object.keys(item)[0] === dataset.day
       );
       if (existingDayIndex !== -1) {
         updatedAttendance[dataset.id][existingDayIndex][dataset.day] =
-          e.target.value;
+        enteredValue;
       } else {
-        updatedAttendance[dataset.id].push({ [dataset.day]: e.target.value });
+        updatedAttendance[dataset.id].push({ [dataset.day]: enteredValue });
       }
     } else {
-      updatedAttendance[dataset.id] = [{ [dataset.day]: e.target.value }];
+      updatedAttendance[dataset.id] = [{ [dataset.day]: enteredValue }];
     }
+    addSaveButton();
+  }else {
+    globalFrm.page.remove_inner_button(__("Save"));
   }
-  addSaveButton();
 }
 async function setupDataTable(frm, division) {
   const container = document.getElementById("report-table-container");
