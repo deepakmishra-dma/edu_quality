@@ -8,23 +8,18 @@ from edu_quality.public.py.walsh.admin import notification_sender
 
 class AttendanceEntry(Document):
 
-    # def on_update(self):
-    #     self.send_email_to_admins()
-    #     self.assign_doc_to_admins()
-    #     self.send_notification_to_councellor()
+    def on_update(self):
+        self.send_email_to_admins()
+        self.assign_doc_to_admins()
+        self.send_notification_to_councellor()
 
     def send_email_to_admins(self):
-        admin_emails = self.get_admin_emails()
-        if admin_emails:
-            timestamp = frappe.get_value(
-                "Absent and Delay",
-                {"parent": self.name, "status": "early_pickup"},
-                "timestamp",
-            )
-            message = f"Early Attendance Entry has been created/updated for student {self.student_name}({self.student}) of class {getattr(self, 'class')} on {timestamp}"
-            frappe.sendmail(
-                recipients=admin_emails, subject="Attendance Entry", message=message
-            )
+        try:
+            from nextai.funnel.custom_trigger import trigger_event
+
+            trigger_event(doc=self, event_name="attendance_entry_created")
+        except Exception as e:
+            print("Chatnext is not installed")
 
     def assign_doc_to_admins(self):
         admin_emails = self.get_admin_emails()
@@ -58,18 +53,17 @@ class AttendanceEntry(Document):
             school = frappe.get_value("Program", class_attr, "school")
             subject = "Attendance Entry for Early Pickup - " + self.student
 
-            users = [
-                user.user
-                for user in frappe.get_all(
-                    "User Permission",
-                    {"allow": "School", "for_value": school},
-                    ["user"],
-                )
-                if check_councellor_role(user.user)
-            ]
-            url_path = f"/attendance-entry/{self.name}?student={self.student}"
+            users = frappe.get_all(
+                "User Permission",
+                {"allow": "School", "for_value": school},
+                pluck="user",
+            )
+            users = list(filter(check_councellor_role, users))
+            url_path = f"/attendance-entry/{self.name}"
             for user in users:
-                notification_sender(user, self.student, subject=subject, url_path=url_path)
+                notification_sender(
+                    user, self.student, subject=subject, url_path=url_path
+                )
         except:
             frappe.log_error(
                 "Error Sending Notification to Councellor", frappe.get_traceback()
