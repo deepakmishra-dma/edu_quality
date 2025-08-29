@@ -14,6 +14,9 @@ class AttendanceEntry(Document):
         self.send_notification_to_councellor()
 
     def send_email_to_admins(self):
+        """
+        This function sends an email to the admin group when an attendance entry is created
+        """
         try:
             from nextai.funnel.custom_trigger import trigger_event
 
@@ -22,11 +25,41 @@ class AttendanceEntry(Document):
             print("Chatnext is not installed")
 
     def assign_doc_to_admins(self):
+        """
+        This function assigns the document to the admin group email users present in the school
+        """
         admin_emails = self.get_admin_emails()
         for email in admin_emails:
-            user = frappe.get_value("User", email, "name")
-            if not user:
-                continue
+            if frappe.db.exists("User", email):
+                self.create_assignment(email)
+
+    def get_admin_emails(self):
+        """
+        Returns:
+            list: List of email addresses of the admin group of the school
+        """
+        school = frappe.get_value("Program", getattr(self, "class"), "school")
+        admin_group = frappe.get_value("School", school, "admin_group")
+        return frappe.get_all(
+            "Email Group Member",
+            filters={"email_group": admin_group},
+            pluck="email",
+        )
+
+    def create_assignment(self, user):
+        """
+        Args:
+            user (str): User email to assign the document to
+        This function creates a ToDo document for the user (Assigns the document to the user)
+        """
+        if not frappe.db.exists(
+            "ToDo",
+            {
+                "reference_name": self.name,
+                "allocated_to": user,
+                "status": ["!=", "Cancelled"],
+            },
+        ):
             assignments = {
                 "doctype": "ToDo",
                 "description": f"Assignment for {self.doctype}: {self.name}",
@@ -38,16 +71,10 @@ class AttendanceEntry(Document):
             }
             frappe.get_doc(assignments).insert()
 
-    def get_admin_emails(self):
-        school = frappe.get_value("Program", getattr(self, "class"), "school")
-        admin_group = frappe.get_value("School", school, "admin_group")
-        return frappe.get_all(
-            "Email Group Member",
-            filters={"email_group": admin_group},
-            pluck="email",
-        )
-
     def send_notification_to_councellor(self):
+        """
+        This function sends a notification to the councellor of the school on Mobile App
+        """
         try:
             class_attr = getattr(self, "class")
             school = frappe.get_value("Program", class_attr, "school")
