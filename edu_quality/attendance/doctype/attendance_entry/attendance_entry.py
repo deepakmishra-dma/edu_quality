@@ -3,6 +3,7 @@
 
 import frappe
 from frappe.model.document import Document
+from frappe.desk.form.assign_to import add as add_assign_to
 from edu_quality.public.py.walsh.admin import notification_sender
 
 
@@ -29,9 +30,8 @@ class AttendanceEntry(Document):
         This function assigns the document to the admin group email users present in the school
         """
         admin_emails = self.get_admin_emails()
-        for email in admin_emails:
-            if frappe.db.exists("User", email):
-                self.create_assignment(email)
+        users = [email for email in admin_emails if frappe.db.exists("User", email)]
+        add_assign_to(args={"assign_to": users, "doctype": self.doctype, "name":self.name})
 
     def get_admin_emails(self):
         """
@@ -45,31 +45,6 @@ class AttendanceEntry(Document):
             filters={"email_group": admin_group},
             pluck="email",
         )
-
-    def create_assignment(self, user):
-        """
-        Args:
-            user (str): User email to assign the document to
-        This function creates a ToDo document for the user (Assigns the document to the user)
-        """
-        if not frappe.db.exists(
-            "ToDo",
-            {
-                "reference_name": self.name,
-                "allocated_to": user,
-                "status": ["!=", "Cancelled"],
-            },
-        ):
-            assignments = {
-                "doctype": "ToDo",
-                "description": f"Assignment for {self.doctype}: {self.name}",
-                "reference_type": self.doctype,
-                "reference_name": self.name,
-                "allocated_to": user,
-                "status": "Open",
-                "priority": "Medium",
-            }
-            frappe.get_doc(assignments).insert()
 
     def send_notification_to_councellor(self):
         """
