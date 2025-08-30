@@ -20,7 +20,7 @@ class AttendanceEntry(Document):
         try:
             from nextai.funnel.custom_trigger import trigger_event
 
-            trigger_event(doc=self, event_name="attendance_entry_created")
+            trigger_event(doc=self, event_name="early_pickup")
         except Exception as e:
             print("Chatnext is not installed")
 
