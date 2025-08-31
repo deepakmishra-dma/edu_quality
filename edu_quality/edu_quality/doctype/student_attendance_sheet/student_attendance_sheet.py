@@ -29,9 +29,6 @@ def get_months():
 @frappe.whitelist()
 def get_days_in_month(month_name, academic_year):
     year = int(academic_year.split("-")[0])
-    # month_name = "February"
-    # year = 2024
-    # Find the month number from its name
     month_number = list(calendar.month_name).index(month_name.capitalize())
 
     # Get the number of days in the month
@@ -61,7 +58,7 @@ def get_students(
         order_by="roll_no ASC",
     )
 
-    return sorted(students, key=lambda x: int(x['roll_no']))
+    return sorted(students, key=sorting_key)
 
 
 @frappe.whitelist()
@@ -333,6 +330,10 @@ def get_divisions(academic_year, program):
 
 
 def get_included_days(start_on, end_on):
+
+    if end_on is None or not isinstance(end_on, datetime):
+        end_on = start_on  
+
     start_date = start_on.date()
     end_date = end_on.date()
 
@@ -422,3 +423,9 @@ def get_latest_status(entry):
     
     return ""
     
+def sorting_key(student):
+    roll_no = student['roll_no']
+    try:
+        return (0, int(roll_no))  # Valid roll_no
+    except (TypeError, ValueError):
+        return (1, roll_no)
