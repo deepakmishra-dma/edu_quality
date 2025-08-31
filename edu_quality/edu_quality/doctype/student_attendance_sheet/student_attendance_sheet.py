@@ -333,6 +333,10 @@ def get_divisions(academic_year, program):
 
 
 def get_included_days(start_on, end_on):
+
+    if end_on is None or not isinstance(end_on, datetime):
+        end_on = start_on  
+
     start_date = start_on.date()
     end_date = end_on.date()
 
