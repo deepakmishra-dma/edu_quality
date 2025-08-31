@@ -350,7 +350,7 @@ def execute(filters=None):
 
 
 @frappe.whitelist()
-def create_purchase_order(rows, academic_year=None, class_name=None):
+def create_purchase_order(rows, academic_year=None, class_name=None, unit=None):
     if isinstance(rows, str):
         rows = parse_json(rows)
 
@@ -363,6 +363,7 @@ def create_purchase_order(rows, academic_year=None, class_name=None):
             "supplier": "Printer",
             "custom_is_cmap_print": 1,
             "custom_class": class_name,
+            "custom_unit": unit,
             "custom_academic_year": academic_year,
         }
     )
@@ -378,9 +379,13 @@ def create_purchase_order(rows, academic_year=None, class_name=None):
 
 def append_items(purchase_order, row, school_field):
     school_doc = frappe.get_doc("School", school_field.get("label"))
-
     if int(row.get(school_field.get("fieldname", 0), 0)) == 0:
         return
+
+    if not school_doc.get("warehouse"):
+        frappe.throw(
+            f"Error Creating Purchase Order, Warehouse for school {school_doc.name} doesn't exist"
+        )
 
     purchase_order.append(
         "items",
