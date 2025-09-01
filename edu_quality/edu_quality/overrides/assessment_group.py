@@ -10,17 +10,18 @@ class CustomAssessmentGroup(AssessmentGroup):
         short_acad_year = extract_year_from_academic_year_name(
             self.custom_academic_year
         )
-        self.name = f"{self.name} {short_acad_year}"
+        school_pref = frappe.db.get_value("School", self.custom_school, "prefix")
+        self.name = f"{self.assessment_group_name} {short_acad_year} - {school_pref}"
 
     def before_validate(self):
         if frappe.db.exists(
             "Assessment Group",
             {
                 "custom_order": self.custom_order,
-                
                 "custom_academic_year": self.custom_academic_year,
+                "name": ["!=", self.name],
             },
         ):
-            frappe.throw("Order for the class already exists")
+            frappe.throw(f"Order {self.custom_order} for the class already exists")
 
-    pass
+

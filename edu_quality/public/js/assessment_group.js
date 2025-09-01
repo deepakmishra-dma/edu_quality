@@ -15,3 +15,28 @@ frappe.ui.form.on('Assessment Group', {
         }
     }
 })
+
+frappe.ui.form.on("Composite Exam", {
+    "assesment_group": function (frm, cdt, cdn) {
+        checkDuplicates(frm, cdt, cdn)
+
+    },
+
+})
+
+function checkDuplicates(frm, cdt, cdn) {
+
+    var d = locals[cdt][cdn];
+    if (!d.assesment_group) {
+        return
+    }
+    frm.doc.custom_composite_exams.forEach(function (row, i) {
+        if ((row.assesment_group === d.assesment_group) && row.name != d.name) {
+
+            frappe.msgprint(`Assessment Group ${row.assesment_group} already added in composite exam`);
+            frappe.model.remove_from_locals(cdt, cdn);
+            frm.refresh_field('assessment_criteria');
+            return false;
+        }
+    });
+}
