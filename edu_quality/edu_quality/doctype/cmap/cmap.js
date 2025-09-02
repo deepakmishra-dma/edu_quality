@@ -56,6 +56,7 @@ async function setupNotesColumns(cur_frm) {
 }
 
 async function getProductMaterials(item) {
+    if (!item) throw "Error Fetching"
     const res = await frappe.call({
         method: "edu_quality.edu_quality.doctype.cmap.cmap.get_product_materials",
         args: {

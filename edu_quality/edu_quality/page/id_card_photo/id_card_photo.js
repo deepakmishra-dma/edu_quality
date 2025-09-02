@@ -19,7 +19,12 @@ frappe.pages['id-card-photo'].on_page_load = function (wrapper) {
 				fieldtype: 'Button',
 				click: async () => {
 					const images = await nativeInterface.execute('openWebViewScanner')
-					d.set_value('ref_no', images?.data)
+
+
+					const [academicYear, school, refNo] = images?.data?.split("/")
+					// frappe.msgprint(academicYear, school, refNo)
+					d.set_value("ref_no", refNo || images?.data)
+					// d.set_value('ref_no', images?.data)
 				}
 			},
 			{

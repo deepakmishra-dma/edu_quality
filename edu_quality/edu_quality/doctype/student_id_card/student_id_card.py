@@ -35,6 +35,14 @@ class StudentIDCard(Document):
         program_enrollment = frappe.get_doc(
             "Program Enrollment", self.program_enrolled_in
         )
-        if not old_doc or (old_doc and old_doc.photo_taken != program_enrollment.image):
+        if (
+            not old_doc
+            or (
+                old_doc
+                and old_doc.photo_taken != self.photo_taken
+                and old_doc.photo_taken != program_enrollment.image
+            )
+            and self.photo_taken
+        ):
             program_enrollment.image = self.photo_taken
             program_enrollment.save(ignore_permissions=True)
