@@ -614,11 +614,8 @@ def academic_year_query(doctype, txt, searchfield, start, page_len, filters):
     ).run()
 
 
-frappe.utils.logger.set_log_level("DEBUG")
-patch_logger = frappe.logger("Create ID Card Div")
-
-
 def render_template_with_exception(template, data):
+    patch_logger = frappe.logger("Create ID Card Div")
     try:
         return frappe.render_template(template, data)
     except Exception as e:

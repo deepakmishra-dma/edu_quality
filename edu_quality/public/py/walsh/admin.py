@@ -67,7 +67,7 @@ def send_notification(student_id, subject="", notice_id="",cmap=False,custom=Non
                 requests.request("POST", url, headers=headers, data=payload)
 
 
-def notification_sender(user, student, subject="", notice_id=""):
+def notification_sender(user, student, subject="", url_path=""):
     push_tokens = frappe.get_all(
         "Mobile Push Token", filters={"user_id": user}, fields=["token"]
     )
@@ -77,7 +77,7 @@ def notification_sender(user, student, subject="", notice_id=""):
             {
                 "to": push_token.get("token"),
                 "title": subject + " - " + student,
-                "data": {"url_path": f"/notice/{notice_id}?student={student}"},
+                "data": {"url_path": url_path}
             }
         )
         headers = {"Content-Type": "application/json"}

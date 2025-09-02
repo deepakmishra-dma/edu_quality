@@ -133,6 +133,8 @@ def swap_division(**kwargs):
             remove_from_division(pe_doc)
             # add to new division 
             add_to_division(pe_doc, division)
+            enrollments = frappe.json.dumps([pe_doc.name])
+            generate_permanent_id_cards(enrollments=enrollments)
             update_linked_docs(pe_doc, division, pe_doc.student_batch_name)
             send_email_for_division_swap(pe_doc, is_swap=False)
             return True
@@ -171,6 +173,8 @@ def add_to_division(doc, division, add_log=True):
     this function adds the student to the division
     """
     sg = frappe.get_doc("Student Group", division)
+    if len(sg.students) < sg.max_strength:
+        return None
     roll_numbers = set(d.group_roll_number for d in sg.students if d.group_roll_number)
     next_roll_number = next((i for i in range(1, len(roll_numbers) + 2) if i not in roll_numbers), 1)
     
@@ -193,20 +197,22 @@ def swap_student_division(pe_doc_1, pe_doc_2):
     pe_doc_2: Program Enrollment of student 2
     this function swaps the student division
     """
-    division_1 = frappe.get_doc("Student Group", pe_doc_1.student_group)
-    division_2 = frappe.get_doc("Student Group", pe_doc_2.student_group)
+    division_1 = pe_doc_1.student_group
+    division_2 = pe_doc_2.student_group
+    batch_1 = pe_doc_1.student_batch_name
+    batch_2 = pe_doc_2.student_batch_name
     # remove student 1 from current division
     remove_from_division(pe_doc_1)
     # remove student 2 from current division
     remove_from_division(pe_doc_2)
     # add student 1 to student 2 division
-    add_to_division(pe_doc_1, division_2.name)
+    add_to_division(pe_doc_1, division_2)
     # update details in program enrollment of student 1
-    update_linked_docs(pe_doc_1, pe_doc_2.student_group, pe_doc_2.student_batch_name)
+    update_linked_docs(pe_doc_1, division_2, batch_2)
     # add student 2 to student 1 division
-    add_to_division(pe_doc_2, division_1.name)
+    add_to_division(pe_doc_2, division_1)
     # update details in program enrollment of student 2
-    update_linked_docs(pe_doc_2, pe_doc_1.student_group, pe_doc_1.student_batch_name)
+    update_linked_docs(pe_doc_2, division_1, batch_1)
     # generate permanent id cards
     enrollments = frappe.json.dumps([pe_doc_1.name, pe_doc_2.name])
     generate_permanent_id_cards(enrollments=enrollments)
