@@ -84,8 +84,23 @@ class CMAP(Document):
             added_material_required,
             field="material_required",
         )
+    
+        self.item_code_field = ", ".join(
+            str(item.get("item", "")) or "" for item in self.products or [""]
+        )
 
-        self.item_code_field = ", ".join(item.get("item", "") for item in self.products)
+    def validate(self, method=None):
+        fields = frappe.get_meta("Item Detail").fields
+        mandatory = [i.get("fieldname") for i in fields if i.get("reqd") == 1]
+        idx = 1
+        for product in self.products:
+
+            for mandate in mandatory:
+                if product.get(mandate):
+                    continue
+                else:
+                    frappe.throw(f"{mandate} is required for product at row {idx}")
+            idx += 1
 
     def after_insert(self, method=None):
         insert_cmap_assignees(self)
