@@ -629,7 +629,7 @@ def update_breakups(dis, component, fees, term="All", update=0,remove=0,custom=0
         elif term == -1:
             term = get_last_term(fees)
 
-        elif term !="All":
+        if term !="All":
             for schedule in fees.payment_schedule:
                 if term == schedule.payment_term:
                     discount_amount = dis.discount_amount

@@ -14,9 +14,9 @@ class CustomProgramEnrollment(ProgramEnrollment):
         self.sync_division_data()
         self.update_student_data()
 
-    # def on_update_after_submit(self):
+    def on_update_after_submit(self):
     #     self.sync_division_data()
-    #     self.update_student_data()
+        self.update_student_data()
 
     def validate_academic_year(self):
         start_date, end_date = frappe.db.get_value(
