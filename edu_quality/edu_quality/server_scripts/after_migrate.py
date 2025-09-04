@@ -6,7 +6,7 @@ def after_migrate():
     frappe.logger('migrate').exception(f"Site URL: {site_url}")
     if not ("uat" in site_url or "test" in site_url):
         return 
-    replace_domain()
+    # replace_domain()
     replace_emails() 
     replace_account_credentials()
     remove_webhooks()
@@ -34,7 +34,6 @@ def add_guardian_groups():
                 doc.save(ignore_permissions=True)
 
 def replace_emails():
-    domain = frappe.db.get_single_value("MGR Settings",'email_domain')
     #guardian email/phone
     data = frappe.db.get_all("Guardian", fields=["name","email_address"])
     for guardian in data:
