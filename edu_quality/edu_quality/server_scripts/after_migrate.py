@@ -3,7 +3,6 @@ from frappe.utils import get_url
 
 def after_migrate():
     site_url = get_url()
-    frappe.logger('migrate').exception(f"Site URL: {site_url}")
     if not ("uat" in site_url or "test" in site_url):
         return 
     # replace_domain()
@@ -71,6 +70,10 @@ def replace_emails():
             "fathers_email":father_new,
             "mothers_email":mother_new
         })
+
+    ease_settings = frappe.get_all("Easebuzz Settings")
+    for setting in ease_settings:
+        frappe.delete_doc("Easebuzz Settings",setting.name)
 
     
 
