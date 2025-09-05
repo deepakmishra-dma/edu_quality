@@ -73,7 +73,7 @@ def replace_emails():
 
     ease_settings = frappe.get_all("Easebuzz Settings")
     for setting in ease_settings:
-        frappe.delete_doc("Easebuzz Settings",setting.name)
+        frappe.delete_doc("Easebuzz Settings",setting.name,force=True)
 
     
 
