@@ -100,13 +100,12 @@ def get_data(month_name, academic_year, program, division):
 
         student_days = [{day: "H" if day in holidays else ""} for day in day_numbers]
         result[student["reference_number"]] = student_days
-
+    first_letter_division = division[0].upper() if division else ''
     attendance_data = frappe.get_all(
         "Attendance Entry",
         filters={
             "class": program,
-            "division": division,
-            "division": division,
+            "division": ["in",[division,first_letter_division]],
             "date": ["between", [start_date, end_date]],
             "status": ["!=", "Holiday"],
            "docstatus": ["in", [0, 1]],
