@@ -100,7 +100,7 @@ def notify_teacher_before_half_hour_job():
             "division",
             "branch",
             "day",
-            "gmeet_link"
+            "gmeet_link",
         ],
     )
     notifi_added = []
@@ -158,32 +158,49 @@ def get_datetime_from_time_slot(date, time_slot):
 
 @frappe.whitelist()
 def get_upcoming_online_ptm_links(student_id):
-    student_division_data = get_division_name_and_student_group_by_student_id(student_id)
-    if  not student_division_data:
-        frappe.throw("For Student {} Division is not found in system".format(student_id))
-    student_division = student_division_data.get('parent')
-    student_group = student_division_data.get('stud_group')
-    student_is_grp = student_division_data.get('is_group')
+    student_division_data = get_division_name_and_student_group_by_student_id(
+        student_id
+    )
+    if not student_division_data:
+        frappe.throw(
+            "For Student {} Division is not found in system".format(student_id)
+        )
+    student_division = student_division_data.get("parent")
+    student_group = student_division_data.get("stud_group")
+    student_is_grp = student_division_data.get("is_group")
     if student_division:
-        filterss = {'date':('>=',getdate(today())),'is_gmeet_generated':1,'division':student_division}
+        filterss = {
+            "date": (">=", getdate(today())),
+            "gmeet_link": ["is", "set"],
+            "division": student_division,
+        }
         if student_is_grp and student_group:
-            filterss['group'] = str(student_group)
+            filterss["group"] = str(student_group)
         else:
-            frappe.throw('No Student Group Allocated to Student')    
-        ptm_scheduler_list = frappe.get_all('PTM Scheduler',filters=filterss,fields=['*'])
-        if len(ptm_scheduler_list)>0:
+            frappe.throw("No Student Group Allocated to Student")
+        ptm_scheduler_list = frappe.get_all(
+            "PTM Scheduler", filters=filterss, fields=["*"]
+        )
+        if len(ptm_scheduler_list) > 0:
             for i in ptm_scheduler_list:
-                i['datetime'] = get_datetime_from_time_slot(i.get('date'),i.get('slot').split("-")[1])
-            ptm_scheduler_list = [ item for item in ptm_scheduler_list if item.get('datetime') >= datetime.datetime.now()]
-            ptm_scheduler_list.sort(key=lambda x: x['datetime'])
+                i["datetime"] = get_datetime_from_time_slot(
+                    i.get("date"), i.get("slot").split("-")[1]
+                )
+            ptm_scheduler_list = [
+                item
+                for item in ptm_scheduler_list
+                if item.get("datetime") >= datetime.datetime.now()
+            ]
+            ptm_scheduler_list.sort(key=lambda x: x["datetime"])
             return ptm_scheduler_list
         return []
 
 
 def get_list_of_students_from_division_list(division_list):
     sql = """select student from `tabStudent Group Student` where active = 1 and  parent in %(li)s"""
-    students_list = frappe.db.sql(sql,{'li':tuple(division_list)},as_dict=1)
+    students_list = frappe.db.sql(sql, {"li": tuple(division_list)}, as_dict=1)
     return students_list
+
 
 @frappe.whitelist()
 def send_ptm_notifications_to_students():
@@ -192,49 +209,54 @@ def send_ptm_notifications_to_students():
     # Get current datetime
     current_datetime = get_datetime().replace(second=0, microsecond=0)
     filterss = {
-        'is_gmeet_generated': 1,
-        'date': ('between', [today_date, tomorrow_date])
+        # "is_gmeet_generated": 1,
+        "gmeet_link": ["is", "set"],
+        "date": ("between", [today_date, tomorrow_date]),
     }
-    ptm_scheduler_list = frappe.get_all('PTM Scheduler',filters=filterss,fields=['*'])
-   
+    ptm_scheduler_list = frappe.get_all("PTM Scheduler", filters=filterss, fields=["*"])
+
     # Filter out datetimes before cutoff datetimes
     list_12hrs = []
-    list_15mins= []
+    list_15mins = []
     list_5mins = []
     for item in ptm_scheduler_list:
-        scheduled_datetime = get_datetime_from_time_slot(item.get('date'), item.get('slot').split("-")[0])
+        scheduled_datetime = get_datetime_from_time_slot(
+            item.get("date"), item.get("slot").split("-")[0]
+        )
         scheduled_datetime = scheduled_datetime.replace(second=0, microsecond=0)
         cutoff_datetime_12h = scheduled_datetime - datetime.timedelta(hours=12)
         cutoff_datetime_15m = scheduled_datetime - datetime.timedelta(minutes=15)
         cutoff_datetime_5m = scheduled_datetime - datetime.timedelta(minutes=5)
-        if (current_datetime == cutoff_datetime_12h):
+        if current_datetime == cutoff_datetime_12h:
             list_12hrs.append(item)
         elif current_datetime == cutoff_datetime_15m:
             list_15mins.append(item)
         elif current_datetime == cutoff_datetime_5m:
             list_5mins.append(item)
-    if len(list_12hrs)>0:
-        division_list =  [i.get('division') for i in list_12hrs]   
+    if len(list_12hrs) > 0:
+        division_list = [i.get("division") for i in list_12hrs]
         students_lists = get_list_of_students_from_division_list(division_list)
         if len(students_lists):
-            notification_handler([i.get('student') for i in students_lists ],"12 Hours")
-    
-    if len(list_15mins)>0:
-        division_list =  [i.get('division') for i in list_15mins]   
-        students_lists = get_list_of_students_from_division_list(division_list)
-        if len(students_lists):
-            notification_handler([i.get('student') for i in students_lists ],"15 Minutes")         
-    
-    if len(list_5mins)>0:
-        division_list =  [i.get('division') for i in list_5mins]   
-        students_lists = get_list_of_students_from_division_list(division_list)
-        if len(students_lists):
-            notification_handler([i.get('student') for i in students_lists ],"5 Minutes")                 
-            
+            notification_handler([i.get("student") for i in students_lists], "12 Hours")
 
-    
+    if len(list_15mins) > 0:
+        division_list = [i.get("division") for i in list_15mins]
+        students_lists = get_list_of_students_from_division_list(division_list)
+        if len(students_lists):
+            notification_handler(
+                [i.get("student") for i in students_lists], "15 Minutes"
+            )
 
-def notification_handler(student_data,time_inwords):
+    if len(list_5mins) > 0:
+        division_list = [i.get("division") for i in list_5mins]
+        students_lists = get_list_of_students_from_division_list(division_list)
+        if len(students_lists):
+            notification_handler(
+                [i.get("student") for i in students_lists], "5 Minutes"
+            )
+
+
+def notification_handler(student_data, time_inwords):
     # for student in division_data.get('student_ids'):
     #     send_notification(student_id=student,subject="Time to check your curriculum updates! :)")
     student_ids = tuple(student_data)
@@ -283,4 +305,3 @@ def send_notification_custom(subject, guardian):
             )
             headers = {"Content-Type": "application/json"}
             requests.request("POST", url, headers=headers, data=payload)
-            
