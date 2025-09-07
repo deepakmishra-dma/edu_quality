@@ -182,7 +182,7 @@ def add_to_division(doc, division, add_log=True):
     
     next_roll_number = 0
     for i in range(1, total_students+1):
-        if i not in roll_numbers:
+        if str(i) not in roll_numbers:
             next_roll_number = i
             break
     if not next_roll_number:
@@ -196,6 +196,7 @@ def add_to_division(doc, division, add_log=True):
         "active": 1
     })
     sg.save()
+
     if add_log:
         add_comment_in_division(doc, division)
         add_student_log(doc, division)
