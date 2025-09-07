@@ -365,26 +365,29 @@ def get_attendance_status(val, return_type):
 
 @frappe.whitelist()
 def generate(**kwargs):
-    base_url = frappe.utils.get_url()
+    try:
+        base_url = frappe.utils.get_url()
 
-    tables = kwargs.get("tables")
+        tables = kwargs.get("tables")
 
-    update_tables_with_qr_code(tables)
+        update_tables_with_qr_code(tables)
 
-    template = frappe.render_template(
-        "edu_quality/templates/pdf/student_attendance_sheet.html",
-        {"tables": tables},
-    )
-    html = HTML(string=template, base_url=base_url)
+        template = frappe.render_template(
+            "edu_quality/templates/pdf/student_attendance_sheet.html",
+            {"tables": tables},
+        )
+        html = HTML(string=template, base_url=base_url)
 
-    main_doc = html.render()
-    main_pdf = main_doc.write_pdf()
+        main_doc = html.render()
+        main_pdf = main_doc.write_pdf()
 
-    frappe.local.response.filename = "Temporary Id Card.pdf".format(
-        name="Temporary Id Card.pdf".replace(" ", "-").replace("/", "-")
-    )
-    frappe.local.response.filecontent = main_pdf
-    frappe.local.response.type = "pdf"
+        frappe.local.response.filename = "Temporary Id Card.pdf".format(
+            name="Temporary Id Card.pdf".replace(" ", "-").replace("/", "-")
+        )
+        frappe.local.response.filecontent = main_pdf
+        frappe.local.response.type = "pdf"
+    except Exception as e:
+        return frappe.throw(e)
 
 def update_tables_with_qr_code(tables):
     for table in tables:
