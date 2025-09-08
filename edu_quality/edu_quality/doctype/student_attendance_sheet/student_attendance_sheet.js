@@ -204,6 +204,7 @@ async function setupDataTable(frm, division) {
   });
 
   const headers = [
+    {textContent: "S.No"},
     { textContent: "Ref No" },
     { textContent: "First Name", colSpan: 2 },
     { textContent: "Last Name", colSpan: 2 },
@@ -262,6 +263,7 @@ function createTable(headers, studentsList, days, data, division) {
   if (studentsList.length != 0) {
     studentsList.forEach((row, index) => {
       const row_html = createRow(
+        index + 1,
         row.reference_number,
         row.first_name,
         row.last_name,
@@ -291,11 +293,12 @@ function createTable(headers, studentsList, days, data, division) {
   return table;
 }
 
-function createRow(ref_no, first_name, last_name, roll_no, days, data,name) {
+function createRow(s_no,ref_no, first_name, last_name, roll_no, days, data,name) {
   let rowHtml = `<tr>
+  <td style='white-space: nowrap; min-width: fit-content !important;'>${s_no}</td>
   <td style='white-space: nowrap; min-width: fit-content !important;'>${ref_no}</td>
-    <td colspan="2" style='text-wrap:nowrap;min-width: fit-content !important;'>${first_name.toUpperCase()}</td>
-    <td colspan="2" style='text-wrap:nowrap;min-width: fit-content !important;'>${last_name.toUpperCase()}</td>
+    <td colspan="2" style='text-wrap:nowrap;min-width: fit-content !important;'>${first_name?.toUpperCase()?? ''}</td>
+    <td colspan="2" style='text-wrap:nowrap;min-width: fit-content !important;'>${last_name?.toUpperCase()?? ''}</td>
     <td style='white-space: nowrap; min-width: fit-content !important;'>${roll_no}</td>`;
 
   // Generate empty <td> elements for each day

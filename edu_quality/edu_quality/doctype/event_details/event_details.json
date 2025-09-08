@@ -1,0 +1,272 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:event_name",
+ "creation": "2024-06-03 18:13:05.071034",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "event_details_section",
+  "event_name",
+  "classes_applicable_to",
+  "school",
+  "single_poc_name",
+  "registrations_open_date",
+  "column_break_hxca",
+  "calendar_event_name",
+  "event_type",
+  "department",
+  "secondary_poc_name",
+  "registration_type",
+  "section_break_izud",
+  "is_team",
+  "team",
+  "column_break_tono",
+  "authorized_to",
+  "student_details_tab",
+  "student_details_section",
+  "add_students",
+  "allowed_students",
+  "participating_students",
+  "non_participating_students",
+  "event_timeline_tab",
+  "event_dates_section",
+  "dates_of_event",
+  "event_registration_reminder",
+  "event_reminder",
+  "winning_details_tab",
+  "winning_details_section",
+  "winning_students",
+  "section_break_ewck",
+  "participation_prize",
+  "winning_certificate_template",
+  "column_break_inpj",
+  "prize_distribution_on",
+  "photos_from_walt"
+ ],
+ "fields": [
+  {
+   "fieldname": "classes_applicable_to",
+   "fieldtype": "Table MultiSelect",
+   "label": "Classes applicable to",
+   "options": "Classes"
+  },
+  {
+   "fieldname": "single_poc_name",
+   "fieldtype": "Data",
+   "label": "Single POC Name"
+  },
+  {
+   "fieldname": "registrations_open_date",
+   "fieldtype": "Date",
+   "label": "Registrations Open Date"
+  },
+  {
+   "fieldname": "column_break_hxca",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "event_name",
+   "fieldtype": "Data",
+   "label": "Event Name",
+   "unique": 1
+  },
+  {
+   "fieldname": "event_type",
+   "fieldtype": "Select",
+   "label": "Event Type",
+   "options": "\nCompetition\nTalk\nDemo"
+  },
+  {
+   "fieldname": "department",
+   "fieldtype": "Select",
+   "label": "Department",
+   "options": "\nSports\nAcademic\nCo-Curricular\nExtra-Curricular"
+  },
+  {
+   "fieldname": "secondary_poc_name",
+   "fieldtype": "Data",
+   "label": "Secondary POC Name"
+  },
+  {
+   "fieldname": "registration_type",
+   "fieldtype": "Select",
+   "label": "Registration Type",
+   "options": "\nOpen\nPre-registered\nMix"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_team",
+   "fieldtype": "Check",
+   "label": "Is Team"
+  },
+  {
+   "depends_on": "eval: doc.is_team == 1",
+   "fieldname": "team",
+   "fieldtype": "Data",
+   "label": "Team"
+  },
+  {
+   "fieldname": "student_details_section",
+   "fieldtype": "Section Break",
+   "label": "Student Details"
+  },
+  {
+   "fieldname": "allowed_students",
+   "fieldtype": "Table",
+   "label": "Students Allowed to Participate",
+   "options": "Student Data"
+  },
+  {
+   "fieldname": "non_participating_students",
+   "fieldtype": "Table",
+   "label": "Non Participating Students",
+   "options": "Student Data"
+  },
+  {
+   "fieldname": "participating_students",
+   "fieldtype": "Table",
+   "label": "Participating Students",
+   "options": "Student Data"
+  },
+  {
+   "fetch_from": "calendar_event_name.branch",
+   "fieldname": "school",
+   "fieldtype": "Link",
+   "label": "School",
+   "options": "School"
+  },
+  {
+   "fieldname": "section_break_izud",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "authorized_to",
+   "fieldtype": "Link",
+   "label": "Authorized to Conduct Event By",
+   "options": "User"
+  },
+  {
+   "fieldname": "event_dates_section",
+   "fieldtype": "Section Break",
+   "label": "Event Dates"
+  },
+  {
+   "fieldname": "dates_of_event",
+   "fieldtype": "Table",
+   "label": "Date(s) of event",
+   "options": "Event Date"
+  },
+  {
+   "fieldname": "event_registration_reminder",
+   "fieldtype": "Table",
+   "label": "Reminder To Be Sent For Registration Of Event",
+   "options": "Event Date"
+  },
+  {
+   "fieldname": "event_reminder",
+   "fieldtype": "Table",
+   "label": "Reminder To Se Sent For Event",
+   "options": "Event Date"
+  },
+  {
+   "fieldname": "event_details_section",
+   "fieldtype": "Section Break",
+   "label": "Event Details"
+  },
+  {
+   "fieldname": "winning_details_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "winning_students",
+   "fieldtype": "Table",
+   "label": "Winning Students",
+   "options": "Student Data"
+  },
+  {
+   "fieldname": "participation_prize",
+   "fieldtype": "Data",
+   "label": "Participation Prize To Be Given"
+  },
+  {
+   "fieldname": "winning_details_tab",
+   "fieldtype": "Tab Break",
+   "label": "Winning Details"
+  },
+  {
+   "fieldname": "section_break_ewck",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_inpj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "winning_certificate_template",
+   "fieldtype": "Link",
+   "label": "Winning Certificate Printing Template",
+   "options": "Print Format"
+  },
+  {
+   "fieldname": "student_details_tab",
+   "fieldtype": "Tab Break",
+   "label": "Student Details"
+  },
+  {
+   "fieldname": "event_timeline_tab",
+   "fieldtype": "Tab Break",
+   "label": "Event Timeline"
+  },
+  {
+   "fieldname": "column_break_tono",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "prize_distribution_on",
+   "fieldtype": "Date",
+   "label": "Prize Distribution On"
+  },
+  {
+   "fieldname": "photos_from_walt",
+   "fieldtype": "Attach Image",
+   "label": "Photos From Wal-T"
+  },
+  {
+   "fieldname": "add_students",
+   "fieldtype": "Button",
+   "label": "Add Students"
+  },
+  {
+   "fieldname": "calendar_event_name",
+   "fieldtype": "Link",
+   "label": "Calendar Event Name",
+   "options": "Calender"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-06-04 18:13:20.174720",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "Event Details",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}
