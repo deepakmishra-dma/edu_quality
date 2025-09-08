@@ -389,41 +389,46 @@ def get_attendance_status(val, return_type):
 
 @frappe.whitelist()
 def generate(**kwargs):
-    base_url = frappe.utils.get_url()
+    try:
+        base_url = frappe.utils.get_url()
 
-    tables = kwargs.get("tables")
+        tables = kwargs.get("tables")
 
-    for parent_table in tables:
-        table = parent_table.get("table")
-        rows = table.get("rows")
+        for parent_table in tables:
+            table = parent_table.get("table")
+            rows = table.get("rows")
 
-    for index in range(len(rows)):
-        row = rows[index]
-        if "value=A" in row:
-            rows[index] = row.replace("value=A", "value= ")
-        elif "value=L" in row:
-            rows[index] = row.replace("value=L", "value= ")
-        elif "value=E" in row:
-            rows[index] = row.replace("value=E", "value= ")
-        elif "value=S" in row:
-            rows[index] = row.replace("value=S", "value= ")
+        for index in range(len(rows)):
+            row = rows[index]
+            if "value=A" in row:
+                rows[index] = row.replace("value=A", "value= ")
+            elif "value=L" in row:
+                rows[index] = row.replace("value=L", "value= ")
+            elif "value=E" in row:
+                rows[index] = row.replace("value=E", "value= ")
+            elif "value=S" in row:
+                rows[index] = row.replace("value=S", "value= ")
 
-    update_tables_with_qr_code(tables)
 
-    template = frappe.render_template(
-        "edu_quality/templates/pdf/student_attendance_sheet.html",
-        {"tables": tables},
-    )
-    html = HTML(string=template, base_url=base_url)
+        update_tables_with_qr_code(tables)
 
-    main_doc = html.render()
-    main_pdf = main_doc.write_pdf()
 
-    frappe.local.response.filename = "Temporary Id Card.pdf".format(
-        name="Temporary Id Card.pdf".replace(" ", "-").replace("/", "-")
-    )
-    frappe.local.response.filecontent = main_pdf
-    frappe.local.response.type = "pdf"
+        template = frappe.render_template(
+            "edu_quality/templates/pdf/student_attendance_sheet.html",
+            {"tables": tables},
+        )
+        html = HTML(string=template, base_url=base_url)
+
+        main_doc = html.render()
+        main_pdf = main_doc.write_pdf()
+
+        frappe.local.response.filename = "Temporary Id Card.pdf".format(
+            name="Temporary Id Card.pdf".replace(" ", "-").replace("/", "-")
+        )
+        frappe.local.response.filecontent = main_pdf
+        frappe.local.response.type = "pdf"
+    except Exception as e:
+        return frappe.throw(e)
 
 def update_tables_with_qr_code(tables):
     for table in tables:

@@ -1,18 +1,19 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "field:event_name",
  "creation": "2024-06-03 18:13:05.071034",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
   "event_details_section",
-  "name1",
+  "event_name",
   "classes_applicable_to",
   "school",
   "single_poc_name",
   "registrations_open_date",
   "column_break_hxca",
-  "event_name",
+  "calendar_event_name",
   "event_type",
   "department",
   "secondary_poc_name",
@@ -45,11 +46,6 @@
  ],
  "fields": [
   {
-   "fieldname": "name1",
-   "fieldtype": "Data",
-   "label": "Name"
-  },
-  {
    "fieldname": "classes_applicable_to",
    "fieldtype": "Table MultiSelect",
    "label": "Classes applicable to",
@@ -71,9 +67,9 @@
   },
   {
    "fieldname": "event_name",
-   "fieldtype": "Link",
+   "fieldtype": "Data",
    "label": "Event Name",
-   "options": "Calender"
+   "unique": 1
   },
   {
    "fieldname": "event_type",
@@ -134,10 +130,10 @@
    "options": "Student Data"
   },
   {
-   "fetch_from": "event_name.branch",
+   "fetch_from": "calendar_event_name.branch",
    "fieldname": "school",
    "fieldtype": "Link",
-   "label": "Schools",
+   "label": "School",
    "options": "School"
   },
   {
@@ -240,14 +236,21 @@
    "fieldname": "add_students",
    "fieldtype": "Button",
    "label": "Add Students"
+  },
+  {
+   "fieldname": "calendar_event_name",
+   "fieldtype": "Link",
+   "label": "Calendar Event Name",
+   "options": "Calender"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-06-04 13:40:23.787486",
+ "modified": "2024-06-04 18:13:20.174720",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Event Details",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {
