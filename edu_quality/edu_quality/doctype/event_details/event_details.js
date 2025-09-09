@@ -125,7 +125,8 @@ async function AddStudent(values, frm) {
     let allowed_students = frm.get_field("allowed_students");
     students.message.forEach(student => {
         let new_row = allowed_students.grid.add_new_row();
-        new_row.student = student;
+        new_row.student = student.name;
+        new_row.student_name = student.student_name;
     });
     frm.refresh_field("allowed_students");
     frm.refresh();

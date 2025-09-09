@@ -13,7 +13,8 @@ class EventDetails(Document):
     def update_classes(self):
         cal_doc = frappe.get_doc("Calender", self.calendar_event_name)
         for cls in cal_doc.classes_applicable_to:
-            self.append("classes_applicable_to", {"class": cls.get("class")})
+            if not frappe.db.exists("Classes", {"parent": self.name, "class": cls.get("class")}):
+                self.append("classes_applicable_to", {"class": cls.get("class")})
 
     @frappe.whitelist()
     def get_students(self, args):
@@ -25,17 +26,15 @@ class EventDetails(Document):
             students = frappe.get_all(
                 "Student",
                 filters={"program": program, "student_status": ["!=", "Cancelled"]},
-                pluck="name",
+                fields=["name", "student_name"],
             )
         if division:
-            students = frappe.get_all(
-                "Program Enrollment",
-                filters={
-                    "student_group": division,
-                    "custom_status": ["!=", "Cancelled"],
-                },
-                pluck="student",
-            )
+            students = frappe.db.sql("""
+                SELECT student.name, student.student_name FROM `tabStudent` as student
+                JOIN `tabProgram Enrollment` as program_enrollment ON student.name = program_enrollment.student
+                WHERE program_enrollment.student_group = %s
+                AND program_enrollment.custom_status != 'Cancelled'
+            """, division, as_dict=True)
         if refno:
             school = args.get("school")
             refno_list = refno.split(",")
@@ -46,6 +45,7 @@ class EventDetails(Document):
                     "school": school,
                     "student_status": ["!=", "Cancelled"],
                 },
-                pluck="name",
+                fields=["name", "student_name"],
             )
+            print(students, school, refno_list)
         return students
