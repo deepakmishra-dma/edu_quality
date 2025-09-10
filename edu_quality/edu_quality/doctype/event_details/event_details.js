@@ -22,6 +22,7 @@ function showAddStudent(frm) {
                 default: 0,
                 onchange: function () {
                     if (d.get_value('by_class')) {
+                        d.set_df_property('student_status', 'hidden', 0);
                         d.set_df_property('program', 'hidden', 0);
                         d.set_df_property('division', 'hidden', 1);
                         d.set_df_property('reference_number', 'hidden', 1);
@@ -30,6 +31,7 @@ function showAddStudent(frm) {
                         d.refresh();
                     } else {
                         d.set_df_property('program', 'hidden', 1);
+                        d.set_df_property('student_status', 'hidden', 1);
                     }
                 }
             },
@@ -45,6 +47,7 @@ function showAddStudent(frm) {
                     if (d.get_value('by_division')) {
                         d.set_df_property('division', 'hidden', 0);
                         d.set_df_property('program', 'hidden', 1);
+                        d.set_df_property('student_status', 'hidden', 1);
                         d.set_df_property('reference_number', 'hidden', 1);
                         d.set_value('by_class', 0);
                         d.set_value('by_reference_number', 0);
@@ -67,6 +70,7 @@ function showAddStudent(frm) {
                         d.set_df_property('reference_number', 'hidden', 0);
                         d.set_df_property('division', 'hidden', 1);
                         d.set_df_property('program', 'hidden', 1);
+                        d.set_df_property('student_status', 'hidden', 1);
                         d.set_value('by_class', 0);
                         d.set_value('by_division', 0);
                         d.refresh();
@@ -87,8 +91,15 @@ function showAddStudent(frm) {
             {
                 label: 'Class',
                 fieldname: 'program',
-                fieldtype: 'Link',
-                options: 'Program',
+                fieldtype: 'Table MultiSelect',
+                options: 'Classes',
+                hidden: 1,
+            },
+            {
+                label: 'Student Status',
+                fieldname: 'student_status',
+                fieldtype: 'Select',
+                options: 'New student\nCurrent student\nCancelled\nNot attending\nDefaulter\nAlumni',
                 hidden: 1,
             },
             {
@@ -116,6 +127,7 @@ async function AddStudent(values, frm) {
         method: 'get_students',
         args: {
             program: values.program,
+            student_status: values.student_status,
             division: values.division,
             reference_number: values.reference_number,
             school: frm.doc.school
