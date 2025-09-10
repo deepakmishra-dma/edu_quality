@@ -57,3 +57,30 @@ class EventDetails(Document):
             )
             print(students, school, refno_list)
         return students
+
+
+@frappe.whitelist()
+def add_participating_students(student_data):
+    student_data = frappe.parse_json(student_data)
+    parent_name = student_data.get("parent")
+    student = student_data.get("student")
+    parent_doc = frappe.get_doc("Event Details", parent_name)
+    if not frappe.db.exists(
+        "Student Data",
+        {
+            "student": student,
+            "parent": parent_name,
+            "parentfield": "participating_students",
+        },
+    ):
+        parent_doc.append(
+            "participating_students",
+            {
+                "student": student_data.get("student"),
+                "student_name": student_data.get("student_name"),
+                "refno": student_data.get("refno"),
+            },
+        )
+        parent_doc.save()
+        return True
+    return False
