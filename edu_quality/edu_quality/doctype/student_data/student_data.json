@@ -21,6 +21,7 @@
   {
    "fieldname": "student",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Student",
    "options": "Student"
   },
@@ -72,7 +73,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-06-05 15:10:28.815515",
+ "modified": "2024-06-05 17:52:33.130505",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Student Data",
