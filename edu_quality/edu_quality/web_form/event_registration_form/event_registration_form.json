@@ -10,7 +10,7 @@
  "amount_based_on_field": 0,
  "anonymous": 0,
  "apply_document_permissions": 1,
- "button_label": "Save",
+ "button_label": "Complete Registration",
  "condition_json": "[]",
  "creation": "2024-06-04 17:58:08.098814",
  "currency": "INR",
@@ -24,7 +24,7 @@
  "list_columns": [],
  "login_required": 1,
  "max_attachment_size": 0,
- "modified": "2024-06-05 16:43:50.541431",
+ "modified": "2024-06-05 17:56:26.601638",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "event-registration-form",
@@ -39,20 +39,6 @@
  "success_title": "Registration Successfull",
  "title": "Event Registration Form",
  "web_form_fields": [
-  {
-   "allow_read_on_all_link_options": 0,
-   "fieldname": "student",
-   "fieldtype": "Link",
-   "hidden": 0,
-   "label": "Student",
-   "max_length": 0,
-   "max_value": 0,
-   "options": "Student",
-   "precision": "",
-   "read_only": 0,
-   "reqd": 0,
-   "show_in_filter": 0
-  },
   {
    "allow_read_on_all_link_options": 0,
    "fieldname": "student_name",
