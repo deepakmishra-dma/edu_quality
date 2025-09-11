@@ -6,6 +6,9 @@ frappe.ui.form.on('Assessment Plan', {
         frm.set_query("course", function () {
             return { filters: { "custom_hide_in_portion": 0 }, query: "" }
         })
+        frm.set_query("assessment_group", function () {
+            return { filters: { "custom_academic_year": frm.doc.academic_year } }
+        })
 
     },
 
