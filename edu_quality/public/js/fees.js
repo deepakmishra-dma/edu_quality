@@ -1,6 +1,8 @@
+
 frappe.ui.form.on('Fees', {
     refresh: function (frm) {
         generate_payment_link(frm);
+        partial_payment(frm);
         frm.add_custom_button(__('Split Deposits'), function () {
             frappe.call({
                 method: "edu_quality.edu_quality.server_scripts.fees.separate_deposits",
@@ -559,5 +561,69 @@ function generate_payment_link(frm) {
                 d.show();
             }
         });
+    }, __("Action"));
+}
+
+function partial_payment(frm) {
+    frm.add_custom_button(__("Partial Payment"), function () {
+        let terms = []
+        let schedule = frm.doc.payment_schedule
+        let total_outstanding = 0
+
+        for (var i in schedule) {
+            let term = schedule[i]
+            if (term.outstanding > 0) {
+                total_outstanding = total_outstanding + term.outstanding
+                terms.push({ 'payment_term': term.payment_term, 'amount': term.outstanding, 'due_date': term.due_date })
+            }
+        }
+
+        let table_fields = [
+            { fieldname: "payment_term", fieldtype: "Link", in_list_view: 1, label: "Payment Term", options: "Payment Term", reqd: 1 },
+            { fieldname: "due_date", fieldtype: "Date", in_list_view: 1, label: "Due Date", reqd: 1 },
+            { fieldname: "amount", fieldtype: "Currency", in_list_view: 1, label: "Amount", reqd: 1 }
+        ]
+
+        let d = new frappe.ui.Dialog({
+            title: 'Partial Payment',
+            size: 'large',
+            fields: [
+                {
+                    label: "Total Outstanding",
+                    fieldname: "total_outstanding",
+                    fieldtype: "Data",
+                    read_only: 1,
+                    default: total_outstanding
+                },
+                {
+                    fieldtype: 'Table',
+                    fieldname: 'table',
+                    label: 'Payment Terms',
+                    in_place_edit: true,
+                    cannot_add_rows: false,
+                    reqd: 1,
+                    fields: table_fields,
+                    data: terms
+                }],
+            primary_action_label: 'Create',
+            primary_action(values) {
+                frappe.call({
+                    doc: frm.doc,
+                    method: "create_partial_payment",
+                    type: "POST",
+                    args: {
+                        data: values.table
+                    },
+                    callback: function (r) {
+                        if (r.message) {
+                            frappe.msgprint("Partial Pament applied successfully!")
+                            frm.reload_doc()
+                        }
+                    }
+                });
+                d.hide();
+            }
+        })
+        d.show();
     }, __("Action"));
 }
