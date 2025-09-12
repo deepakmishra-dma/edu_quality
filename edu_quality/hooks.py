@@ -153,6 +153,7 @@ override_doctype_class = {
     "Email Template": "edu_quality.edu_quality.overrides.email_templates.CustomEmailTemplate",
     "Assessment Group": "edu_quality.edu_quality.overrides.assessment_group.CustomAssessmentGroup",
     "Assessment Plan": "edu_quality.edu_quality.overrides.assessment_plan.CustomAssessmentPlan",
+    "Event": "edu_quality.edu_quality.overrides.event.CustomEvent",
 }
 
 # Document Events
