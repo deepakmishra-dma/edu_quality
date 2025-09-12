@@ -5,7 +5,7 @@ import frappe
 from frappe.model.document import Document
 
 
-class EventDetails(Document):
+class EventDetail(Document):
 
     def on_update(self):
         self.update_classes()
@@ -57,6 +57,20 @@ class EventDetails(Document):
             )
             print(students, school, refno_list)
         return students
+
+    @frappe.whitelist()
+    def send_registration_link(self, data):
+        data = frappe.parse_json(data)
+        base_url = frappe.utils.get_url() + "/event-registration-form/"
+        for d in data:
+            registration_url = base_url + d.get("name")
+            student = frappe.get_doc("Student", d.get("student"))
+            frappe.sendmail(
+                recipients=student.student_email_id,
+                subject="Registration Link",
+                message=f"Click on the link to register for the event: {registration_url}",
+            )
+        return True
 
 
 @frappe.whitelist()

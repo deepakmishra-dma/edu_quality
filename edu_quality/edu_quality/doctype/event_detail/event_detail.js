@@ -1,11 +1,13 @@
 // Copyright (c) 2024, Hybrowlabs Technologies and contributors
 // For license information, please see license.txt
 
-frappe.ui.form.on("Event Details", {
+frappe.ui.form.on("Event Detail", {
     add_students: (frm) => { showAddStudent(frm); },
 
     refresh(frm) {
-
+        frm.add_custom_button('Send Registration Link', () => {
+            sendRegistrationLink(frm);
+        });
     },
 
 });
@@ -142,4 +144,19 @@ async function AddStudent(values, frm) {
     });
     frm.refresh_field("allowed_students");
     frm.refresh();
+}
+
+function sendRegistrationLink(frm) {
+    frappe.call({
+        doc: frm.doc,
+        method: 'send_registration_link',
+        args: {
+            data: frm.doc.allowed_students
+        },
+        callback: function (response) {
+            if (response.message) {
+                frappe.msgprint("Registration Link Sent Successfully");
+            }
+        }
+    });
 }
