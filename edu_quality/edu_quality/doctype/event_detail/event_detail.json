@@ -116,13 +116,13 @@
    "fieldname": "allowed_students",
    "fieldtype": "Table",
    "label": "Students Allowed to Participate",
-   "options": "Student Data"
+   "options": "Event Student"
   },
   {
    "fieldname": "non_participating_students",
    "fieldtype": "Table",
    "label": "Non Participating Students",
-   "options": "Student Data"
+   "options": "Event Student"
   },
   {
    "fieldname": "participating_students",
@@ -253,7 +253,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-06-05 12:39:08.569879",
+ "modified": "2024-06-06 13:08:35.036274",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Event Detail",

@@ -78,7 +78,7 @@ def add_participating_students(student_data):
     student_data = frappe.parse_json(student_data)
     parent_name = student_data.get("parent")
     student = student_data.get("student")
-    parent_doc = frappe.get_doc("Event Details", parent_name)
+    parent_doc = frappe.get_doc("Event Detail", parent_name)
     if not frappe.db.exists(
         "Student Data",
         {
