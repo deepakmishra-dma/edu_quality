@@ -350,7 +350,9 @@ def execute(filters=None):
 
 
 @frappe.whitelist()
-def create_purchase_order(rows, academic_year=None, class_name=None, unit=None):
+def create_purchase_order(
+    rows, supplier="Printer", academic_year=None, class_name=None, unit=None
+):
     if isinstance(rows, str):
         rows = parse_json(rows)
 
@@ -360,7 +362,7 @@ def create_purchase_order(rows, academic_year=None, class_name=None, unit=None):
             "doctype": "Purchase Order",
             "purpose": "Purchase",
             "items": [],
-            "supplier": "Printer",
+            "supplier": supplier,
             "custom_is_cmap_print": 1,
             "custom_class": class_name,
             "custom_unit": unit,

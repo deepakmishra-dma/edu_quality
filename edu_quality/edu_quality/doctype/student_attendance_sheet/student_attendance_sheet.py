@@ -51,6 +51,7 @@ def get_students(
         filters={
             "student_group": division,
             "program": program,
+            "docstatus":1,
             "custom_status": ["in", ["Current student", "Defaulter"]],
         },
         fields=[

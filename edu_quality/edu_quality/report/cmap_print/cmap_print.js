@@ -102,26 +102,43 @@ frappe.query_reports["CMAP Print"] = {
 				</div>`;
 
 
+			const d = new frappe.ui.Dialog({
+				title: "Select Supplier",
+				fields: [{
+					label: 'Supplier',
+					fieldname: 'supplier',
+					options: "Supplier",
+					fieldtype: 'Link'
+				}],
+				primary_action: (values) => {
+					const supplier = values.supplier || undefined
+					d.hide()
+					frappe.confirm(__(message), () => {
+						const academic_year = report.filters.find(el => el.fieldname === "academic_year").input.value
+						const class_name = report.filters.find(el => el.fieldname === "class").input.value
+						const unit = frappe.query_report.get_filter_value("unit")
 
-			frappe.confirm(__(message), () => {
-				const academic_year = report.filters.find(el => el.fieldname === "academic_year").input.value
-				const class_name = report.filters.find(el => el.fieldname === "class").input.value
-				const unit = frappe.query_report.get_filter_value("unit")
-				frappe.call({
-					"method": "edu_quality.edu_quality.report.cmap_print.cmap_print.create_purchase_order",
-					"args": {
-						rows: selected_rows,
-						academic_year: academic_year,
-						class_name: class_name,
-						unit: unit.join(",")
-					},
-					callback: function (r) {
-						if (r.message) {
-							frappe.set_route(`/app/purchase-order/${r?.message?.name}`)
-						}
-					}
-				})
+
+						frappe.call({
+							"method": "edu_quality.edu_quality.report.cmap_print.cmap_print.create_purchase_order",
+							"args": {
+								rows: selected_rows,
+								academic_year: academic_year,
+								class_name: class_name,
+								unit: unit.join(","),
+								supplier: supplier,
+							},
+							callback: function (r) {
+								if (r.message) {
+									frappe.set_route(`/app/purchase-order/${r?.message?.name}`)
+								}
+							}
+						})
+					})
+				},
 			})
+			d.show()
+
 		})
 
 	},

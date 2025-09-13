@@ -142,7 +142,9 @@ def get_earlier_marks(filters, students, criterias):
                 "course": assess_res.get("course"),
                 "assessment_criteria": assess_res.get("assessment_criteria"),
             }
-            student[gen_field_name(assess_plan)] = assess_res.get("score")
+            student[gen_field_name(assess_plan)] = (
+                "AB" if assess_res.get("custom_is_absent") else assess_res.get("score")
+            )
 
     return students
 
@@ -228,12 +230,20 @@ def enter_marks(ref_no, criterias):
         enter_individual_marks(ref_no, plan_hash[plan], plan)
 
 
-def enter_individual_marks(ref_no, criterias, assessment_plan):
+def enter_individual_marks(
+    ref_no,
+    criterias,
+    assessment_plan,
+):
     assessment_details = []
+    is_absent = 0
     for criteria in criterias:
         assessment_criteria = criteria.get("assessment_criteria")
         name = assessment_criteria.get("name")
         score = assessment_criteria.get("value")
+        if str(score).lower() == "ab":
+            score = 0
+            is_absent = 1
         assessment_details.append(
             {
                 "assessment_criteria": name,
@@ -246,6 +256,7 @@ def enter_individual_marks(ref_no, criterias, assessment_plan):
             "student": ref_no,
             "assessment_plan": assessment_plan,
             "details": assessment_details,
+            "custom_is_absent": is_absent,
         }
     )
     assessment_result.save()
