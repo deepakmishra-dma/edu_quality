@@ -26,7 +26,10 @@ def get_transport_data(**filters):
         .inner_join(enrollment_table)
         .on(student_table.name == enrollment_table.student)
         .left_join(attendance_entry)
-        .on(student_table.name == attendance_entry.student)
+        .on(
+            (student_table.name == attendance_entry.student)
+            & (attendance_entry.date == today)
+        )
         .left_join(attendance_status)
         .on(attendance_entry.status == attendance_status.name)
         .where(
@@ -35,7 +38,7 @@ def get_transport_data(**filters):
             & (student_table.bus_service_required == 1)
             & (student_table.drop_bus == filters.get("bus_no"))
             & (enrollment_table.academic_year == academic_year)
-            & ((attendance_entry.date == today) | (attendance_entry.name.isnull()))
+            # & ((attendance_entry.date == today) | (attendance_entry.name.isnull()))
         )
         .select(
             student_table.name.as_("student_id"),
