@@ -176,7 +176,8 @@ function changeRealDateOnSelect(e) {
 		const cmap = cmapData[dataset.index].name
 		cmapData[dataset.index].real_date = e.target.value
 		updateCmap(cmap, "real_date", e.target.value)
-		console.log(cmapData, cmapUpdate)
+		updateCmap(cmap, "division", cmapData[dataset.index].division)
+		updateCmap(cmap, "teacher", cmapData[dataset.index].teacher)
 	}
 	addSaveButton()
 }
@@ -296,9 +297,10 @@ function createTable(data) {
 	const divisionHeader = { textContent: 'Division' };
 	const filters = getFilters()
 	let localHeaders = headers
-	if (!filters.teachers) {
+	if (!filters.teacher) {
 		localHeaders = [...localHeaders, teacherHeader]
 	}
+
 	if (!filters.division) {
 		localHeaders = [...localHeaders, divisionHeader]
 	}
@@ -360,7 +362,7 @@ ${!filters.division ? `<td>${division || "No Division"}</td>` : ""}
 }
 
 function createDatePicker(value, index) {
-	return `<input type="date" ${!isAdmin && value ? "disabled" : ""} value = ${value} data-index="${index}" max ="${getMaxDate()}" />`
+	return `<input type="date" ${!isAdmin && value ? "disabled" : ""} value = ${value} data-index="${index}" max="${getMaxDate()}" />`
 }
 
 async function saveTracker() {
@@ -387,5 +389,5 @@ function getMaxDate() {
 	const day = today.getDate();
 	const month = today.getMonth() + 1; // Months are zero-based
 	const year = today.getFullYear();
-	return `${year} -${month.toString().padStart(2, '0')} -${day} `
+	return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`
 }
