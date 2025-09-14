@@ -66,16 +66,9 @@ export const useCmapItemGroupID = (ids: string) => {
 
 
 export const useCMAPTableFields = () => {
-    const { mutate, mutateAsync, ...mutationObjs } = useCustomMutation({
+    const { mutateAsync, ...mutationObjs } = useCustomMutation({
         mutationOptions: {}
     })
-    const mutationFunction = useCallback((variables: CMAPVariables) => {
-        return mutate({
-            url: '/api/method/edu_quality.edu_quality.doctype.cmap.cmap.get_cmap_list',
-            method: 'post',
-            values: variables
-        })
-    }, [mutate])
     const mutationAsyncFunction = useCallback((variables: CMAPVariables) => {
         return mutateAsync({
             url: '/api/method/edu_quality.edu_quality.doctype.cmap.cmap.get_cmap_list',
@@ -85,7 +78,6 @@ export const useCMAPTableFields = () => {
     }, [mutateAsync])
     return {
         ...mutationObjs,
-        mutate: mutationFunction,
         mutateAsync: mutationAsyncFunction
     }
 }
