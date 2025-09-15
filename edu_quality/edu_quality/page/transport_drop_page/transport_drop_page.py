@@ -38,6 +38,7 @@ def get_transport_data(**filters):
             & (student_table.bus_service_required == 1)
             & (student_table.drop_bus == filters.get("bus_no"))
             & (enrollment_table.academic_year == academic_year)
+            & (student_table.student_status.isin(["Current student", "Defaulter"]))
             # & ((attendance_entry.date == today) | (attendance_entry.name.isnull()))
         )
         .select(
