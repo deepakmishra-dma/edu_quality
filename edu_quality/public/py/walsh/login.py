@@ -125,9 +125,16 @@ def remove_push_notification_token(push_token=None, remove_all=False):
 
 
 def is_defaulter(guardian_name, logout_if_defaulter=False):
-    students = frappe.db.get_all("Student Guardian",{'guardian': guardian_name, 'parenttype': "Student"}, "parent")
+    students = frappe.db.get_all(
+        "Student Guardian",
+        {"guardian": guardian_name, "parenttype": "Student"},
+        "parent",
+    )
     for student in students:
-        if frappe.db.get_value("Student", {'name': student.parent},"student_status") == "Defaulter":
+        if (
+            frappe.db.get_value("Student", {"name": student.parent}, "student_status")
+            == "Defaulter"
+        ):
             if logout_if_defaulter:
                 remove_push_notification_token(remove_all=True)
                 login_manager = LoginManager()
@@ -158,7 +165,7 @@ def send_otp(phone_no):
             return {
                 "error": True,
                 "error_type": "invalid_phone_number",
-                "error_message": "Invalid Phone Number"
+                "error_message": "Invalid Phone Number",
             }
 
         phone_with_country_code = "+" + str(wa_phone_no)
@@ -169,26 +176,26 @@ def send_otp(phone_no):
             return {
                 "error": True,
                 "error_type": "guardian_not_found",
-                "error_message": "Guardian Not Found"
+                "error_message": "Guardian Not Found",
             }
         frappe.logger("otp").exception(is_defaulter(guardian.name))
         if is_defaulter(guardian.name):
             return {
                 "error": True,
                 "error_type": "defaulter",
-                "error_message": "Your login is disabled"
+                "error_message": "Your login is disabled",
             }
         if not frappe.db.exists("User", guardian.user):
             return {
                 "error": True,
                 "error_type": "user_not_found",
-                "error_message": "User Not Found"
+                "error_message": "User Not Found",
             }
 
         otp = create_otp(wa_phone_no)
         send_otp_to_whatsapp(wa_phone_no, otp)
         send_otp_to_sms(phone_with_country_code, otp)
-        frappe.logger("otp").exception('sms sent')
+        frappe.logger("otp").exception("sms sent")
         send_otp_to_email(guardian.email_address, otp)
 
         return {
@@ -198,10 +205,10 @@ def send_otp(phone_no):
     except Exception as e:
         frappe.logger("otp").exception(e)
         return {
-                "error": True,
-                "error_type": "Something Went Wrong",
-                "error_message": str(e)
-            }
+            "error": True,
+            "error_type": "Something Went Wrong",
+            "error_message": str(e),
+        }
 
 
 def send_otp_to_email(email, otp):
@@ -223,7 +230,6 @@ def send_otp_to_email(email, otp):
     except Exception as e:
         frappe.log_error("Error sending lead generation email", str(e))
         return None
-    
 
 
 def get_student_form(doc):
@@ -292,7 +298,7 @@ def register_push_notice(**kwargs):
 
 @frappe.whitelist()
 def logout(push_token=None):
-    remove_push_notification_token(push_token,True)
+    remove_push_notification_token(push_token, True)
     login_manager = LoginManager()
     login_manager.logout()
     return {

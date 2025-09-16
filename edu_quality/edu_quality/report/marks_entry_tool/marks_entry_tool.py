@@ -34,7 +34,7 @@ def get_subject_criteria_columns(assess_group, filters):
         .on(assess_plan_qb.name == assess_plan_cr_qb.parent)
         .where(
             (assess_plan_qb.assessment_group == assess_group.get("name"))
-            & (assess_plan_qb.student_group.isin(division or [None]))
+            & (assess_plan_qb.student_group == division)
         )
     ).select(
         assess_plan_qb.star,
@@ -99,12 +99,54 @@ def get_data(filters, criterias):
     get_earlier_marks(filters, students, criterias)
     return students
 
+
 def get_earlier_marks(filters, students, criterias):
     cr_hash = gen_hash(criterias)
     assess_res_qb = frappe.qb.DocType("Assessment Result")
-    assessment_result_qb = frappe.qb.DocType("Assessment Result Detail")
+    assessment_det_qb = frappe.qb.DocType("Assessment Result Detail")
+    students_list = [student.get("ref_no") for student in students]
+    plan_list = [criteria.get("assessment_plan") for criteria in criterias]
 
-    pass
+    query = (
+        frappe.qb.from_(assess_res_qb)
+        .left_join(assessment_det_qb)
+        .on((assessment_det_qb.parent == assess_res_qb.name))
+        .where(
+            (assess_res_qb.assessment_plan.isin(plan_list or [None]))
+            & (assess_res_qb.student.isin(students_list))
+        )
+        .select(
+            assess_res_qb.star,
+            assessment_det_qb.assessment_criteria,
+            assessment_det_qb.score,
+        )
+    )
+
+    data = query.run(as_dict=True)
+    frappe.errprint(data)
+    students_res = {}
+    for assess_res in data:
+        student = assess_res.get("student")
+        if assess_res.student in students_res:
+            students_res[student].append(assess_res)
+        else:
+            students_res[student] = [assess_res]
+
+    for student in students:
+        curr_ref = student.get("ref_no")
+        if curr_ref not in students_res:
+            continue
+        for assess_res in students_res[curr_ref]:
+            assess_plan = {
+                "name": assess_res.get("assessment_plan"),
+                "course": assess_res.get("course"),
+                "assessment_criteria": assess_res.get("assessment_criteria"),
+            }
+            student[gen_field_name(assess_plan)] = (
+                "AB" if assess_res.get("custom_is_absent") else assess_res.get("score")
+            )
+
+    return students
 
 
 def execute(filters=None):
@@ -188,12 +230,20 @@ def enter_marks(ref_no, criterias):
         enter_individual_marks(ref_no, plan_hash[plan], plan)
 
 
-def enter_individual_marks(ref_no, criterias, assessment_plan):
+def enter_individual_marks(
+    ref_no,
+    criterias,
+    assessment_plan,
+):
     assessment_details = []
+    is_absent = 0
     for criteria in criterias:
         assessment_criteria = criteria.get("assessment_criteria")
         name = assessment_criteria.get("name")
         score = assessment_criteria.get("value")
+        if str(score).lower() == "ab":
+            score = 0
+            is_absent = 1
         assessment_details.append(
             {
                 "assessment_criteria": name,
@@ -206,6 +256,7 @@ def enter_individual_marks(ref_no, criterias, assessment_plan):
             "student": ref_no,
             "assessment_plan": assessment_plan,
             "details": assessment_details,
+            "custom_is_absent": is_absent,
         }
     )
     assessment_result.save()

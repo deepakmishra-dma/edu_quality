@@ -8,8 +8,9 @@ from datetime import datetime, timedelta
 import json
 from weasyprint import HTML
 from edu_quality.public.py.utils import (
-    gen_qr_code_b64_transparent,  
+    gen_qr_code_b64_transparent,
 )
+
 
 class StudentAttendanceSheet(Document):
     pass
@@ -45,9 +46,14 @@ def get_students(
     program,
     division,
 ):
-    students= frappe.get_all(
+    students = frappe.get_all(
         "Program Enrollment",
-        filters={"student_group": division, "program": program ,"custom_status": ["in", ["Current student", "Defaulter"]],},
+        filters={
+            "student_group": division,
+            "program": program,
+            "docstatus":1,
+            "custom_status": ["in", ["Current student", "Defaulter"]],
+        },
         fields=[
             "student.reference_number",
             "student.first_name",
@@ -108,7 +114,7 @@ def get_data(month_name, academic_year, program, division):
             "division": ["in",[division,first_letter_division]],
             "date": ["between", [start_date, end_date]],
             "status": ["!=", "Holiday"],
-           "docstatus": ["in", [0, 1]],
+            "docstatus": ["in", [0, 1]],
         },
         fields=["status", "date", "student.reference_number", "name", "docstatus"],
     )
@@ -152,20 +158,26 @@ def save_attendance(**data):
         for day_obj in days:
             day, value = next(iter(day_obj.items()))
             if value not in ["P", "A"]:
-                error = {'msg': "Attendance entry is invalid. Please input either 'P' for present or 'A' for absent.",'error':1}
+                error = {
+                    "msg": "Attendance entry is invalid. Please input either 'P' for present or 'A' for absent.",
+                    "error": 1,
+                }
             try:
-                student = frappe.get_doc(
-                    "Student", {"name": student_id}
-                )
+                student = frappe.get_doc("Student", {"name": student_id})
                 date = frappe.utils.data.getdate(f"{year}-{month:02d}-{day}")
 
                 existing_entry = frappe.db.get_value(
                     "Attendance Entry",
-                    {"date": date, "student": student.name, "class": program,"division": division},
+                    {
+                        "date": date,
+                        "student": student.name,
+                        "class": program,
+                        "division": division,
+                    },
                     ["docstatus", "name"],
                 )
 
-                if existing_entry :
+                if existing_entry:
                     doc_status = existing_entry[0]
                     name = existing_entry[1]
                     if doc_status == 0:
@@ -176,7 +188,10 @@ def save_attendance(**data):
                             get_attendance_status(value, "name"),
                         )
                     elif doc_status == 1:
-                        error = {'msg': "Submitted entries cannot be modified",'error':1}
+                        error = {
+                            "msg": "Submitted entries cannot be modified",
+                            "error": 1,
+                        }
                     continue
 
                 doc = frappe.get_doc(
@@ -186,8 +201,7 @@ def save_attendance(**data):
                         "student": student.name,
                         "status": get_attendance_status(value, "name"),
                         "class": program,
-                        "division": division
-                        
+                        "division": division,
                     }
                 )
 
@@ -196,14 +210,14 @@ def save_attendance(**data):
             except:
                 pass
 
-    if(error):
+    if error:
         return error
-    return {'msg':  "Attendance saved successfully",'error':0}
+    return {"msg": "Attendance saved successfully", "error": 0}
 
 
 @frappe.whitelist()
 def submit_attendance(**data):
-    
+
     month_name = data.get("month_name")
     academic_year = data.get("academic_year")
     month = datetime.strptime(month_name, "%B").month
@@ -227,11 +241,15 @@ def submit_attendance(**data):
         },
         fields=["date", "name", "student"],
     )
- 
 
     for entry in attendance_entries:
         attendance_entry = frappe.get_doc(
-            "Attendance Entry", entry["name"], ["name", "status",]
+            "Attendance Entry",
+            entry["name"],
+            [
+                "name",
+                "status",
+            ],
         )
 
         if not attendance_entry.get("status"):
@@ -245,7 +263,11 @@ def submit_attendance(**data):
 
     all_students = frappe.get_all(
         "Program Enrollment",
-        filters={"student_group": division, "program": program,"custom_status": ["in", ["Current student", "Defaulter"]]},
+        filters={
+            "student_group": division,
+            "program": program,
+            "custom_status": ["in", ["Current student", "Defaulter"]],
+        },
         fields=["student"],
     )
 
@@ -276,7 +298,7 @@ def submit_attendance(**data):
                         "status": "Present",
                         "class": program,
                         "docstatus": 1,  # Assuming 1 is the status for submitted
-                        "division": division
+                        "division": division,
                     }
                 )
                 new_entry.insert()
@@ -309,7 +331,10 @@ def check_attendance_entry(**data):
     attendance_entries = frappe.get_list(
         "Attendance Entry",
         filters=filters,
-        fields=["name","absent_and_delays.status"],  # Only retrieve the document name for existence check
+        fields=[
+            "name",
+            "absent_and_delays.status",
+        ],  # Only retrieve the document name for existence check
     )
 
     # Check if the list is not empty
@@ -331,7 +356,7 @@ def get_divisions(academic_year, program):
 def get_included_days(start_on, end_on):
 
     if end_on is None or not isinstance(end_on, datetime):
-        end_on = start_on  
+        end_on = start_on
 
     start_date = start_on.date()
     end_date = end_on.date()
@@ -370,7 +395,24 @@ def generate(**kwargs):
 
         tables = kwargs.get("tables")
 
+        for parent_table in tables:
+            table = parent_table.get("table")
+            rows = table.get("rows")
+
+        for index in range(len(rows)):
+            row = rows[index]
+            if "value=A" in row:
+                rows[index] = row.replace("value=A", "value= ")
+            elif "value=L" in row:
+                rows[index] = row.replace("value=L", "value= ")
+            elif "value=E" in row:
+                rows[index] = row.replace("value=E", "value= ")
+            elif "value=S" in row:
+                rows[index] = row.replace("value=S", "value= ")
+
+
         update_tables_with_qr_code(tables)
+
 
         template = frappe.render_template(
             "edu_quality/templates/pdf/student_attendance_sheet.html",
@@ -399,6 +441,7 @@ def update_tables_with_qr_code(tables):
         }
         table["qr_code"] = gen_qr_code_b64_transparent(qr_data)
 
+
 def get_latest_status(entry):
     latest_entry = frappe.get_all(
         "Absent and Delay",
@@ -422,11 +465,12 @@ def get_latest_status(entry):
                 return "S"
             elif "ABSENT" in status_upper:
                 return "A"
-    
+
     return ""
-    
+
+
 def sorting_key(student):
-    roll_no = student['roll_no']
+    roll_no = student["roll_no"]
     try:
         return (0, int(roll_no))  # Valid roll_no
     except (TypeError, ValueError):

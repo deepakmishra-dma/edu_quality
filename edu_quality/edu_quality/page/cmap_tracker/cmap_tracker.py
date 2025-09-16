@@ -152,9 +152,13 @@ def update(filters, cmap_data):
         modified = False
 
         updated_data = cmap_data.get(cmap_name)
-        division = filters.get("division")
+        division = updated_data.get("division") or filters.get("division")
         real_date = updated_data.get("real_date")
         real_date_updated_on = frappe.utils.get_datetime()
+        local_teacher = updated_data.get("teacher")
+
+        if not teacher and is_admin:
+            teacher = local_teacher
 
         for item in cmap.table_vwbr:
             allow_edit = is_admin or (not item.real_date)

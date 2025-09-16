@@ -23,6 +23,7 @@ from erpnext.accounts.general_ledger import make_gl_entries
 from erpnext.accounts.general_ledger import make_reverse_gl_entries
 from edu_quality.edu_quality.server_scripts.payment_split import generate_split_payment
 from frappe.desk.query_report import run
+from edu_quality.public.py.payment_request import update_payment_request_after_discount
 
 
 class CustomFees(Fees):
@@ -33,6 +34,88 @@ class CustomFees(Fees):
             if not frappe.db.exists("Payment Request",{'reference_name':self.name,'payment_term':term.payment_term,'docstatus':1}):
                 terms.append(term.payment_term)
         return terms
+    
+    @frappe.whitelist()
+    def create_partial_payment(self,data):
+        try:
+            self.validate_partial_payment(data)
+            self.process_partial_payment(data)
+            self.save(ignore_permissions=True)
+            self.reload()
+            self.update_split()
+            update_payment_request_after_discount(self)
+            return 1
+        except Exception as e:
+            frappe.logger('partial_payment').exception(e)
+            return frappe.throw(e)
+
+
+    
+
+    def process_partial_payment(self,data):
+        result = {}
+        data = sorted(data, key=lambda k: k['payment_term'])
+        for term in data:
+            result[term.get('payment_term')] = {'amount':term.get('amount'),'due_date':term.get('due_date')}
+
+        applied_terms = []
+
+        final_schedule = []
+        
+
+
+        for term in self.payment_schedule:
+            if term.outstanding == 0:
+                final_schedule.append(term)
+            elif term.payment_term in result:
+                amount = result[term.payment_term].get('amount')
+                applied_terms.append(term.payment_term)
+                final_schedule.append({
+                    "payment_term":term.payment_term,
+                    "description":term.payment_term,
+                    "invoice_portion":flt(amount/self.grand_total)*100,
+                    "payment_amount":amount,
+                    "outstanding":amount,
+                    'due_date':result[term.payment_term].get('due_date')
+                })
+        
+        for term in result:
+            if term in applied_terms:
+                continue
+            else:
+                amount = result[term].get('amount')
+                final_schedule.append({
+                    "payment_term":term,
+                    "description":term,
+                    "invoice_portion":flt(amount/self.grand_total)*100,
+                    "payment_amount":amount,
+                    "outstanding":amount,
+                    'due_date':result[term].get('due_date')
+                })
+        self.payment_schedule = []
+        for schedule in final_schedule:
+            self.append('payment_schedule',schedule)
+        
+        
+
+
+
+    def validate_partial_payment(self,data):
+        paid_terms = []
+        total_outstanding = 0
+        for term in self.payment_schedule:
+            total_outstanding = total_outstanding + term.outstanding
+            if term.outstanding == 0:
+                paid_terms.append(term.payment_term)
+        total = 0
+        for term in data:
+            total = total + term.get('amount')
+            if term.get('payment_term') in paid_terms:
+                frappe.throw("Payment Term - " +  term.get('payment_term') +"is already paid!")
+        if total != total_outstanding:
+            frappe.throw("Total Amount is not equal to the outstanding amount!")
+        
+
 
     @frappe.whitelist()
     def create_payment_request(self,payment_term):

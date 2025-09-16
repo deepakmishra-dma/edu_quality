@@ -6,7 +6,7 @@ function changeMarksData(value, columnId, rowIndex, maximum_score) {
 		const inputEl = document.querySelector(`input[column='${columnId}'][rowindex='${rowIndex}']`)
 
 
-		inputEl.value = maximum_score
+		inputEl.value = undefined
 		frappe.query_report.data[rowIndex][columnId] = undefined
 		return
 	}
@@ -51,8 +51,10 @@ frappe.query_reports["Marks Entry Tool"] = {
 			"label": __("Assessment Group"),
 			"fieldtype": "Link",
 			"reqd": 1,
-			"options": "Assessment Group"
-
+			"options": "Assessment Group",
+			get_query: {
+				filters: { "custom_is_composite": 0 }
+			}
 		},
 		{
 			"fieldname": "division",
@@ -81,7 +83,7 @@ frappe.query_reports["Marks Entry Tool"] = {
 	"formatter": function (value, row, column, data, default_formatter) {
 		value = default_formatter(value, row, column, data)
 		if (column.is_criteria) {
-			value = `<input type="number" column="${column.fieldname}" rowindex=${row[0]?.rowIndex} max="${column.maximum_score}" maximum-score="${column.maximum_score}" value="${value}" oninput="changeMarksData(this,'${column.id}','${row[0]?.rowIndex}','${column.maximum_score}')" />`
+			value = `<input type="text" column="${column.fieldname}" rowindex=${row[0]?.rowIndex} max="${column.maximum_score}" maximum-score="${column.maximum_score}" value="${value}" oninput="changeMarksData(this,'${column.id}','${row[0]?.rowIndex}','${column.maximum_score}')" />`
 		}
 
 		return value
