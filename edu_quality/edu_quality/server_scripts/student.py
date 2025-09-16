@@ -132,10 +132,10 @@ def swap_division(**kwargs):
             # remove from current division
             remove_from_division(pe_doc)
             # add to new division 
-            add_to_division(pe_doc, division)
+            roll_no = add_to_division(pe_doc, division)
             enrollments = frappe.json.dumps([pe_doc.name])
             generate_permanent_id_cards(enrollments=enrollments)
-            update_linked_docs(pe_doc, division, pe_doc.student_batch_name)
+            update_linked_docs(pe_doc, division, pe_doc.student_batch_name, roll_no=roll_no)
             send_email_for_division_swap(pe_doc, is_swap=False)
             return True
         elif student:
@@ -157,16 +157,19 @@ def remove_from_division(doc):
     this function removes the student from the division
     """
     division = frappe.get_doc("Student Group", doc.student_group)
+    roll_no = None
     for d in division.students:
         if d.student == doc.student:
+            roll_no = d.group_roll_number
             division.remove(d)
             break
     division.save()
     add_comment_in_division(doc, doc.student_group, True)
     add_student_log(doc, doc.student_group, True)
+    return roll_no
 
 
-def add_to_division(doc, division, add_log=True):
+def add_to_division(doc, division, roll_no=0, add_log=True):
     """
     doc: Program Enrollment
     division: Division
@@ -176,23 +179,24 @@ def add_to_division(doc, division, add_log=True):
     if len(sg.students) >= sg.max_strength:
         return frappe.throw("Max strength reached")
     
-    roll_numbers = frappe.get_all("Program Enrollment", filters=[["Program Enrollment","custom_status","!=","Cancelled"],["Program Enrollment","student_group","=",division],["Program Enrollment","docstatus","=","1"]], pluck="roll_no")
-    roll_numbers = set(roll_numbers)
-    total_students = frappe.db.count("Program Enrollment", filters=[["Program Enrollment","custom_status","!=","Cancelled"],["Program Enrollment","student_group","=",division],["Program Enrollment","docstatus","=","1"]])
-    
     next_roll_number = 0
-    for i in range(1, total_students+1):
-        if str(i) not in roll_numbers:
-            next_roll_number = i
-            break
-    if not next_roll_number:
-        next_roll_number = total_students + 1
+    if not roll_no:
+        roll_numbers = frappe.get_all("Program Enrollment", filters=[["Program Enrollment","custom_status","!=","Cancelled"],["Program Enrollment","student_group","=",division],["Program Enrollment","docstatus","=","1"]], pluck="roll_no")
+        roll_numbers = set(roll_numbers)
+        total_students = frappe.db.count("Program Enrollment", filters=[["Program Enrollment","custom_status","!=","Cancelled"],["Program Enrollment","student_group","=",division],["Program Enrollment","docstatus","=","1"]])
+        
+        for i in range(1, total_students+1):
+            if str(i) not in roll_numbers:
+                next_roll_number = i
+                break
+        if not next_roll_number:
+            next_roll_number = total_students + 1
 
 
     sg.append("students", {
         "student": doc.student,
         "student_name": doc.student_name,
-        "group_roll_number": next_roll_number,
+        "group_roll_number": next_roll_number or roll_no,
         "active": 1
     })
     sg.save()
@@ -200,7 +204,7 @@ def add_to_division(doc, division, add_log=True):
     if add_log:
         add_comment_in_division(doc, division)
         add_student_log(doc, division)
-    return next_roll_number
+    return next_roll_number or roll_no
 
 
 def swap_student_division(pe_doc_1, pe_doc_2):
@@ -214,17 +218,17 @@ def swap_student_division(pe_doc_1, pe_doc_2):
     batch_1 = pe_doc_1.student_batch_name
     batch_2 = pe_doc_2.student_batch_name
     # remove student 1 from current division
-    remove_from_division(pe_doc_1)
+    rno1 = remove_from_division(pe_doc_1)
     # remove student 2 from current division
-    remove_from_division(pe_doc_2)
+    rno2 = remove_from_division(pe_doc_2)
     # add student 1 to student 2 division
-    add_to_division(pe_doc_1, division_2)
+    add_to_division(pe_doc_1, division_2, roll_no=rno2)
     # update details in program enrollment of student 1
-    update_linked_docs(pe_doc_1, division_2, batch_2)
+    update_linked_docs(pe_doc_1, division_2, batch_2, roll_no=rno2)
     # add student 2 to student 1 division
-    add_to_division(pe_doc_2, division_1)
+    add_to_division(pe_doc_2, division_1, roll_no=rno1)
     # update details in program enrollment of student 2
-    update_linked_docs(pe_doc_2, division_1, batch_1)
+    update_linked_docs(pe_doc_2, division_1, batch_1, roll_no=rno1)
     # generate permanent id cards
     enrollments = frappe.json.dumps([pe_doc_1.name, pe_doc_2.name])
     generate_permanent_id_cards(enrollments=enrollments)
