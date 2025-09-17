@@ -18,7 +18,7 @@ frappe.ready(function() {
 		let doc = frappe.reference_doc;
 
         frappe.call({
-            method: "edu_quality.edu_quality.doctype.event_details.event_details.add_participating_students",
+            method: "edu_quality.edu_quality.doctype.event_detail.event_detail.add_participating_students",
             args: {
 				student_data: doc,
 			},
