@@ -108,6 +108,7 @@ def get_data(filters):
         "Item Group", filters={"custom_hide_in_walsh": 0}, fields=["name"]
     )
     item_group_names = [i.get("name") for i in item_groups]
+    # dont add distinct in item urls and item names
     find_filtered_cmap = (
         frappe.qb.from_(all_assigned_cmap)
         .left_join(item_detail_table)
@@ -133,7 +134,7 @@ def get_data(filters):
         item_detail_table.textbook,
         item_detail_table.item_group,
         Count(item_detail_table.item).distinct().as_("count"),
-        GROUP_CONCAT(item_detail_table.item).distinct().as_("item_names"),
+        GROUP_CONCAT(item_detail_table.item).as_("item_names"),
         GROUP_CONCAT(
             Case()
             .when(
@@ -143,11 +144,27 @@ def get_data(filters):
             )
             .else_(item_table.custom_product_url)
         )
-        .distinct()
+      
         .as_("item_urls"),
     )
+    result = find_filtered_cmap.run(as_dict=True)
 
-    return find_filtered_cmap.run(as_dict=True)
+    return dedupe_result(result)
+def dedupe_result(data):
+    
+    for datum in data:
+        hashmap = {}
+        item_names = datum["item_names"].split(",") or []
+        item_urls = datum["item_urls"].split(",") or []
+        for i in range(len(item_names)):
+            if not hashmap.get(item_names[i]):
+                if item_names[i]!=item_urls[i]:
+                    hashmap[item_names[i]]=item_urls[i]
+                else:
+                    hashmap[item_names[i]]=None
+        result_items = [{"name":i,"url":hashmap[i]} for i in hashmap]
+        datum["products"] = result_items
+    return data
 
 
 def execute(filters=None):
