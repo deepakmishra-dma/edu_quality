@@ -4,7 +4,7 @@ from frappe.utils.data import *
 import datetime
 import requests
 import json
-
+from edu_quality.edu_quality.server_scripts.utils import current_academic_year
 
 def generate_mention_html(base_url, user_id, message, name):
     mention_html = f'<div class="ql-editor read-mode"><p>'
@@ -137,12 +137,17 @@ def notify_teacher_before_half_hour_job():
 
 
 def get_division_name_and_student_group_by_student_id(student_id):
-    sql = """ select parent,custom_group as stud_group ,custom_group_allocated as is_group from `tabStudent Group Student` where student = %(id)s and active = 1"""
-    division_list = frappe.db.sql(sql, {"id": student_id}, as_dict=1)
+    academic_year = current_academic_year()
+    div_name = frappe.db.get_value("Program Enrollment",{"student":student_id,"academic_year":academic_year,"docstatus":1},"student_group")
+    if not div_name:
+        return None
+    
+    sql = """ select parent,custom_group as stud_group ,custom_group_allocated as is_group from `tabStudent Group Student` where student = %(id)s and active = 1 and parent= %(div_name)s"""
+    division_list = frappe.db.sql(sql, {"id": student_id,"div_name":div_name}, as_dict=1)
+
     if len(division_list) > 0:
         return division_list[0]
     return None
-
 
 def get_datetime_from_time_slot(date, time_slot):
     # Parse the date string into a datetime object
