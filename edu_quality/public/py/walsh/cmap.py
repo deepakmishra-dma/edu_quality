@@ -168,13 +168,13 @@ def get_portion_circulars(unit, division):
         chapter = i["chapter"]
         item_names = i["item_names"].split(",") or []
         item_urls = i["item_urls"].split(",") or []
-        i["products"] = []
-        for item_name_idx in range(len(item_names)):
-            product = {
-                "name": item_names[item_name_idx],
-                "url": item_hash.get(item_names[item_name_idx], None),
-            }
-            i["products"].append(product)
+        products = i["products"]
+        for j in range(len(products)):
+            product = products[j].get("name")
+            url = products[j].get("url")
+            if url and item_hash[product] != url:
+                products[j]["url"] = url  
+
 
         if subject not in subject_hash:
             subject_hash[subject] = {textbook: {chapter: [i]}}
