@@ -1,0 +1,22 @@
+{
+ "content": null,
+ "creation": "2024-06-07 15:57:55.863908",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2024-06-07 16:05:17.912840",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "cmap-creation-tool",
+ "owner": "Administrator",
+ "page_name": "cmap-creation-tool",
+ "roles": [
+  {
+   "role": "All"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0
+}
