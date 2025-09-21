@@ -153,12 +153,12 @@ def get_data(filters):
 
         WHERE 
             pr.docstatus = 1
-            AND pr.status != 'Paid'
             AND fee.docstatus = 1
+            AND pr.status != 'Paid'
             AND student.student_status != 'Cancelled'
             AND pr.payment_term IS NULL OR pr.payment_term = 'Term 1'
             AND ps.parenttype = 'Fees'
-            AND ps.description = %s
+            AND ps.description LIKE %s
             AND ps.outstanding = ps.payment_amount
         """
     # these filters
