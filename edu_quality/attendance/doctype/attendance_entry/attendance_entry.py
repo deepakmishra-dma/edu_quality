@@ -31,7 +31,10 @@ class AttendanceEntry(Document):
         """
         admin_emails = self.get_admin_emails()
         users = [email for email in admin_emails if frappe.db.exists("User", email)]
-        add_assign_to(args={"assign_to": users, "doctype": self.doctype, "name":self.name})
+        add_assign_to(
+            args={"assign_to": users, "doctype": self.doctype, "name": self.name},
+            ignore_permissions=True,
+        )
 
     def get_admin_emails(self):
         """
