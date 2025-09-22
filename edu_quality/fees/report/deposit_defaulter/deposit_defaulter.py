@@ -60,6 +60,13 @@ def get_columns():
             "width": 200,
         },
         {
+            "label": "Payment Term",
+            "fieldname": "payment_term",
+            "fieldtype": "Link",
+            "options": "Payment Term",
+            "width": 150,
+        },
+        {
             "label": "Amount Due",
             "fieldname": "amount_due",
             "fieldtype": "Currency",
@@ -128,6 +135,7 @@ def get_data(filters):
                 THEN fc.fees_category ELSE NULL END
             ) AS fee_head_name,
             fee.payment_plan AS payment_plan,
+            pr.payment_term AS payment_term,
             pr.grand_total AS amount_due,
             fee.academic_year AS academic_year,
             student.joining_date AS admission_date, 
@@ -138,16 +146,20 @@ def get_data(filters):
 
         FROM `tabPayment Request` AS pr        
         LEFT JOIN `tabFees` AS fee ON pr.reference_doctype = 'Fees' AND fee.name = pr.reference_name
+        LEFT JOIN `tabPayment Schedule` as ps ON ps.parent = fee.name
         LEFT JOIN `tabStudent` AS student ON pr.party = student.name
         LEFT JOIN `tabNotification Log` AS notification ON pr.party = notification.student AND fee.program  = notification.class AND fee.academic_year = notification.academic_year
         LEFT JOIN `tabFee Component` AS fc ON fee.name = fc.parent
 
         WHERE 
             pr.docstatus = 1
-            AND pr.status != 'Paid'
             AND fee.docstatus = 1
+            AND pr.status != 'Paid'
             AND student.student_status != 'Cancelled'
-            AND pr.payment_term IS NULL
+            AND pr.payment_term IS NULL OR pr.payment_term = 'Term 1'
+            AND ps.parenttype = 'Fees'
+            AND ps.description LIKE %s
+            AND ps.outstanding = ps.payment_amount
         """
     # these filters
     values = ['%deposit%', '%registration%']
@@ -170,9 +182,11 @@ def get_data(filters):
         sql_query += "AND (fee.academic_year = %s)"
         values.append(academic_year)
 
+    values.append('%deposit%')
+
     sql_query += """
         GROUP BY
-            refno, program, fees, student, student_status, school, payment_plan, amount_due, academic_year, admission_date, creation_date, email_id, mobile_number;
+            refno, program, fees, student, student_status, school, payment_plan, payment_term, amount_due, academic_year, admission_date, creation_date, email_id, mobile_number;
     """
     data = frappe.db.sql(sql_query, values, as_dict=True)
     return data
