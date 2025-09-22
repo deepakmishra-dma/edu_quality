@@ -291,7 +291,6 @@ function manualCollection(frm) {
                             type: "POST",
                             args: { fee: frm.doc.name, doctype: frm.doc.doctype, term: d.get_value('payment_term') },
                             callback: function (response) {
-                                console.log(response.message);
                                 d.set_df_property('table', 'data', response.message);
                             }
                         });
@@ -596,6 +595,13 @@ function partial_payment(frm) {
                     default: total_outstanding
                 },
                 {
+                    label: "Total Remaining",
+                    fieldname: "total_remaining",
+                    fieldtype: "Currency",
+                    read_only: 1,
+                    default: 0
+                },
+                {
                     fieldtype: 'Table',
                     fieldname: 'table',
                     label: 'Payment Terms',
@@ -603,7 +609,22 @@ function partial_payment(frm) {
                     cannot_add_rows: false,
                     reqd: 1,
                     fields: table_fields,
-                    data: terms
+                    data: terms,
+                    on_add_row: function (e) {
+                        console.log(d)
+                        let filled = 0
+                        let table = d.fields_dict.table
+                        for (let i = 0; i < table.df.data.length; i++) {
+                            if (table.df.data[i].amount) {
+                                filled = table.df.data[i].amount + filled;
+                            }
+
+                        }
+                        total = d.fields_dict.total_outstanding.value
+                        console.log(total)
+                        console.log(filled)
+                        d.fields_dict.total_remaining.set_value(total - filled)
+                    }
                 }],
             primary_action_label: 'Create',
             primary_action(values) {
