@@ -17,6 +17,7 @@
   {
    "fieldname": "student",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Student",
    "options": "Student"
   },
@@ -49,7 +50,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-06-06 13:07:53.820834",
+ "modified": "2024-06-07 17:20:01.857647",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Event Student",

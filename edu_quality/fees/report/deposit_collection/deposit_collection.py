@@ -153,16 +153,16 @@ def get_data(filters):
 
         WHERE 
             pr.docstatus = 1
-            AND fee.docstatus = 1
-            AND pr.status != 'Paid'
-            AND student.student_status != 'Cancelled'
+            AND pr.status = 'Paid'
             AND pr.payment_term IS NULL OR pr.payment_term = 'Term 1'
+            AND fee.docstatus = 1
+            AND student.student_status != 'Cancelled'
             AND ps.parenttype = 'Fees'
             AND ps.description LIKE %s
-            AND ps.outstanding = ps.payment_amount
+            AND ps.outstanding = 0
         """
     # these filters
-    values = ['%deposit%', '%registration%']
+    values = ["%deposit%", "%registration%"]
     if from_date:
         sql_query += "AND (pr.creation >= %s)"
         values.append(from_date)
@@ -182,7 +182,7 @@ def get_data(filters):
         sql_query += "AND (fee.academic_year = %s)"
         values.append(academic_year)
 
-    values.append('%deposit%')
+    values.append("%deposit%")
 
     sql_query += """
         GROUP BY
