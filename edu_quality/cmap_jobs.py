@@ -323,7 +323,7 @@ def send_notification_custom(subject, user):
                 {
                     "to": push_token.get("token"),
                     "title": subject,
-                    "data": {"url_path": f"/walsh/ptm-link"},
+                    "data": {"url_path": f"/ptm-link"},
                     # "body": json.dumps({"url_path": f"/notice/{notice_id}?student={student_id}"})
                 }
             )
