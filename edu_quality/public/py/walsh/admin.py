@@ -24,7 +24,8 @@ def get_guardian_emails(student):
     guardians = [frappe.get_cached_doc("Guardian", g.get("guardian")) for g in student_guardians]
     guardian_emails = []
     for guardian in guardians:
-        guardian_emails.append(guardian.email_address)
+        if(guardian.email_address):
+            guardian_emails.append(guardian.email_address)
     return guardian_emails
 
 
