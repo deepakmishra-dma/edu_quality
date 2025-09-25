@@ -457,9 +457,9 @@ def get_latest_status(entry):
         status = latest_entry[0]["status"]
         if status:
             status_upper = status.upper()
-            if "EARLY PICKUP" in status_upper:
+            if "EARLY" in status_upper:
                 return "E"
-            elif "LATE DROP" in status_upper:
+            elif "LATE" in status_upper:
                 return "L"
             elif "SICK" in status_upper:
                 return "S"
