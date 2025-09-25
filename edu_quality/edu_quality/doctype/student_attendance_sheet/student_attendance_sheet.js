@@ -206,8 +206,8 @@ async function setupDataTable(frm, division) {
   const headers = [
     {textContent: "S.No"},
     { textContent: "Ref No" },
-    { textContent: "First Name", colSpan: 2 },
-    { textContent: "Last Name", colSpan: 2 },
+    { textContent: "First Name" },
+    { textContent: "Last Name" },
     { textContent: "Roll No" },
     ...days.message,
   ];
@@ -297,8 +297,8 @@ function createRow(s_no,ref_no, first_name, last_name, roll_no, days, data,name)
   let rowHtml = `<tr>
   <td style='white-space: nowrap; min-width: fit-content !important;'>${s_no}</td>
   <td style='white-space: nowrap; min-width: fit-content !important;'>${ref_no}</td>
-    <td colspan="2" style='text-wrap:nowrap;min-width: fit-content !important;'>${first_name?.toUpperCase()?? ''}</td>
-    <td colspan="2" style='text-wrap:nowrap;min-width: fit-content !important;'>${last_name?.toUpperCase()?? ''}</td>
+     <td style='text-wrap:nowrap;min-width: fit-content'><p class="name-column">${first_name?.toUpperCase() ?? ''}</p></td>
+    <td style='text-wrap:nowrap;min-width: fit-content'><p class="name-column">${last_name?.toUpperCase() ?? ''}</p></td>
     <td style='white-space: nowrap; min-width: fit-content !important;'>${roll_no}</td>`;
 
   // Generate empty <td> elements for each day

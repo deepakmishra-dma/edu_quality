@@ -84,6 +84,10 @@
   .table td.holiday {
     display: none;
   }
+  .table p.name-column {
+    width: 54px !important;
+    overflow: hidden;
+  }
 </style>
 {% for tableObj in tables %}
 <div class="page">
@@ -93,7 +97,7 @@
     <div>Class: {{tableObj.class}}</div>
     <div>Division: {{tableObj.division}}</div>
     <div class="qr-container">
-      <img src={{tableObj.qr_code}} class="qr-code-img">
+      <img src="{{tableObj.qr_code}}" class="qr-code-img" />
     </div>
   </div>
   <table class="table" cellspacing="0" cellpadding="0">
