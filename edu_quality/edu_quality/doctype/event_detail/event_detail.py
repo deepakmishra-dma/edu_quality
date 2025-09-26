@@ -9,6 +9,7 @@ class EventDetail(Document):
 
     def on_update(self):
         self.update_classes()
+        self.add_allowed_students()
 
     def update_classes(self):
         event = frappe.get_doc("Event", self.event)
@@ -51,6 +52,49 @@ class EventDetail(Document):
                 message=f"Click on the link to register for the event: {registration_url}",
             )
         return True
+
+    def add_allowed_students(self):
+        if not self.auto_add_students:
+            return
+
+        # Prepare a list to gather all students at once, reducing the number of database queries
+        student_status = [i.student_status for i in self.student_status]
+        all_students = []
+        for cls in self.classes_applicable_to:
+            students = frappe.get_all(
+                "Student",
+                filters={
+                    "student_status": ["in", student_status],
+                    "program": cls.get("class"),
+                },
+                fields=["name", "student_name", "reference_number"],
+            )
+            all_students.extend(students)
+
+        # Prepare a set of existing event student references to minimize individual checks
+        existing_students = set(
+            frappe.get_all(
+                "Event Student",
+                filters={
+                    "parent": self.name,
+                    "parentfield": "allowed_students",
+                },
+                fields=["student"]
+            )
+        )
+
+        # Add students only if they do not already exist
+        for student in all_students:
+            if student.name not in existing_students:
+                self.append(
+                    "allowed_students",
+                    {
+                        "student": student.name,
+                        "student_name": student.student_name,
+                        "refno": student.reference_number,
+                    },
+                )
+
 
 
 @frappe.whitelist()

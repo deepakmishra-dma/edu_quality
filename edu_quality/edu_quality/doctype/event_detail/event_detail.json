@@ -1,23 +1,24 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "field:event",
+ "autoname": "field:event_name",
  "creation": "2024-06-03 18:13:05.071034",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
   "event_details_section",
+  "event_name",
   "event",
   "school",
   "classes_applicable_to",
-  "single_poc_name",
-  "registrations_open_date",
   "column_break_hxca",
-  "event_type",
   "department",
-  "secondary_poc_name",
+  "event_type",
   "registration_type",
+  "registrations_open_date",
   "last_date",
+  "single_poc_name",
+  "secondary_poc_name",
   "section_break_izud",
   "is_team",
   "team",
@@ -26,6 +27,10 @@
   "student_details_tab",
   "student_details_section",
   "add_allowed_students",
+  "auto_add_students",
+  "column_break_wkiv",
+  "student_status",
+  "section_break_cckj",
   "allowed_students",
   "add_to_participating",
   "participating_student_details_section",
@@ -52,7 +57,8 @@
    "fieldname": "classes_applicable_to",
    "fieldtype": "Table MultiSelect",
    "label": "Classes applicable to",
-   "options": "Classes"
+   "options": "Classes",
+   "read_only": 1
   },
   {
    "fieldname": "single_poc_name",
@@ -261,11 +267,37 @@
    "label": "Event",
    "options": "Event",
    "unique": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "auto_add_students",
+   "fieldtype": "Check",
+   "label": "Add Students Automatically"
+  },
+  {
+   "fieldname": "event_name",
+   "fieldtype": "Data",
+   "label": "Event Name",
+   "unique": 1
+  },
+  {
+   "fieldname": "column_break_wkiv",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "student_status",
+   "fieldtype": "Table MultiSelect",
+   "label": "Student Status",
+   "options": "Student Status Table"
+  },
+  {
+   "fieldname": "section_break_cckj",
+   "fieldtype": "Section Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-06-06 13:50:25.209970",
+ "modified": "2024-06-11 11:26:47.507932",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Event Detail",

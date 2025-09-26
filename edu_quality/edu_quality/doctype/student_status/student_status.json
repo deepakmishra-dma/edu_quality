@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "format:{student_status}",
+ "autoname": "field:student_status",
  "creation": "2024-06-11 11:20:35.988604",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -14,16 +14,17 @@
    "fieldname": "student_status",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Student Status"
+   "label": "Student Status",
+   "unique": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-06-11 11:27:55.431819",
+ "modified": "2024-06-11 12:36:08.294015",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Student Status",
- "naming_rule": "Expression",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {
