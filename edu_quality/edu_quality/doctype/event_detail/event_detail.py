@@ -79,22 +79,25 @@ class EventDetail(Document):
                     "parent": self.name,
                     "parentfield": "allowed_students",
                 },
-                fields=["student"]
+                pluck="student",
             )
         )
 
         # Add students only if they do not already exist
         for student in all_students:
             if student.name not in existing_students:
-                self.append(
-                    "allowed_students",
+                frappe.get_doc(
                     {
+                        "doctype": "Event Student",
+                        "parent": self.name,
+                        "parenttype": "Event Detail",
+                        "parentfield": "allowed_students",
                         "student": student.name,
                         "student_name": student.student_name,
                         "refno": student.reference_number,
-                    },
-                )
-
+                    }
+                ).insert(ignore_permissions=True)
+        self.reload()
 
 
 @frappe.whitelist()
