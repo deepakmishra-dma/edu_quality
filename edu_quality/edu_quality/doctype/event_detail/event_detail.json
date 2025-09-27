@@ -265,8 +265,7 @@
    "fieldname": "event",
    "fieldtype": "Link",
    "label": "Event",
-   "options": "Event",
-   "unique": 1
+   "options": "Event"
   },
   {
    "default": "0",
@@ -297,7 +296,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-06-11 11:26:47.507932",
+ "modified": "2024-06-11 13:46:06.065460",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Event Detail",
