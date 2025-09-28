@@ -9,7 +9,6 @@ class EventDetail(Document):
 
     def on_update(self):
         self.update_classes()
-        self.add_allowed_students()
 
     def update_classes(self):
         event = frappe.get_doc("Event", self.event)
