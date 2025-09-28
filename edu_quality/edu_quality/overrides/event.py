@@ -3,8 +3,8 @@ from frappe.desk.doctype.event.event import Event
 
 
 class CustomEvent(Event):
-    def on_update(self):
-        super().on_update()
+    def before_save(self):
+        super().before_save()
         self.append_classes()
         self.update_subject()
 
