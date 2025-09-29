@@ -1,23 +1,24 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "field:event",
+ "autoname": "field:event_name",
  "creation": "2024-06-03 18:13:05.071034",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
   "event_details_section",
+  "event_name",
   "event",
   "school",
   "classes_applicable_to",
   "single_poc_name",
-  "registrations_open_date",
   "column_break_hxca",
   "event_type",
+  "registration_type",
+  "registrations_open_date",
+  "last_date",
   "department",
   "secondary_poc_name",
-  "registration_type",
-  "last_date",
   "section_break_izud",
   "is_team",
   "team",
@@ -26,6 +27,10 @@
   "student_details_tab",
   "student_details_section",
   "add_allowed_students",
+  "all_students",
+  "column_break_xatu",
+  "student_status",
+  "section_break_hfsm",
   "allowed_students",
   "add_to_participating",
   "participating_student_details_section",
@@ -52,7 +57,8 @@
    "fieldname": "classes_applicable_to",
    "fieldtype": "Table MultiSelect",
    "label": "Classes applicable to",
-   "options": "Classes"
+   "options": "Classes",
+   "read_only": 1
   },
   {
    "fieldname": "single_poc_name",
@@ -262,35 +268,35 @@
    "options": "Event"
   },
   {
-   "default": "0",
-   "fieldname": "auto_add_students",
-   "fieldtype": "Check",
-   "label": "Add Students Automatically"
-  },
-  {
    "fieldname": "event_name",
    "fieldtype": "Data",
    "label": "Event Name",
    "unique": 1
   },
   {
-   "fieldname": "column_break_wkiv",
+   "description": "Enter student status as comma separated values",
+   "fieldname": "student_status",
+   "fieldtype": "Data",
+   "label": "Student Status"
+  },
+  {
+   "default": "0",
+   "fieldname": "all_students",
+   "fieldtype": "Check",
+   "label": "All Students"
+  },
+  {
+   "fieldname": "column_break_xatu",
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "student_status",
-   "fieldtype": "Table MultiSelect",
-   "label": "Student Status",
-   "options": "Student Status Table"
-  },
-  {
-   "fieldname": "section_break_cckj",
+   "fieldname": "section_break_hfsm",
    "fieldtype": "Section Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-06-11 13:46:06.065460",
+ "modified": "2024-06-11 15:40:36.825595",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Event Detail",

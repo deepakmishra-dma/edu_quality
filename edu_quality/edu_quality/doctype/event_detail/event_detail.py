@@ -7,16 +7,23 @@ from frappe.model.document import Document
 
 class EventDetail(Document):
 
-    def on_update(self):
+    def before_save(self):
         self.update_classes()
 
     def update_classes(self):
         event = frappe.get_doc("Event", self.event)
+        # Get the existing classes
+        existing_classes = frappe.db.get_all(
+            "Classes", filters={"parent": self.name}, pluck="class"
+        )
+        # Remove classes that are no longer applicable
+        self.classes_applicable_to = []
+
+        # Add new applicable classes
         for cls in event.custom_classes:
-            if not frappe.db.exists(
-                "Classes", {"parent": self.name, "class": cls.get("class")}
-            ):
-                self.append("classes_applicable_to", {"class": cls.get("class")})
+            class_name = cls.get("class")
+            if class_name not in existing_classes:
+                self.append("classes_applicable_to", {"class": class_name})
 
     @frappe.whitelist()
     def get_students(self, args):
@@ -51,52 +58,6 @@ class EventDetail(Document):
                 message=f"Click on the link to register for the event: {registration_url}",
             )
         return True
-
-    def add_allowed_students(self):
-        if not self.auto_add_students:
-            return
-
-        # Prepare a list to gather all students at once, reducing the number of database queries
-        student_status = [i.student_status for i in self.student_status]
-        all_students = []
-        for cls in self.classes_applicable_to:
-            students = frappe.get_all(
-                "Student",
-                filters={
-                    "student_status": ["in", student_status],
-                    "program": cls.get("class"),
-                },
-                fields=["name", "student_name", "reference_number"],
-            )
-            all_students.extend(students)
-
-        # Prepare a set of existing event student references to minimize individual checks
-        existing_students = set(
-            frappe.get_all(
-                "Event Student",
-                filters={
-                    "parent": self.name,
-                    "parentfield": "allowed_students",
-                },
-                pluck="student",
-            )
-        )
-
-        # Add students only if they do not already exist
-        for student in all_students:
-            if student.name not in existing_students:
-                frappe.get_doc(
-                    {
-                        "doctype": "Event Student",
-                        "parent": self.name,
-                        "parenttype": "Event Detail",
-                        "parentfield": "allowed_students",
-                        "student": student.name,
-                        "student_name": student.student_name,
-                        "refno": student.reference_number,
-                    }
-                ).insert(ignore_permissions=True)
-        self.reload()
 
 
 @frappe.whitelist()
