@@ -70,6 +70,9 @@
           {% if trait.trait_type =="WT" %}
             <p style="color: rgb(248, 1, 134);">{{trait.trait_type}}: {{trait.description}}</p>
           {% endif %}
+          {% if trait.trait_type == "How do you spend your free time?" %}
+          <p style="color: rgb(255, 120, 37);">{{trait.trait_type}}: {{trait.description}}</p>
+          {% endif %}
         {% endif %}
     {% endfor %}
     {% endif %}
