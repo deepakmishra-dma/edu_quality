@@ -45,7 +45,10 @@ def create_payment_request_before_due_date():
             fee_doc = frappe.get_doc("Fees", fee.name)
             for schedule in fee_doc.payment_schedule:
                 if (schedule.due_date - today).days == before_days:
-                    if frappe.db.get_value("Student",fee.student,'student_status') == 'Cancelled':
+                    if (
+                        frappe.db.get_value("Student", fee.student, "student_status")
+                        == "Cancelled"
+                    ):
                         return
                     frappe.enqueue(
                         "edu_quality.public.py.student.create_payment_request",
@@ -64,7 +67,12 @@ def create_payment_request_before_due_date_fee_advance():
         fee_advance_doc = frappe.get_doc("Fee Advance", fee_advance.name)
         due_date = fee_advance_doc.due_date
         if (due_date - today_date).days < 30:
-            if frappe.db.get_value("Student",fee_advance_doc.student,'student_status') == 'Cancelled':
+            if (
+                frappe.db.get_value(
+                    "Student", fee_advance_doc.student, "student_status"
+                )
+                == "Cancelled"
+            ):
                 return
             schedule_payment_request(fee_advance_doc, fee_advance_doc.payment_term)
 
@@ -269,16 +277,22 @@ def schedule_birthday_greeting(schedule_now=False):
         return None
     valid_statuses = [i for i in valid_student_statuses]
     academic_year = current_academic_year()
+    date_object = datetime.strptime(frappe.utils.nowdate(), "%Y-%m-%d")
     program_enrollments = frappe.db.sql(
         """
   SELECT pe.name as name 
 FROM `tabStudent` as su INNER JOIN `tabProgram Enrollment` as pe  on pe.student = su.name
 WHERE 
-    MONTH(CONVERT_TZ(su.date_of_birth, 'UTC', 'Asia/Kolkata')) = MONTH(CONVERT_TZ(NOW(), 'UTC', 'Asia/Kolkata'))
-    AND DAY(CONVERT_TZ(su.date_of_birth, 'UTC', 'Asia/Kolkata')) = DAY(CONVERT_TZ(NOW(), 'UTC', 'Asia/Kolkata')) AND pe.academic_year = %(academic_year)s AND pe.docstatus=1 AND su.student_status IN %(statuses)s
+    MONTH(su.date_of_birth) = %(month)s
+    AND DAY(su.date_of_birth) = %(today)s AND pe.academic_year = %(academic_year)s AND pe.docstatus=1 AND su.student_status IN %(statuses)s
 """,
         as_dict=True,
-        values={"academic_year": academic_year, "statuses": valid_statuses},
+        values={
+            "academic_year": academic_year,
+            "statuses": valid_statuses,
+            "today": date_object.day,
+            "month": date_object.month,
+        },
     )
 
     for program_enrollment in program_enrollments:
@@ -304,9 +318,9 @@ WHERE
                 )
 
             from nextai.funnel.custom_trigger import trigger_event
+
             birthday_doc = frappe.get_doc("Birthday Card", name)
             trigger_event(doc=birthday_doc, event_name="birthday_greeting")
 
         except Exception as e:
             frappe.logger("Birthday Card").exception(e)
-  
