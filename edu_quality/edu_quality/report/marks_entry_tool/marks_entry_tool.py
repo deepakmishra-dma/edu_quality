@@ -119,11 +119,12 @@ def get_earlier_marks(filters, students, criterias):
             assess_res_qb.star,
             assessment_det_qb.assessment_criteria,
             assessment_det_qb.score,
+            assessment_det_qb.custom_is_absent,
         )
     )
 
     data = query.run(as_dict=True)
-    frappe.errprint(data)
+
     students_res = {}
     for assess_res in data:
         student = assess_res.get("student")
@@ -248,6 +249,7 @@ def enter_individual_marks(
             {
                 "assessment_criteria": name,
                 "score": flt(score) or 0,
+                "custom_is_absent": is_absent,
             }
         )
     assessment_result = get_assessment_result_doc(ref_no, assessment_plan)
@@ -256,7 +258,6 @@ def enter_individual_marks(
             "student": ref_no,
             "assessment_plan": assessment_plan,
             "details": assessment_details,
-            "custom_is_absent": is_absent,
         }
     )
     assessment_result.save()
