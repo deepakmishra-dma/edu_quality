@@ -7,6 +7,10 @@ from frappe.model.document import Document
 
 class EventDetail(Document):
 
+    def autoname(self):
+        prefix = frappe.get_value("School", self.school, "prefix")
+        self.name = f"{self.event_name} - {prefix}" if prefix else self.event_name
+
     def before_save(self):
         self.update_classes()
 

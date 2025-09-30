@@ -1,7 +1,6 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "field:event_name",
  "creation": "2024-06-03 18:13:05.071034",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -264,14 +263,17 @@
   {
    "fieldname": "event",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Event",
-   "options": "Event"
+   "options": "Event",
+   "reqd": 1
   },
   {
    "fieldname": "event_name",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Event Name",
-   "unique": 1
+   "reqd": 1
   },
   {
    "description": "Enter student status as comma separated values",
@@ -296,11 +298,10 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-06-11 15:40:36.825595",
+ "modified": "2024-06-11 18:44:12.820596",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Event Detail",
- "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {
