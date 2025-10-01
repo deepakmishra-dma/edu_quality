@@ -66,7 +66,10 @@ class EventDetail(Document):
         return True
 
     def validate_students(self):
-        statuses = [status.strip() for status in str(self.student_status).split(",")]
+        if isinstance(self.student_status, str):
+            statuses = [status.strip() for status in self.student_status.split(",")]
+        else:
+            statuses = []
         students = self.winning_students + self.participating_students
         
         for student in students:
