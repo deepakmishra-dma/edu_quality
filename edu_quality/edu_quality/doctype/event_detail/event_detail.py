@@ -66,7 +66,7 @@ class EventDetail(Document):
         return True
 
     def validate_students(self):
-        statuses = [status.strip() for status in self.student_status.split(",")]
+        statuses = [status.strip() for status in str(self.student_status).split(",")]
         students = self.winning_students + self.participating_students
         
         for student in students:
@@ -77,7 +77,7 @@ class EventDetail(Document):
                 )
             
             student_status = frappe.get_value("Student", student.student, "student_status")
-            if student_status and student_status not in statuses:
+            if statuses and student_status not in statuses:
                 frappe.throw(
                     f"Student {student.student_name}({student.student}) status must be one of {self.student_status}"
                 )
