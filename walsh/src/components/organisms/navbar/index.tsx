@@ -18,6 +18,7 @@ import {
   IconCalendar,
   // IconFileDescription,
   IconUser,
+  IconCreditCard,
   IconLink,
   IconPrinter,
 } from "@tabler/icons";
@@ -161,6 +162,11 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
             label: "Student Profile",
             icon: IconUser,
             location: "/student-profile",
+          },
+          {
+            label: "Fee",
+            icon: IconCreditCard,
+            location: "/fee",
           },
           {
             label: "School Calendar",
