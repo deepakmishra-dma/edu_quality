@@ -33,7 +33,7 @@
     font-size: 12pt;
   }
 
-  #dob {
+  #special_day {
     color: rgb(1, 164, 84);
   }
 
@@ -50,28 +50,28 @@
 <div class="content-container">
   <div class="content">
     <p id="name">{{card.student_name}}</p>
-    <p id="dob">The Special Day: {{card.dob}}</p>
+    <p id="special_day">The Special Day: {{card.special_day}}</p>
     {% if card.has_traits %}
         <p id="traits">These are a few of my favourite things </p>
     {% for trait in card.traits%}
         {% if trait.description %}
-          {% if trait.trait_type =="Food" %}
-            <p style="color: rgb(250, 1, 70);">{{trait.trait_type}}: {{trait.description}}</p>
+          {% if trait.trait_type == "Activity" %}
+          <p style="color: rgb(1, 164, 84);";">{{trait.trait_type}}: {{trait.description}}</p>
           {% endif %}
           {% if trait.trait_type =="Book" %}
             <p style="color: rgb(255, 120, 37);">{{trait.trait_type}}: {{trait.description}}</p>
+          {% endif %}
+          {% if trait.trait_type =="Food" %}
+          <p style="color: rgb(250, 1, 70);">{{trait.trait_type}}: {{trait.description}}</p>
           {% endif %}
           {% if trait.trait_type =="Ambition" %}
             <p style="color: rgb(0, 144, 216);">{{trait.trait_type}}: {{trait.description}}</p>
           {% endif %}
           {% if trait.trait_type =="HT" %}
-            <p style="color: rgb(1, 164, 84);">{{trait.trait_type}}: {{trait.description}}</p>
-          {% endif %}
-          {% if trait.trait_type =="WT" %}
             <p style="color: rgb(248, 1, 134);">{{trait.trait_type}}: {{trait.description}}</p>
           {% endif %}
-          {% if trait.trait_type == "How do you spend your free time?" %}
-          <p style="color: rgb(255, 120, 37);">{{trait.trait_type}}: {{trait.description}}</p>
+          {% if trait.trait_type =="WT" %}
+            <p style="color: rgb(0, 144, 216);">{{trait.trait_type}}: {{trait.description}}</p>
           {% endif %}
         {% endif %}
     {% endfor %}
