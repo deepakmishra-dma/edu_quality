@@ -267,59 +267,117 @@ export const Fee = () => {
                         border: `1px solid ${studentProfileColor}`,
                         padding: "0.2rem",
                         margin: "0.5rem",
+                        display: "flex",
+                        borderRadius: "10px",
+                        justifyContent: "start",
+                        alignItems: "start",
+                        gap: "5rem",
                       }}
                     >
-                      {" "}
-                      <div>
-                        <span style={{ color: studentProfileColor }}>
-                          Name :
-                        </span>
-                        <span>
-                          {" "}
-                          {
-                            studentsList?.data?.message?.find(
-                              (i) => i?.name === selectedStudent
-                            )?.first_name
-                          }
-                        </span>
-                      </div>
                       <div
                         style={{
                           display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          gap: "1rem",
+                          flexDirection: "column",
+                          margin: "0px auto",
                         }}
                       >
-                        <span style={{ color: studentProfileColor }}>
-                          Academic year:
+                        <span
+                          style={{
+                            borderRadius: "10px",
+
+                            background: `${
+                              i?.data?.status === "Paid"
+                                ? "green"
+                                : " rgb(254 202 202)"
+                            }`,
+                            padding: "5px 1rem",
+                            color: `${
+                              i?.data?.status === "Paid" ? "white" : " red"
+                            }`,
+                          }}
+                        >
+                          {i?.data?.status === "Paid"
+                            ? "Payment Completed"
+                            : "Payment Due"}
                         </span>
-                        <span>
-                          {extractAcademicYear(i?.data?.reference_name)}
-                        </span>
-                      </div>
-                      <div>
-                        <span style={{ color: studentProfileColor }}>
-                          Class :
-                        </span>
-                        <span> {classDetails?.data?.message?.class?.name}</span>
-                      </div>
-                      <div>
-                        <span style={{ color: studentProfileColor }}>
-                          Term :
-                        </span>
-                        <span> {i?.data?.payment_term}</span>
-                      </div>
-                      <div>
-                        <span style={{ color: studentProfileColor }}>
-                          Amount :
-                        </span>
-                        <span> {i?.data?.grand_total}</span>
+                        <div
+                          style={{
+                            marginTop: "10px",
+                          }}
+                        >
+                          <span style={{ color: studentProfileColor }}>
+                            Name:
+                          </span>
+                          <span>
+                            {
+                              studentsList?.data?.message?.find(
+                                (i) => i?.name === selectedStudent
+                              )?.first_name
+                            }
+                          </span>
+                        </div>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: "1rem",
+
+                            marginTop: "10px",
+                          }}
+                        >
+                          <span style={{ color: studentProfileColor }}>
+                            Academic year:
+                          </span>
+                          <span>
+                            {extractAcademicYear(i?.data?.reference_name)}
+                          </span>
+                        </div>
+                        <div
+                          style={{
+                            marginTop: "10px",
+                          }}
+                        >
+                          <span style={{ color: studentProfileColor }}>
+                            Class :
+                          </span>
+                          <span>
+                            {" "}
+                            {classDetails?.data?.message?.class?.name}
+                          </span>
+                        </div>
+                        <div
+                          style={{
+                            marginTop: "10px",
+                          }}
+                        >
+                          <span style={{ color: studentProfileColor }}>
+                            Term :
+                          </span>
+                          <span> {i?.data?.payment_term}</span>
+                        </div>
+                        <div
+                          style={{
+                            marginTop: "10px",
+                          }}
+                        >
+                          <span style={{ color: studentProfileColor }}>
+                            Amount :
+                          </span>
+                          <span> {i?.data?.grand_total}</span>
+                        </div>
                       </div>
                       <div
                         style={{
                           display: "flex",
+                          flexDirection: "column",
+                          position: "relative",
+
+                          top: "150px",
+                          alignItems: "end",
                           justifyContent: "end",
+                          borderRadius: "10px",
+                          padding: "1rem",
                         }}
                       >
                         <a
@@ -329,11 +387,17 @@ export const Fee = () => {
                             color: "white",
                             textDecoration: "none",
                             padding: "0px 1rem",
-                            background: studentProfileColor,
+                            background: `${
+                              i?.data?.status === "Paid"
+                                ? "rgb(126 34 206)"
+                                : "rgb(126 34 206)"
+                            }`,
                             borderRadius: "5px",
+                            gap: "1rem",
+                            border: "1px solid green",
                           }}
                         >
-                          {i?.data?.status === "Paid" ? "Download" : "PAY LINK"}
+                          {i?.data?.status === "Paid" ? "Download" : "Pay Now"}
                         </a>
                       </div>
                     </div>
