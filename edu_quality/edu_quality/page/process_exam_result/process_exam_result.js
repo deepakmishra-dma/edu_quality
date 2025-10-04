@@ -48,10 +48,9 @@ function onLoad() {
 			fieldname: "division",
 			fieldtype: "Link",
 			options: "Student Group",
-			reqd: 1
 		}
 	])
-
+	addProcessButton()
 }
 function addProcessButton() {
 	globalPage.set_primary_action('Process Result', processResult)
@@ -71,20 +70,30 @@ async function processResult() {
 	const division = filtersRef.get_value("division")
 	const assess_group = filtersRef.get_value("exam_name")
 
-	data = await frappe.call({
-		"method": "edu_quality.api.exam_result.process_result",
-		args: {
-			academic_year: acad_year,
-			school: school,
-			program: program,
-			division: division,
-			assessment_group: assess_group
+	if (!acad_year || !school || !program || !assess_group) {
+		frappe.throw(__('Academic Year or School or Program or Exam Group is required'))
+		return
+	}
+	frappe.confirm('If there are submitted results they will be cancelled and new ones will be created, Are you sure you want to proceed?', async () => {
+		data = await frappe.call({
+			"method": "edu_quality.api.exam_result.process_result",
+			args: {
+				academic_year: acad_year,
+				school: school,
+				program: program,
+				division: division,
+				assessment_group: assess_group
+			}
+		})
+
+		if (data?.message?.errors) {
+			console.log("Something Went Wrong", data?.message?.errors)
 		}
+	}, () => {
+
 	})
 
-	if (data?.message?.errors) {
-		
-	}
+
 }
 function make_fieldgroup(parent, ddf_list) {
 	fg = new frappe.ui.FieldGroup({
