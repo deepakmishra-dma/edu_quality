@@ -625,7 +625,27 @@ function partial_payment(frm) {
                         console.log(filled)
                         d.fields_dict.total_remaining.set_value(total - filled)
                     }
-                }],
+                },
+                {
+                    fieldtype: 'Section Break',
+                    fieldname: "sl"
+                },
+                {
+                    fieldtype: 'Data',
+                    fieldname: "otp_entry",
+                    label: "OTP",
+                    hidden: 1
+                },
+                {
+                    fieldtype: 'Column Break',
+                    fieldname: "cl"
+                },
+                {
+                    fieldtype: "Button",
+                    fieldname: "verify",
+                    label: "Send OTP"
+                }
+            ],
             primary_action_label: 'Create',
             primary_action(values) {
                 frappe.call({
@@ -645,6 +665,25 @@ function partial_payment(frm) {
                 d.hide();
             }
         })
+
+        //hide create button 
+        setTimeout(() => {
+            const x = document.querySelector(".btn-modal-primary");
+            x.style.display = 'none';
+        }, 1000);
+
+        d.fields_dict.verify.input.onclick = function () {
+            if (d.fields_dict.otp_entry.value) {
+                //verify_partial_otp();
+            }
+            else {
+                d.fields_dict.otp_entry.df.hidden = 0
+                d.fields_dict.otp_entry.refresh()
+                d.fields_dict.verify.df.label = "Verify OTP"
+                d.fields_dict.verify.refresh()
+                // send_partial_otp();
+            }
+        }
         d.show();
     }, __("Action"));
 }
