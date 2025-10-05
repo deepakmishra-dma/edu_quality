@@ -137,12 +137,18 @@ def swap_division(**kwargs):
             generate_permanent_id_cards(enrollments=enrollments)
             update_linked_docs(pe_doc, division, pe_doc.student_batch_name, roll_no=roll_no)
             send_email_for_division_swap(pe_doc, is_swap=False)
+            # sync division data
+            sync_and_sort_division_data(division)
+            sync_and_sort_division_data(pe_doc.student_group)
             return True
         elif student:
             # get the program enrollment of the student to swap
-            swap_pe = frappe.get_doc("Program Enrollment", {"student": student, "academic_year": pe_doc.academic_year})
+            swap_pe = frappe.get_doc("Program Enrollment", {"student": student, "academic_year": pe_doc.academic_year, "docstatus": 1})
             # swap the division
             swap_student_division(pe_doc, swap_pe)
+            # sync division data
+            sync_and_sort_division_data(pe_doc.student_group)
+            sync_and_sort_division_data(swap_pe.student_group)
             return True
     except:
         frappe.db.rollback()
@@ -178,33 +184,76 @@ def add_to_division(doc, division, roll_no=0, add_log=True):
     sg = frappe.get_doc("Student Group", division)
     if len(sg.students) >= sg.max_strength:
         return frappe.throw("Max strength reached")
-    
+
     next_roll_number = 0
     if not roll_no:
-        roll_numbers = frappe.get_all("Program Enrollment", filters=[["Program Enrollment","custom_status","!=","Cancelled"],["Program Enrollment","student_group","=",division],["Program Enrollment","docstatus","=","1"]], pluck="roll_no")
+        roll_numbers = frappe.get_all(
+            "Program Enrollment",
+            filters=[
+                ["Program Enrollment", "custom_status", "!=", "Cancelled"],
+                ["Program Enrollment", "student_group", "=", division],
+                ["Program Enrollment", "docstatus", "=", "1"],
+            ],
+            pluck="roll_no",
+        )
         roll_numbers = set(roll_numbers)
-        total_students = frappe.db.count("Program Enrollment", filters=[["Program Enrollment","custom_status","!=","Cancelled"],["Program Enrollment","student_group","=",division],["Program Enrollment","docstatus","=","1"]])
-        
-        for i in range(1, total_students+1):
+        total_students = frappe.db.count(
+            "Program Enrollment",
+            filters=[
+                ["Program Enrollment", "custom_status", "!=", "Cancelled"],
+                ["Program Enrollment", "student_group", "=", division],
+                ["Program Enrollment", "docstatus", "=", "1"],
+            ],
+        )
+
+        for i in range(1, total_students + 1):
             if str(i) not in roll_numbers:
                 next_roll_number = i
                 break
         if not next_roll_number:
             next_roll_number = total_students + 1
 
-
-    sg.append("students", {
-        "student": doc.student,
-        "student_name": doc.student_name,
-        "group_roll_number": next_roll_number or roll_no,
-        "active": 1
-    })
+    sg.append(
+        "students",
+        {
+            "student": doc.student,
+            "student_name": doc.student_name,
+            "group_roll_number": next_roll_number or roll_no,
+            "active": 1,
+        },
+    )
     sg.save()
 
     if add_log:
         add_comment_in_division(doc, division)
         add_student_log(doc, division)
     return next_roll_number or roll_no
+
+
+def sync_and_sort_division_data(division):
+    """
+    division: Division
+    this function syncs the student data in the division and sorts the students based on roll number
+    """
+    div_doc = frappe.get_doc("Student Group", division)
+    div_doc.students = []
+    students = frappe.get_all(
+        "Program Enrollment",
+        [
+            ["Program Enrollment", "student_group", "=", division],
+            ["Program Enrollment", "docstatus", "=", "1"],
+            ["Program Enrollment", "custom_status", "!=", "Cancelled"],
+        ],
+        ["student", "roll_no"],
+    )
+    sorted_students = sorted(students, key=lambda x: int(x["roll_no"] if x["roll_no"] is not None else '0'))
+    for student in sorted_students:
+        roll_no = int(student.roll_no) if student.roll_no else None
+        div_doc.append(
+            "students",
+            {"student": student.student, "group_roll_number": roll_no},
+        )
+    div_doc.save()
 
 
 def swap_student_division(pe_doc_1, pe_doc_2):
