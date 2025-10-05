@@ -147,7 +147,7 @@ def get_birthday_card_data(birthday_card):
         "has_traits": has_traits,
         "traits": birthday_card.traits,
         "student_name": student_name,
-        "dob": dob.strftime("%d-%m-%Y"),
+        "special_day": dob.strftime("%d-%m") + today.strftime("-%Y"),
         "age": abs(age),
         "program_name": program_name,
     }
