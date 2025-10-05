@@ -2,6 +2,7 @@
 # For license information, please see license.txt
 
 import frappe
+from datetime import datetime
 from frappe.model.document import Document
 from frappe.desk.form.assign_to import add as add_assign_to
 from edu_quality.public.py.walsh.admin import notification_sender
@@ -10,9 +11,22 @@ from edu_quality.public.py.walsh.admin import notification_sender
 class AttendanceEntry(Document):
 
     def on_update(self):
-        self.send_email_to_admins()
-        self.assign_doc_to_admins()
-        self.send_notification_to_councellor()
+        if self.is_early_pickup():
+            self.send_email_to_admins()
+            self.assign_doc_to_admins()
+            self.send_notification_to_councellor()
+
+    def is_early_pickup(self):
+        today_date = datetime.strptime(frappe.utils.today(), "%Y-%m-%d").date()
+        for data in self.absent_and_delays:
+            if isinstance(data.timestamp, str):
+                # Parse the timestamp string to a datetime object
+                data_timestamp = datetime.strptime(data.timestamp, "%Y-%m-%d %H:%M:%S")
+            else:
+                data_timestamp = data.timestamp
+            if data.status == "early_pickup" and data_timestamp.date() >= today_date:
+                return True
+        return False
 
     def send_email_to_admins(self):
         """
@@ -31,7 +45,24 @@ class AttendanceEntry(Document):
         """
         admin_emails = self.get_admin_emails()
         users = [email for email in admin_emails if frappe.db.exists("User", email)]
-        add_assign_to(args={"assign_to": users, "doctype": self.doctype, "name":self.name})
+
+        users_to_assign = [
+            email
+            for email in users
+            if not frappe.db.exists(
+                "ToDo", {"allocated_to": email, "reference_name": self.name, "status": "Open"}
+            )
+        ]
+        if users_to_assign:
+            add_assign_to(
+                args={
+                    "assign_to": users_to_assign,
+                    "doctype": self.doctype,
+                    "name": self.name,
+                },
+               ignore_permissions=True,
+            )
+
 
     def get_admin_emails(self):
         """

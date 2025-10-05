@@ -4,7 +4,7 @@ from frappe.utils.data import *
 import datetime
 import requests
 import json
-
+from edu_quality.edu_quality.server_scripts.utils import current_academic_year
 
 def generate_mention_html(base_url, user_id, message, name):
     mention_html = f'<div class="ql-editor read-mode"><p>'
@@ -137,12 +137,25 @@ def notify_teacher_before_half_hour_job():
 
 
 def get_division_name_and_student_group_by_student_id(student_id):
-    sql = """ select parent,custom_group as stud_group ,custom_group_allocated as is_group from `tabStudent Group Student` where student = %(id)s and active = 1"""
-    division_list = frappe.db.sql(sql, {"id": student_id}, as_dict=1)
+    academic_year = current_academic_year()
+
+    div_name = frappe.db.get_value(
+        "Program Enrollment",
+        {"student": student_id, "academic_year": academic_year, "docstatus": 1},
+        "student_group",
+    )
+    if not div_name:
+        return None
+
+    sql = """ select parent,custom_group as stud_group ,custom_group_allocated as is_group from `tabStudent Group Student` where student = %(id)s and active = 1 and parent= %(div_name)s"""
+    division_list = frappe.db.sql(
+        sql, {"id": student_id, "div_name": div_name}, as_dict=1
+    )
+
+
     if len(division_list) > 0:
         return division_list[0]
     return None
-
 
 def get_datetime_from_time_slot(date, time_slot):
     # Parse the date string into a datetime object
@@ -156,7 +169,7 @@ def get_datetime_from_time_slot(date, time_slot):
         return datetime_obj
 
 
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=True)
 def get_upcoming_online_ptm_links(student_id):
     student_division_data = get_division_name_and_student_group_by_student_id(
         student_id
@@ -168,6 +181,7 @@ def get_upcoming_online_ptm_links(student_id):
     student_division = student_division_data.get("parent")
     student_group = student_division_data.get("stud_group")
     student_is_grp = student_division_data.get("is_group")
+    print(student_division, student_group)
     if student_division:
         filterss = {
             "date": (">=", getdate(today())),
@@ -196,9 +210,12 @@ def get_upcoming_online_ptm_links(student_id):
         return []
 
 
-def get_list_of_students_from_division_list(division_list):
-    sql = """select student from `tabStudent Group Student` where active = 1 and  parent in %(li)s"""
-    students_list = frappe.db.sql(sql, {"li": tuple(division_list)}, as_dict=1)
+def get_list_of_students_from_division_list(division_list, student_group):
+    print(division_list, student_group)
+    sql = """select student from `tabStudent Group Student` where active = 1 and  parent in %(li)s and custom_group = %(group)s"""
+    students_list = frappe.db.sql(
+        sql, {"li": tuple(division_list), "group": student_group}, as_dict=1
+    )
     return students_list
 
 
@@ -206,8 +223,9 @@ def get_list_of_students_from_division_list(division_list):
 def send_ptm_notifications_to_students():
     today_date = getdate(today())
     tomorrow_date = getdate(add_days(today(), 1))
-    # Get current datetime
+
     current_datetime = get_datetime().replace(second=0, microsecond=0)
+
     filterss = {
         # "is_gmeet_generated": 1,
         "gmeet_link": ["is", "set"],
@@ -233,27 +251,36 @@ def send_ptm_notifications_to_students():
             list_15mins.append(item)
         elif current_datetime == cutoff_datetime_5m:
             list_5mins.append(item)
-    if len(list_12hrs) > 0:
-        division_list = [i.get("division") for i in list_12hrs]
-        students_lists = get_list_of_students_from_division_list(division_list)
-        if len(students_lists):
-            notification_handler([i.get("student") for i in students_lists], "12 Hours")
 
-    if len(list_15mins) > 0:
-        division_list = [i.get("division") for i in list_15mins]
-        students_lists = get_list_of_students_from_division_list(division_list)
-        if len(students_lists):
-            notification_handler(
-                [i.get("student") for i in students_lists], "15 Minutes"
-            )
+    already_notified = {}
 
-    if len(list_5mins) > 0:
-        division_list = [i.get("division") for i in list_5mins]
-        students_lists = get_list_of_students_from_division_list(division_list)
-        if len(students_lists):
-            notification_handler(
-                [i.get("student") for i in students_lists], "5 Minutes"
+    handle_notify(list_12hrs, "12 Hours", already_notified)
+    handle_notify(list_15mins, "15 Minutes", already_notified)
+    handle_notify(list_5mins, "5 Minutes", already_notified)
+
+
+def handle_notify(time_data, time_inwords, already_notified):
+    if not time_data or len(time_data) == 0:
+        return
+
+    for i in time_data:
+        calculated_key = calculate_key(i)
+        if not already_notified.get(calculated_key):
+            students_lists = get_list_of_students_from_division_list(
+                [i.get("division")], i.get("group")
             )
+            notification_handler(
+                [i.get("student") for i in students_lists], time_inwords
+            )
+            already_notified[calculated_key] = True
+
+
+def calculate_key(ptm_data):
+    division = ptm_data.get("division")
+    group = ptm_data.get("group")
+    time_slot = ptm_data.get("slot")
+    date = ptm_data.get("date")
+    return f"{division}#{group}#{time_slot}#{date}"
 
 
 def notification_handler(student_data, time_inwords):
@@ -269,26 +296,23 @@ def notification_handler(student_data, time_inwords):
             {"students": student_ids},
             as_dict=1,
         )
-        print(guardian_details)
 
         final_guardian_list = {}
 
         if len(guardian_details) > 0:
             for i in guardian_details:
-                if i.name not in final_guardian_list:
-                    final_guardian_list[i.name] = i
+                if i.user not in final_guardian_list:
+                    final_guardian_list[i.user] = i
 
         if final_guardian_list:
-            for guardian_name, guardian_data in final_guardian_list.items():
+            for guardian_name in final_guardian_list:
                 send_notification_custom(
                     subject="Online PTM in {}. Please join in!".format(time_inwords),
-                    guardian=guardian_data,
+                    guardian=guardian_name,
                 )
 
 
-def send_notification_custom(subject, guardian):
-    user = guardian.get("user")
-    print(subject)
+def send_notification_custom(subject, user):
     if user:
         push_tokens = frappe.get_all(
             "Mobile Push Token", filters={"user_id": user}, fields=["token"]

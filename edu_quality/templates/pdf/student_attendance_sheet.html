@@ -4,9 +4,11 @@
     margin: 0;
     padding: 0;
   }
+
   @page {
     size: A4 Landscape;
     margin: 15px;
+    margin-left: 50px !important;
     padding: 15px;
   }
 
@@ -14,6 +16,7 @@
     break-inside: avoid !important;
     page-break-inside: avoid !important;
   }
+
   .filter-container {
     display: flex;
     justify-content: space-between;
@@ -23,7 +26,7 @@
     margin-bottom: 1rem;
   }
 
-  .filter-container .qr-code-img{
+  .filter-container .qr-code-img {
     width: 50px;
     height: 50px;
   }
@@ -33,11 +36,13 @@
     border-radius: 4px;
     background-color: "#F3F3F3";
   }
+
   .table {
     max-width: 100%;
     margin-bottom: 1rem;
     color: #212529;
-    border-collapse: collapse; /* Ensures borders are collapsed */
+    border-collapse: collapse;
+    /* Ensures borders are collapsed */
   }
 
   /* Equivalent of .table-bordered class */
@@ -45,9 +50,11 @@
   .table th,
   .table td,
   .table td input {
-    border: 1px solid #dee2e6; /* Light gray border */
+    border: 0.5px solid #000000;
+    /* Light gray border */
     font-size: 0.5rem;
   }
+
   .no-spacing {
     border-spacing: 0;
     border-collapse: collapse;
@@ -68,11 +75,12 @@
   }
 
   .table td input {
-    width: 21px !important;
+    width: 25px !important;
     height: 10px !important;
     margin: auto;
     border: none;
   }
+
   .table td.holiday {
     display: none;
   }

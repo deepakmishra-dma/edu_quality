@@ -1,24 +1,24 @@
 {
  "actions": [],
+ "allow_import": 1,
  "allow_rename": 1,
- "autoname": "field:event_name",
  "creation": "2024-06-03 18:13:05.071034",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
   "event_details_section",
   "event_name",
+  "event",
   "school",
   "classes_applicable_to",
   "single_poc_name",
-  "registrations_open_date",
   "column_break_hxca",
-  "calendar_event_name",
   "event_type",
+  "registration_type",
+  "registrations_open_date",
+  "last_date",
   "department",
   "secondary_poc_name",
-  "registration_type",
-  "last_date",
   "section_break_izud",
   "is_team",
   "team",
@@ -26,9 +26,16 @@
   "authorized_to",
   "student_details_tab",
   "student_details_section",
-  "add_students",
+  "add_allowed_students",
+  "all_students",
+  "column_break_xatu",
+  "student_status",
+  "section_break_hfsm",
   "allowed_students",
+  "add_to_participating",
+  "participating_student_details_section",
   "participating_students",
+  "non_participating_student_details_section",
   "non_participating_students",
   "event_timeline_tab",
   "event_dates_section",
@@ -50,7 +57,8 @@
    "fieldname": "classes_applicable_to",
    "fieldtype": "Table MultiSelect",
    "label": "Classes applicable to",
-   "options": "Classes"
+   "options": "Classes",
+   "read_only": 1
   },
   {
    "fieldname": "single_poc_name",
@@ -65,12 +73,6 @@
   {
    "fieldname": "column_break_hxca",
    "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "event_name",
-   "fieldtype": "Data",
-   "label": "Event Name",
-   "unique": 1
   },
   {
    "fieldname": "event_type",
@@ -110,19 +112,19 @@
   {
    "fieldname": "student_details_section",
    "fieldtype": "Section Break",
-   "label": "Student Details"
+   "label": "Allowed Student Details"
   },
   {
    "fieldname": "allowed_students",
    "fieldtype": "Table",
    "label": "Students Allowed to Participate",
-   "options": "Student Data"
+   "options": "Event Student"
   },
   {
    "fieldname": "non_participating_students",
    "fieldtype": "Table",
    "label": "Non Participating Students",
-   "options": "Student Data"
+   "options": "Event Student"
   },
   {
    "fieldname": "participating_students",
@@ -131,7 +133,7 @@
    "options": "Student Data"
   },
   {
-   "fetch_from": "calendar_event_name.branch",
+   "fetch_from": "event.custom_branch",
    "fieldname": "school",
    "fieldtype": "Link",
    "label": "School",
@@ -234,30 +236,73 @@
    "label": "Photos From Wal-T"
   },
   {
-   "fieldname": "add_students",
-   "fieldtype": "Button",
-   "label": "Add Students"
-  },
-  {
-   "fieldname": "calendar_event_name",
-   "fieldtype": "Link",
-   "label": "Calendar Event Name",
-   "options": "Calender"
-  },
-  {
    "depends_on": "eval: doc.registration_type == \"Pre-registered\"",
    "fieldname": "last_date",
    "fieldtype": "Date",
    "label": "Last Date"
+  },
+  {
+   "fieldname": "add_to_participating",
+   "fieldtype": "Button",
+   "label": "Add to Participating"
+  },
+  {
+   "fieldname": "participating_student_details_section",
+   "fieldtype": "Section Break",
+   "label": "Participating Student Details"
+  },
+  {
+   "fieldname": "non_participating_student_details_section",
+   "fieldtype": "Section Break",
+   "label": "Non Participating Student Details"
+  },
+  {
+   "fieldname": "add_allowed_students",
+   "fieldtype": "Button",
+   "label": "Add Allowed Students"
+  },
+  {
+   "fieldname": "event",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Event",
+   "options": "Event",
+   "reqd": 1
+  },
+  {
+   "fieldname": "event_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Event Name",
+   "reqd": 1
+  },
+  {
+   "description": "Enter student status as comma separated values",
+   "fieldname": "student_status",
+   "fieldtype": "Data",
+   "label": "Student Status"
+  },
+  {
+   "default": "0",
+   "fieldname": "all_students",
+   "fieldtype": "Check",
+   "label": "All Students"
+  },
+  {
+   "fieldname": "column_break_xatu",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_hfsm",
+   "fieldtype": "Section Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-06-05 12:39:08.569879",
+ "modified": "2024-06-12 10:41:12.519951",
  "modified_by": "Administrator",
  "module": "Edu Quality",
- "name": "Event Details",
- "naming_rule": "By fieldname",
+ "name": "Event Detail",
  "owner": "Administrator",
  "permissions": [
   {

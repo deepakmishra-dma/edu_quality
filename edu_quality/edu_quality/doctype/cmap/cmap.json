@@ -7,7 +7,6 @@
  "engine": "InnoDB",
  "field_order": [
   "details_section",
-  "cmap_code",
   "academic_year",
   "subject",
   "period",
@@ -214,16 +213,11 @@
    "fieldname": "last_period_of_the_unit",
    "fieldtype": "Check",
    "label": "Last Period of the Unit"
-  },
-  {
-   "fieldname": "cmap_code",
-   "fieldtype": "Data",
-   "label": "CMAP Code"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-05-27 14:34:40.484477",
+ "modified": "2024-03-28 11:18:22.322831",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "CMAP",
