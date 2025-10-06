@@ -6,7 +6,6 @@ import requests
 import json
 from edu_quality.edu_quality.server_scripts.utils import current_academic_year
 
-
 def generate_mention_html(base_url, user_id, message, name):
     mention_html = f'<div class="ql-editor read-mode"><p>'
     mention_html += (
@@ -139,6 +138,7 @@ def notify_teacher_before_half_hour_job():
 
 def get_division_name_and_student_group_by_student_id(student_id):
     academic_year = current_academic_year()
+
     div_name = frappe.db.get_value(
         "Program Enrollment",
         {"student": student_id, "academic_year": academic_year, "docstatus": 1},
@@ -152,10 +152,10 @@ def get_division_name_and_student_group_by_student_id(student_id):
         sql, {"id": student_id, "div_name": div_name}, as_dict=1
     )
 
+
     if len(division_list) > 0:
         return division_list[0]
     return None
-
 
 def get_datetime_from_time_slot(date, time_slot):
     # Parse the date string into a datetime object

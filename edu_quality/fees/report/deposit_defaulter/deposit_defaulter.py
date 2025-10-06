@@ -6,7 +6,9 @@ import frappe
 
 def execute(filters=None):
     columns = get_columns()
-    data = get_data(filters)
+    deposit = get_data(filters)
+    deposit_combined = get_data(filters, combined_deposit=True)
+    data = deposit + deposit_combined
     return columns, data
 
 
@@ -113,7 +115,7 @@ def get_columns():
     return columns
 
 
-def get_data(filters):
+def get_data(filters, combined_deposit=False):
     from_date = filters.get("from_date", "")
     to_date = filters.get("to_date", "")
     school = filters.get("school", ())
@@ -131,12 +133,16 @@ def get_data(filters):
             fee.custom_school AS school,
             GROUP_CONCAT(
                 DISTINCT CASE 
-                WHEN fc.fees_category LIKE %s OR fc.fees_category LIKE %s
+                WHEN fc.fees_category LIKE %(deposit)s
                 THEN fc.fees_category ELSE NULL END
             ) AS fee_head_name,
             fee.payment_plan AS payment_plan,
             pr.payment_term AS payment_term,
-            pr.grand_total AS amount_due,
+            SUM(
+                DISTINCT CASE 
+                WHEN fc.fees_category LIKE %(deposit)s
+                THEN fc.amount ELSE 0 END
+            ) AS amount_due,
             fee.academic_year AS academic_year,
             student.joining_date AS admission_date, 
             fee.creation AS creation_date,
@@ -146,47 +152,60 @@ def get_data(filters):
 
         FROM `tabPayment Request` AS pr        
         LEFT JOIN `tabFees` AS fee ON pr.reference_doctype = 'Fees' AND fee.name = pr.reference_name
-        LEFT JOIN `tabPayment Schedule` as ps ON ps.parent = fee.name
         LEFT JOIN `tabStudent` AS student ON pr.party = student.name
         LEFT JOIN `tabNotification Log` AS notification ON pr.party = notification.student AND fee.program  = notification.class AND fee.academic_year = notification.academic_year
         LEFT JOIN `tabFee Component` AS fc ON fee.name = fc.parent
-
-        WHERE 
-            pr.docstatus = 1
-            AND fee.docstatus = 1
-            AND pr.status != 'Paid'
-            AND student.student_status != 'Cancelled'
-            AND pr.payment_term IS NULL OR pr.payment_term = 'Term 1'
-            AND ps.parenttype = 'Fees'
-            AND ps.description LIKE %s
-            AND ps.outstanding = ps.payment_amount
         """
-    # these filters
-    values = ['%deposit%', '%registration%']
-    if from_date:
-        sql_query += "AND (pr.creation >= %s)"
-        values.append(from_date)
-    if to_date:
-        sql_query += "AND (pr.creation <= %s)"
-        values.append(to_date)
-    if school:
-        sql_query += "AND (fee.custom_school IN %s)"
-        values.append(tuple(school))
-    if program:
-        sql_query += "AND (fee.program IN %s)"
-        values.append(tuple(program))
-    if student_status:
-        sql_query += "AND (student.student_status = %s)"
-        values.append(student_status)
-    if academic_year:
-        sql_query += "AND (fee.academic_year = %s)"
-        values.append(academic_year)
 
-    values.append('%deposit%')
+    if combined_deposit:
+        sql_query += """
+            LEFT JOIN `tabPayment Schedule` as ps ON ps.parent = fee.name
+            WHERE 
+                pr.docstatus = 1
+                AND fee.docstatus = 1
+                AND pr.status != 'Paid'
+                AND student.student_status != 'Cancelled'
+                AND pr.payment_term = 'Term 1'
+                AND ps.parenttype = 'Fees'
+                AND ps.description LIKE %(deposit)s
+                AND ps.outstanding = ps.payment_amount
+        """
+    else:
+        sql_query += """
+            WHERE 
+                pr.docstatus = 1
+                AND fee.docstatus = 1
+                AND pr.status != 'Paid'
+                AND student.student_status != 'Cancelled'
+                AND pr.payment_term IS NULL
+        """
+
+    # these filters
+    values = {
+        "deposit": "%deposit%",
+    }
+    if from_date:
+        sql_query += "AND (pr.creation >= %(from_date)s)"
+        values["creation"] = from_date
+    if to_date:
+        sql_query += "AND (pr.creation <= %(to_date)s)"
+        values["creation"] = to_date
+    if school:
+        sql_query += "AND (fee.custom_school IN %(school)s)"
+        values["school"] = tuple(school)
+    if program:
+        sql_query += "AND (fee.program IN %(program)s)"
+        values["program"] = tuple(program)
+    if student_status:
+        sql_query += "AND (student.student_status = %(student_status)s)"
+        values["student_status"] = student_status
+    if academic_year:
+        sql_query += "AND (fee.academic_year = %(academic_year)s)"
+        values["academic_year"] = academic_year
 
     sql_query += """
         GROUP BY
-            refno, program, fees, student, student_status, school, payment_plan, payment_term, amount_due, academic_year, admission_date, creation_date, email_id, mobile_number;
+            refno, program, fees, student, student_status, school, payment_plan, payment_term, academic_year, admission_date, creation_date, email_id, mobile_number;
     """
     data = frappe.db.sql(sql_query, values, as_dict=True)
     return data

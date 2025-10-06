@@ -2,21 +2,34 @@
 # For license information, please see license.txt
 
 import frappe
+from frappe import _
+from frappe.utils.data import cstr
 from frappe.model.document import Document
 
 
 class EventDetail(Document):
 
-    def on_update(self):
+    def autoname(self):
+        prefix = frappe.get_value("School", self.school, "prefix")
+        self.name = f"{self.event_name} - {prefix}" if prefix else self.event_name
+
+    def before_save(self):
         self.update_classes()
 
     def update_classes(self):
         event = frappe.get_doc("Event", self.event)
+        # Get the existing classes
+        existing_classes = frappe.db.get_all(
+            "Classes", filters={"parent": self.name}, pluck="class"
+        )
+        # Remove classes that are no longer applicable
+        self.classes_applicable_to = []
+
+        # Add new applicable classes
         for cls in event.custom_classes:
-            if not frappe.db.exists(
-                "Classes", {"parent": self.name, "class": cls.get("class")}
-            ):
-                self.append("classes_applicable_to", {"class": cls.get("class")})
+            class_name = cls.get("class")
+            if class_name not in existing_classes:
+                self.append("classes_applicable_to", {"class": class_name})
 
     @frappe.whitelist()
     def get_students(self, args):
@@ -51,6 +64,65 @@ class EventDetail(Document):
                 message=f"Click on the link to register for the event: {registration_url}",
             )
         return True
+
+    def validate_students(self):
+        if isinstance(self.student_status, str):
+            statuses = [status.strip() for status in self.student_status.split(",")]
+        else:
+            statuses = []
+        students = self.winning_students + self.participating_students
+        
+        for student in students:
+            school = frappe.get_value("Student", student.student, "school")
+            if school != self.school:
+                frappe.throw(
+                    f"Student {student.student_name}({student.student}) does not belong to the school {self.school}"
+                )
+            
+            student_status = frappe.get_value("Student", student.student, "student_status")
+            if statuses and student_status not in statuses:
+                frappe.throw(
+                    f"Student {student.student_name}({student.student}) status must be one of {self.student_status}"
+                )
+
+    def _validate_selects(self):
+        if frappe.flags.in_import:
+            self.validate_students()
+            return
+
+        for df in self.meta.get_select_fields():
+            if (
+                df.fieldname == "naming_series"
+                or not self.get(df.fieldname)
+                or not df.options
+            ):
+                continue
+
+            options = (df.options or "").split("\n")
+
+            # if only empty options
+            if not filter(None, options):
+                continue
+
+            # strip and set
+            self.set(df.fieldname, cstr(self.get(df.fieldname)).strip())
+            value = self.get(df.fieldname)
+
+            if value not in options and not (
+                frappe.flags.in_test and value.startswith("_T-")
+            ):
+                # show an elaborate message
+                prefix = (
+                    _("Row #{0}:").format(self.idx) if self.get("parentfield") else ""
+                )
+                label = _(self.meta.get_label(df.fieldname))
+                comma_options = '", "'.join(_(each) for each in options)
+
+                frappe.throw(
+                    _('{0} {1} cannot be "{2}". It should be one of "{3}"').format(
+                        prefix, label, value, comma_options
+                    )
+                )
 
 
 @frappe.whitelist()
