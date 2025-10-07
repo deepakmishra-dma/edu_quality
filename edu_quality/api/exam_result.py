@@ -1,4 +1,5 @@
 import frappe
+from frappe.query_builder import Field
 
 
 def get_div_students(division):
@@ -28,7 +29,11 @@ def get_all_assessment_plans(assessment_group, program, div):
             & (assess_plan_qb.program == program)
             & (assess_plan_qb.docstatus == 1)
         )
-        .select(assess_plan_qb.name, assess_plan_qb.student_group)
+        .select(
+            assess_plan_qb.name,
+            assess_plan_qb.student_group,
+            assess_plan_qb.custom_calculate_ranks,
+        )
     )
 
     data = query.run(as_dict=True)
@@ -138,7 +143,8 @@ def process_result(assessment_group, academic_year, program, div=None):
         .on(assess_res_de_qb.parent == assess_res_qb.name)
         .where(
             (
-                assess_res_qb.assessment_plan.isin(plans or [None])
+                (assess_res_qb.docstatus.isin([0, 1]))
+                & assess_res_qb.assessment_plan.isin(plans or [None])
                 & (assess_res_de_qb.score.isnotnull())
             )
         )
@@ -157,6 +163,7 @@ def process_result(assessment_group, academic_year, program, div=None):
 
     result_data = query.run(as_dict=True)
     modified_result = {}
+
     for result in result_data:
         score = result.get("score")
         scale = result.get("custom_scale")
@@ -172,6 +179,7 @@ def process_result(assessment_group, academic_year, program, div=None):
             modified_result[parent] = docstatus
 
     for parent in modified_result:
+
         if modified_result[parent] == 1:
             assess_result = frappe.get_doc("Assessment Result", parent)
             assess_result.cancel()
@@ -179,5 +187,32 @@ def process_result(assessment_group, academic_year, program, div=None):
             amended_doc.amended_from = assess_result.name
             amended_doc.submit()
             continue
-
         frappe.db.set_value("Assessment Result", parent, "docstatus", 1)
+
+    for assess_plan in assessment_plans:
+        plan = assess_plan.get("name")
+        calculate_ranking = assess_plan.get("custom_calculate_ranks")
+        if calculate_ranking:
+            calculate_ordering(plan)
+    frappe.msgprint(
+        "Successfully Processed all the results matching the criteria provided"
+    )
+
+
+def calculate_ordering(assessment_plan):
+    data = frappe.db.sql(
+        """
+        Update `tabAssessment Result` 
+    INNER JOIN (SELECT 
+        RANK() OVER (ORDER BY custom_total_processed_score DESC) AS ranking,
+        name
+    FROM 
+        `tabAssessment Result`
+    WHERE 
+        assessment_plan = %(id)s
+        AND docstatus = 1) AS ranked_table ON  `tabAssessment Result`.name = ranked_table.name
+SET  `tabAssessment Result`.custom_rank = ranked_table.ranking;
+""",
+        values={"id": assessment_plan},
+        as_dict=True,
+    )

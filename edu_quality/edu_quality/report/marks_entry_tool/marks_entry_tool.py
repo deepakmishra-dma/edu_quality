@@ -271,7 +271,7 @@ def get_assessment_result_doc(ref_no, assessment_plan):
         filters={
             "student": ref_no,
             "assessment_plan": assessment_plan,
-            "docstatus": ("!=", 2),
+            "docstatus": ["not in", [1, 2]],
         },
     )
 
