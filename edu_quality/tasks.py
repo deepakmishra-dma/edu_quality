@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from edu_quality.public.py.walsh.admin import send_notification
 from edu_quality.edu_quality.server_scripts.utils import current_academic_year
 import requests
-
+from nextai.funnel.custom_trigger import trigger_event
 import json
 from frappe.core.doctype.communication.email import make
 
@@ -297,6 +297,7 @@ WHERE
 
     for program_enrollment in program_enrollments:
         try:
+            name = ""
             pe_name = program_enrollment.get("name")
             if not frappe.db.exists(
                 "Birthday Card",
@@ -316,11 +317,10 @@ WHERE
                 name = frappe.db.get_value(
                     "Birthday Card", {"program_enrollment": pe_name}, "name"
                 )
-
-            from nextai.funnel.custom_trigger import trigger_event
-
-            birthday_doc = frappe.get_doc("Birthday Card", name)
-            trigger_event(doc=birthday_doc, event_name="birthday_greeting")
+            if name:
+                birthday_doc = frappe.get_doc("Birthday Card", name)
+                trigger_event(doc=birthday_doc, event_name="birthday_greeting")
 
         except Exception as e:
             frappe.logger("Birthday Card").exception(e)
+            frappe.log_error("Error Scheduling", str(e))
