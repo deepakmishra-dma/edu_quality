@@ -23,6 +23,8 @@ class CustomHDTicket(HDTicket):
 
     def after_insert(self):
         students = self.find_student_by_email() or self.find_student_by_guardian()
+        if not students:
+            return
         for student in students:
             self.get_student_details(student)
         self.get_pevious_tickets()
@@ -48,19 +50,18 @@ class CustomHDTicket(HDTicket):
         if doc.last_name:
             student_name = student_name + " " + doc.last_name
         data =  """
-                <br><br>
-                -------------------------------------------<br>
-                <b>STUDENT DETAILS</b> - {student_id}<br>
-                -------------------------------------------<br>
-                <b>ID:</b> {student_id}<br>
-                <b>Name:</b> {student_name}<br>
-                <b>School:</b> {school}<br>
-                <b>Class:</b> {program}<br>
-                <b>Division:</b> {division}<br>
-                <b>Status:</b> {status}<br>
-                <b>Contact:</b> {contact}<br> 
-                --------------------------------------------<br>
-                """.format(student_id=student,student_name=student_name,school=doc.school,program=doc.program,division=doc.custom_division,status=doc.student_status,contact=doc.student_mobile_number)
+                <b>STUDENT DETAILS:</b> - {student_id}
+                <table>
+                <tr><td><b>ID</b></td><td>{student_id}</td></tr>
+                <tr><td><b>Name</b></td><td> {student_name}</td></tr>
+                <tr><td><b>School</b></td><td> {school}</td></tr>
+                <tr><td><b>Class</b> </td><td>{program}</td></tr>
+                <tr><td><b>Division</b></td><td> {division}</td></tr>
+                <tr><td><b>Status</b> </td><td>{status}</td></tr>
+                <tr><td><b>Contact</b> </td><td>{contact}</td></tr> 
+                <tr><td><b>Bus</b> </td><td>{bus}</td></tr>
+                </table>
+                """.format(student_id=student,student_name=student_name,school=doc.school,program=doc.program,division=doc.custom_division,status=doc.student_status,contact=doc.student_mobile_number,bus=doc.drop_bus)
         self.description = data
         self.get_fee_details(doc)
     
@@ -73,58 +74,65 @@ class CustomHDTicket(HDTicket):
         next_due = "Nil"
         overdue = "Nil"
         payment_schedule = """
-                            <br><br>
-                            -------------------------------------------<br>
-                            <b>PAYMENT SCHEDULE</b><br>
-                            -------------------------------------------<br>
-                            <b>Payment Term:</b> {payment_term}<br>
-                            <b>Due Date:</b> {due_date}<br>
-                            <b>Discount:</b> {discount}<br>
-                            <b>Payment Amount:</b> {amount}<br>
-                            <b>Outstanding:</b> {outstanding}<br>
-                            --------------------------------------------<br>
+                            <tr>
+                                <td>{payment_term}</td>         
+                                <td>{due_date}</td>  
+                                <td>{amount}</td>      
+                                <td>{outstanding}</td>
+                            </tr>
                             """
-        schedule_text = ""
+        schedule_text = """
+                            <b>PAYMENT SCHEDULE:</b> - {student_id}
+                            <table> 
+                            <tr>
+                                
+                                <td><b>PAYMENT TERM</b></td> 
+                                <td><b>DUE DATE</b></td>
+                                <td><b>PAYMENT AMOUNT</b></td>
+                                <td><b>OUTSTANDING</b></td>
+                            </tr>
+                            """
         for schedule in fee.payment_schedule:
-            if schedule.outstanding>0:
-                next_due = schedule.payment_term +" - " + str(schedule.outstanding) + " Due On -" + str(schedule.due_date)
-            if schedule.due_date<datetime.now().date():
-                overdue = next_due
-            schedule_text = schedule_text + payment_schedule.format(payment_term=schedule.payment_term,due_date=schedule.due_date,discount=schedule.discount_breakup,amount=schedule.payment_amount,outstanding=schedule.outstanding)
+            schedule_text = schedule_text.format(student_id=student.name) + payment_schedule.format(payment_term=schedule.payment_term,due_date=schedule.due_date,amount=schedule.payment_amount,outstanding=schedule.outstanding)
+        schedule_text = schedule_text + """</table>"""
         url = frappe.utils.get_url_to_form("Fees",fee.name)
         fee_link = """<a href="{url}">Fee Link</a>""".format(url=url)
         data = """
-                <br><br>
-                -------------------------------------------<br>
-                <b>FEE DETAILS</b> - {student_id} <br>
-                -------------------------------------------<br>
-                <b>Payment Plan:</b> {payment_plan}<br>
-                <b>Total Fee:</b> {total}<br>
-                <b>Fees Paid:</b> {paid}<br>
-                <b>Next Due:</b> {next_due}<br>
-                <b>Overdue:</b> {overdue}<br>
-                <b>Fee Link:</b> {fee_link}<br>
-                --------------------------------------------<br>
-                """.format(student_id=student.name,payment_plan=payment_plan,total=fee.grand_total,paid=fee.grand_total-fee.outstanding_amount,next_due=next_due,overdue=overdue,fee_link=fee_link)
-        self.description = self.description + data + schedule_text
-        self.get_payment_entries(fee)
+                
+                <b>FEE DETAILS:</b> - {student_id}
+                <table>
+                <tr><td><b>Payment Plan</b> </td><td>{payment_plan}</td></tr>
+                <tr><td><b>Total Fee</b> </td><td>{total}</td></tr>
+                <tr><td><b>Fees Paid</b> </td><td>{paid}</td></tr>
+                <tr><td><b>Fee Link</b> </td><td>{fee_link}</td></tr>
+                </table>
+                """.format(student_id=student.name,payment_plan=payment_plan,total=fee.grand_total,paid=fee.grand_total-fee.outstanding_amount,fee_link=fee_link)
+        self.description = self.description + data #+ schedule_text
+        # self.get_payment_entries(fee)
     
     def get_payment_entries(self,fee):
-        template = """Payment Entry: {payment_term} - <a href="{url}">{entry}</a><br>"""
-        entries = frappe.get_all("Payment Entry",filters={'reference_no':fee.name,'docstatus':1},fields=['name','payment_term'])
+        template = """
+                    <tr>
+                        <td>{payment_term}</td>
+                        <td><a href="{url}">{entry}</a></td>
+                    </tr>
+                    """
+        entries = frappe.get_all("Payment Entry",filters={'reference_name':fee.name,'docstatus':1},fields=['name','payment_term'])
         if not entries:
             return
         entry_text = """
-                    <br><br>
-                    ----------------------------------------<br>
-                    PAYMENT RECEIPTS - {student_id}<br>
-                    ----------------------------------------<br>
+                    <b>PAYMENT RECEIPTS:</b> - {student_id}
+                    <table>
+                    <tr>
+                        <td><b>PAYMENT TERM</b></td>
+                        <td><b>PAYMENT ENTRY</b></td>
+                    </tr>
                 """.format(student_id=fee.student)
         for entry in entries:
             term = entry.payment_term or "Deposit"
             url = frappe.utils.get_url_to_form("Payment Entry",entry.name)
             entry_text = entry_text + template.format(payment_term=term,entry=entry.name,url=url)
-        entry_text = entry_text + "----------------------------------------<br>"
+        entry_text = entry_text + "</table>"
         self.description = self.description + entry_text
 
     def get_pevious_tickets(self):
@@ -134,18 +142,25 @@ class CustomHDTicket(HDTicket):
         elif len(tickets) == 0:
             return 
         ticket_text = """
-                    <br><br>
-                    ----------------------------------------<br>
-                    <b>Previous Tickets</b><br>
-                    ----------------------------------------<br>
+                   
+                    <b>Previous Tickets:</b>
+                    <table>
+                    <tr>
+                        <td><b>Ticket No</b></td>
+                        <td><b>Subject</b></td>
+                    </tr>
                 """
-        template = """<b>Support Ticket:</b> {subject} - <a href="{url}">{ticket}</a><br>"""
+        template = """<tr>
+                        <td><a href="{url}">{ticket_no}</a></td>
+                        <td>{subject}</td>
+                    </tr>
+                    """
         for ticket in tickets:
             if ticket.name==self.name:
                 continue
-            ticket_text = ticket_text + template.format(subject=ticket.subject,ticket=ticket.name,url=frappe.utils.get_url_to_form("HD Ticket",ticket.name))
+            ticket_text = ticket_text + template.format(ticket_no=ticket.name,subject=ticket.subject,url=frappe.utils.get_url_to_form("HD Ticket",ticket.name))
         if self.description:
-            self.description = self.description + ticket_text + "----------------------------------------<br>"
+            self.description = self.description + ticket_text + "</table>"
         else:
-            self.description = ticket_text + "----------------------------------------<br>"
+            self.description = ticket_text + "</table>"
 
