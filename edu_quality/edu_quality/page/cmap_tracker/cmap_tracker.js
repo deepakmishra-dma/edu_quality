@@ -32,6 +32,25 @@ async function onLoad() {
 
 	el.addClass("cmap-tracker");
 	const [teachersData, acadYear, school] = await getTeachers()
+	const data = await frappe.call({
+		method: 'frappe.client.get_list',
+		args: {
+			'limit': 0,
+			'doctype': 'Class Type',
+
+
+			'fields': [
+				"name"
+			]
+		},
+		callback: function (r) {
+
+		}
+	});
+	if (!data.message || !data.message.length || data.message.length == 0) {
+		frappe.throw("Something Went wrong fetching classes try refreshing the page ")
+	}
+	const parsedData = data.message.map((el) => el.name).join("\n")
 	isAdmin = !teachersData
 	const teacherFilter = !teachersData ? [{
 		label: 'Teacher',
@@ -77,9 +96,9 @@ async function onLoad() {
 		{
 			label: 'Class',
 			fieldname: 'class',
-			fieldtype: 'Link',
+			fieldtype: 'Select',
 			reqd: 1,
-			options: "Class Type",
+			options: parsedData,
 
 			// change: () => filterOnChange(filtersRef.fields_dict.class)
 		},

@@ -162,9 +162,6 @@ override_doctype_class = {
 # Hook on document methods and events
 
 doc_events = {
-    "HD Ticket": {
-        "after_insert": "edu_quality.edu_quality.server_scripts.hd_ticket.after_insert",
-    },
     "Guardian": {
         "before_insert": "edu_quality.edu_quality.server_scripts.guardian.before_insert",
         "after_insert": "edu_quality.edu_quality.server_scripts.guardian.after_insert",
@@ -293,7 +290,7 @@ scheduler_events = {
 # Testing
 # -------
 
-# before_tests = "edu_quality.install.before_tests"
+# before_tests = "edu_quality.edu_quality.unit_tests.before_tests.setup_master_data"
 
 # Overriding Methods
 # ------------------------------

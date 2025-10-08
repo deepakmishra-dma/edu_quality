@@ -81,12 +81,12 @@ def gen_field_name(assess_plan):
 
 
 def get_div_students(division):
-    data = frappe.get_list(
-        "Program Enrollment",
-        filters={"docstatus": 1, "student_group": ["in", division or [None]]},
+
+    data = frappe.db.get_all(
+        "Student Group Student",
+        filters={"parent": division},
         fields=["student_name", "name", "student"],
     )
-
     return [
         {"ref_no": student.get("student"), "student_name": student.get("student_name")}
         for student in data
@@ -119,11 +119,12 @@ def get_earlier_marks(filters, students, criterias):
             assess_res_qb.star,
             assessment_det_qb.assessment_criteria,
             assessment_det_qb.score,
+            assessment_det_qb.custom_is_absent,
         )
     )
 
     data = query.run(as_dict=True)
-    frappe.errprint(data)
+
     students_res = {}
     for assess_res in data:
         student = assess_res.get("student")
@@ -240,7 +241,8 @@ def enter_individual_marks(
     for criteria in criterias:
         assessment_criteria = criteria.get("assessment_criteria")
         name = assessment_criteria.get("name")
-        score = assessment_criteria.get("value")
+        score = (assessment_criteria.get("value"),)
+        scale = assessment_criteria.get("custom_scale")
         if str(score).lower() == "ab":
             score = 0
             is_absent = 1
@@ -248,6 +250,8 @@ def enter_individual_marks(
             {
                 "assessment_criteria": name,
                 "score": flt(score) or 0,
+                "custom_is_absent": is_absent,
+                "custom_scale": scale,
             }
         )
     assessment_result = get_assessment_result_doc(ref_no, assessment_plan)
@@ -256,7 +260,6 @@ def enter_individual_marks(
             "student": ref_no,
             "assessment_plan": assessment_plan,
             "details": assessment_details,
-            "custom_is_absent": is_absent,
         }
     )
     assessment_result.save()
@@ -268,7 +271,7 @@ def get_assessment_result_doc(ref_no, assessment_plan):
         filters={
             "student": ref_no,
             "assessment_plan": assessment_plan,
-            "docstatus": ("!=", 2),
+            "docstatus": ["not in", [1, 2]],
         },
     )
 

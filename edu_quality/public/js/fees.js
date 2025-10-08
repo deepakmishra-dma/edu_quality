@@ -625,7 +625,27 @@ function partial_payment(frm) {
                         console.log(filled)
                         d.fields_dict.total_remaining.set_value(total - filled)
                     }
-                }],
+                },
+                {
+                    fieldtype: 'Section Break',
+                    fieldname: "sl"
+                },
+                {
+                    fieldtype: 'Data',
+                    fieldname: "otp_entry",
+                    label: "OTP",
+                    hidden: 1
+                },
+                {
+                    fieldtype: 'Column Break',
+                    fieldname: "cl"
+                },
+                {
+                    fieldtype: "Button",
+                    fieldname: "verify",
+                    label: "Send OTP"
+                }
+            ],
             primary_action_label: 'Create',
             primary_action(values) {
                 frappe.call({
@@ -645,6 +665,64 @@ function partial_payment(frm) {
                 d.hide();
             }
         })
+
+        //hide create button 
+        setTimeout(() => {
+            const x = document.querySelector(".btn-modal-primary");
+            x.style.display = 'none';
+        }, 1000);
+
+        d.fields_dict.verify.input.onclick = function () {
+            if (d.fields_dict.otp_entry.value) {
+                frappe.call({
+                    method: "edu_quality.public.py.utils.verify_otp",
+                    args: {
+                        "fee": frm.doc.name,
+                        "otp": values.otp_entry
+                    },
+                    callback: function (r) {
+                        if (r.message === true) {
+                            frappe.show_alert({
+                                message: __("OTP Verified Successfully"),
+                                indicator: 'green'
+                            });
+                            setTimeout(() => {
+                                const x = document.querySelector(".btn-modal-primary");
+                                x.style.display = 'block';
+                            }, 1000);
+                        } else {
+                            frappe.show_alert({
+                                message: __("Invalid OTP, Please try again"),
+                                indicator: 'red'
+                            });
+                        }
+                    }
+                });
+            }
+            else {
+                d.fields_dict.otp_entry.df.hidden = 0
+                d.fields_dict.otp_entry.refresh()
+                d.fields_dict.verify.df.label = "Verify OTP"
+                d.fields_dict.verify.refresh()
+
+
+                frappe.call({
+                    method: "edu_quality.public.py.utils.generate_otp",
+                    args: {
+                        fee: frm.doc.name,
+                        undertaking: 1
+                    },
+                    callback: function (r) {
+                        if (r.message === true) {
+                            showAlert("OTP has been sent successfully.", 'green');
+                        }
+                        else {
+                            showAlert("Error while sending OTP.", 'red');
+                        }
+                    }
+                });
+            }
+        }
         d.show();
     }, __("Action"));
 }

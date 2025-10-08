@@ -1,4 +1,5 @@
 var globalPage
+var filtersRef
 frappe.pages['process-exam-result'].on_page_load = function (wrapper) {
 	var page = frappe.ui.make_app_page({
 		parent: wrapper,
@@ -12,11 +13,12 @@ frappe.pages['process-exam-result'].on_page_load = function (wrapper) {
 function onLoad() {
 	const el = globalPage.wrapper.find('.container.page-body');
 
-	make_fieldgroup(el, [
+	filtersRef = make_fieldgroup(el, [
 		{
 			label: 'Academic Year',
 			fieldname: 'acad_year',
 			fieldtype: 'Link',
+			options: "Academic Year",
 			reqd: 1
 		},
 		{
@@ -46,9 +48,52 @@ function onLoad() {
 			fieldname: "division",
 			fieldtype: "Link",
 			options: "Student Group",
-			reqd: 1
 		}
 	])
+	addProcessButton()
+}
+function addProcessButton() {
+	globalPage.set_primary_action('Process Result', processResult)
+}
+function processResult() {
+	frappe.confirm('Are you sure you want to process the result for the selected filters',
+		() => {
+
+		}, () => {
+			// action to perform if No is selected
+		})
+}
+async function processResult() {
+	const acad_year = filtersRef.get_value("acad_year")
+	const school = filtersRef.get_value("school")
+	const program = filtersRef.get_value("program")
+	const division = filtersRef.get_value("division")
+	const assess_group = filtersRef.get_value("exam_name")
+
+	if (!acad_year || !school || !program || !assess_group) {
+		frappe.throw(__('Academic Year or School or Program or Exam Group is required'))
+		return
+	}
+	frappe.confirm('If there are submitted results they will be cancelled and new ones will be created, Are you sure you want to proceed?', async () => {
+		data = await frappe.call({
+			"method": "edu_quality.api.exam_result.process_result",
+			args: {
+				academic_year: acad_year,
+				school: school,
+				program: program,
+				division: division,
+				assessment_group: assess_group
+			}
+		})
+
+		if (data?.message?.errors) {
+			console.log("Something Went Wrong", data?.message?.errors)
+		}
+	}, () => {
+
+	})
+
+
 }
 function make_fieldgroup(parent, ddf_list) {
 	fg = new frappe.ui.FieldGroup({
