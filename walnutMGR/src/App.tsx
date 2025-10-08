@@ -6,16 +6,17 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import { IDataMultipleContextProvider } from "@refinedev/core/dist/contexts/data/IDataContext";
 
-import { Index } from "./components/pages";
+import { Index } from "./components/pages/index";
 
 const provider: IDataMultipleContextProvider = {
   default: dataProvider(window.location.origin + "/api/resource"),
 };
 
 function App() {
+  console.log("Check index");
   return (
     <div>
-      <BrowserRouter>
+      <BrowserRouter basename="/walnutMGR">
         <Refine dataProvider={provider} routerProvider={routerProvider}>
           <Routes>
             <Route path="/" element={<Index />} />

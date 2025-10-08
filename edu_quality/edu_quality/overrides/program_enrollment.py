@@ -5,7 +5,7 @@ from education.education.doctype.program_enrollment.program_enrollment import (
 from frappe.utils import comma_and, get_link_to_form, getdate
 from frappe import _
 from frappe.utils.data import cstr
-from edu_quality.edu_quality.server_scripts.student import add_to_division
+from edu_quality.edu_quality.server_scripts.student import add_to_division, sync_and_sort_division_data
 
 
 class CustomProgramEnrollment(ProgramEnrollment):
@@ -122,4 +122,6 @@ class CustomProgramEnrollment(ProgramEnrollment):
         self.roll_no = roll_no
         self.save(ignore_permissions=True)
         self.reload()
+        # After adding student to division, sync and sort division data
+        sync_and_sort_division_data(self.student_group)
     
