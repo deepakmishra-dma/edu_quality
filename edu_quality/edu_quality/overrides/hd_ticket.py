@@ -40,6 +40,7 @@ class CustomHDTicket(HDTicket):
         if frappe.db.exists('Guardian',{'email_address':self.raised_by}):
             guardian = frappe.get_value("Guardian",{'email_address':self.raised_by})
             students = frappe.get_all('Student Guardian',filters={'guardian':guardian},fields=['parent'])
+            students = [student.parent for student in students]
             return students
     
     def get_student_details(self,student):
