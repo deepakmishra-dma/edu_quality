@@ -20,8 +20,12 @@ class CustomHDTicket(HDTicket):
         self.description = self.description or c.content
         # Save the ticket, allowing for hooks to run.
         self.save(ignore_permissions=True)
-
+    
     def after_insert(self):
+        self.fetch_ticket_details()
+
+    @frappe.whitelist()
+    def fetch_ticket_details(self):
         students = self.find_student_by_email() or self.find_student_by_guardian()
         if not students:
             return
@@ -40,6 +44,7 @@ class CustomHDTicket(HDTicket):
         if frappe.db.exists('Guardian',{'email_address':self.raised_by}):
             guardian = frappe.get_value("Guardian",{'email_address':self.raised_by})
             students = frappe.get_all('Student Guardian',filters={'guardian':guardian},fields=['parent'])
+            students = [student.parent for student in students]
             return students
     
     def get_student_details(self,student):
