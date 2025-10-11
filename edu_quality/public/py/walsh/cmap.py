@@ -20,7 +20,7 @@ def get_student_class_details(student):
     )
     program_enrollments = frappe.get_all(
         "Program Enrollment",
-        filters={"student": student, "academic_year": current_yr},
+        filters={"student": student, "academic_year": current_yr,'docstatus':1},
         fields=["program", "student_group"],
     )
     if not len(program_enrollments):
