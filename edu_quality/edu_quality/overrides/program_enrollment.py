@@ -125,3 +125,53 @@ class CustomProgramEnrollment(ProgramEnrollment):
         # After adding student to division, sync and sort division data
         sync_and_sort_division_data(self.student_group)
     
+
+def sync_student_data():
+    """
+    Cron job to sync student data from Program Enrollment to Student
+    """
+    academic_year = frappe.get_value(
+        "Academic Year", {"custom_current_academic_year": 1}
+    )
+    fetch_fields = [
+        "student",
+        "program",
+        "student_group",
+        "roll_no",
+        "tiffin_rack_no",
+        "transport_service_required",
+        "school_house",
+        "pickup_bus",
+        "drop_bus",
+        "pickup_address",
+        "drop_address",
+    ]
+    pe_list = frappe.db.get_all(
+        "Program Enrollment",
+        {"academic_year": academic_year, "docstatus": 1},
+        fetch_fields,
+    )
+
+    # Fetch all student groups in one call
+    student_groups = {
+        sg.name: sg.student_group_name
+        for sg in frappe.get_all("Student Group", fields=["name", "student_group_name"])
+    }
+
+    for pe in pe_list:
+        division = student_groups.get(pe.student_group)
+        fields = {
+            "roll_no": pe.roll_no,
+            "tiffin_rack_no": pe.tiffin_rack_no,
+            "bus_service_required": pe.transport_service_required,
+            "school_house": pe.school_house,
+            "pickup_bus": pe.pickup_bus,
+            "drop_bus": pe.drop_bus,
+            "pickup_address": pe.pickup_address,
+            "drop_address": pe.drop_address,
+            "program": pe.program,
+            "custom_division": division,
+        }
+        frappe.db.set_value("Student", pe.student, fields)
+
+    frappe.db.commit()

@@ -2,6 +2,7 @@ import frappe
 from datetime import datetime, timedelta
 from edu_quality.public.py.walsh.admin import send_notification
 from edu_quality.edu_quality.server_scripts.utils import current_academic_year
+from edu_quality.edu_quality.overrides.program_enrollment import sync_student_data
 import requests
 from nextai.funnel.custom_trigger import trigger_event
 import json
@@ -29,6 +30,13 @@ def time_based():
         queue="long",
         timeout=1800,
     )
+
+
+def sync_student_data_from_program_enrollment():
+    """
+    Cron job to sync student data from Program Enrollment to Student
+    """
+    sync_student_data()
 
 
 def create_payment_request_before_due_date():
