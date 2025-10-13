@@ -61,6 +61,7 @@ doctype_list_js = {
     "Student ID Card": "public/js/list/student_id_card.js",
     "Fees": "public/js/list/fees_list.js",
     "Purchase Order": "public/js/list/purchase_order_list.js",
+    "Assessment Group": "public/js/list/assessment_group_list.js",
     "Carnival Event": [
         # "public/js/list/list_view.js",
         "public/js/list/carnival_event_list.js",

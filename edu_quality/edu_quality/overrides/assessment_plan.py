@@ -7,7 +7,7 @@ import json
 
 class CustomAssessmentPlan(AssessmentPlan):
     def before_validate(self, method=None):
-
+        self.assessment_name = name_func(self)
         if frappe.db.exists(
             "Assessment Plan",
             {
@@ -15,7 +15,8 @@ class CustomAssessmentPlan(AssessmentPlan):
                 "academic_year": self.academic_year,
                 "course": self.course,
                 "student_group": self.student_group,
-                "custom_textbook": ["in", ["All", self.custom_textbook]],
+                "custom_type": self.custom_type,
+                "custom_textbook": ["in", ["ALL", "All", self.custom_textbook]],
                 "name": ["!=", self.name],
             },
         ):
@@ -42,7 +43,7 @@ def name_func(assessment_plan_doc):
         textbook_short = frappe.get_doc(
             "Textbook", assessment_plan_doc.get("custom_textbook")
         ).get("short_code")
-    textbook_short = "All"
+    textbook_short = "ALL"
     academic_year = extract_year_from_academic_year_name(
         assessment_plan_doc.get("academic_year") or current_academic_year()
     )
@@ -72,4 +73,4 @@ def check_for_duplicates(assessment_plan_doc):
 @frappe.whitelist()
 def get_assessment_cr_textbooks():
     textbooks = frappe.db.get_all("Textbook")
-    return ["All"] + [i.get("name") for i in textbooks]
+    return ["ALL"] + [i.get("name") for i in textbooks]

@@ -5,26 +5,14 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "assessment_result",
-  "assessment_plan",
+  "assessment_group",
   "combined_marks_or_grade",
   "processed_time",
   "processed_user",
+  "exams",
   "processed_reason"
  ],
  "fields": [
-  {
-   "fieldname": "assessment_result",
-   "fieldtype": "Link",
-   "label": "Assessment Result",
-   "options": "Assessment Result"
-  },
-  {
-   "fieldname": "assessment_plan",
-   "fieldtype": "Link",
-   "label": "Assessment Plan",
-   "options": "Assessment Plan"
-  },
   {
    "fieldname": "combined_marks_or_grade",
    "fieldtype": "Data",
@@ -45,14 +33,26 @@
    "fieldname": "processed_reason",
    "fieldtype": "Text",
    "label": "Processed Reason"
+  },
+  {
+   "fieldname": "assessment_group",
+   "fieldtype": "Link",
+   "label": "Assessment Group",
+   "options": "Assessment Group"
+  },
+  {
+   "fieldname": "exams",
+   "fieldtype": "Table",
+   "label": "Exams",
+   "options": "Composite Exam"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-06-06 09:23:48.913708",
+ "modified": "2024-06-17 10:15:07.040780",
  "modified_by": "Administrator",
  "module": "Edu Quality",
- "name": "Assessment Processing",
+ "name": "Composite Assessment Processing",
  "owner": "Administrator",
  "permissions": [
   {
