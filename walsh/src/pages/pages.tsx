@@ -22,7 +22,7 @@ import Result from "./result.tsx";
 
 import { StudentProfle } from "./StudentProfile.tsx";
 import { PtmLinks } from "./PtmLinks.tsx";
-
+import { Fee } from "./Fee.tsx";
 
 const Pages = () => {
   // const location = useLocation()
@@ -83,6 +83,7 @@ const Pages = () => {
                 <Route path="/cmap" element={<Cmap />} />
                 <Route path="/cmap/list" element={<CmapList />} />
                 <Route path="/portion-circular" element={<PortionCircular />} />
+                <Route path="/fee" element={<Fee />} />
                 <Route
                   path="/portion-circular/list"
                   element={<PortionCircularList />}

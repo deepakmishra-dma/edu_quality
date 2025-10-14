@@ -5,9 +5,11 @@ export interface ClassDetails {
     student_group_name: string
     name: string
     custom_school: string
+    academic_year: string
   }
   "program": {
     program_name: string
+    name: string
   }
   "class": {
     subject: [{
