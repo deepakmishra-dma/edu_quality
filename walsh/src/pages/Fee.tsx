@@ -1,107 +1,132 @@
-import { Box, Stack, Text, Select } from "@mantine/core";
+import { Box, Stack, Text, Table } from "@mantine/core";
 import useStudentList from "../components/queries/useStudentList";
 import { useEffect, useMemo, useState } from "react";
 import useStudentProfileColor from "../components/hooks/useStudentProfileColor";
 import useClassDetails from "../components/queries/useClassDetails";
 import { useSearchParams } from "react-router-dom";
-import {
-  useAcademicCurrentYear,
-  useAcademicNextYear,
-} from "../components/queries/useFeeDetailsList";
-interface PaymentData {
-  id: number;
-  amount: number;
+
+interface PaymentSchedule {
   data: any;
 }
+interface PaymentDetails {
+  status: string;
+  payment_term: string;
+  data: any;
+  payment_url: string;
+  grand_total: number;
+}
+
 export const Fee = () => {
   const { data: studentsList } = useStudentList();
   const [selectedStudent, setSelectedStudent] = useState<string>("");
   const studentProfileColor = useStudentProfileColor(selectedStudent);
   const { data: classDetails } = useClassDetails(selectedStudent);
-  const [years, setYears] = useState<string[]>([]);
-  const [selectedName, setSelectedName] = useState<{ name: string }[]>([]);
-  const [selectedYear, setSelectedYear] = useState<string | null>(null);
-  const [fetchedData, setFetchedData] = useState<PaymentData[]>([]);
+
   const [searchParams] = useSearchParams();
-  const { data: current_year } = useAcademicCurrentYear();
-  const { data: next_year } = useAcademicNextYear();
-  const [loading, setLoading] = useState(false);
-
-  const fetchAPI = async (year: string | null, student: string | null) => {
-    setLoading(true);
-
-    try {
-      const response = await fetch(
-        `/api/resource/Payment%20Request?filters=[["party","=","${student}"],["reference_name","like","%25${year}%25"],["docstatus","=","1"]]`
-      );
-      const resp = await response.json();
-      setSelectedName(resp?.data);
-    } catch (error) {
-      console.error("Failed to fetch data", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchDetails = async () => {
-    setLoading(true);
-    try {
-      const data = [];
-      for (const name of selectedName) {
-        const response = await fetch(
-          `/api/resource/Payment%20Request/${name?.name}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (response.ok) {
-          const result = await response.json();
-          data.push(result);
-        } else {
-          console.error(`Failed to record ${name}`);
+  const [paymentRequests, setPaymentRequests] = useState<string[]>([]);
+  const [studentFee, setStudentFee] = useState("");
+  const [paymentSchedule, setPaymentSchedule] = useState<PaymentSchedule[]>([]);
+  const [payDeatils, setPayDetails] = useState<PaymentDetails | undefined>(
+    undefined
+  );
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  useEffect(() => {
+    const fetchFeesData = async () => {
+      try {
+        setLoading(true);
+        if (!selectedStudent) {
+          setError("No student selected");
+          setPaymentSchedule([]);
+          setLoading(false);
+          return;
         }
-      }
-      setFetchedData(data);
-    } catch (err) {
-      console.log("error ", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleChange = (e: any) => {
-    setSelectedYear(e);
-    setSelectedName([]);
-    setFetchedData([]);
-    setLoading(true);
-    fetchAPI(e, selectedStudent);
-  };
-  useEffect(() => {
-    if (selectedName.length > 0) {
-      fetchDetails();
-    }
-  }, [selectedName]);
-  console.log("data", fetchedData);
-  useEffect(() => {
-    if (current_year?.data?.data || next_year?.data?.data) {
-      const currentYears =
-        current_year?.data?.data?.map?.((i: any) => i?.name) || [];
-      const nextYears = next_year?.data?.data?.map?.((i: any) => i?.name) || [];
-      const combinedYears = Array.from(
-        new Set([...currentYears, ...nextYears])
-      );
-      setYears((prevYears) => {
-        const updatedYears = Array.from(
-          new Set([...prevYears, ...combinedYears])
+        const response = await fetch(
+          `/api/resource/Fees?filters=[["student", "=", "${selectedStudent}"]]`
         );
-        return updatedYears?.sort();
-      });
-    }
-  }, [current_year, next_year]);
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        const data = await response.json();
+        setStudentFee(data?.data?.[0]?.name);
+        setError(null);
+      } catch (error: any) {
+        console.log("error", error);
+        setError(error.message || "Error fetching fee data");
+        setPaymentSchedule([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeesData();
+  }, [selectedStudent]);
+  useEffect(() => {
+    const paymentRequest = async (select_student: string) => {
+      try {
+        setLoading(true);
+        if (!select_student) {
+          setError("No student selected");
+          setPaymentRequests([]);
+          setLoading(false);
+          return;
+        }
+        const response = await fetch(
+          `/api/resource/Payment%20Request?filters=[["party","=", "${select_student}"],["reference_name","like","%252024-2025%25"],["docstatus","=","1"]]`
+        );
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        const data = await response.json();
+        const paymentNames = data?.data?.map?.((i: any) => i?.name) || [];
+
+        setPaymentRequests(paymentNames);
+        setError(null);
+      } catch (error: any) {
+        console.log("error", error);
+        setError(error.message || "Error fetching payment requests");
+        setPaymentRequests([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    paymentRequest(selectedStudent);
+  }, [selectedStudent]);
+
+  useEffect(() => {
+    const paymentRequestDetails = async () => {
+      try {
+        setLoading(true);
+        if (paymentRequests.length === 0) {
+          setError("No payment schedule available");
+          setPayDetails(undefined);
+          setLoading(false);
+          return;
+        }
+        for (let name of paymentRequests) {
+          const response = await fetch(
+            `/api/resource/Payment%20Request/${name}`
+          );
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+          const data = await response.json();
+          setPayDetails(data?.data);
+        }
+        setError(null);
+      } catch (error: any) {
+        setError(error.message || "Error fetching payment request details");
+
+        console.log("error", error);
+        setPayDetails(undefined);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    paymentRequestDetails();
+  }, [paymentRequests]);
 
   const searchedStudent = searchParams.get("student");
 
@@ -122,11 +147,35 @@ export const Fee = () => {
     } else if (!studentNames.includes(selectedStudent)) {
       setSelectedStudent(studentNames[0]);
     }
-  }, [searchedStudent, selectedStudent, students, selectedName]);
-  const extractAcademicYear = (referenceName: any) => {
-    const match = referenceName.match(/\((\d{4}-\d{4})\)/);
-    return match ? match[1] : "Year not found";
+  }, [searchedStudent, selectedStudent, students]);
+
+  const fetchFeesDetails = async () => {
+    try {
+      setLoading(true);
+      if (!studentFee) {
+        setError("No payment schedule available");
+        setPaymentSchedule([]);
+        setLoading(false);
+        return;
+      }
+      const response = await fetch(`/api/resource/Fees/${studentFee}`);
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      const data = await response.json();
+      setPaymentSchedule(data?.data?.payment_schedule);
+      setError(null);
+    } catch (error: any) {
+      console.log("error", error);
+      setError(error.message || "Error fetching fee details");
+      setPaymentSchedule([]);
+    } finally {
+      setLoading(false);
+    }
   };
+  useEffect(() => {
+    fetchFeesDetails();
+  }, [studentFee]);
   return (
     <>
       <Box>
@@ -155,8 +204,9 @@ export const Fee = () => {
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
+
                   setSelectedStudent(student.name);
-                  handleChange(e);
+                  // handleChange(e);
                 }}
               >
                 <Text
@@ -233,9 +283,11 @@ export const Fee = () => {
             )}
           </Stack>
           <Box
-            sx={{
-              textAlign: "center",
-            }}
+            sx={
+              {
+                // textAlign: "center",
+              }
+            }
           >
             <div
               style={{
@@ -246,167 +298,116 @@ export const Fee = () => {
                 alignItems: "center",
                 gap: "1rem",
               }}
-            >
-              <Select
-                placeholder="Academic Year"
-                data={years?.map?.((i) => i)}
-                value={selectedYear}
-                onChange={handleChange}
-              />
-            </div>
-            {loading ? (
-              <>
-                <div>Loading....</div>
-              </>
-            ) : fetchedData.length > 0 ? (
-              fetchedData?.map?.((i) => {
-                return (
-                  <>
-                    <div
-                      style={{
-                        border: `1px solid ${studentProfileColor}`,
-                        padding: "0.2rem",
-                        margin: "0.5rem",
-                        display: "flex",
-                        borderRadius: "10px",
-                        justifyContent: "start",
-                        alignItems: "start",
-                        gap: "5rem",
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          margin: "0px auto",
-                        }}
-                      >
-                        <span
-                          style={{
-                            borderRadius: "10px",
-
-                            background: `${
-                              i?.data?.status === "Paid"
-                                ? "green"
-                                : " rgb(254 202 202)"
-                            }`,
-                            padding: "5px 1rem",
-                            color: `${
-                              i?.data?.status === "Paid" ? "white" : " red"
-                            }`,
-                          }}
-                        >
-                          {i?.data?.status === "Paid"
-                            ? "Payment Completed"
-                            : "Payment Due"}
-                        </span>
-                        <div
-                          style={{
-                            marginTop: "10px",
-                          }}
-                        >
-                          <span style={{ color: studentProfileColor }}>
-                            Name:
-                          </span>
-                          <span>
-                            {
-                              studentsList?.data?.message?.find(
-                                (i) => i?.name === selectedStudent
-                              )?.first_name
-                            }
-                          </span>
-                        </div>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            gap: "1rem",
-
-                            marginTop: "10px",
-                          }}
-                        >
-                          <span style={{ color: studentProfileColor }}>
-                            Academic year:
-                          </span>
-                          <span>
-                            {extractAcademicYear(i?.data?.reference_name)}
-                          </span>
-                        </div>
-                        <div
-                          style={{
-                            marginTop: "10px",
-                          }}
-                        >
-                          <span style={{ color: studentProfileColor }}>
-                            Class :
-                          </span>
-                          <span>
-                            {" "}
-                            {classDetails?.data?.message?.class?.name}
-                          </span>
-                        </div>
-                        <div
-                          style={{
-                            marginTop: "10px",
-                          }}
-                        >
-                          <span style={{ color: studentProfileColor }}>
-                            Term :
-                          </span>
-                          <span> {i?.data?.payment_term}</span>
-                        </div>
-                        <div
-                          style={{
-                            marginTop: "10px",
-                          }}
-                        >
-                          <span style={{ color: studentProfileColor }}>
-                            Amount :
-                          </span>
-                          <span> {i?.data?.grand_total}</span>
-                        </div>
-                      </div>
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          position: "relative",
-
-                          top: "150px",
-                          alignItems: "end",
-                          justifyContent: "end",
-                          borderRadius: "10px",
-                          padding: "1rem",
-                        }}
-                      >
-                        <a
-                          href={i?.data?.payment_url}
-                          target="_blank"
-                          style={{
-                            color: "white",
-                            textDecoration: "none",
-                            padding: "0px 1rem",
-                            background: `${
-                              i?.data?.status === "Paid"
-                                ? "rgb(126 34 206)"
-                                : "rgb(126 34 206)"
-                            }`,
-                            borderRadius: "5px",
-                            gap: "1rem",
-                            border: "1px solid green",
-                          }}
-                        >
-                          {i?.data?.status === "Paid" ? "Download" : "Pay Now"}
-                        </a>
-                      </div>
-                    </div>
-                  </>
-                );
-              })
-            ) : (
-              <div>Not Found</div>
+            ></div>
+            {loading && (
+              <Text align="center" color="dimmed" weight="bold" my={30}>
+                Loading...
+              </Text>
             )}
+            {!loading && error && (
+              <Text
+                color="dimmed"
+                weight="bold"
+                my={30}
+                sx={{ textAlign: "center" }}
+              >
+                {error}
+              </Text>
+            )}
+            <>
+              <div>
+                <Table>
+                  <thead>
+                    <tr>
+                      <th>
+                        <Text>Term</Text>
+                      </th>
+                      <th>
+                        <Text>DueDate</Text>
+                      </th>
+                      <th>
+                        <Text>Amount</Text>
+                      </th>
+                      <th>
+                        <Text>Status</Text>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {!loading &&
+                      paymentSchedule?.map?.((i: any) => {
+                        const formatDate = (dateString: string) => {
+                          const date = new Date(dateString);
+                          const day = String(date.getDate()).padStart(2, "0");
+                          const month = String(date.getMonth() + 1).padStart(
+                            2,
+                            "0"
+                          );
+                          const year = date.getFullYear();
+                          return `${day}-${month}-${year}`;
+                        };
+                        return (
+                          <>
+                            <tr>
+                              <td>
+                                <Text>{i?.payment_term}</Text>
+                              </td>
+                              <td>
+                                <Text>{formatDate(i?.due_date)}</Text>
+                              </td>
+                              <td>
+                                <Text>₹{payDeatils?.grand_total}</Text>
+                              </td>
+                              <td>
+                                <Text>
+                                  {payDeatils?.status === "Paid" &&
+                                  payDeatils?.payment_term ===
+                                    i?.payment_term ? (
+                                    <a
+                                      href={payDeatils?.payment_url}
+                                      target="_blank"
+                                      style={{
+                                        color: "white",
+                                        textDecoration: "none",
+                                        padding: "5px 0.5rem",
+                                        background: "rgb(126 34 206)",
+                                        borderRadius: "5px",
+                                        border: "1px solid green",
+                                      }}
+                                    >
+                                      Download
+                                    </a>
+                                  ) : payDeatils?.status === "Initiated" &&
+                                    payDeatils?.payment_term ===
+                                      i?.payment_term ? (
+                                    <a
+                                      href={payDeatils?.payment_url}
+                                      target="_blank"
+                                      style={{
+                                        color: "white",
+                                        textDecoration: "none",
+                                        padding: "5px 1rem",
+                                        background: "rgb(126 34 206)",
+                                        borderRadius: "5px",
+                                        border: "1px solid green",
+                                        minWidth: "10px",
+                                      }}
+                                    >
+                                      Pay Now
+                                    </a>
+                                  ) : (
+                                    <label>Not Due</label>
+                                  )}
+                                </Text>
+                              </td>
+                            </tr>
+                          </>
+                        );
+                      })}
+                  </tbody>
+                </Table>
+              </div>
+            </>
           </Box>
         </Box>
       </Box>
