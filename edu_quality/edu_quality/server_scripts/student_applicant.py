@@ -60,7 +60,6 @@ def update_guardian_details(doc):
         for guardian in doc.guardians:
             guardian_doc = frappe.get_doc("Guardian", guardian.guardian)
             if guardian.relation == 'Father':
-                frappe.logger('update').exception('father')
                 guardian_doc.first_name = doc.fathers_first_name
                 guardian_doc.last_name = doc.fathers_last_name
                 guardian_doc.email_address = doc.fathers_email_id
@@ -109,7 +108,7 @@ def update_guardian_details(doc):
                 guardian_doc.facebook_handle = doc.custom_mothers_facebook_handle
                 guardian_doc.instagram_handle = doc.custom_mothers_instagram_handle
                 guardian_doc.save(ignore_permissions=True)
-            elif guardian.relation == 'Guardian':
+            elif guardian.relation == 'Others':
                 guardian_updated = 1
                 guardian_doc.first_name = doc.guardian_first_name
                 guardian_doc.last_name = doc.guardian_last_name
@@ -189,7 +188,7 @@ def update_guardian_details(doc):
             doc.append('guardians', {
                 'guardian': guardian_doc.name,
                 'guardian_name': guardian_doc.guardian_name,
-                'relation': 'Guardian'
+                'relation': 'Others'
             })
             doc.save(ignore_permissions=True)
     except Exception as e:

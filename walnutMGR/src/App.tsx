@@ -16,7 +16,7 @@ function App() {
   console.log("Check index");
   return (
     <div>
-      <BrowserRouter basename="/walnutMGR">
+      <BrowserRouter basename="/cmap-creation-tool">
         <Refine dataProvider={provider} routerProvider={routerProvider}>
           <Routes>
             <Route path="/" element={<Index />} />
