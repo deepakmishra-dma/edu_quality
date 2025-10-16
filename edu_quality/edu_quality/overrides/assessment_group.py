@@ -219,7 +219,7 @@ def generate_config_hash(row, headers):
                 "assessment_criteria": row[idx],
                 "maximum_score": row[idx + 1] or 0,
                 "custom_scale": row[idx + 2] or 1,
-                "custom_include_in_ranking": int(row[idx + 3]),
+                "custom_include_in_ranking": int(row[idx + 3] or 1),
             }
     return hashmap
 
