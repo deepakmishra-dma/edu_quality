@@ -45,7 +45,7 @@ export const Fee = () => {
           `/api/resource/Fees?filters=[["student", "=", "${selectedStudent}"]]`
         );
         if (!response.ok) {
-          throw new Error("Network response was not ok");
+          throw new Error("No payment schedule available");
         }
         const data = await response.json();
         setStudentFee(data?.data?.[0]?.name);
@@ -75,7 +75,7 @@ export const Fee = () => {
           `/api/resource/Payment%20Request?filters=[["party","=", "${select_student}"],["reference_name","like","%252024-2025%25"],["docstatus","=","1"]]`
         );
         if (!response.ok) {
-          throw new Error("Network response was not ok");
+          throw new Error("No payment schedule available");
         }
         const data = await response.json();
         const paymentNames = data?.data?.map?.((i: any) => i?.name) || [];
@@ -109,7 +109,7 @@ export const Fee = () => {
             `/api/resource/Payment%20Request/${name}`
           );
           if (!response.ok) {
-            throw new Error("Network response was not ok");
+            throw new Error("No payment schedule available");
           }
           const data = await response.json();
           setPayDetails(data?.data);
@@ -160,7 +160,7 @@ export const Fee = () => {
       }
       const response = await fetch(`/api/resource/Fees/${studentFee}`);
       if (!response.ok) {
-        throw new Error("Network response was not ok");
+        throw new Error("No payment schedule available");
       }
       const data = await response.json();
       setPaymentSchedule(data?.data?.payment_schedule);
@@ -316,26 +316,26 @@ export const Fee = () => {
             )}
             <>
               <div>
-                <Table>
-                  <thead>
-                    <tr>
-                      <th>
-                        <Text>Term</Text>
-                      </th>
-                      <th>
-                        <Text>DueDate</Text>
-                      </th>
-                      <th>
-                        <Text>Amount</Text>
-                      </th>
-                      <th>
-                        <Text>Status</Text>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {!loading &&
-                      paymentSchedule?.map?.((i: any) => {
+                {!loading && !error && paymentSchedule.length > 0 && (
+                  <Table>
+                    <thead>
+                      <tr>
+                        <th>
+                          <Text>Term</Text>
+                        </th>
+                        <th>
+                          <Text>DueDate</Text>
+                        </th>
+                        <th>
+                          <Text>Amount</Text>
+                        </th>
+                        <th>
+                          <Text>Status</Text>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paymentSchedule?.map?.((i: any) => {
                         const formatDate = (dateString: string) => {
                           const date = new Date(dateString);
                           const day = String(date.getDate()).padStart(2, "0");
@@ -404,8 +404,9 @@ export const Fee = () => {
                           </>
                         );
                       })}
-                  </tbody>
-                </Table>
+                    </tbody>
+                  </Table>
+                )}
               </div>
             </>
           </Box>
