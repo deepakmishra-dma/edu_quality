@@ -152,10 +152,10 @@ def get_division_name_and_student_group_by_student_id(student_id):
         sql, {"id": student_id, "div_name": div_name}, as_dict=1
     )
 
-
     if len(division_list) > 0:
         return division_list[0]
     return None
+
 
 def get_datetime_from_time_slot(date, time_slot):
     # Parse the date string into a datetime object
@@ -195,6 +195,17 @@ def get_upcoming_online_ptm_links(student_id):
         ptm_scheduler_list = frappe.get_all(
             "PTM Scheduler", filters=filterss, fields=["*"]
         )
+        filterss2 = {
+            "date": ("<", getdate(today())),
+            "gmeet_link": ["is", "set"],
+            "division": student_division,
+        }
+        ptm_scheduler_list2 = frappe.get_all(
+            "PTM Scheduler", filters=filterss2, fields=["*"]
+        )
+        past_ptms = False
+        if len(ptm_scheduler_list2):
+            past_ptms = True
         if len(ptm_scheduler_list) > 0:
             for i in ptm_scheduler_list:
                 i["datetime"] = get_datetime_from_time_slot(
@@ -206,8 +217,8 @@ def get_upcoming_online_ptm_links(student_id):
                 if item.get("datetime") >= datetime.datetime.now()
             ]
             ptm_scheduler_list.sort(key=lambda x: x["datetime"])
-            return ptm_scheduler_list
-        return []
+            return {"data": ptm_scheduler_list, "past_ptms": past_ptms}
+        return {"data": [], "past_ptms": past_ptms}
 
 
 def get_list_of_students_from_division_list(division_list, student_group):
