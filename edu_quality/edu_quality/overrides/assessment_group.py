@@ -49,6 +49,18 @@ def import_assessment_group(url):
         # frappe.db.close()
 
 
+def gen_bulk_rows(csv_reader):
+    bulk_rows = []
+    for idx, row in enumerate(csv_reader, start=1):
+        name = row[0]
+        if name:
+            bulk_rows.append([row])
+
+        else:
+            bulk_rows[-1].append(row)
+    return bulk_rows
+
+
 def import_assess_group_csv_in_bg(csv_content):
     errors = []
     try:
@@ -56,21 +68,9 @@ def import_assess_group_csv_in_bg(csv_content):
         total_rows = sum(1 for _ in csv_reader) - 1  # Excluding header row
         csv_reader = csv.reader(StringIO(csv_content))
         headers = next(csv_reader)  # Skip header row
-        bulk_rows = []
+        bulk_rows = gen_bulk_rows(csv_reader)
+        errors = insert_groups_into_db(bulk_rows, headers, total_rows)
 
-        for idx, row in enumerate(csv_reader, start=1):
-
-            name = row[0]
-            if name:
-                bulk_rows.append([row])
-
-            else:
-                bulk_rows[-1].append(row)
-
-            # Publish progress
-
-            # Rollback changes
-        errors = insert_groups_into_db(bulk_rows, headers)
         if errors:
             frappe.db.rollback()
             error_message = "Error importing Exam Config background:<br>"
@@ -79,6 +79,7 @@ def import_assess_group_csv_in_bg(csv_content):
             for err in errors:
                 error_message += f"<tr><td>{err[0]}</td><td>{err[1]}</td></tr>"
             error_message += "</table>"
+            frappe.log_error("Error importing assessment groups", str(errors))
             return {"status": "failed", "message": error_message}
         frappe.db.commit()
         return {"status": "success", "message": ("Exam Config imported successfully")}
@@ -90,124 +91,124 @@ def import_assess_group_csv_in_bg(csv_content):
         return {"status": "failed", "message": str(e)}
 
 
-def insert_groups_into_db(bulk_data, headers):
+def insert_groups_into_db(bulk_data, headers, total_rows):
     current_group = None
-    total_rows = len(bulk_data)
     errors = []
-    print(bulk_data)
     try:
-        for idx, parent_row in enumerate(bulk_data, start=1):
-            is_composite_flag = 0
-            program_flag = None
-            school_flag = None
-            current_divs = []
-            for row in parent_row:
-                (
-                    name,
-                    school,
-                    program,
-                    div,
-                    order,
-                    publish_to_app,
-                    printable,
-                    calculate_ranks,
-                    show_in_app,
-                    is_composite_exam,
-                    is_final_exam,
-                    is_final_photo_req,
-                    acad_year,
-                    report_print_conf,
-                    remarks_template_id,
-                    composite_exam_id,
-                    composite_exam_avg,
-                    config_subject_type,
-                    config_subject_name,
-                    config_subject_textbook_used,
-                    config_subject_allow_reval,
-                    grading_scale,
-                ) = row[:22]
+        for index, parent_row in enumerate(bulk_data, start=1):
+            try:
+                is_composite_flag = 0
+                program_flag = None
+                current_divs = []
+                for idx, row in enumerate(parent_row, start=1):
+                    try:
+                        (
+                            name,
+                            school,
+                            program,
+                            div,
+                            order,
+                            publish_to_app,
+                            printable,
+                            calculate_ranks,
+                            show_in_app,
+                            is_composite_exam,
+                            is_final_exam,
+                            is_final_photo_req,
+                            acad_year,
+                            report_print_conf,
+                            remarks_template_id,
+                            composite_exam_id,
+                            composite_exam_avg,
+                            config_subject_type,
+                            config_subject_name,
+                            config_subject_textbook_used,
+                            config_subject_allow_reval,
+                            grading_scale,
+                        ) = row[:22]
 
-                if name:
-                    program_flag = None
-                    is_composite_flag = None
-                    school_flag = None
-                    current_divs = div.split(",")
-                    local_divs = frappe.db.get_all(
-                        "Student Group",
-                        filters={
-                            "academic_year": acad_year,
-                            "student_group_name": ["in", current_divs or [None]],
-                            "program": program,
-                            "custom_school": school,
-                        },
-                    )
-                    current_divs = [i.get("name") for i in local_divs]
-                    current_group = frappe.new_doc("Assessment Group")
-                    current_group.parent_assessment_group = "All Assessment Groups"
-                    current_group.assessment_group_name = name
-                    current_group.custom_school = school
-                    current_group.custom_program = program
-                    current_group.custom_academic_year = acad_year
-                    current_group.custom_print_configuration = report_print_conf
-                    current_group.custom_order = order
-                    current_group.custom_final_exam = is_final_exam
-                    current_group.custom_is_printable = printable
-                    current_group.custom_calculate_ranks = calculate_ranks
-                    current_group.custom_show_in_app = show_in_app
-                    current_group.custom_is_composite = is_composite_exam
-                    current_group.custom_publish_to_app = publish_to_app
-                    current_group.custom_is_final_exam_class_photo_required = (
-                        is_final_photo_req
-                    )
-                    current_group.save(ignore_permissions=True)
-                    is_composite_flag = int(is_composite_exam)
-                    program_flag = program
-                    school_flag = school
+                        if name:
+                            program_flag = None
+                            is_composite_flag = None
+                            current_divs = div.split(",")
+                            local_divs = frappe.db.get_all(
+                                "Student Group",
+                                filters={
+                                    "academic_year": acad_year,
+                                    "student_group_name": [
+                                        "in",
+                                        current_divs or [None],
+                                    ],
+                                    "program": program,
+                                    "custom_school": school,
+                                },
+                            )
+                            current_divs = [i.get("name") for i in local_divs]
+                            current_group = frappe.new_doc("Assessment Group")
+                            current_group.parent_assessment_group = (
+                                "All Assessment Groups"
+                            )
+                            current_group.assessment_group_name = name
+                            current_group.custom_school = school
+                            current_group.custom_program = program
+                            current_group.custom_academic_year = acad_year
+                            current_group.custom_print_configuration = report_print_conf
+                            current_group.custom_order = order
+                            current_group.custom_final_exam = is_final_exam
+                            current_group.custom_is_printable = printable
+                            current_group.custom_calculate_ranks = calculate_ranks
+                            current_group.custom_show_in_app = show_in_app
+                            current_group.custom_is_composite = is_composite_exam
+                            current_group.custom_publish_to_app = publish_to_app
+                            current_group.custom_is_final_exam_class_photo_required = (
+                                is_final_photo_req
+                            )
+                            current_group.save(ignore_permissions=True)
+                            is_composite_flag = int(is_composite_exam)
+                            program_flag = program
 
-                if is_composite_flag:
-                    current_group.custom_is_composite = 1
-                    comp_doc = frappe.new_doc("Composite Exam")
-                    comp_doc.assesment_group = composite_exam_id
-                    comp_doc.parent = current_group.name
-                    comp_doc.parenttype = "Assessment Group"
-                    comp_doc.parentfield = "custom_composite_exams"
-                    comp_doc.save(ignore_permissions=True)
+                        if is_composite_flag:
+                            current_group.custom_is_composite = 1
+                            comp_doc = frappe.new_doc("Composite Exam")
+                            comp_doc.assesment_group = composite_exam_id
+                            comp_doc.parent = current_group.name
+                            comp_doc.parenttype = "Assessment Group"
+                            comp_doc.parentfield = "custom_composite_exams"
+                            comp_doc.save(ignore_permissions=True)
 
-                if not is_composite_flag:
-                    subj_map = generate_config_hash(row, headers)
-                    print(
-                        current_group,
-                        current_divs,
-                        config_subject_name,
-                        config_subject_type,
-                        config_subject_textbook_used,
-                        config_subject_allow_reval,
-                        program_flag,
-                        subj_map,
-                        grading_scale,
-                    )
-                    insert_assessment_plan(
-                        current_group,
-                        current_divs,
-                        config_subject_name,
-                        config_subject_type,
-                        config_subject_textbook_used,
-                        config_subject_allow_reval,
-                        program_flag,
-                        subj_map,
-                        grading_scale,
-                    )
-            progress = idx * 100 // total_rows
-            frappe.realtime.publish_progress(
-                progress,
-                title="Import Exams",
-                description=f"{idx}/{total_rows} rows processed",
-            )
+                        if not is_composite_flag:
+                            subj_map = generate_config_hash(row, headers)
+
+                            insert_assessment_plan(
+                                current_group,
+                                current_divs,
+                                config_subject_name,
+                                config_subject_type,
+                                config_subject_textbook_used,
+                                config_subject_allow_reval,
+                                program_flag,
+                                subj_map,
+                                grading_scale,
+                            )
+                        progress = idx * 100 // total_rows
+                        frappe.realtime.publish_progress(
+                            progress,
+                            title="Import Exams",
+                            description=f"{idx}/{total_rows} rows processed",
+                        )
+
+                    except Exception as e:
+                        err = [idx, str(e)]
+                        errors.append(err)
+
+            except Exception as e:
+                err = [idx, str(e)]
+                errors.append(err)
         return errors
     except Exception as e:
-        err = [idx, str(e)]
-        print(frappe.get_traceback(), "hahaha")
+        err = [f"Group {index}", str(e)]
         errors.append(err)
+        return errors
 
 
 def generate_config_hash(row, headers):
