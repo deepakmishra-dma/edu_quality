@@ -70,14 +70,14 @@
   {
    "allow_on_submit": 1,
    "fieldname": "refundable_after",
-   "fieldtype": "Date",
+   "fieldtype": "Data",
    "label": "Refundable After"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-17 11:51:39.413154",
+ "modified": "2024-06-17 20:15:32.760453",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Security Deposit",
