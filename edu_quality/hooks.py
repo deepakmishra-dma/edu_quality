@@ -51,6 +51,7 @@ doctype_js = {
     "Employee": "public/js/employee.js",
     "Assessment Plan": "public/js/assessment_plan.js",
     "Assessment Group": "public/js/assessment_group.js",
+    "Event": "public/js/event.js",
 }
 doctype_list_js = {
     "Student Applicant": "public/js/list/student_applicant_list.js",
@@ -151,6 +152,7 @@ override_doctype_class = {
     "Lead": "edu_quality.public.py.lead.CustomLead",
     "Instructor": "edu_quality.edu_quality.overrides.instructor.CustomInstructor",
     "HD Ticket": "edu_quality.edu_quality.overrides.hd_ticket.CustomHDTicket",
+    "Communication": "edu_quality.edu_quality.overrides.communication.CustomCommunication",
     "Email Template": "edu_quality.edu_quality.overrides.email_templates.CustomEmailTemplate",
     "Assessment Group": "edu_quality.edu_quality.overrides.assessment_group.CustomAssessmentGroup",
     "Assessment Plan": "edu_quality.edu_quality.overrides.assessment_plan.CustomAssessmentPlan",

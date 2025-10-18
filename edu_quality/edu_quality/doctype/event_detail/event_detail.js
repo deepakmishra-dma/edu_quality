@@ -9,10 +9,25 @@ frappe.ui.form.on("Event Detail", {
         frm.add_custom_button('Send Registration Link', () => {
             sendRegistrationLink(frm);
         });
+        // Function to set query for student fields
+        function set_student_query(fieldname) {
+            frm.set_query('student', fieldname, function (doc, cdt, cdn) {
+                const hasPrograms = doc.classes_applicable_to.some(program => program.class);
+                const filters = {
+                    "school": doc.school,
+                };
+                if (hasPrograms) {
+                    filters.program = ["in", doc.classes_applicable_to.map(program => program.class)];
+                }
+                return { filters };
+            });
+        }
+        let child_tables = ['allowed_students', 'participating_students', 'non_participating_students', 'winning_students'];
+        child_tables.forEach(
+            child_table => { set_student_query(child_table); }
+        );
     },
-
 });
-
 
 function showAddStudent(frm) {
     let d = new frappe.ui.Dialog({
@@ -89,7 +104,7 @@ function addToParticipating(frm) {
     allowed_students.forEach(student => {
         if (student.__checked) {
             let already_participating = participating_students.some(participant => participant.student === student.student);
-            
+
             if (!already_participating) {
                 let new_row = frm.add_child("participating_students");
                 new_row.student = student.student;

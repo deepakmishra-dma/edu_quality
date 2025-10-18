@@ -11,7 +11,10 @@
   "password",
   "url",
   "enable_birthday_greeting_scheduler",
-  "email_domain"
+  "email_domain",
+  "helpdesk_settings_tab",
+  "enable_auto_reply",
+  "email_template"
  ],
  "fields": [
   {
@@ -39,12 +42,31 @@
    "fieldname": "email_domain",
    "fieldtype": "Data",
    "label": "Email Domain"
+  },
+  {
+   "fieldname": "helpdesk_settings_tab",
+   "fieldtype": "Tab Break",
+   "label": "Helpdesk Settings"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_auto_reply",
+   "fieldtype": "Check",
+   "label": "Enable Auto Reply"
+  },
+  {
+   "depends_on": "eval: doc.enable_auto_reply == 1",
+   "fieldname": "email_template",
+   "fieldtype": "Link",
+   "label": "Email Template",
+   "mandatory_depends_on": "eval: doc.enable_auto_reply == 1",
+   "options": "Email Template"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-05-16 10:48:21.406509",
+ "modified": "2024-06-18 10:36:00.526503",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "MGR Settings",
