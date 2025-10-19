@@ -16,7 +16,7 @@ function App() {
   console.log("Check index");
   return (
     <div>
-      <BrowserRouter basename="/cmap-creation-tool">
+      <BrowserRouter basename="/cmap-tool">
         <Refine dataProvider={provider} routerProvider={routerProvider}>
           <Routes>
             <Route path="/" element={<Index />} />
