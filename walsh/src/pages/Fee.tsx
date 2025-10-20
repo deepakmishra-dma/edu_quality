@@ -317,20 +317,48 @@ export const Fee = () => {
             <>
               <div>
                 {!loading && !error && paymentSchedule.length > 0 && (
-                  <Table>
-                    <thead>
+                  <Table style={{ textAlign: "center" }}>
+                    <thead style={{ background: studentProfileColor + "22" }}>
                       <tr>
                         <th>
-                          <Text>Term</Text>
+                          <Text
+                            sx={{
+                              color: studentProfileColor,
+                              textAlign: "center",
+                            }}
+                          >
+                            Term
+                          </Text>
                         </th>
                         <th>
-                          <Text>DueDate</Text>
+                          <Text
+                            sx={{
+                              color: studentProfileColor,
+                              textAlign: "center",
+                            }}
+                          >
+                            DueDate
+                          </Text>
                         </th>
                         <th>
-                          <Text>Amount</Text>
+                          <Text
+                            sx={{
+                              color: studentProfileColor,
+                              textAlign: "center",
+                            }}
+                          >
+                            Amount
+                          </Text>
                         </th>
                         <th>
-                          <Text>Status</Text>
+                          <Text
+                            sx={{
+                              color: studentProfileColor,
+                              textAlign: "center",
+                            }}
+                          >
+                            Status
+                          </Text>
                         </th>
                       </tr>
                     </thead>

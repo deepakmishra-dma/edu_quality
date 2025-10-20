@@ -16,7 +16,7 @@ export default defineConfig({
 		}
 	},
 	build: {
-		outDir: '../edu_quality/public/walnutMGR',
+		outDir: '../edu_quality/public/cmap-tool',
 		emptyOutDir: true,
 		target: 'es2015',
 	},

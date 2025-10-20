@@ -1,0 +1,183 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:{reference_number} {subject} {unit}",
+ "creation": "2024-06-19 16:19:37.385984",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_cfmz",
+  "reference_number",
+  "student",
+  "first_name",
+  "last_name",
+  "column_break_phwd",
+  "email",
+  "school",
+  "classs",
+  "division",
+  "test_details_section",
+  "unit",
+  "exam_type",
+  "test_details",
+  "column_break_pkvj",
+  "subject",
+  "date",
+  "amended_from",
+  "attachment",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_cfmz",
+   "fieldtype": "Section Break",
+   "label": "Student Details"
+  },
+  {
+   "fetch_from": "student.reference_number",
+   "fieldname": "reference_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Reference Number",
+   "reqd": 1
+  },
+  {
+   "fieldname": "student",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "in_list_view": 1,
+   "label": "Student ",
+   "options": "Student"
+  },
+  {
+   "fetch_from": "student.first_name",
+   "fieldname": "first_name",
+   "fieldtype": "Data",
+   "label": "First Name"
+  },
+  {
+   "fetch_from": "student.last_name",
+   "fieldname": "last_name",
+   "fieldtype": "Data",
+   "label": "Last Name"
+  },
+  {
+   "fieldname": "column_break_phwd",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "student.user",
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "label": "Email",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "student.school",
+   "fieldname": "school",
+   "fieldtype": "Select",
+   "label": "School",
+   "options": "Walnut School at Shivane\nWalnut School at Fursungi\nWalnut School at Wakad\nBaby Walnut Fursungi\nBaby Walnut Shivane\nBaby Walnut Wakad"
+  },
+  {
+   "fetch_from": "student.program",
+   "fieldname": "classs",
+   "fieldtype": "Data",
+   "label": "Class"
+  },
+  {
+   "fetch_from": "student.custom_division",
+   "fieldname": "division",
+   "fieldtype": "Data",
+   "label": "Division"
+  },
+  {
+   "fieldname": "test_details_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "unit",
+   "fieldtype": "Select",
+   "label": "Unit",
+   "options": "Unit 1\nUnit 2\nUnit 3\nUnit 4"
+  },
+  {
+   "fieldname": "exam_type",
+   "fieldtype": "Select",
+   "label": "Exam Type",
+   "options": "Oral\nWritten"
+  },
+  {
+   "fieldname": "test_details",
+   "fieldtype": "Small Text",
+   "label": "Test Details"
+  },
+  {
+   "fieldname": "column_break_pkvj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "subject",
+   "fieldtype": "Select",
+   "label": "Subject",
+   "options": "Mathematics\nEnglish\nScience\nSocial Studies\nMarathi\nHindi"
+  },
+  {
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "label": "Date"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Online Exam Submission",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "attachment",
+   "fieldtype": "Attach",
+   "label": "Attachment"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Online Exam Submission",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2024-06-19 16:19:37.385984",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "Online Exam Submission",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
