@@ -43,7 +43,6 @@ def get_subject_criteria_columns(assess_group, filters):
         assess_plan_cr_qb.custom_exam_type,
         assess_plan_cr_qb.custom_scale,
         assess_plan_cr_qb.custom_allow_revaluation,
-        assess_plan_cr_qb.custom_textbook,
         assess_plan_cr_qb.name.as_("assess_criteria_row_name"),
     )
     data = query.run(as_dict=True) or []
@@ -66,7 +65,7 @@ def get_composite_exam_columns(assess_group, filters):
 def generate_column_dict(assess_plan):
     return {
         "fieldname": gen_field_name(assess_plan),
-        "label": f"{gen_field_name(assess_plan)} Out of marks {assess_plan.get('maximum_score')}",
+        "label": f"{gen_label(assess_plan)}<br/> Out of marks {assess_plan.get('maximum_score')}",
         "maximum_score": assess_plan.get("maximum_score"),
         "assessment_plan": assess_plan.get("name"),
         "assessment_criteria_row_name": assess_plan.get("assess_criteria_row_name"),
@@ -74,6 +73,10 @@ def generate_column_dict(assess_plan):
         "assessment_criteria": assess_plan.get("assessment_criteria"),
         "is_criteria": 1,
     }
+
+
+def gen_label(assess_plan):
+    return f"{assess_plan.get('course')} {assess_plan.get('assessment_criteria')}"
 
 
 def gen_field_name(assess_plan):
@@ -113,7 +116,7 @@ def get_earlier_marks(filters, students, criterias):
         .on((assessment_det_qb.parent == assess_res_qb.name))
         .where(
             (assess_res_qb.assessment_plan.isin(plan_list or [None]))
-            & (assess_res_qb.student.isin(students_list))
+            & (assess_res_qb.student.isin(students_list or [None]))
         )
         .select(
             assess_res_qb.star,

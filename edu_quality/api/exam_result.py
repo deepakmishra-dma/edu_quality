@@ -79,7 +79,7 @@ def get_assessment_plan_in_div(assessment_plan, division, students):
             assess_res_de_qb.score,
             assess_res_qb.name,
             assess_res_qb.docstatus,
-            assess_res_qb.custom_is_absent,
+            assess_res_de_qb.custom_is_absent,
         )
     )
     return query.run(as_dict=True)
@@ -127,43 +127,19 @@ def diff_students_and_results(students, results, assessment_plan):
 
 @frappe.whitelist()
 def process_result(assessment_group, academic_year, program, div=None):
+    if frappe.db.get_value("Assessment Group", assessment_group, "custom_is_composite"):
+        process_composite_result(assessment_group, academic_year, program, div=None)
+    else:
+        process_atomic_exam(assessment_group, academic_year, program, div=None)
+
+
+def process_atomic_exam(assessment_group, academic_year, program, div=None):
     assessment_plans = get_all_assessment_plans(assessment_group, program, div)
     errors = check_assessment_plan_in_group(assessment_plans)
     if errors:
         return errors
-
-    assess_res_qb = frappe.qb.DocType("Assessment Result")
-    assess_res_de_qb = frappe.qb.DocType("Assessment Result Detail")
-
-    plans = [plan.get("name") for plan in assessment_plans]
-
-    query = (
-        frappe.qb.from_(assess_res_qb)
-        .inner_join(assess_res_de_qb)
-        .on(assess_res_de_qb.parent == assess_res_qb.name)
-        .where(
-            (
-                (assess_res_qb.docstatus.isin([0, 1]))
-                & assess_res_qb.assessment_plan.isin(plans or [None])
-                & (assess_res_de_qb.score.isnotnull())
-            )
-        )
-        .select(
-            assess_res_qb.student,
-            assess_res_qb.docstatus,
-            assess_res_qb.assessment_plan,
-            assess_res_de_qb.assessment_criteria,
-            assess_res_de_qb.score,
-            assess_res_de_qb.name,
-            assess_res_de_qb.custom_scale,
-            assess_res_de_qb.parent,
-            assess_res_qb.custom_is_absent,
-        )
-    )
-
-    result_data = query.run(as_dict=True)
+    result_data = get_result_from_plans(assessment_plans)
     modified_result = {}
-
     for result in result_data:
         score = result.get("score")
         scale = result.get("custom_scale")
@@ -199,8 +175,49 @@ def process_result(assessment_group, academic_year, program, div=None):
     )
 
 
+def get_result_from_plans(assessment_plans, group_by=False):
+    assess_res_qb = frappe.qb.DocType("Assessment Result")
+    assess_res_de_qb = frappe.qb.DocType("Assessment Result Detail")
+
+    plans = [plan.get("name") for plan in assessment_plans]
+
+    query = (
+        frappe.qb.from_(assess_res_qb)
+        .inner_join(assess_res_de_qb)
+        .on(assess_res_de_qb.parent == assess_res_qb.name)
+        .where(
+            (
+                (assess_res_qb.docstatus.isin([0, 1]))
+                & assess_res_qb.assessment_plan.isin(plans or [None])
+                & (assess_res_de_qb.score.isnotnull())
+            )
+        )
+    )
+
+    if group_by:
+        query = query.group_by(
+            assess_res_qb.student,
+            assess_res_qb.assessment_plan,
+            assess_res_de_qb.assessment_criteria,
+        )
+
+    query = query.select(
+        assess_res_qb.student,
+        assess_res_qb.docstatus,
+        assess_res_qb.assessment_plan,
+        assess_res_de_qb.assessment_criteria,
+        assess_res_de_qb.score,
+        assess_res_de_qb.name,
+        assess_res_de_qb.custom_scale,
+        assess_res_de_qb.parent,
+        assess_res_qb.course,
+    )
+
+    return query.run(as_dict=True)
+
+
 def calculate_ordering(assessment_plan):
-    data = frappe.db.sql(
+    frappe.db.sql(
         """
         Update `tabAssessment Result` 
     INNER JOIN (SELECT 
@@ -216,3 +233,25 @@ SET  `tabAssessment Result`.custom_rank = ranked_table.ranking;
         values={"id": assessment_plan},
         as_dict=True,
     )
+
+
+def process_composite_result(assessment_group, academic_year, program, div=None):
+    assess_group = frappe.get_doc("Assessment Group", assessment_group)
+    for atomic_exam in assess_group.custom_composite_exams:
+        process_atomic_exam(atomic_exam.assessment_group, academic_year, program, div)
+
+    plans = []
+
+    for atomic_exam in assess_group.custom_composite_exams:
+        plans.extend(
+            get_all_assessment_plans(atomic_exam.assessment_group, program, div)
+        )
+
+    all_results = get_result_from_plans(plans)
+
+
+def generate_results_hash(all_results):
+    student_hash = {}
+    for result in all_results:
+        student = result.get("student")
+        
