@@ -82,14 +82,18 @@ frappe.query_reports["Marks Entry Tool"] = {
 
 	"formatter": function (value, row, column, data, default_formatter) {
 		value = default_formatter(value, row, column, data)
+
+		const isRed = String(value).toLowerCase() == "ab"
 		if (column.is_criteria) {
-			value = `<input type="text" column="${column.fieldname}" rowindex=${row[0]?.rowIndex} max="${column.maximum_score}" maximum-score="${column.maximum_score}" value="${value}" oninput="changeMarksData(this,'${column.id}','${row[0]?.rowIndex}','${column.maximum_score}')" />`
+			value = `<input type="text" ${isRed ? "style='background-color:var(--red-300);'" : ""} column="${column.fieldname}" rowindex=${row[0]?.rowIndex} max="${column.maximum_score}" maximum-score="${column.maximum_score}" value="${value}" oninput="changeMarksData(this,'${column.id}','${row[0]?.rowIndex}','${column.maximum_score}')" />`
 		}
 
 		return value
 		// console.log(value)
 	}, "onload": function (report) {
+		frappe.require(["/assets/edu_quality/css/mark-entry-tool.css"])
 
+		report.page.parent.classList.add("mark-entry-tool-report")
 		report.page.add_inner_button(__('Save Marks Entry'), () => {
 			let message = `
 			<div>	
@@ -115,4 +119,10 @@ frappe.query_reports["Marks Entry Tool"] = {
 
 	},
 
+	"get_chart_data": function (report) {
+
+		if (frappe.query_report.datatable) {
+			frappe.query_report.datatable.style.setStyle('div[data-col-index="2"]', { "position": "sticky", "left": "0", "z-index": "100" })
+		}
+	}
 };

@@ -95,7 +95,10 @@ def enqueued_specific_notice_emails(__args):
 
     csv_data = csv.DictReader(csv_text.splitlines())
     csv_data = list(csv_data)
-
+    csv_data = [
+    {str(key).strip(): value for key, value in row.items()}
+    for row in csv_data
+]
     school = csv_data[0].get("school")
 
     bcc_email_group = frappe.get_value("School", school, 'bcc_email_group')
@@ -187,7 +190,10 @@ def enqueued_specific_notice_docs(__args):
 
     csv_data = csv.DictReader(csv_text.splitlines())
     csv_data = list(csv_data)
-
+    csv_data = [
+    {str(key).strip(): value for key, value in row.items()}
+    for row in csv_data
+]
     success_ref_ids = []
     failure_ref_ids = []
     failure_texts = []
