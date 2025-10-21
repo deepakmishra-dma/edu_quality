@@ -175,7 +175,11 @@ class CustomHDTicket(HDTicket):
         Check if auto reply is enabled and send auto reply if enabled
         """
         mgr_settings = frappe.get_single("MGR Settings")
-        if mgr_settings.enable_auto_reply and mgr_settings.email_template:
+        if (
+            mgr_settings.enable_auto_reply
+            and mgr_settings.email_template
+            and self.creation == self.modified
+        ):
             self.auto_reply(mgr_settings.email_template)
 
     def auto_reply(self, template):
@@ -186,18 +190,14 @@ class CustomHDTicket(HDTicket):
         context = self.as_dict()
         subject = frappe.render_template(template.subject, context=context)
         message = frappe.render_template(template.response, context=context)
-        sender = frappe.get_value(
-            "Email Account", {"enable_outgoing": 1, "default_outgoing": 1}, "email_id"
-        )
         make(
-            doctype="HD Ticket",
+            doctype=self.doctype,
             name=self.name,
             subject=subject,
             content=message,
             send_email=True,
             recipients=self.raised_by,
-            status="Replied",
+            sent_or_received="Sent",
             communication_type="Communication",
-            reference_doctype=self.doctype,
-            reference_name=self.name,
+            now=True,
         )

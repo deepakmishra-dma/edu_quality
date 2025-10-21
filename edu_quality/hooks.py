@@ -252,6 +252,7 @@ doc_events = {
 # ---------------
 scheduler_events = {
     "all": [
+        "edu_quality.tasks.sync_student_data_from_program_enrollment",
         "edu_quality.api.student_application.get_and_schedule_pending_walkouts",
         "edu_quality.overrides_hooks.item.upload_all_imported_to_drive",
     ],
