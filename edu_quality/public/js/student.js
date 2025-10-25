@@ -5,6 +5,7 @@ frappe.ui.form.on("Student", {
             frm.set_df_property("class_details", "read_only", 1);
         }
         addFeeDetails(frm);
+        addDepositDetails(frm);
         addParentDetails(frm);
         addReferral(frm);
         swapDivisionButton(frm);
@@ -156,14 +157,15 @@ function addReferral(frm) {
 function addFeeDetails(frm) {
     if (!frm.is_new()) {
         frappe.call({
-            method: "edu_quality.public.py.student.get_fees_details",
+            doc: frm.doc,
+            method: "get_fees_details",
             args: {
                 student: frm.selected_doc.name
             },
             callback: function (r) {
                 if (r.message) {
                     const data = r.message.map((item, index) => {
-                        const { payment_term, description, due_date, invoice_portion, payment_amount, outstanding, parent, doctype } = item;
+                        const { payment_term, description, due_date, invoice_portion, payment_amount, outstanding, parent, doctype, paid_date } = item;
                         let link = doctype == 'Fee Advance' ? `/app/fee-advance/${parent}` : `/app/fees/${parent}`;
                         return `
                             <tr>
@@ -173,12 +175,13 @@ function addFeeDetails(frm) {
                                 <td>${due_date}</td>
                                 <td>${invoice_portion}</td>
                                 <td>${payment_amount}</td>
-                                <td>${outstanding == 0 ? 'Paid' : 'Not Paid'}</td>
+                                <td>${outstanding == 0 ? `${paid_date}` : 'Not Paid'}</td>
                                 <td><a href="${link}">Open</a></td>
                             </tr>`;
                     }).join('');
 
                     frm.$wrapper[0].querySelector("#fees").innerHTML = data ? `
+                    <h4> Fee Details </h4>
                     <table class="table table-bordered">
                         <tr>
                             <th>Sr.No</th>
@@ -188,6 +191,42 @@ function addFeeDetails(frm) {
                             <th scope="col">Invoice Portion</th>
                             <th scope="col">Payment Amount</th>
                             <th scope="col">Paid Date</th>
+                            <th scope="col">Action</th>
+                        </tr>
+                        ${data}
+                    </table>` : `<center><p> There is no current record</p></center>`;
+                }
+            }
+        });
+    }
+}
+
+function addDepositDetails(frm) {
+    if (!frm.is_new()) {
+        frappe.call({
+            doc: frm.doc,
+            method: "get_deposit_details",
+            callback: function (r) {
+                if (r.message) {
+                    console.log(r.message);
+                    const data = r.message.map((item, index) => {
+                        const { name, posting_date, paid_amount } = item;
+                        return `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>${posting_date}</td>
+                                <td>${paid_amount}</td>
+                                <td><a href="/app/payment-entry/${name}" target='_blank'>Open</a></td>
+                            </tr>`;
+                    }).join('');
+
+                    frm.$wrapper[0].querySelector("#deposit").innerHTML = data ? `
+                    <h4> Deposit Details </h4>
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>Sr.No</th>
+                            <th scope="col">Paid Date</th>
+                            <th scope="col">Payment Amount</th>
                             <th scope="col">Action</th>
                         </tr>
                         ${data}
