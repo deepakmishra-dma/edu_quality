@@ -214,8 +214,8 @@ function addDepositDetails(frm) {
                         return `
                             <tr>
                                 <td>${index + 1}</td>
-                                <td>${posting_date}</td>
                                 <td>${paid_amount}</td>
+                                <td>${posting_date}</td>
                                 <td><a href="/app/payment-entry/${name}" target='_blank'>Open</a></td>
                             </tr>`;
                     }).join('');
@@ -225,8 +225,8 @@ function addDepositDetails(frm) {
                     <table class="table table-bordered">
                         <tr>
                             <th>Sr.No</th>
-                            <th scope="col">Paid Date</th>
                             <th scope="col">Payment Amount</th>
+                            <th scope="col">Paid Date</th>
                             <th scope="col">Action</th>
                         </tr>
                         ${data}

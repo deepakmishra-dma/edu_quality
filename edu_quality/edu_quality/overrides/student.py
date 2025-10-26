@@ -411,10 +411,16 @@ class CustomStudent(Student):
         academic_year = frappe.db.get_value(
             "Academic Year", {"custom_current_academic_year": 1}
         )
-        fee = frappe.get_doc(
-            "Fees",
-            {"student": self.name, "academic_year": academic_year, "docstatus": 1},
-        )
+        filters = {
+            "student": self.name,
+            "academic_year": academic_year,
+            "docstatus": 1,
+        }
+        fee = None
+        if frappe.db.exists("Fees", filters):
+            fee = frappe.get_doc("Fees", filters)
+        else:
+            return False
 
         deposit_payment_entry = None
         for schedule in fee.payment_schedule:
