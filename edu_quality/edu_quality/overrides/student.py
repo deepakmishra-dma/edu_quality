@@ -440,3 +440,21 @@ class CustomStudent(Student):
             return [deposit_payment_entry]
 
         return False
+
+    
+    @frappe.whitelist()
+    def get_hd_ticket_details(self):
+        guardian_names = [guardian.guardian for guardian in self.guardians]
+
+        guardian_emails = frappe.get_all(
+            "Guardian", filters={"name": ["in", guardian_names]}, pluck="email_address"
+        )
+
+        tickets = frappe.get_all(
+            "HD Ticket",
+            filters={"raised_by": ["in", guardian_emails]},
+            fields=["name", "subject", "status"],
+        )
+
+        return tickets or False
+    

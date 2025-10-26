@@ -6,6 +6,7 @@ frappe.ui.form.on("Student", {
         }
         addFeeDetails(frm);
         addDepositDetails(frm);
+        addHDTicketDetails(frm);
         addParentDetails(frm);
         addReferral(frm);
         swapDivisionButton(frm);
@@ -208,7 +209,6 @@ function addDepositDetails(frm) {
             method: "get_deposit_details",
             callback: function (r) {
                 if (r.message) {
-                    console.log(r.message);
                     const data = r.message.map((item, index) => {
                         const { name, posting_date, paid_amount } = item;
                         return `
@@ -231,6 +231,44 @@ function addDepositDetails(frm) {
                         </tr>
                         ${data}
                     </table>` : `<center><p> There is no current record</p></center>`;
+                }
+            }
+        });
+    }
+}
+
+function addHDTicketDetails(frm) {
+    if (!frm.is_new()) {
+        frappe.call({
+            doc: frm.doc,
+            method: "get_hd_ticket_details",
+            callback: function (r) {
+                if (r.message) {
+                    const data = r.message.map((item) => {
+                        const { name, subject,  status } = item;
+                        return `
+                            <tr>
+                                <td>${name}</td>
+                                <td>${subject}</td>
+                                <td>${status}</td>
+                                <td><a href="/app/hd-ticket/${name}" target='_blank'>Open</a></td>
+                            </tr>`;
+                    }).join('');
+                    console.log('data',data);
+
+                    frm.$wrapper[0].querySelector("#tickets").innerHTML = data ? `
+                    <h4> Helpdesk Tickets </h4>
+                    <table class="table table-bordered">
+                        <tr>
+                            <th scope="col">Ticket ID</th>
+                            <th scope="col">Subject</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Action</th>
+                        </tr>
+                        ${data}
+                    </table>` : `<center><p>No Tickets found</p></center>`;
+                }else{
+                    frm.$wrapper[0].querySelector("#tickets").innerHTML = `<center><p>No Tickets found</p></center>`;
                 }
             }
         });
