@@ -190,45 +190,6 @@ def create_payment_request(fee, term=None):
 
 
 @frappe.whitelist()
-def get_fees_details(student):
-    class_id = frappe.get_value(
-        "Program Enrollment",
-        {"student": student, "docstatus": 1},
-        "program",
-        order_by="creation desc",
-    )
-    if class_id and frappe.get_value(
-        "Fees", {"student": student, "program": class_id, "docstatus": 1}
-    ):
-        return frappe.get_doc(
-            "Fees", {"student": student, "program": class_id}
-        ).payment_schedule
-    elif class_id and frappe.get_value(
-        "Fee Advance", {"student": student, "program": class_id, "docstatus": 1}
-    ):
-        doc = frappe.get_doc("Fee Advance", {"student": student, "program": class_id})
-        invoice_portion = frappe.get_value(
-            "Payment Schedule",
-            {"parent": doc.payment_plan, "payment_term": doc.payment_term},
-            "invoice_portion",
-        )
-        return [
-            {
-                "payment_term": doc.payment_term,
-                "payment_amount": doc.amount,
-                "due_date": doc.due_date,
-                "invoice_portion": invoice_portion,
-                "doctype": doc.doctype,
-                "parent": doc.name,
-                "paid_date": doc.paid_date,
-                "description": "Installment 1",
-                "outstanding": doc.outstanding_amount,
-            }
-        ]
-    return False
-
-
-@frappe.whitelist()
 def get_parents_details(student):
     student = frappe.get_doc("Student", student)
     parents = []

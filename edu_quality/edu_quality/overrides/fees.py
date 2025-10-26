@@ -48,9 +48,17 @@ class CustomFees(Fees):
         except Exception as e:
             frappe.logger('partial_payment').exception(e)
             return frappe.throw(e)
-
-
-    
+        
+    def get_deposit_amount(self):
+        """
+        This method returns the total deposit amount of the fees from fee components
+        """
+        amount = 0
+        for fee in self.components:
+            fees_category = str(fee.fees_category).lower()
+            if "deposit" in fees_category or "registration" in fees_category:
+                amount += fee.amount
+        return amount
 
     def process_partial_payment(self,data):
         result = {}

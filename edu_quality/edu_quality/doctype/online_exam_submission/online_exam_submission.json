@@ -24,8 +24,7 @@
   "subject",
   "date",
   "amended_from",
-  "attachment",
-  "amended_from"
+  "attachment"
  ],
  "fields": [
   {
@@ -141,22 +140,12 @@
    "fieldname": "attachment",
    "fieldtype": "Attach",
    "label": "Attachment"
-  },
-  {
-   "fieldname": "amended_from",
-   "fieldtype": "Link",
-   "label": "Amended From",
-   "no_copy": 1,
-   "options": "Online Exam Submission",
-   "print_hide": 1,
-   "read_only": 1,
-   "search_index": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-19 16:19:37.385984",
+ "modified": "2024-06-21 16:06:22.804595",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Online Exam Submission",

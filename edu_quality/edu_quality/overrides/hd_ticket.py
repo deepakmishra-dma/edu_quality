@@ -190,14 +190,20 @@ class CustomHDTicket(HDTicket):
         context = self.as_dict()
         subject = frappe.render_template(template.subject, context=context)
         message = frappe.render_template(template.response, context=context)
-        make(
-            doctype=self.doctype,
-            name=self.name,
-            subject=subject,
-            content=message,
-            send_email=True,
-            recipients=self.raised_by,
-            sent_or_received="Sent",
-            communication_type="Communication",
-            now=True,
-        )
+        email_account = frappe.get_doc("Email Account", {"enable_outgoing": 1})
+
+        make_params = {
+            "doctype": self.doctype,
+            "name": self.name,
+            "subject": subject,
+            "content": message,
+            "sender": email_account.email_id,
+            "sender_full_name": email_account.name,
+            "send_email": True,
+            "recipients": self.raised_by,
+            "sent_or_received": "Sent",
+            "communication_type": "Communication",
+            "now": True,
+        }
+
+        make(**make_params)
