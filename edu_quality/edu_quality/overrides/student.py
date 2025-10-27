@@ -459,7 +459,19 @@ class CustomStudent(Student):
     
     @frappe.whitelist()
     def get_hd_ticket_details(self):
+        def get_refno(guardians):
+            student = set(frappe.get_all(
+                "Student Guardian",
+                filters={"guardian": ["in", guardians], "parenttype": "Student"},
+                pluck="parent",
+            ))
+            refno = frappe.get_all(
+                "Student", filters={"name": ["in", student]}, pluck="reference_number"
+            )
+            return ",".join(refno)
+
         guardian_names = [guardian.guardian for guardian in self.guardians]
+        refno = get_refno(guardian_names)
 
         guardian_emails = frappe.get_all(
             "Guardian", filters={"name": ["in", guardian_names]}, pluck="email_address"
@@ -470,6 +482,8 @@ class CustomStudent(Student):
             filters={"raised_by": ["in", guardian_emails]},
             fields=["name", "subject", "status"],
         )
-
-        return tickets or False
-    
+        if tickets:
+            for ticket in tickets:
+                ticket["refno"] = refno
+            return tickets
+        return False

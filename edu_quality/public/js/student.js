@@ -260,9 +260,10 @@ function addHDTicketDetails(frm) {
             callback: function (r) {
                 const ticketsContainer = frm.$wrapper[0].querySelector("#tickets");
                 if (r.message && r.message.length) {
-                    const rows = r.message.map(({ name, subject, status }) => `
+                    const rows = r.message.map(({ name, refno, subject, status }) => `
                         <tr>
                             <td>${name}</td>
+                            <td>${refno}</td>
                             <td>${subject}</td>
                             <td>${status}</td>
                             <td><a href="/app/hd-ticket/${name}" target="_blank">Open</a></td>
@@ -275,6 +276,7 @@ function addHDTicketDetails(frm) {
                                 <thead>
                                     <tr>
                                         <th scope="col">Ticket ID</th>
+                                        <th scope="col">Reference Number</th>
                                         <th scope="col">Subject</th>
                                         <th scope="col">Status</th>
                                         <th scope="col">Action</th>
