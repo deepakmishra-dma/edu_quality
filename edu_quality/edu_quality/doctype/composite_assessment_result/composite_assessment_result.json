@@ -9,8 +9,11 @@
   "combined_marks_or_grade",
   "processed_time",
   "processed_user",
+  "student",
   "exams",
-  "processed_reason"
+  "processed_reason",
+  "amended_from",
+  "order"
  ],
  "fields": [
   {
@@ -45,14 +48,36 @@
    "fieldtype": "Table",
    "label": "Exams",
    "options": "Composite Exam"
+  },
+  {
+   "fieldname": "student",
+   "fieldtype": "Link",
+   "label": "Student",
+   "options": "Student"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Composite Assessment Result",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "order",
+   "fieldtype": "Int",
+   "label": "Order"
   }
  ],
  "index_web_pages_for_search": 1,
+ "is_submittable": 1,
  "links": [],
- "modified": "2024-06-17 10:15:07.040780",
+ "modified": "2024-06-24 16:17:21.192929",
  "modified_by": "Administrator",
  "module": "Edu Quality",
- "name": "Composite Assessment Processing",
+ "name": "Composite Assessment Result",
  "owner": "Administrator",
  "permissions": [
   {

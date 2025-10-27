@@ -5,5 +5,5 @@
 from frappe.tests.utils import FrappeTestCase
 
 
-class TestCompositeAssessmentProcessing(FrappeTestCase):
+class TestCompositeAssessmentResult(FrappeTestCase):
 	pass

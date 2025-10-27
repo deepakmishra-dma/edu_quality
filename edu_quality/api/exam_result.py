@@ -1,5 +1,6 @@
 import frappe
 from frappe.query_builder import Field
+from frappe.query_builder.functions import Count, GROUP_CONCAT, Sum
 
 
 def get_div_students(division):
@@ -131,6 +132,7 @@ def process_result(assessment_group, academic_year, program, div=None):
         process_composite_result(assessment_group, academic_year, program, div=None)
     else:
         process_atomic_exam(assessment_group, academic_year, program, div=None)
+    frappe.db.commit()
 
 
 def process_atomic_exam(assessment_group, academic_year, program, div=None):
@@ -195,10 +197,25 @@ def get_result_from_plans(assessment_plans, group_by=False):
     )
 
     if group_by:
-        query = query.group_by(
-            assess_res_qb.student,
-            assess_res_qb.assessment_plan,
-            assess_res_de_qb.assessment_criteria,
+        assess_group_qb = frappe.qb.DocType("Assessment Group")
+        query = (
+            query.inner_join(assess_group_qb)
+            .on(assess_group_qb.name == assess_res_qb.assessment_group)
+            .groupby(
+                assess_res_qb.course,
+                assess_res_qb.student,
+                assess_res_de_qb.assessment_criteria,
+            )
+            .select(
+                assess_res_qb.student,
+                GROUP_CONCAT(assess_res_qb.assessment_plan).as_("assessment_plans"),
+                Sum(
+                    assess_res_de_qb.custom_processed_result
+                    * assess_group_qb.custom_scale
+                ).as_("score"),
+                assess_res_qb.assessment_group,
+                assess_res_qb.course,
+            )
         )
 
     query = query.select(
@@ -237,21 +254,75 @@ SET  `tabAssessment Result`.custom_rank = ranked_table.ranking;
 
 def process_composite_result(assessment_group, academic_year, program, div=None):
     assess_group = frappe.get_doc("Assessment Group", assessment_group)
-    for atomic_exam in assess_group.custom_composite_exams:
-        process_atomic_exam(atomic_exam.assessment_group, academic_year, program, div)
+    calc_exam_avg = assess_group.custom_exam_avg
+
+    composite_exams = frappe.db.get_all(
+        "Assessment Group",
+        filters={"parent_assessment_group": assessment_group},
+    )
+    print(composite_exams)
+    for atomic_exam in composite_exams:
+        process_atomic_exam(atomic_exam.name, academic_year, program, div)
 
     plans = []
 
-    for atomic_exam in assess_group.custom_composite_exams:
-        plans.extend(
-            get_all_assessment_plans(atomic_exam.assessment_group, program, div)
+    for atomic_exam in composite_exams:
+        plans.extend(get_all_assessment_plans(atomic_exam.name, program, div))
+
+    all_results = get_result_from_plans(plans, calc_exam_avg)
+    cancel_existing_composite_results(all_results, assessment_group)
+    for result in all_results:
+
+        curr_car_doc_name = frappe.db.get_value(
+            "Composite Assessment Result",
+            {
+                "assessment_group": assessment_group,
+                "student": result.student,
+            },
         )
 
-    all_results = get_result_from_plans(plans)
+        if not curr_car_doc_name:
+            car_doc = frappe.new_doc("Composite Assessment Result")
+            car_doc.student = result.student
+            car_doc.assessment_group = assessment_group
+            car_doc.processed_user = frappe.session.user
+            car_doc.processed_time = frappe.utils.now()
+            car_doc.append(
+                "exams",
+                {
+                    "assessment_plan": result.assessment_plan or None,
+                    "assessment_criteria": result.assessment_criteria or None,
+                    "score": result.score,
+                    "subject": result.course,
+                    "assessment_group": assessment_group,
+                },
+            )
+            car_doc.save()
+        else:
+
+            frappe.get_doc(
+                {
+                    "doctype": "Composite Exam",
+                    "parenttype": "Composite Assessment Result",
+                    "parentfield": "exams",
+                    "parent": curr_car_doc_name,
+                    "subject": result.course,
+                    "score": result.score,
+                    "assessment_plan": result.assessment_plan or None,
+                    "assessment_criteria": result.assessment_criteria or None,
+                    "assessment_group": assessment_group,
+                }
+            ).insert(ignore_permissions=True)
 
 
-def generate_results_hash(all_results):
-    student_hash = {}
-    for result in all_results:
-        student = result.get("student")
-        
+def cancel_existing_composite_results(results, assessment_group):
+    for result in results:
+        frappe.db.set_value(
+            "Composite Assessment Result",
+            {
+                "assessment_group": assessment_group,
+                "student": result.student,
+            },
+            "docstatus",
+            2,
+        )
