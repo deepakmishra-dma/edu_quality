@@ -189,17 +189,6 @@ def create_payment_request(fee, term=None):
         frappe.logger("edu_quality").exception(e)
 
 
-@frappe.whitelist()
-def get_parents_details(student):
-    student = frappe.get_doc("Student", student)
-    parents = []
-    for guardian in student.guardians:
-        parent = frappe.get_doc("Guardian", guardian.guardian).as_dict()
-        parent.update({"relation": guardian.relation})
-        parents.append(parent)
-    return parents
-
-
 def update_student(data):
     student_meta = data.get("student_meta")
     parent_meta = data.get("parent_meta", {})

@@ -367,6 +367,15 @@ class CustomStudent(Student):
             return False
 
     @frappe.whitelist()
+    def get_parents_details(self):
+        parents = []
+        for guardian in self.guardians:
+            parent = frappe.get_doc("Guardian", guardian.guardian).as_dict()
+            parent.update({"relation": guardian.relation})
+            parents.append(parent)
+        return parents
+
+    @frappe.whitelist()
     def get_fees_details(self):
         class_id = frappe.get_value(
             "Program Enrollment",

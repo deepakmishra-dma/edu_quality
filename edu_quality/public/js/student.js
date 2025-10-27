@@ -164,10 +164,11 @@ function addFeeDetails(frm) {
                 student: frm.selected_doc.name
             },
             callback: function (r) {
-                if (r.message) {
-                    const data = r.message.map((item, index) => {
+                const feesContainer = frm.$wrapper[0].querySelector("#fees");
+                if (r.message && r.message.length) {
+                    const rows = r.message.map((item, index) => {
                         const { payment_term, description, due_date, invoice_portion, payment_amount, outstanding, parent, doctype, paid_date } = item;
-                        let link = doctype == 'Fee Advance' ? `/app/fee-advance/${parent}` : `/app/fees/${parent}`;
+                        let link = doctype === 'Fee Advance' ? `/app/fee-advance/${parent}` : `/app/fees/${parent}`;
                         return `
                             <tr>
                                 <td>${index + 1}</td>
@@ -176,26 +177,34 @@ function addFeeDetails(frm) {
                                 <td>${due_date}</td>
                                 <td>${invoice_portion}</td>
                                 <td>${payment_amount}</td>
-                                <td>${outstanding == 0 ? `${paid_date}` : 'Not Paid'}</td>
-                                <td><a href="${link}">Open</a></td>
+                                <td>${outstanding === 0 ? paid_date : 'Not Paid'}</td>
+                                <td><a href="${link}" target="_blank">Open</a></td>
                             </tr>`;
                     }).join('');
 
-                    frm.$wrapper[0].querySelector("#fees").innerHTML = data ? `
-                    <h4> Fee Details </h4>
-                    <table class="table table-bordered">
-                        <tr>
-                            <th>Sr.No</th>
-                            <th scope="col">Payment Term</th>
-                            <th scope="col">Description</th>
-                            <th scope="col">Due Date</th>
-                            <th scope="col">Invoice Portion</th>
-                            <th scope="col">Payment Amount</th>
-                            <th scope="col">Paid Date</th>
-                            <th scope="col">Action</th>
-                        </tr>
-                        ${data}
-                    </table>` : `<center><p> There is no current record</p></center>`;
+                    feesContainer.innerHTML = `
+                        <h4>Fee Details</h4>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Sr.No</th>
+                                        <th scope="col">Payment Term</th>
+                                        <th scope="col">Description</th>
+                                        <th scope="col">Due Date</th>
+                                        <th scope="col">Invoice Portion</th>
+                                        <th scope="col">Payment Amount</th>
+                                        <th scope="col">Paid Date</th>
+                                        <th scope="col">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${rows}
+                                </tbody>
+                            </table>
+                        </div>`;
+                } else {
+                    feesContainer.innerHTML = `<center><p>There is no current record</p></center>`;
                 }
             }
         });
@@ -208,29 +217,35 @@ function addDepositDetails(frm) {
             doc: frm.doc,
             method: "get_deposit_details",
             callback: function (r) {
-                if (r.message) {
-                    const data = r.message.map((item, index) => {
-                        const { name, posting_date, paid_amount } = item;
-                        return `
-                            <tr>
-                                <td>${index + 1}</td>
-                                <td>${paid_amount}</td>
-                                <td>${posting_date}</td>
-                                <td><a href="/app/payment-entry/${name}" target='_blank'>Open</a></td>
-                            </tr>`;
-                    }).join('');
-
-                    frm.$wrapper[0].querySelector("#deposit").innerHTML = data ? `
-                    <h4> Deposit Details </h4>
-                    <table class="table table-bordered">
+                const depositContainer = frm.$wrapper[0].querySelector("#deposit");
+                if (r.message && r.message.length) {
+                    const rows = r.message.map((item, index) => `
                         <tr>
-                            <th>Sr.No</th>
-                            <th scope="col">Payment Amount</th>
-                            <th scope="col">Paid Date</th>
-                            <th scope="col">Action</th>
-                        </tr>
-                        ${data}
-                    </table>` : `<center><p> There is no current record</p></center>`;
+                            <td>${index + 1}</td>
+                            <td>${item.paid_amount}</td>
+                            <td>${item.posting_date}</td>
+                            <td><a href="/app/payment-entry/${item.name}" target="_blank">Open</a></td>
+                        </tr>`).join('');
+
+                    depositContainer.innerHTML = `
+                        <h4>Deposit Details</h4>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Sr.No</th>
+                                        <th scope="col">Payment Amount</th>
+                                        <th scope="col">Paid Date</th>
+                                        <th scope="col">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${rows}
+                                </tbody>
+                            </table>
+                        </div>`;
+                } else {
+                    depositContainer.innerHTML = `<h4>Deposit Details</h4><center><p>There is no current record</p></center>`;
                 }
             }
         });
@@ -243,32 +258,35 @@ function addHDTicketDetails(frm) {
             doc: frm.doc,
             method: "get_hd_ticket_details",
             callback: function (r) {
-                if (r.message) {
-                    const data = r.message.map((item) => {
-                        const { name, subject,  status } = item;
-                        return `
-                            <tr>
-                                <td>${name}</td>
-                                <td>${subject}</td>
-                                <td>${status}</td>
-                                <td><a href="/app/hd-ticket/${name}" target='_blank'>Open</a></td>
-                            </tr>`;
-                    }).join('');
-                    console.log('data',data);
-
-                    frm.$wrapper[0].querySelector("#tickets").innerHTML = data ? `
-                    <h4> Helpdesk Tickets </h4>
-                    <table class="table table-bordered">
+                const ticketsContainer = frm.$wrapper[0].querySelector("#tickets");
+                if (r.message && r.message.length) {
+                    const rows = r.message.map(({ name, subject, status }) => `
                         <tr>
-                            <th scope="col">Ticket ID</th>
-                            <th scope="col">Subject</th>
-                            <th scope="col">Status</th>
-                            <th scope="col">Action</th>
-                        </tr>
-                        ${data}
-                    </table>` : `<center><p>No Tickets found</p></center>`;
-                }else{
-                    frm.$wrapper[0].querySelector("#tickets").innerHTML = `<center><p>No Tickets found</p></center>`;
+                            <td>${name}</td>
+                            <td>${subject}</td>
+                            <td>${status}</td>
+                            <td><a href="/app/hd-ticket/${name}" target="_blank">Open</a></td>
+                        </tr>`).join('');
+
+                    ticketsContainer.innerHTML = `
+                        <h4>Helpdesk Tickets</h4>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Ticket ID</th>
+                                        <th scope="col">Subject</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${rows}
+                                </tbody>
+                            </table>
+                        </div>`;
+                } else {
+                    ticketsContainer.innerHTML = `<center><p>No Tickets found</p></center>`;
                 }
             }
         });
@@ -278,50 +296,47 @@ function addHDTicketDetails(frm) {
 function addParentDetails(frm) {
     if (!frm.is_new()) {
         frappe.call({
-            method: "edu_quality.public.py.student.get_parents_details",
-            args: {
-                student: frm.selected_doc.name
-            },
+            doc: frm.doc,
+            method: "get_parents_details",
             callback: function (r) {
-                let data = '';
-                if (r.message) {
-                    r.message.forEach((item, index) => {
-                        console.log(item);
-                        data += `<tr>
+                const parentsContainer = frm.$wrapper[0].querySelector("#parents");
+                if (r.message && r.message.length) {
+                    const rows = r.message.map((item, index) => `
+                        <tr>
                             <td>${index + 1}</td>
-                            <td>${item['guardian_name']}</td>
-                            <td>${item['relation']}</td>
-                            <td>${item['mobile_number']}</td>
-                            <td>${item['email_address']}</td>
-                            <td>${item['occupation']}</td>
-                            <td>${item['annual_income']}</td>
-                            <td>${item['work_address']}</td>
-                            <td><a href="/app/guardian/${item['name']}">Open</a></td>
-                        </tr>`;
-                    });
+                            <td>${item.guardian_name}</td>
+                            <td>${item.relation}</td>
+                            <td>${item.mobile_number}</td>
+                            <td>${item.email_address}</td>
+                            <td>${item.occupation}</td>
+                            <td>${item.annual_income}</td>
+                            <td>${item.work_address}</td>
+                            <td><a href="/app/guardian/${item.name}">Open</a></td>
+                        </tr>`).join('');
 
-                    if (data) {
-                        frm.$wrapper[0].querySelector("#parents").innerHTML = `
-                        <table class="table table-bordered">
-                            <tr>
-                                <th>Sr.No</th>
-                                <th scope="col">Parent Name</th>
-                                <th scope="col">Relation</th>
-                                <th scope="col">Phone</th>
-                                <th scope="col">Email</th>
-                                <th scope="col">Occupation</th>
-                                <th scope="col">Annual Income</th>
-                                <th scope="col">Address</th>
-                                <th scope="col">More Details</th>
-                            </tr>
-                            <tr>
-                                ${data}
-                            </tr>
-                        </table>`;
-                    }
-                }
-                else {
-                    frm.$wrapper[0].querySelector("#parents").innerHTML = `<center><p> There is no current record</p></center>`;
+                    parentsContainer.innerHTML = `
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Sr.No</th>
+                                        <th scope="col">Parent Name</th>
+                                        <th scope="col">Relation</th>
+                                        <th scope="col">Phone</th>
+                                        <th scope="col">Email</th>
+                                        <th scope="col">Occupation</th>
+                                        <th scope="col">Annual Income</th>
+                                        <th scope="col">Address</th>
+                                        <th scope="col">More Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${rows}
+                                </tbody>
+                            </table>
+                        </div>`;
+                } else {
+                    parentsContainer.innerHTML = `<center><p> There is no current record</p></center>`;
                 }
             }
         });
