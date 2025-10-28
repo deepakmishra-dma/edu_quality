@@ -141,6 +141,7 @@ permission_query_conditions = {
 # Override standard doctype classes
 
 override_doctype_class = {
+    "Employee": "edu_quality.edu_quality.overrides.employee.customEmployee",
     "Program": "edu_quality.edu_quality.overrides.program.customProgram",
     "Journal Entry": "edu_quality.edu_quality.overrides.journal_entry.customJournalEntry",
     "Payment Request": "edu_quality.overrides.CustomPaymentRequest",

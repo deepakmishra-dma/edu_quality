@@ -244,11 +244,13 @@ def enter_individual_marks(
     for criteria in criterias:
         assessment_criteria = criteria.get("assessment_criteria")
         name = assessment_criteria.get("name")
-        score = (assessment_criteria.get("value"),)
+        score = assessment_criteria.get("value")
         scale = assessment_criteria.get("custom_scale")
+        
         if str(score).lower() == "ab":
             score = 0
             is_absent = 1
+
         assessment_details.append(
             {
                 "assessment_criteria": name,

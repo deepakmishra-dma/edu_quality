@@ -5,7 +5,7 @@ import frappe
 from frappe.model.document import Document
 
 
-class CompositeAssessmentProcessing(Document):
+class CompositeAssessmentResult(Document):
 
     pass
 

@@ -8,3 +8,21 @@
 .mark-entry-tool-report [data-col-index="2"] {
   left: 75px;
 }
+
+.mark-entry-tool-report .dt-instance-1 .dt-cell__content {
+  width: 100px !important;
+}
+.mark-entry-tool-report .datatable .dt-row {
+  height: auto;
+}
+
+.mark-entry-tool-report [data-is-header="1"] {
+  height: auto !important;
+  text-align: left;
+}
+
+.mark-entry-tool-report [data-is-header="1"] > div {
+  text-overflow: unset;
+  white-space: normal;
+  overflow: unset;
+}
