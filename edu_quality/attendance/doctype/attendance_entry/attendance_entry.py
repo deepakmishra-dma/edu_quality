@@ -24,7 +24,7 @@ class AttendanceEntry(Document):
                 data_timestamp = datetime.strptime(data.timestamp, "%Y-%m-%d %H:%M:%S")
             else:
                 data_timestamp = data.timestamp
-            if data.status == "early_pickup" and data_timestamp.date() >= today_date:
+            if data.status == "Early Pickup" and data_timestamp.date() >= today_date:
                 return True
         return False
 
