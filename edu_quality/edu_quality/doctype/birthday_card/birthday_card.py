@@ -141,6 +141,7 @@ def get_birthday_card_data(birthday_card):
     today = date.today()
     age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
     program_name = frappe.get_value("Program", birthday_card.program, "program_name")
+    division_name = frappe.get_value("Student Group", birthday_card.student_group, "student_group_name")
     student_name = frappe.get_value("Student", birthday_card.student, "student_name")
     has_traits = any(trait.description for trait in birthday_card.traits)
     return {
@@ -150,6 +151,7 @@ def get_birthday_card_data(birthday_card):
         "special_day": dob.strftime("%d-%m") + today.strftime("-%Y"),
         "age": abs(age),
         "program_name": program_name,
+        "division_name": division_name
     }
 
 

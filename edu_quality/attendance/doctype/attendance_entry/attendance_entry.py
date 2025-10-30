@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 
 import frappe
-from datetime import datetime
+from frappe.utils import today, getdate
 from frappe.model.document import Document
 from frappe.desk.form.assign_to import add as add_assign_to
 from edu_quality.public.py.walsh.admin import notification_sender
@@ -17,14 +17,10 @@ class AttendanceEntry(Document):
             self.send_notification_to_councellor()
 
     def is_early_pickup(self):
-        today_date = datetime.strptime(frappe.utils.today(), "%Y-%m-%d").date()
-        for data in self.absent_and_delays:
-            if isinstance(data.timestamp, str):
-                # Parse the timestamp string to a datetime object
-                data_timestamp = datetime.strptime(data.timestamp, "%Y-%m-%d %H:%M:%S")
-            else:
-                data_timestamp = data.timestamp
-            if data.status == "early_pickup" and data_timestamp.date() >= today_date:
+        today_date = getdate(today())
+        timestamps = frappe.get_all("Absent and Delay", {"parent": self.name, "status": ['like', '%early%']}, pluck="timestamp")
+        for timestamp in timestamps:
+            if timestamp.date() >= today_date:
                 return True
         return False
 
