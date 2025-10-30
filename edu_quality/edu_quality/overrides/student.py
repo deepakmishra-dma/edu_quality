@@ -420,39 +420,56 @@ class CustomStudent(Student):
         academic_year = frappe.db.get_value(
             "Academic Year", {"custom_current_academic_year": 1}
         )
-        filters = {
+        fee_filters = {
             "student": self.name,
             "academic_year": academic_year,
             "docstatus": 1,
         }
-        fee = None
-        if frappe.db.exists("Fees", filters):
-            fee = frappe.get_doc("Fees", filters)
-        else:
+
+        if not frappe.db.exists("Fees", fee_filters):
             return False
 
-        deposit_payment_entry = None
+        fee = frappe.get_doc("Fees", fee_filters)
+
+        def get_deposit_payment_entry(payment_term):
+            pe_filters = {
+                "reference_name": fee.name,
+                "docstatus": 1,
+                "payment_term": payment_term,
+            }
+            return frappe.get_value("Payment Entry", pe_filters, ["name", "posting_date"], as_dict=True)
+
+        def get_deposit_payment_request(payment_term):
+            pr_filters = {
+                "reference_name": fee.name,
+                "docstatus": 1,
+                "status": ["!=", "Paid"],
+                "payment_term": payment_term,
+            }
+            return frappe.get_value("Payment Request", pr_filters, as_dict=True)
+
         for schedule in fee.payment_schedule:
             if "deposit" in schedule.description.lower():
-                deposit_payment_entry = frappe.get_value(
-                    "Payment Entry",
-                    {"reference_name": fee.name, "payment_term": schedule.payment_term},
-                    ["name", "posting_date"],
-                    as_dict=True,
-                )
-                break  # Stop once the deposit payment entry is found
+                deposit_payment_entry = get_deposit_payment_entry(schedule.payment_term)
+                if deposit_payment_entry:
+                    deposit_payment_entry["paid_amount"] = fee.get_deposit_amount()
+                    return [deposit_payment_entry]
 
-        if not deposit_payment_entry:
-            deposit_payment_entry = frappe.get_value(
-                "Payment Entry",
-                {"reference_name": fee.name, "payment_term": ["is", "not set"]},
-                ["name", "posting_date"],
-                as_dict=True,
-            )
+                deposit_payment_request = get_deposit_payment_request(schedule.payment_term)
+                if deposit_payment_request:
+                    deposit_payment_request["paid_amount"] = fee.get_deposit_amount()
+                    return [deposit_payment_request]
 
+        # Check for unspecified payment term as a fallback
+        deposit_payment_entry = get_deposit_payment_entry(None)
         if deposit_payment_entry:
             deposit_payment_entry["paid_amount"] = fee.get_deposit_amount()
             return [deposit_payment_entry]
+
+        deposit_payment_request = get_deposit_payment_request(None)
+        if deposit_payment_request:
+            deposit_payment_request["paid_amount"] = fee.get_deposit_amount()
+            return [deposit_payment_request]
 
         return False
 

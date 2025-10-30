@@ -155,6 +155,20 @@ function addReferral(frm) {
     }, __("Action"));
 }
 
+// function to format the date in dd-mm-yyyy
+function formatDate(inputDate) {
+    // Destructure the input date parts directly
+    const [year, month, day] = inputDate.split('-');
+    
+    // Return the formatted date using template literals
+    return `${day}-${month}-${year}`;
+}
+// object to parse numbers to currency
+let rupee = new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+});
+
 function addFeeDetails(frm) {
     if (!frm.is_new()) {
         frappe.call({
@@ -174,10 +188,10 @@ function addFeeDetails(frm) {
                                 <td>${index + 1}</td>
                                 <td>${payment_term}</td>
                                 <td>${description}</td>
-                                <td>${due_date}</td>
-                                <td>${invoice_portion}</td>
-                                <td>${payment_amount}</td>
-                                <td>${outstanding === 0 ? paid_date : 'Not Paid'}</td>
+                                <td>${formatDate(due_date)}</td>
+                                <td>${invoice_portion}%</td>
+                                <td>${rupee.format(payment_amount)}</td>
+                                <td>${outstanding === 0 ? formatDate(paid_date) : 'Not Paid'}</td>
                                 <td><a href="${link}" target="_blank">Open</a></td>
                             </tr>`;
                     }).join('');
@@ -222,8 +236,8 @@ function addDepositDetails(frm) {
                     const rows = r.message.map((item, index) => `
                         <tr>
                             <td>${index + 1}</td>
-                            <td>${item.paid_amount}</td>
-                            <td>${item.posting_date}</td>
+                            <td>${rupee.format(item.paid_amount)}</td>
+                            <td>${item.posting_date === undefined ?  'Not Paid': formatDate(item.posting_date) }</td>
                             <td><a href="/app/payment-entry/${item.name}" target="_blank">Open</a></td>
                         </tr>`).join('');
 
