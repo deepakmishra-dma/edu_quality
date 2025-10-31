@@ -26,8 +26,7 @@ def get_subject_criteria_columns(assess_group, filters):
     assess_plan_qb = frappe.qb.DocType("Assessment Plan")
     assess_plan_cr_qb = frappe.qb.DocType("Assessment Plan Criteria")
     division = filters.get("division")
-    frappe.errprint("haha")
-    frappe.errprint(filters)
+
     query = (
         frappe.qb.from_(assess_plan_qb)
         .inner_join(assess_plan_cr_qb)
@@ -65,7 +64,7 @@ def get_composite_exam_columns(assess_group, filters):
 def generate_column_dict(assess_plan):
     return {
         "fieldname": gen_field_name(assess_plan),
-        "label": f"{gen_label(assess_plan)}<br/> Out of marks {assess_plan.get('maximum_score')}",
+        "label": f"{gen_label(assess_plan)}<br/> ({assess_plan.get('maximum_score')} marks)",
         "maximum_score": assess_plan.get("maximum_score"),
         "assessment_plan": assess_plan.get("name"),
         "assessment_criteria_row_name": assess_plan.get("assess_criteria_row_name"),
@@ -246,7 +245,7 @@ def enter_individual_marks(
         name = assessment_criteria.get("name")
         score = assessment_criteria.get("value")
         scale = assessment_criteria.get("custom_scale")
-        
+
         if str(score).lower() == "ab":
             score = 0
             is_absent = 1

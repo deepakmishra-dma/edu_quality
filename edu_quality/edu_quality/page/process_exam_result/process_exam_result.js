@@ -28,26 +28,45 @@ function onLoad() {
 			options: "School",
 			reqd: 1
 		},
-		{
-			label: "Exam Name",
-			fieldname: "exam_name",
-			fieldtype: "Link",
-			options: "Assessment Group",
-			reqd: 1
-		},
+
 		{
 			label: "Class",
 			fieldname: "program",
 			fieldtype: "Link",
 			options: "Program",
-			reqd: 1
+			reqd: 1,
+			get_query: function (txt) {
+
+				const school = filtersRef.get_value("school")
+
+
+				return { filters: { "school": school } };
+			}
 		}
 		,
+		{
+			label: "Exam Name",
+			fieldname: "exam_name",
+			fieldtype: "Link",
+			options: "Assessment Group",
+			reqd: 1,
+			"get_query": function (txt) {
+				const academic_year = filtersRef.get_value("acad_year")
+				const school = filtersRef.get_value("school")
+				const program = filtersRef.get_value("program")
+				return { filters: { "custom_is_composite": 0, "custom_academic_year": academic_year, "custom_school": school, "custom_program": program } };
+			}
+		},
 		{
 			label: "Div",
 			fieldname: "division",
 			fieldtype: "Link",
 			options: "Student Group",
+			get_query: () => {
+				const program = filtersRef.get_value("program");
+				const academic_year = filtersRef.get_value("acad_year");
+				return { filters: { "program": program, academic_year: academic_year } };
+			}
 		}
 	])
 	addProcessButton()

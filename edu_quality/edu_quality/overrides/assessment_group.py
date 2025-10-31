@@ -14,8 +14,10 @@ class CustomAssessmentGroup(AssessmentGroup):
         short_acad_year = extract_year_from_academic_year_name(
             self.custom_academic_year
         )
+        program = frappe.get_doc("Program", self.get("custom_program"))
+        class_type = frappe.get_doc("Class Type", program.get("program_name"))
         school_pref = frappe.db.get_value("School", self.custom_school, "prefix")
-        self.name = f"{self.assessment_group_name} {short_acad_year} - {school_pref}"
+        self.name = f"{self.assessment_group_name} {short_acad_year} - {school_pref}{class_type.get('short_code')}"
 
     # def before_validate(self):
     #     if frappe.db.exists(
