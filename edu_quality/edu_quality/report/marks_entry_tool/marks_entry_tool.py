@@ -26,8 +26,7 @@ def get_subject_criteria_columns(assess_group, filters):
     assess_plan_qb = frappe.qb.DocType("Assessment Plan")
     assess_plan_cr_qb = frappe.qb.DocType("Assessment Plan Criteria")
     division = filters.get("division")
-    frappe.errprint("haha")
-    frappe.errprint(filters)
+
     query = (
         frappe.qb.from_(assess_plan_qb)
         .inner_join(assess_plan_cr_qb)
@@ -246,7 +245,7 @@ def enter_individual_marks(
         name = assessment_criteria.get("name")
         score = assessment_criteria.get("value")
         scale = assessment_criteria.get("custom_scale")
-        
+
         if str(score).lower() == "ab":
             score = 0
             is_absent = 1
