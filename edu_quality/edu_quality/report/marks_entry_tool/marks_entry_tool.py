@@ -64,7 +64,7 @@ def get_composite_exam_columns(assess_group, filters):
 def generate_column_dict(assess_plan):
     return {
         "fieldname": gen_field_name(assess_plan),
-        "label": f"{gen_label(assess_plan)}<br/> Out of marks {assess_plan.get('maximum_score')}",
+        "label": f"{gen_label(assess_plan)}<br/> ({assess_plan.get('maximum_score')} marks)",
         "maximum_score": assess_plan.get("maximum_score"),
         "assessment_plan": assess_plan.get("name"),
         "assessment_criteria_row_name": assess_plan.get("assess_criteria_row_name"),
