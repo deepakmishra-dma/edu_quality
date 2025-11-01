@@ -9,6 +9,7 @@
   "event_details_section",
   "event_name",
   "event",
+  "event_starts_on",
   "school",
   "classes_applicable_to",
   "single_poc_name",
@@ -295,11 +296,17 @@
   {
    "fieldname": "section_break_hfsm",
    "fieldtype": "Section Break"
+  },
+  {
+   "fetch_from": "event.starts_on",
+   "fieldname": "event_starts_on",
+   "fieldtype": "Datetime",
+   "label": "Event Starts On"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-06-12 10:41:12.519951",
+ "modified": "2024-06-26 17:49:36.689547",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Event Detail",

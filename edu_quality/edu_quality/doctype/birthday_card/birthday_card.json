@@ -11,6 +11,7 @@
   "student",
   "academic_year",
   "amended_from",
+  "school",
   "program",
   "student_group",
   "greeting_email_template",
@@ -103,11 +104,18 @@
    "fieldname": "date_of_birth",
    "fieldtype": "Date",
    "label": "Date of Birth"
+  },
+  {
+   "fetch_from": "program_enrollment.custom_school",
+   "fieldname": "school",
+   "fieldtype": "Link",
+   "label": "School",
+   "options": "School"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-04-18 02:43:38.589886",
+ "modified": "2024-06-26 10:45:28.491331",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Birthday Card",

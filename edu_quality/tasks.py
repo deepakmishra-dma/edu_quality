@@ -39,6 +39,16 @@ def sync_student_data_from_program_enrollment():
     sync_student_data()
 
 
+def event_reminder():
+    """
+    Send reminders for the event based on the settings
+    """
+    frappe.enqueue(
+        "edu_quality.edu_quality.doctype.event_detail.event_detail.send_event_reminder",
+        is_async=True,
+    )
+
+
 def create_payment_request_before_due_date():
     today = datetime.today().date()
     fee_schedules = frappe.get_all("Fee Schedule")
