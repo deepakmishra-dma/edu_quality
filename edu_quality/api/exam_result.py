@@ -1,15 +1,11 @@
 import frappe
 from frappe.query_builder import Field
 from frappe.query_builder.functions import Count, GROUP_CONCAT, Sum
+from edu_quality.public.py.utils import get_div_students as get_div_stud
 
 
 def get_div_students(division):
-
-    data = frappe.db.get_all(
-        "Student Group Student",
-        filters={"parent": division},
-        fields=["student_name", "name", "student"],
-    )
+    data = get_div_stud(division)
     return [student.get("student") for student in data]
 
 
@@ -142,12 +138,13 @@ def process_atomic_exam(assessment_group, academic_year, program, div=None):
         return errors
     result_data = get_result_from_plans(assessment_plans)
     modified_result = {}
+    total_processed_result = 0
     for result in result_data:
         score = result.get("score")
         scale = result.get("custom_scale")
         parent = result.get("parent")
         docstatus = result.get("docstatus")
-        if result.get("custom_is_absent") == 0:
+        if result.get("custom_is_absent") == 0 and docstatus == 0:
             frappe.db.set_value(
                 "Assessment Result Detail",
                 result.get("name"),
@@ -155,7 +152,7 @@ def process_atomic_exam(assessment_group, academic_year, program, div=None):
                 score * (scale),
             )
             modified_result[parent] = docstatus
-
+            total_processed_result += score * (scale)
     for parent in modified_result:
 
         if modified_result[parent] == 1:
@@ -163,6 +160,7 @@ def process_atomic_exam(assessment_group, academic_year, program, div=None):
             assess_result.cancel()
             amended_doc = frappe.copy_doc(assess_result)
             amended_doc.amended_from = assess_result.name
+            amended_doc.custom_total_processed_score = total_processed_result
             amended_doc.submit()
             continue
         frappe.db.set_value("Assessment Result", parent, "docstatus", 1)
@@ -271,6 +269,7 @@ def process_composite_result(assessment_group, academic_year, program, div=None)
 
     all_results = get_result_from_plans(plans, calc_exam_avg)
     cancel_existing_composite_results(all_results, assessment_group)
+    modified_result = {}
     for result in all_results:
 
         curr_car_doc_name = frappe.db.get_value(
@@ -278,9 +277,10 @@ def process_composite_result(assessment_group, academic_year, program, div=None)
             {
                 "assessment_group": assessment_group,
                 "student": result.student,
+                "docstatus": 0,
             },
         )
-
+        combined_marks_or_grade = 0
         if not curr_car_doc_name:
             car_doc = frappe.new_doc("Composite Assessment Result")
             car_doc.student = result.student
@@ -297,7 +297,9 @@ def process_composite_result(assessment_group, academic_year, program, div=None)
                     "assessment_group": assessment_group,
                 },
             )
-            car_doc.save()
+            doc = car_doc.save()
+
+            modified_result[doc.name] = True
         else:
 
             frappe.get_doc(
@@ -313,6 +315,39 @@ def process_composite_result(assessment_group, academic_year, program, div=None)
                     "assessment_group": assessment_group,
                 }
             ).insert(ignore_permissions=True)
+
+            modified_result[doc.name] = True
+
+        for parent in modified_result:
+
+            if modified_result[parent]:
+                assess_result = frappe.get_doc("Composite Assessment Result", parent)
+                combined_marks_or_grade = 0
+                for exam in assess_result.exams:
+                    combined_marks_or_grade += exam.score
+                assess_result.save()
+                assess_result.submit()
+                
+        calculate_ranking_composite(assess_group)
+
+
+def calculate_ranking_composite(assessment_group):
+    frappe.db.sql(
+        """
+        Update `tabComposite Assessment Result` 
+    INNER JOIN (SELECT 
+        RANK() OVER (ORDER BY combined_marks_or_grade DESC) AS ranking,
+        name
+    FROM 
+        `tabComposite Assessment Result`
+    WHERE 
+        assessment_group = %(id)s
+        AND docstatus = 1) AS ranked_table ON  `tabComposite Assessment Result`.name = ranked_table.name
+SET  `tabComposite Assessment Result`.rank = ranked_table.ranking;
+""",
+        values={"id": assessment_group},
+        as_dict=True,
+    )
 
 
 def cancel_existing_composite_results(results, assessment_group):
