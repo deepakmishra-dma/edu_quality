@@ -6,6 +6,7 @@ import frappe
 from edu_quality.public.py.utils import to_snake_case
 import json
 from frappe.utils import flt
+from edu_quality.public.py.utils import get_div_students as get_div_stud
 
 
 @frappe.whitelist()
@@ -83,12 +84,7 @@ def gen_field_name(assess_plan):
 
 
 def get_div_students(division):
-
-    data = frappe.db.get_all(
-        "Student Group Student",
-        filters={"parent": division},
-        fields=["student_name", "name", "student"],
-    )
+    data = get_div_stud(division)
     return [
         {"ref_no": student.get("student"), "student_name": student.get("student_name")}
         for student in data
