@@ -140,7 +140,7 @@ class EventDetail(Document):
             # Send reminders for registration
             if mgr_settings.send_reminder_for_registration:
                 reminder_date = calculate_reminder_date(
-                    self.last_date, mgr_settings.registration_before_days
+                    self.registration_last_date, mgr_settings.registration_before_days
                 )
                 if reminder_date and today_date >= reminder_date:
                     trigger_event(self, "send_registration_reminder")

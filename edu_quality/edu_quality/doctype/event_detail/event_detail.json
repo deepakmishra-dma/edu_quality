@@ -16,8 +16,8 @@
   "column_break_hxca",
   "event_type",
   "registration_type",
-  "registrations_open_date",
-  "last_date",
+  "registration_open_date",
+  "registration_last_date",
   "department",
   "secondary_poc_name",
   "section_break_izud",
@@ -63,13 +63,9 @@
   },
   {
    "fieldname": "single_poc_name",
-   "fieldtype": "Data",
-   "label": "Single POC Name"
-  },
-  {
-   "fieldname": "registrations_open_date",
-   "fieldtype": "Date",
-   "label": "Registrations Open Date"
+   "fieldtype": "Link",
+   "label": "Single POC Name",
+   "options": "User"
   },
   {
    "fieldname": "column_break_hxca",
@@ -89,8 +85,9 @@
   },
   {
    "fieldname": "secondary_poc_name",
-   "fieldtype": "Data",
-   "label": "Secondary POC Name"
+   "fieldtype": "Link",
+   "label": "Secondary POC Name",
+   "options": "User"
   },
   {
    "fieldname": "registration_type",
@@ -237,12 +234,6 @@
    "label": "Photos From Wal-T"
   },
   {
-   "depends_on": "eval: doc.registration_type == \"Pre-registered\"",
-   "fieldname": "last_date",
-   "fieldtype": "Date",
-   "label": "Last Date"
-  },
-  {
    "fieldname": "add_to_participating",
    "fieldtype": "Button",
    "label": "Add to Participating"
@@ -302,11 +293,22 @@
    "fieldname": "event_starts_on",
    "fieldtype": "Datetime",
    "label": "Event Starts On"
+  },
+  {
+   "fieldname": "registration_open_date",
+   "fieldtype": "Date",
+   "label": "Registration Open Date"
+  },
+  {
+   "depends_on": "eval: doc.registration_type == \"Pre-registered\"",
+   "fieldname": "registration_last_date",
+   "fieldtype": "Date",
+   "label": "Registration Last Date"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-06-26 17:49:36.689547",
+ "modified": "2024-06-27 14:47:34.747848",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Event Detail",
