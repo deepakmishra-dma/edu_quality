@@ -164,7 +164,6 @@ def get_data(filters, combined_deposit=False):
                 pr.docstatus = 1
                 AND fee.docstatus = 1
                 AND pr.status = 'Paid'
-                AND student.student_status != 'Cancelled'
                 AND pr.payment_term = 'Term 1'
                 AND ps.parenttype = 'Fees'
                 AND ps.description LIKE %(deposit)s
@@ -176,7 +175,6 @@ def get_data(filters, combined_deposit=False):
                 pr.docstatus = 1
                 AND fee.docstatus = 1
                 AND pr.status = 'Paid'
-                AND student.student_status != 'Cancelled'
                 AND pr.payment_term IS NULL
         """
 

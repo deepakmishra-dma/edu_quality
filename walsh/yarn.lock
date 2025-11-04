@@ -1270,6 +1270,13 @@
   resolved "https://registry.npmjs.org/@socket.io/component-emitter/-/component-emitter-3.1.0.tgz"
   integrity sha512-+9jVqKhRSpsc591z5vX+X5Yyw+he/HCB4iQ/RYxw35CEPaY1gnsNE43nf9n9AaYjAQrTiI/mOwKUKdUs9vf7Xg==
 
+"@tabler/icons-preact@^3.5.0":
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/@tabler/icons-preact/-/icons-preact-3.5.0.tgz#6e36297ad422940a450e2b2199e2217385c8fc50"
+  integrity sha512-Yq74cmjAcSskuo/1/YDEilKEf6LWrBcCKHoZTqqJXUr7Ear+sChiSZDEpSNT9WR3UJbTstCv1KroA2Bjd5mW3Q==
+  dependencies:
+    "@tabler/icons" "3.5.0"
+
 "@tabler/icons-react@^3.1.0":
   version "3.1.0"
   resolved "https://registry.npmjs.org/@tabler/icons-react/-/icons-react-3.1.0.tgz"
@@ -1281,6 +1288,11 @@
   version "3.1.0"
   resolved "https://registry.npmjs.org/@tabler/icons/-/icons-3.1.0.tgz"
   integrity sha512-CpZGyS1IVJKFcv88yZ2sYZIpWWhQ6oy76BQKQ5SF0fGgOqgyqKdBGG/YGyyMW632on37MX7VqQIMTzN/uQqmFg==
+
+"@tabler/icons@3.5.0":
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/@tabler/icons/-/icons-3.5.0.tgz#29d0dbf100c8cb392dd64f1fe8efdcfcd1f57e44"
+  integrity sha512-I53dC3ZSHQ2MZFGvDYJelfXm91L2bTTixS4w5jTAulLhHbCZso5Bih4Rk/NYZxlngLQMKHvEYwZQ+6w/WluKiA==
 
 "@tabler/icons@^1.1.0", "@tabler/icons@^1.119.0":
   version "1.119.0"

@@ -365,3 +365,142 @@ class CustomStudent(Student):
         except Exception as e:
             frappe.logger("entry").exception(e)
             return False
+
+    @frappe.whitelist()
+    def get_parents_details(self):
+        parents = []
+        for guardian in self.guardians:
+            parent = frappe.get_doc("Guardian", guardian.guardian).as_dict()
+            parent.update({"relation": guardian.relation})
+            parents.append(parent)
+        return parents
+
+    @frappe.whitelist()
+    def get_fees_details(self):
+        class_id = frappe.get_value(
+            "Program Enrollment",
+            {"student": self.name, "docstatus": 1},
+            "program",
+            order_by="creation desc",
+        )
+        if class_id and frappe.get_value(
+            "Fees", {"student": self.name, "program": class_id, "docstatus": 1}
+        ):
+            return frappe.get_doc(
+                "Fees", {"student": self.name, "program": class_id}
+            ).payment_schedule
+        elif class_id and frappe.get_value(
+            "Fee Advance", {"student": self.name, "program": class_id, "docstatus": 1}
+        ):
+            doc = frappe.get_doc(
+                "Fee Advance", {"student": self.name, "program": class_id}
+            )
+            invoice_portion = frappe.get_value(
+                "Payment Schedule",
+                {"parent": doc.payment_plan, "payment_term": doc.payment_term},
+                "invoice_portion",
+            )
+            return [
+                {
+                    "payment_term": doc.payment_term,
+                    "payment_amount": doc.amount,
+                    "due_date": doc.due_date,
+                    "invoice_portion": invoice_portion,
+                    "doctype": doc.doctype,
+                    "parent": doc.name,
+                    "paid_date": doc.paid_date,
+                    "description": "Installment 1",
+                    "outstanding": doc.outstanding_amount,
+                }
+            ]
+        return False
+
+    @frappe.whitelist()
+    def get_deposit_details(self):
+        academic_year = frappe.db.get_value(
+            "Academic Year", {"custom_current_academic_year": 1}
+        )
+        fee_filters = {
+            "student": self.name,
+            "academic_year": academic_year,
+            "docstatus": 1,
+        }
+
+        if not frappe.db.exists("Fees", fee_filters):
+            return False
+
+        fee = frappe.get_doc("Fees", fee_filters)
+
+        def get_deposit_payment_entry(payment_term):
+            pe_filters = {
+                "reference_name": fee.name,
+                "docstatus": 1,
+                "payment_term": payment_term,
+            }
+            return frappe.get_value("Payment Entry", pe_filters, ["name", "posting_date"], as_dict=True)
+
+        def get_deposit_payment_request(payment_term):
+            pr_filters = {
+                "reference_name": fee.name,
+                "docstatus": 1,
+                "status": ["!=", "Paid"],
+                "payment_term": payment_term,
+            }
+            return frappe.get_value("Payment Request", pr_filters, as_dict=True)
+
+        for schedule in fee.payment_schedule:
+            if "deposit" in schedule.description.lower():
+                deposit_payment_entry = get_deposit_payment_entry(schedule.payment_term)
+                if deposit_payment_entry:
+                    deposit_payment_entry["paid_amount"] = fee.get_deposit_amount()
+                    return [deposit_payment_entry]
+
+                deposit_payment_request = get_deposit_payment_request(schedule.payment_term)
+                if deposit_payment_request:
+                    deposit_payment_request["paid_amount"] = fee.get_deposit_amount()
+                    return [deposit_payment_request]
+
+        # Check for unspecified payment term as a fallback
+        deposit_payment_entry = get_deposit_payment_entry(None)
+        if deposit_payment_entry:
+            deposit_payment_entry["paid_amount"] = fee.get_deposit_amount()
+            return [deposit_payment_entry]
+
+        deposit_payment_request = get_deposit_payment_request(None)
+        if deposit_payment_request:
+            deposit_payment_request["paid_amount"] = fee.get_deposit_amount()
+            return [deposit_payment_request]
+
+        return False
+
+    
+    @frappe.whitelist()
+    def get_hd_ticket_details(self):
+        def get_refno(guardians):
+            student = set(frappe.get_all(
+                "Student Guardian",
+                filters={"guardian": ["in", guardians], "parenttype": "Student"},
+                pluck="parent",
+            ))
+            refno = frappe.get_all(
+                "Student", filters={"name": ["in", student]}, pluck="reference_number"
+            )
+            return ",".join(refno)
+
+        guardian_names = [guardian.guardian for guardian in self.guardians]
+        refno = get_refno(guardian_names)
+
+        guardian_emails = frappe.get_all(
+            "Guardian", filters={"name": ["in", guardian_names]}, pluck="email_address"
+        )
+
+        tickets = frappe.get_all(
+            "HD Ticket",
+            filters={"raised_by": ["in", guardian_emails]},
+            fields=["name", "subject", "status"],
+        )
+        if tickets:
+            for ticket in tickets:
+                ticket["refno"] = refno
+            return tickets
+        return False

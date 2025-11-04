@@ -27,13 +27,17 @@ class CustomHDTicket(HDTicket):
 
     @frappe.whitelist()
     def fetch_ticket_details(self):
-        students = self.find_student_by_email() or self.find_student_by_guardian()
-        if not students:
-            return
-        for student in students:
-            self.get_student_details(student)
-        self.get_pevious_tickets()
-        make(doctype="HD Ticket", name=self.name, subject="Student Information", content=self.description,communication_type="Communication")
+        try:
+            students = self.find_student_by_email() or self.find_student_by_guardian()
+            if not students:
+                return
+            for student in students:
+                self.get_student_details(student)
+            self.get_pevious_tickets()
+            make(doctype="HD Ticket", name=self.name, subject="Student Information", content=self.description,communication_type="Communication")
+        except Exception as e:
+            frappe.logger('hd').exception(e)
+            frappe.throw(e)
 
     def find_student_by_email(self):
         if frappe.db.exists("Student",{'user':self.raised_by}):
@@ -68,7 +72,9 @@ class CustomHDTicket(HDTicket):
                 <tr><td><b>Bus</b> </td><td>{bus}</td></tr>
                 </table>
                 """.format(student_id=student,student_name=student_name,school=doc.school,program=doc.program,division=doc.custom_division,status=doc.student_status,contact=doc.student_mobile_number,bus=doc.drop_bus)
-        self.description = data
+        if not self.description:
+            self.description = " "
+        self.description = self.description + data
         self.get_fee_details(doc)
     
     def get_fee_details(self,student):

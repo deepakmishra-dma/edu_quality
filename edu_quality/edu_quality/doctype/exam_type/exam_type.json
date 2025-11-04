@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "field:name1",
  "creation": "2024-04-30 22:04:57.054794",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -13,7 +14,8 @@
   {
    "fieldname": "name1",
    "fieldtype": "Data",
-   "label": "Name"
+   "label": "Name",
+   "unique": 1
   },
   {
    "fieldname": "evaluation_criteria",
@@ -30,10 +32,11 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-05-01 00:35:58.274053",
+ "modified": "2024-06-21 09:19:50.562339",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Exam Type",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {

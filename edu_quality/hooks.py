@@ -62,6 +62,7 @@ doctype_list_js = {
     "Student ID Card": "public/js/list/student_id_card.js",
     "Fees": "public/js/list/fees_list.js",
     "Purchase Order": "public/js/list/purchase_order_list.js",
+    "Assessment Group": "public/js/list/assessment_group_list.js",
     "Carnival Event": [
         # "public/js/list/list_view.js",
         "public/js/list/carnival_event_list.js",
@@ -140,6 +141,7 @@ permission_query_conditions = {
 # Override standard doctype classes
 
 override_doctype_class = {
+    "Employee": "edu_quality.edu_quality.overrides.employee.customEmployee",
     "Program": "edu_quality.edu_quality.overrides.program.customProgram",
     "Journal Entry": "edu_quality.edu_quality.overrides.journal_entry.customJournalEntry",
     "Payment Request": "edu_quality.overrides.CustomPaymentRequest",
@@ -251,6 +253,7 @@ doc_events = {
 # ---------------
 scheduler_events = {
     "all": [
+        "edu_quality.tasks.sync_student_data_from_program_enrollment",
         "edu_quality.api.student_application.get_and_schedule_pending_walkouts",
         "edu_quality.overrides_hooks.item.upload_all_imported_to_drive",
     ],
@@ -265,6 +268,7 @@ scheduler_events = {
     },
     "daily": [
         "edu_quality.tasks.time_based",
+        "edu_quality.tasks.event_reminder",
         "edu_quality.tasks.create_payment_request_before_due_date",
         "edu_quality.tasks.create_payment_request_before_due_date_fee_advance",
         # "edu_quality.tasks.update_academic_year",

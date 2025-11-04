@@ -6,6 +6,7 @@ import frappe
 from edu_quality.public.py.utils import to_snake_case
 import json
 from frappe.utils import flt
+from edu_quality.public.py.utils import get_div_students as get_div_stud
 
 
 @frappe.whitelist()
@@ -26,8 +27,7 @@ def get_subject_criteria_columns(assess_group, filters):
     assess_plan_qb = frappe.qb.DocType("Assessment Plan")
     assess_plan_cr_qb = frappe.qb.DocType("Assessment Plan Criteria")
     division = filters.get("division")
-    frappe.errprint("haha")
-    frappe.errprint(filters)
+
     query = (
         frappe.qb.from_(assess_plan_qb)
         .inner_join(assess_plan_cr_qb)
@@ -43,7 +43,6 @@ def get_subject_criteria_columns(assess_group, filters):
         assess_plan_cr_qb.custom_exam_type,
         assess_plan_cr_qb.custom_scale,
         assess_plan_cr_qb.custom_allow_revaluation,
-        assess_plan_cr_qb.custom_textbook,
         assess_plan_cr_qb.name.as_("assess_criteria_row_name"),
     )
     data = query.run(as_dict=True) or []
@@ -66,7 +65,7 @@ def get_composite_exam_columns(assess_group, filters):
 def generate_column_dict(assess_plan):
     return {
         "fieldname": gen_field_name(assess_plan),
-        "label": f"{gen_field_name(assess_plan)} Out of marks {assess_plan.get('maximum_score')}",
+        "label": f"{gen_label(assess_plan)}<br/> ({assess_plan.get('maximum_score')} marks)",
         "maximum_score": assess_plan.get("maximum_score"),
         "assessment_plan": assess_plan.get("name"),
         "assessment_criteria_row_name": assess_plan.get("assess_criteria_row_name"),
@@ -76,17 +75,16 @@ def generate_column_dict(assess_plan):
     }
 
 
+def gen_label(assess_plan):
+    return f"{assess_plan.get('course')} {assess_plan.get('assessment_criteria')}"
+
+
 def gen_field_name(assess_plan):
     return f"{to_snake_case(assess_plan.get('name'))} - ({assess_plan.get('course')}-{assess_plan.get('assessment_criteria')})"
 
 
 def get_div_students(division):
-
-    data = frappe.db.get_all(
-        "Student Group Student",
-        filters={"parent": division},
-        fields=["student_name", "name", "student"],
-    )
+    data = get_div_stud(division)
     return [
         {"ref_no": student.get("student"), "student_name": student.get("student_name")}
         for student in data
@@ -113,7 +111,7 @@ def get_earlier_marks(filters, students, criterias):
         .on((assessment_det_qb.parent == assess_res_qb.name))
         .where(
             (assess_res_qb.assessment_plan.isin(plan_list or [None]))
-            & (assess_res_qb.student.isin(students_list))
+            & (assess_res_qb.student.isin(students_list or [None]))
         )
         .select(
             assess_res_qb.star,
@@ -241,11 +239,13 @@ def enter_individual_marks(
     for criteria in criterias:
         assessment_criteria = criteria.get("assessment_criteria")
         name = assessment_criteria.get("name")
-        score = (assessment_criteria.get("value"),)
+        score = assessment_criteria.get("value")
         scale = assessment_criteria.get("custom_scale")
+
         if str(score).lower() == "ab":
             score = 0
             is_absent = 1
+
         assessment_details.append(
             {
                 "assessment_criteria": name,

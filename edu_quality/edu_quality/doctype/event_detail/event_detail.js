@@ -12,13 +12,14 @@ frappe.ui.form.on("Event Detail", {
         // Function to set query for student fields
         function set_student_query(fieldname) {
             frm.set_query('student', fieldname, function (doc, cdt, cdn) {
-                var programs = doc.classes_applicable_to.map(program => program.class);
-                return {
-                    "filters": {
-                        "school": doc.school,
-                        "program": ["in", programs]
-                    }
+                const hasPrograms = doc.classes_applicable_to.some(program => program.class);
+                const filters = {
+                    "school": doc.school,
                 };
+                if (hasPrograms) {
+                    filters.program = ["in", doc.classes_applicable_to.map(program => program.class)];
+                }
+                return { filters };
             });
         }
         let child_tables = ['allowed_students', 'participating_students', 'non_participating_students', 'winning_students'];

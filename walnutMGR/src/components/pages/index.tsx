@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
-import Select from "react-select";
+// import Select from "react-select";
 import Modal from "react-modal";
 import { IconCalendar } from "@tabler/icons-react";
-
+import Select from "react-select";
+// import makeAnimated from "react-select/animated";
 import {
   useCLassName,
   useCLassList,
   useCmapHeaders,
   useCmapItemGroupID,
   useCMAPTableFields,
+  useAcademicCurrentYear,
+  useAcademicNextYear,
 } from "../../Query/useCLassList";
 import { SingleValue } from "react-select";
 
@@ -71,8 +74,10 @@ export const Index = () => {
   const [isButtonClicked, setIsButtonClicked] = useState(true);
   const [selectProductCode, setSelectProductCode] = useState("");
   const [unitModal, setUnitModal] = useState(false);
+
   const [showButtons, setShowButtons] = useState(false);
   const [selectedRows, setSelectedRows] = useState<SelectedRow[]>([]);
+  const [years, setYears] = useState<string[]>([]);
   const [selectedOption, setSelectedOption] =
     useState<SingleValue<OptionType>>(null);
   const [cmapNames, setCmapNames] = useState({
@@ -81,19 +86,33 @@ export const Index = () => {
     cmap_first_period: "",
     cmap_second_period: "",
   });
+  // Data for the MultiSelect component
+  const unit_data = [1, 2, 3, 4].map((unit) => ({
+    value: unit.toString(),
+    label: unit.toString(),
+  }));
+  const yearOptions = years.map((year) => ({
+    value: year,
+    label: year,
+  }));
 
   const [selectedClass, setSelectedClass] = useState("");
   const [selectedIDS, setSelectedIDS] = useState("");
-
+  const { data: current_year } = useAcademicCurrentYear();
+  const { data: next_year } = useAcademicNextYear();
   const { data: cmap_item_group_ids } = useCmapItemGroupID(selectedIDS);
   const [selectedYear, setSelectedYear] = useState("");
   const { data: cmap_table, mutateAsync, isLoading } = useCMAPTableFields();
   const [selectedUnits, setSelectedUnits] = useState<{ [key: string]: string }>(
     {}
   );
+  console.log(
+    "current_year",
+    current_year?.data?.data?.map((i: any) => i?.name)
+  );
   const [selectedvalues, setSelectedValues] = useState({
     subjects: "",
-    unit: "",
+    unit: [],
   });
 
   const { data: classes } = useCLassList();
@@ -134,7 +153,7 @@ export const Index = () => {
         academic_year: selectedYear,
         program: selectedClass,
         subject: selectedvalues.subjects,
-        unit: `${selectedvalues.unit}`,
+        unit: selectedvalues.unit?.map((i: any) => i?.value),
         from_date: formatDate(formDate),
         end_date: formatDate(toDate),
       });
@@ -152,7 +171,22 @@ export const Index = () => {
     itemDetails?.find(
       (i: any) => i?.parent === selectedName && i?.item_group === selectedItem
     )?.item ?? "";
-
+  useEffect(() => {
+    if (current_year?.data?.data || next_year?.data?.data) {
+      const currentYears =
+        current_year?.data?.data?.map?.((i: any) => i?.name) || [];
+      const nextYears = next_year?.data?.data?.map?.((i: any) => i?.name) || [];
+      const combinedYears = Array.from(
+        new Set([...currentYears, ...nextYears])
+      );
+      setYears((prevYears) => {
+        const updatedYears = Array.from(
+          new Set([...prevYears, ...combinedYears])
+        );
+        return updatedYears?.sort();
+      });
+    }
+  }, [current_year, next_year]);
   const deleteCode = async () => {
     try {
       const payload = {
@@ -260,6 +294,10 @@ export const Index = () => {
     setSelectedIDS("");
     setInsertModal(false);
   }
+
+  const handleYearChange = (selectedOption: any) => {
+    setSelectedYear(selectedOption ? selectedOption.value : "");
+  };
   const insertFunc = async () => {
     const payload = {
       data: {
@@ -431,10 +469,51 @@ export const Index = () => {
       console.error("Error:", error);
     }
   };
+  const handleUnitSelectChange = (selectedOptions: any) => {
+    setSelectedValues((prevState) => ({
+      ...prevState,
+      unit: selectedOptions || [],
+    }));
+  };
+  console.log("selected", selectedvalues.unit);
+  const handleSubjectChange = (selectedOption: any) => {
+    setSelectedValues((prevState) => ({
+      ...prevState,
+      subjects: selectedOption.value,
+    }));
+  };
+  const subjectOptions =
+    class_name?.data?.data?.subject?.map((sub: any) => ({
+      value: sub?.subject,
+      label: sub?.subject,
+    })) || [];
+
+  const sortedClasses = classes?.data?.data
+    ?.sort((a: any, b: any) => {
+      const isANumeric = !isNaN(a.name);
+      const isBNumeric = !isNaN(b.name);
+
+      if (!isANumeric && isBNumeric) {
+        return -1;
+      } else if (isANumeric && !isBNumeric) {
+        return 1;
+      } else if (!isANumeric && !isBNumeric) {
+        return a.name.localeCompare(b.name);
+      } else {
+        return parseInt(a.name, 10) - parseInt(b.name, 10);
+      }
+    })
+    .map((cls: any) => ({
+      value: cls.name,
+      label: cls.name,
+    }));
+  const handleClassChange = (selectedOption: any) => {
+    setSelectedClass(selectedOption ? selectedOption.value : "");
+  };
 
   return (
     <section className="mt-10 p-5">
-      <div className="p-3 mx-auto pt-[2rem]  bg-[#fff] overflow-hidden rounded-[5px] shadow-lg shadow-gray-900">
+      <div className="p-3 mx-auto pt-[2rem]  bg-[#fff] rounded-[5px] shadow-lg shadow-gray-900">
         <div className="flex items-center justify-between ml-5">
           <span className="font-bold text-[20px]  ">C-Map Creation</span>
           {/* <div className='border-[1px] mt-[1rem]'></div> */}
@@ -447,108 +526,87 @@ export const Index = () => {
         <hr className="bg-[#eee] w-[63%] text-center mx-auto" />
         <div className="flex items-center space-x-5 justify-center mt-6">
           <span className="text-gray-500">Academic Year:</span>
-          <select
-            className="w-[140px] p-1 border-[1px]"
-            value={selectedYear}
-            onChange={(e) => setSelectedYear(e.target.value)}
-          >
-            <option value="">Select Year</option>
-            <option value="2023-2024">2023-2024</option>
-            <option value="2024-2025">2024-2025</option>
-          </select>
+          <Select
+            styles={{
+              control: (provided) => ({
+                ...provided,
+                backgroundColor: "#f3f3f3",
+                borderColor: "none",
+                borderRadius: "8px",
+                boxShadow: "none",
+              }),
+            }}
+            options={yearOptions}
+            value={yearOptions.find((option) => option.value === selectedYear)}
+            onChange={handleYearChange}
+            placeholder="Academic Year"
+          />
         </div>
 
         <span className="ml-5 font-bold">Show CMAP Filter -</span>
         <div className="lg:flex lg:flex-row lg:items-center lg:justify-center lg:gap-[5rem] sm:flex sm:flex-col sm:items-center sm:gap-6 mx-auto mt-6">
-          <div className=" space-x-5">
-            <span className="text-gray-500">class:</span>
-            <select
-              className="w-[140px] p-1 border-[1px]"
-              value={selectedClass}
-              onChange={(e) => setSelectedClass(e.target.value)}
-            >
-              <option value="">select class</option>
-
-              {classes?.data?.data
-                ?.sort((a: any, b: any) => {
-                  const isANumeric = !isNaN(a.name);
-                  const isBNumeric = !isNaN(b.name);
-
-                  if (!isANumeric && isBNumeric) {
-                    return -1;
-                  } else if (isANumeric && !isBNumeric) {
-                    return 1;
-                  } else if (!isANumeric && !isBNumeric) {
-                    return a.name.localeCompare(b.name);
-                  } else {
-                    return parseInt(a.name, 10) - parseInt(b.name, 10);
-                  }
-                })
-                .map((cls: any) => {
-                  return (
-                    <option key={cls?.name} value={cls?.name}>
-                      {cls?.name}
-                    </option>
-                  );
-                })}
-            </select>
+          <div className=" flex space-x-5 items-center justify-center z-* visible">
+            <span className="text-gray-500">Class:</span>
+            <Select
+              styles={{
+                control: (provided) => ({
+                  ...provided,
+                  backgroundColor: "#f3f3f3",
+                  borderColor: "none",
+                  borderRadius: "8px",
+                  boxShadow: "none",
+                }),
+              }}
+              options={sortedClasses}
+              value={sortedClasses?.find(
+                (option: any) => option.value === selectedClass
+              )}
+              onChange={handleClassChange}
+              placeholder="Class"
+            />
           </div>
-          <div className="flex space-x-5">
+          <div className="flex space-x-5 items-center justify-center">
             <span className="text-gray-500">Subject:</span>
-            <div className="w-[200px] p-2 h-[150px] bg-[#fff] overflow-x-auto border-[1px] overflow-y-scroll">
-              <span>Select Subject</span>
-              <ul>
-                {class_name?.data?.data?.subject?.map?.((sub: any) => (
-                  <li
-                    key={sub?.subject}
-                    className={
-                      selectedvalues.subjects === sub?.subject
-                        ? "bg-[#428bca] text-white cursor-pointer"
-                        : "cursor-pointer"
-                    }
-                    style={{ listStyle: "none" }}
-                    onClick={() => {
-                      setSelectedValues((prevState) => ({
-                        ...prevState,
-                        subjects: sub?.subject,
-                      }));
-                    }}
-                  >
-                    {sub?.subject}
-                  </li>
-                ))}
-              </ul>
+            <div className="w-[200px] p-2 bg-[#fff]">
+              <Select
+                styles={{
+                  control: (provided) => ({
+                    ...provided,
+                    backgroundColor: "#f3f3f3",
+                    borderColor: "none",
+                    borderRadius: "8px",
+                    boxShadow: "none",
+                  }),
+                }}
+                options={subjectOptions}
+                value={
+                  subjectOptions.find(
+                    (option: any) => option.value === selectedvalues.subjects
+                  ) || null
+                }
+                onChange={handleSubjectChange}
+                placeholder="Subject"
+              />
             </div>
           </div>
-          <div className="flex space-x-5">
+          <div className="flex space-x-5 items-center justify-center">
             <span className="text-gray-500">Unit:</span>
-            <div className="w-[200px] p-2 h-[150px] bg-[#fff] border-[1px] overflow-y-scroll">
-              <span>Select Unit</span>
-              <ul>
-                {[1, 2, 3, 4].map?.((sub: any, index) => {
-                  return (
-                    <>
-                      <li
-                        key={index}
-                        className={
-                          selectedvalues.unit === sub
-                            ? "bg-[#428bca] text-white cursor-pointer"
-                            : "cursor-pointer"
-                        }
-                        style={{ listStyle: "none" }}
-                        onClick={() => {
-                          setSelectedValues((prevState) => ({
-                            ...prevState,
-                            unit: sub,
-                          }));
-                        }}
-                      >
-                        {sub}
-                      </li>
-                    </>
-                  );
-                })}
-              </ul>
+            <div className="w-[200px] p-2  bg-[#fff]  ">
+              <Select
+                styles={{
+                  control: (provided) => ({
+                    ...provided,
+                    backgroundColor: "#f3f3f3",
+                    borderRadius: "8px",
+                    borderColor: "none",
+                    boxShadow: "none",
+                  }),
+                }}
+                options={unit_data}
+                isMulti
+                onChange={handleUnitSelectChange}
+                placeholder="Unit"
+              />
             </div>
           </div>
         </div>

@@ -14,7 +14,13 @@
   "email_domain",
   "helpdesk_settings_tab",
   "enable_auto_reply",
-  "email_template"
+  "email_template",
+  "event_settings_tab",
+  "send_reminder_for_registration",
+  "registration_before_days",
+  "column_break_kgbk",
+  "send_reminder_for_event",
+  "event_before_days"
  ],
  "fields": [
   {
@@ -61,12 +67,45 @@
    "label": "Email Template",
    "mandatory_depends_on": "eval: doc.enable_auto_reply == 1",
    "options": "Email Template"
+  },
+  {
+   "fieldname": "event_settings_tab",
+   "fieldtype": "Tab Break",
+   "label": "Event Settings"
+  },
+  {
+   "default": "0",
+   "fieldname": "send_reminder_for_registration",
+   "fieldtype": "Check",
+   "label": "Send Reminder For Registration"
+  },
+  {
+   "depends_on": "eval: doc.send_reminder_for_registration == 1",
+   "fieldname": "registration_before_days",
+   "fieldtype": "Int",
+   "label": "Registration Before Days"
+  },
+  {
+   "fieldname": "column_break_kgbk",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "send_reminder_for_event",
+   "fieldtype": "Check",
+   "label": "Send Reminder For Event"
+  },
+  {
+   "depends_on": "eval: doc.send_reminder_for_event == 1",
+   "fieldname": "event_before_days",
+   "fieldtype": "Int",
+   "label": "Event Before Days"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-06-18 10:36:00.526503",
+ "modified": "2024-06-26 13:49:55.312552",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "MGR Settings",

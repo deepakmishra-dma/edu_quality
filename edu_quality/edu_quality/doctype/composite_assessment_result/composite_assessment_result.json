@@ -1,0 +1,105 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-06-05 02:36:36.060477",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "assessment_group",
+  "combined_marks_or_grade",
+  "processed_time",
+  "processed_user",
+  "student",
+  "exams",
+  "processed_reason",
+  "amended_from",
+  "order",
+  "rank"
+ ],
+ "fields": [
+  {
+   "fieldname": "combined_marks_or_grade",
+   "fieldtype": "Data",
+   "label": "Combined Marks or Grade"
+  },
+  {
+   "fieldname": "processed_time",
+   "fieldtype": "Datetime",
+   "label": "Processed Time"
+  },
+  {
+   "fieldname": "processed_user",
+   "fieldtype": "Link",
+   "label": "Processed User",
+   "options": "User"
+  },
+  {
+   "fieldname": "processed_reason",
+   "fieldtype": "Text",
+   "label": "Processed Reason"
+  },
+  {
+   "fieldname": "assessment_group",
+   "fieldtype": "Link",
+   "label": "Assessment Group",
+   "options": "Assessment Group"
+  },
+  {
+   "fieldname": "exams",
+   "fieldtype": "Table",
+   "label": "Exams",
+   "options": "Composite Exam"
+  },
+  {
+   "fieldname": "student",
+   "fieldtype": "Link",
+   "label": "Student",
+   "options": "Student"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Composite Assessment Result",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "order",
+   "fieldtype": "Int",
+   "label": "Order"
+  },
+  {
+   "fieldname": "rank",
+   "fieldtype": "Int",
+   "label": "Rank"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2024-06-27 10:07:49.690462",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "Composite Assessment Result",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

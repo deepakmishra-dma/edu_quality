@@ -5,13 +5,14 @@ import frappe
 from frappe import _
 from frappe.utils.data import cstr
 from frappe.model.document import Document
-
+from frappe.utils import nowdate, add_days, getdate
 
 class EventDetail(Document):
 
     def autoname(self):
         prefix = frappe.get_value("School", self.school, "prefix")
-        self.name = f"{self.event_name} - {prefix}" if prefix else self.event_name
+        starts_on = str(getdate(self.event_starts_on))
+        self.name = f"{self.event_name} - ({starts_on}) - {prefix}"
 
     def before_save(self):
         self.update_classes()
@@ -71,15 +72,17 @@ class EventDetail(Document):
         else:
             statuses = []
         students = self.winning_students + self.participating_students
-        
+
         for student in students:
             school = frappe.get_value("Student", student.student, "school")
             if school != self.school:
                 frappe.throw(
                     f"Student {student.student_name}({student.student}) does not belong to the school {self.school}"
                 )
-            
-            student_status = frappe.get_value("Student", student.student, "student_status")
+
+            student_status = frappe.get_value(
+                "Student", student.student, "student_status"
+            )
             if statuses and student_status not in statuses:
                 frappe.throw(
                     f"Student {student.student_name}({student.student}) status must be one of {self.student_status}"
@@ -123,6 +126,57 @@ class EventDetail(Document):
                         prefix, label, value, comma_options
                     )
                 )
+
+    def remind(self):
+        """
+        Send reminders for the event based on the settings
+        """
+        try:
+            from nextai.funnel.custom_trigger import trigger_event
+
+            mgr_settings = frappe.get_single("MGR Settings")
+            today_date = getdate(nowdate())
+
+            # Send reminders for registration
+            if mgr_settings.send_reminder_for_registration:
+                reminder_date = calculate_reminder_date(
+                    self.last_date, mgr_settings.registration_before_days
+                )
+                if reminder_date and today_date >= reminder_date:
+                    trigger_event(self, "send_registration_reminder")
+
+            # Send reminders for event
+            if mgr_settings.send_reminder_for_event:
+                reminder_date = calculate_reminder_date(
+                    self.event_starts_on, mgr_settings.event_before_days
+                )
+                if reminder_date and today_date >= reminder_date:
+                    trigger_event(self, "send_event_reminder")
+
+        except:
+            frappe.log_error(
+                "Error While Sending Reminders for Event",
+                frappe.get_traceback(),
+            )
+
+
+def calculate_reminder_date(date_from, days_before):
+    """
+    Calculate the reminder date based on the date_from and days_before
+    """
+    if date_from:
+        return getdate(add_days(date_from, -abs(days_before)))
+    return None
+
+
+def send_event_reminder():
+    """
+    Send event reminder
+    """
+    events = frappe.get_all("Event Detail", {"event_starts_on": [">=", nowdate()]})
+    for event in events:
+        event_doc = frappe.get_doc("Event Detail", event.name)
+        event_doc.remind()
 
 
 @frappe.whitelist()

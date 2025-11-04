@@ -626,3 +626,18 @@ def render_template_with_exception(template, data):
             f"Failed rendering id card for data {data}",
         )
         return ""
+
+
+def get_div_students(division):
+    data = frappe.db.get_all(
+        "Program Enrollment",
+        filters={
+            "student_group": division,
+            "docstatus": 1,
+            "custom_status": ["in", ["Current student", "Defaulter"]],
+        },
+        fields=["student_name", "name", "student"],
+        order_by="CAST(roll_no AS UNSIGNED)",
+    )
+
+    return data

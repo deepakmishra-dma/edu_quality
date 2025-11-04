@@ -5,6 +5,8 @@ frappe.ui.form.on("Student", {
             frm.set_df_property("class_details", "read_only", 1);
         }
         addFeeDetails(frm);
+        addDepositDetails(frm);
+        addHDTicketDetails(frm);
         addParentDetails(frm);
         addReferral(frm);
         swapDivisionButton(frm);
@@ -153,45 +155,154 @@ function addReferral(frm) {
     }, __("Action"));
 }
 
+// function to format the date in dd-mm-yyyy
+function formatDate(inputDate) {
+    // Destructure the input date parts directly
+    const [year, month, day] = inputDate.split('-');
+    
+    // Return the formatted date using template literals
+    return `${day}-${month}-${year}`;
+}
+// object to parse numbers to currency
+let rupee = new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+});
+
 function addFeeDetails(frm) {
     if (!frm.is_new()) {
         frappe.call({
-            method: "edu_quality.public.py.student.get_fees_details",
+            doc: frm.doc,
+            method: "get_fees_details",
             args: {
                 student: frm.selected_doc.name
             },
             callback: function (r) {
-                if (r.message) {
-                    const data = r.message.map((item, index) => {
-                        const { payment_term, description, due_date, invoice_portion, payment_amount, outstanding, parent, doctype } = item;
-                        let link = doctype == 'Fee Advance' ? `/app/fee-advance/${parent}` : `/app/fees/${parent}`;
+                const feesContainer = frm.$wrapper[0].querySelector("#fees");
+                if (r.message && r.message.length) {
+                    const rows = r.message.map((item, index) => {
+                        const { payment_term, description, due_date, invoice_portion, payment_amount, outstanding, parent, doctype, paid_date } = item;
+                        let link = doctype === 'Fee Advance' ? `/app/fee-advance/${parent}` : `/app/fees/${parent}`;
                         return `
                             <tr>
                                 <td>${index + 1}</td>
                                 <td>${payment_term}</td>
                                 <td>${description}</td>
-                                <td>${due_date}</td>
-                                <td>${invoice_portion}</td>
-                                <td>${payment_amount}</td>
-                                <td>${outstanding == 0 ? 'Paid' : 'Not Paid'}</td>
-                                <td><a href="${link}">Open</a></td>
+                                <td>${formatDate(due_date)}</td>
+                                <td>${invoice_portion}%</td>
+                                <td>${rupee.format(payment_amount)}</td>
+                                <td>${outstanding === 0 ? formatDate(paid_date) : 'Not Paid'}</td>
+                                <td><a href="${link}" target="_blank">Open</a></td>
                             </tr>`;
                     }).join('');
 
-                    frm.$wrapper[0].querySelector("#fees").innerHTML = data ? `
-                    <table class="table table-bordered">
+                    feesContainer.innerHTML = `
+                        <h4>Fee Details</h4>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Sr.No</th>
+                                        <th scope="col">Payment Term</th>
+                                        <th scope="col">Description</th>
+                                        <th scope="col">Due Date</th>
+                                        <th scope="col">Invoice Portion</th>
+                                        <th scope="col">Payment Amount</th>
+                                        <th scope="col">Paid Date</th>
+                                        <th scope="col">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${rows}
+                                </tbody>
+                            </table>
+                        </div>`;
+                } else {
+                    feesContainer.innerHTML = `<center><p>There is no current record</p></center>`;
+                }
+            }
+        });
+    }
+}
+
+function addDepositDetails(frm) {
+    if (!frm.is_new()) {
+        frappe.call({
+            doc: frm.doc,
+            method: "get_deposit_details",
+            callback: function (r) {
+                const depositContainer = frm.$wrapper[0].querySelector("#deposit");
+                if (r.message && r.message.length) {
+                    const rows = r.message.map((item, index) => `
                         <tr>
-                            <th>Sr.No</th>
-                            <th scope="col">Payment Term</th>
-                            <th scope="col">Description</th>
-                            <th scope="col">Due Date</th>
-                            <th scope="col">Invoice Portion</th>
-                            <th scope="col">Payment Amount</th>
-                            <th scope="col">Paid Date</th>
-                            <th scope="col">Action</th>
-                        </tr>
-                        ${data}
-                    </table>` : `<center><p> There is no current record</p></center>`;
+                            <td>${index + 1}</td>
+                            <td>${rupee.format(item.paid_amount)}</td>
+                            <td>${item.posting_date === undefined ?  'Not Paid': formatDate(item.posting_date) }</td>
+                            <td><a href="/app/payment-entry/${item.name}" target="_blank">Open</a></td>
+                        </tr>`).join('');
+
+                    depositContainer.innerHTML = `
+                        <h4>Deposit Details</h4>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Sr.No</th>
+                                        <th scope="col">Payment Amount</th>
+                                        <th scope="col">Paid Date</th>
+                                        <th scope="col">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${rows}
+                                </tbody>
+                            </table>
+                        </div>`;
+                } else {
+                    depositContainer.innerHTML = `<h4>Deposit Details</h4><center><p>There is no current record</p></center>`;
+                }
+            }
+        });
+    }
+}
+
+function addHDTicketDetails(frm) {
+    if (!frm.is_new()) {
+        frappe.call({
+            doc: frm.doc,
+            method: "get_hd_ticket_details",
+            callback: function (r) {
+                const ticketsContainer = frm.$wrapper[0].querySelector("#tickets");
+                if (r.message && r.message.length) {
+                    const rows = r.message.map(({ name, refno, subject, status }) => `
+                        <tr>
+                            <td>${name}</td>
+                            <td>${refno}</td>
+                            <td>${subject}</td>
+                            <td>${status}</td>
+                            <td><a href="/app/hd-ticket/${name}" target="_blank">Open</a></td>
+                        </tr>`).join('');
+
+                    ticketsContainer.innerHTML = `
+                        <h4>Helpdesk Tickets</h4>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Ticket ID</th>
+                                        <th scope="col">Reference Number</th>
+                                        <th scope="col">Subject</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${rows}
+                                </tbody>
+                            </table>
+                        </div>`;
+                } else {
+                    ticketsContainer.innerHTML = `<center><p>No Tickets found</p></center>`;
                 }
             }
         });
@@ -201,50 +312,47 @@ function addFeeDetails(frm) {
 function addParentDetails(frm) {
     if (!frm.is_new()) {
         frappe.call({
-            method: "edu_quality.public.py.student.get_parents_details",
-            args: {
-                student: frm.selected_doc.name
-            },
+            doc: frm.doc,
+            method: "get_parents_details",
             callback: function (r) {
-                let data = '';
-                if (r.message) {
-                    r.message.forEach((item, index) => {
-                        console.log(item);
-                        data += `<tr>
+                const parentsContainer = frm.$wrapper[0].querySelector("#parents");
+                if (r.message && r.message.length) {
+                    const rows = r.message.map((item, index) => `
+                        <tr>
                             <td>${index + 1}</td>
-                            <td>${item['guardian_name']}</td>
-                            <td>${item['relation']}</td>
-                            <td>${item['mobile_number']}</td>
-                            <td>${item['email_address']}</td>
-                            <td>${item['occupation']}</td>
-                            <td>${item['annual_income']}</td>
-                            <td>${item['work_address']}</td>
-                            <td><a href="/app/guardian/${item['name']}">Open</a></td>
-                        </tr>`;
-                    });
+                            <td>${item.guardian_name}</td>
+                            <td>${item.relation}</td>
+                            <td>${item.mobile_number}</td>
+                            <td>${item.email_address}</td>
+                            <td>${item.occupation}</td>
+                            <td>${item.annual_income}</td>
+                            <td>${item.work_address}</td>
+                            <td><a href="/app/guardian/${item.name}">Open</a></td>
+                        </tr>`).join('');
 
-                    if (data) {
-                        frm.$wrapper[0].querySelector("#parents").innerHTML = `
-                        <table class="table table-bordered">
-                            <tr>
-                                <th>Sr.No</th>
-                                <th scope="col">Parent Name</th>
-                                <th scope="col">Relation</th>
-                                <th scope="col">Phone</th>
-                                <th scope="col">Email</th>
-                                <th scope="col">Occupation</th>
-                                <th scope="col">Annual Income</th>
-                                <th scope="col">Address</th>
-                                <th scope="col">More Details</th>
-                            </tr>
-                            <tr>
-                                ${data}
-                            </tr>
-                        </table>`;
-                    }
-                }
-                else {
-                    frm.$wrapper[0].querySelector("#parents").innerHTML = `<center><p> There is no current record</p></center>`;
+                    parentsContainer.innerHTML = `
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Sr.No</th>
+                                        <th scope="col">Parent Name</th>
+                                        <th scope="col">Relation</th>
+                                        <th scope="col">Phone</th>
+                                        <th scope="col">Email</th>
+                                        <th scope="col">Occupation</th>
+                                        <th scope="col">Annual Income</th>
+                                        <th scope="col">Address</th>
+                                        <th scope="col">More Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${rows}
+                                </tbody>
+                            </table>
+                        </div>`;
+                } else {
+                    parentsContainer.innerHTML = `<center><p> There is no current record</p></center>`;
                 }
             }
         });
