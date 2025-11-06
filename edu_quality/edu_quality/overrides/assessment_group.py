@@ -118,6 +118,8 @@ def insert_groups_into_db(bulk_data, headers, total_rows):
                             is_final_exam,
                             is_final_photo_req,
                             acad_year,
+                            process_pass_or_fail,
+                            passing_percentage,
                             report_print_conf,
                             remarks_template_id,
                             composite_exam_id,
@@ -165,6 +167,8 @@ def insert_groups_into_db(bulk_data, headers, total_rows):
                             current_group.custom_is_final_exam_class_photo_required = (
                                 is_final_photo_req
                             )
+                            current_group.custom_process_passing =  process_pass_or_fail
+                            current_group.custom_passing_percentage = passing_percentage
                             current_group.save(ignore_permissions=True)
                             is_composite_flag = int(is_composite_exam)
                             program_flag = program

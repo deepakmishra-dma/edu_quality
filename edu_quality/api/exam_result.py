@@ -34,6 +34,7 @@ def get_all_assessment_plans(assessment_group, program, div):
     )
 
     data = query.run(as_dict=True)
+
     return data
 
 
@@ -138,20 +139,22 @@ def process_atomic_exam(assessment_group, academic_year, program, div=None):
         return errors
 
     submitted_docs = get_result_from_plans(assessment_plans, False, [1])
+
     cancel_submitted_atomic_exams(submitted_docs)
     non_submitted_docs = get_result_from_plans(assessment_plans, False, [0])
-
+    print(non_submitted_docs)
     modified_result = {}
     total_processed_result = 0
 
     for result in non_submitted_docs:
-        score, scale, parent, docstatus = (
+        score, scale, parent, docstatus, is_absent = (
             result.get("score"),
             result.get("custom_scale"),
             result.get("parent"),
             result.get("docstatus"),
+            result.get("custom_is_absent"),
         )
-        if result.get("custom_is_absent") == 0 and docstatus == 0:
+        if not is_absent and docstatus == 0:
             frappe.db.set_value(
                 "Assessment Result Detail",
                 result.get("name"),
@@ -165,7 +168,7 @@ def process_atomic_exam(assessment_group, academic_year, program, div=None):
         frappe.db.set_value(
             "Assessment Result",
             parent,
-            "custom_total_processed_result",
+            "custom_total_processed_score",
             total_processed_result,
         )
         frappe.db.set_value("Assessment Result", parent, "docstatus", 1)
@@ -182,10 +185,11 @@ def process_atomic_exam(assessment_group, academic_year, program, div=None):
 
 def cancel_submitted_atomic_exams(result_data):
     submitted_results = [
-        result for result in result_data if result.get("docstatus") == 1
+        result.get("parent") for result in result_data if result.get("docstatus") == 1
     ]
+    unique_submitted_results = set(submitted_results)
 
-    for result in submitted_results:
+    for result in unique_submitted_results:
         assess_result = frappe.get_doc("Assessment Result", result)
         assess_result.cancel()
         amended_doc = frappe.copy_doc(assess_result)
@@ -276,7 +280,7 @@ def process_composite_result(assessment_group, academic_year, program, div=None)
         "Assessment Group",
         filters={"parent_assessment_group": assessment_group},
     )
-    print(composite_exams)
+
     for atomic_exam in composite_exams:
         process_atomic_exam(atomic_exam.name, academic_year, program, div)
 
