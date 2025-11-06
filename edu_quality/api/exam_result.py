@@ -134,6 +134,7 @@ def process_result(assessment_group, academic_year, program, div=None):
 
 def process_atomic_exam(assessment_group, academic_year, program, div=None):
     assessment_plans = get_all_assessment_plans(assessment_group, program, div)
+    assessment_group_doc = frappe.get_doc("Assessment Group", assessment_group)
     errors = check_assessment_plan_in_group(assessment_plans)
     if errors:
         return errors
@@ -145,14 +146,15 @@ def process_atomic_exam(assessment_group, academic_year, program, div=None):
     print(non_submitted_docs)
     modified_result = {}
     total_processed_result = 0
-
+    total_scaled_max_score = 0
     for result in non_submitted_docs:
-        score, scale, parent, docstatus, is_absent = (
+        score, scale, parent, docstatus, is_absent, maximum_score = (
             result.get("score"),
             result.get("custom_scale"),
             result.get("parent"),
             result.get("docstatus"),
             result.get("custom_is_absent"),
+            result.get("maximum_score"),
         )
         if not is_absent and docstatus == 0:
             frappe.db.set_value(
@@ -163,6 +165,7 @@ def process_atomic_exam(assessment_group, academic_year, program, div=None):
             )
             modified_result[parent] = 1
             total_processed_result += score * (scale)
+            total_max_score += maximum_score * scale
 
     for parent in modified_result:
         frappe.db.set_value(
@@ -171,6 +174,26 @@ def process_atomic_exam(assessment_group, academic_year, program, div=None):
             "custom_total_processed_score",
             total_processed_result,
         )
+        processed_percentage = (total_processed_result / total_scaled_max_score) * 100
+        if (
+            assessment_group_doc.custom_process_passing
+            and processed_percentage >= assessment_group_doc.custom_passing_percentage
+        ):
+
+            frappe.db.set_value(
+                "Assessment Result",
+                parent,
+                "custom_passed",
+                1,
+            )
+
+            frappe.db.set_value(
+                "Assessment Result",
+                parent,
+                "custom_processed_percentage",
+                processed_percentage,
+            )
+            
         frappe.db.set_value("Assessment Result", parent, "docstatus", 1)
 
     for assess_plan in assessment_plans:
@@ -248,6 +271,7 @@ def get_result_from_plans(assessment_plans, group_by=False, docstatus=[0, 1]):
         assess_res_de_qb.custom_scale,
         assess_res_de_qb.parent,
         assess_res_qb.course,
+        assess_res_de_qb.maximum_score,
     )
 
     return query.run(as_dict=True)
