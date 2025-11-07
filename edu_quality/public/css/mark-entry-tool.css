@@ -26,3 +26,7 @@
   white-space: normal;
   overflow: unset;
 }
+
+.mark-entry-tool-report .dt-cell--focus .dt-cell__content {
+  border: var(--dt-focus-border-width) solid transparent !important;
+}

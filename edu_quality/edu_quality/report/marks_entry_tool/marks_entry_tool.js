@@ -31,12 +31,9 @@ function debounce(func, delay) {
 	};
 }
 
-const throttledAutoSave = debounce(function () {
+const throttledAutoSave = throttle(function () {
 	saveCall();
-	frappe.show_alert({
-		message: __('Autosaved'),
-		indicator: 'green'
-	}, 2);
+
 }, 6000)
 
 function changeMarksData(value, columnId, rowIndex, maximumScore) {
@@ -60,7 +57,7 @@ function getNextElement(rowIndex, colIndex) {
 
 	if (nextRowIndex >= maxRows) {
 		nextRowIndex = 0;
-		if (nextColIndex + 1 < maxColumns) {
+		if (nextColIndex + 1 <= maxColumns) {
 			nextColIndex += 1;
 		} else {
 			nextColIndex = 3;
@@ -79,6 +76,7 @@ function handleKeyDownEvent(event) {
 
 		if (nextElement) {
 			nextElement.focus();
+			nextElement.select()
 		}
 	}
 }
@@ -103,20 +101,25 @@ function formatter(value, row, column, data, defaultFormatter) {
 
 	return value;
 }
-function saveCall() {
+async function saveCall() {
 	const filters = {};
 
 	frappe.query_report.filters.forEach(filter => {
 		filters[filter.fieldname] = frappe.query_report.get_filter_value(filter.fieldname);
 	});
 
-	frappe.call({
+	await frappe.call({
 		"method": "edu_quality.edu_quality.report.marks_entry_tool.marks_entry_tool.do_mark_entry",
 		args: {
 			data: frappe.query_report.data,
 			filters: filters,
 		}
 	});
+
+	frappe.show_alert({
+		message: __('Saved'),
+		indicator: 'green'
+	}, 2);
 }
 function onload(report) {
 	initializeKeyListener();
@@ -130,8 +133,9 @@ function onload(report) {
             <p>Are you sure you want to Save Marks Entered?</p>
         </div>`;
 
-		frappe.confirm(__(message), () => {
-			saveCall()
+		frappe.confirm(__(message), async () => {
+			await saveCall()
+
 		});
 	});
 }
