@@ -7,6 +7,7 @@ from frappe.utils.data import cstr
 from frappe.model.document import Document
 from frappe.utils import nowdate, add_days, getdate
 
+
 class EventDetail(Document):
 
     def autoname(self):
@@ -127,37 +128,101 @@ class EventDetail(Document):
                     )
                 )
 
-    def remind(self):
+    def send_reminders(self):
         """
         Send reminders for the event based on the settings
         """
-        try:
-            from nextai.funnel.custom_trigger import trigger_event
+        self.send_event_reminders()
+        self.send_registration_reminders()
 
-            mgr_settings = frappe.get_single("MGR Settings")
-            today_date = getdate(nowdate())
-
-            # Send reminders for registration
-            if mgr_settings.send_reminder_for_registration:
-                reminder_date = calculate_reminder_date(
-                    self.registration_last_date, mgr_settings.registration_before_days
+    def send_registration_reminders(self):
+        """
+        Send registration reminder to the allowed to participate students
+        """
+        today_date = getdate(nowdate())
+        dates = get_event_dates("event_registration_reminder", self.name)
+        for d in dates:
+            if d.date == today_date:
+                if not d.template_of_reminders:
+                    frappe.log_error(f"No template found for event registration reminders: {self.name}")
+                    continue
+                template = frappe.get_doc("Email Template", d.template_of_reminders)
+                context = self.as_dict()
+                subject = frappe.render_template(template.subject, context=context)
+                message = frappe.render_template(template.response, context=context)
+                frappe.sendmail(
+                    recipients=self.allowed_students(),
+                    subject=subject,
+                    message=message,
                 )
-                if reminder_date and today_date >= reminder_date:
-                    trigger_event(self, "send_registration_reminder")
 
-            # Send reminders for event
-            if mgr_settings.send_reminder_for_event:
-                reminder_date = calculate_reminder_date(
-                    self.event_starts_on, mgr_settings.event_before_days
+    def send_event_reminders(self):
+        """
+        Send event reminder to the participating students
+        """
+        today_date = getdate(nowdate())
+        dates = get_event_dates("event_reminder", self.name)
+        for d in dates:
+            if d.date == today_date:
+                if not d.template_of_reminders:
+                    frappe.log_error(f"No template found for event reminders: {self.name}")
+                    continue
+                template = frappe.get_doc("Email Template", d.template_of_reminders)
+                context = self.as_dict()
+                subject = frappe.render_template(template.subject, context=context)
+                message = frappe.render_template(template.response, context=context)
+                frappe.sendmail(
+                    recipients=self.participating_students(),
+                    subject=subject,
+                    message=message,
                 )
-                if reminder_date and today_date >= reminder_date:
-                    trigger_event(self, "send_event_reminder")
 
-        except:
-            frappe.log_error(
-                "Error While Sending Reminders for Event",
-                frappe.get_traceback(),
+    def get_allowed_students(self):
+        """
+        Get the allowed students
+        """
+        filters = {"school": self.school, "enabled": 1}
+        if not self.all_students:
+            students = frappe.get_all(
+                "Event Student",
+                {"parent": self.name, "parentfield": "allowed_students"},
+                pluck="student",
             )
+            if students:
+                filters["name"] = ["in", students]
+        else:
+            filters = {"school": self.school, "enabled": 1}
+            classes = frappe.get_all("Classes", {"parent": self.name}, pluck="class")
+            if classes:
+                filters["program"] = ["in", classes]
+            if self.student_status:
+                statuses = [status.strip() for status in self.student_status.split(",")]
+                filters["student_status"] = ["in", statuses]
+            
+        return frappe.get_all("Student", filters, pluck="student_email_id")
+
+    def get_participating_students(self):
+        """
+        Get the participating students
+        """
+        students = frappe.get_all(
+            "Student Data",
+            {"parent": self.name, "parentfield": "participating_students"},
+            pluck="student",
+        )
+        emails = frappe.get_all("Student", {"name": ["in", students]}, pluck="student_email_id")
+        return emails
+
+
+def get_event_dates(type, parent):
+    """
+    Get the event dates based on the type and parent
+    """
+    return frappe.get_all(
+        "Event Date",
+        {"parent": parent, "parentfield": type},
+        ["date", "template_of_reminders"]
+    )
 
 
 def calculate_reminder_date(date_from, days_before):
@@ -176,7 +241,7 @@ def send_event_reminder():
     events = frappe.get_all("Event Detail", {"event_starts_on": [">=", nowdate()]})
     for event in events:
         event_doc = frappe.get_doc("Event Detail", event.name)
-        event_doc.remind()
+        event_doc.send_reminders()
 
 
 @frappe.whitelist()
