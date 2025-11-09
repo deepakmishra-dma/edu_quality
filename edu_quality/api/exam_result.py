@@ -143,18 +143,27 @@ def process_atomic_exam(assessment_group, academic_year, program, div=None):
 
     cancel_submitted_atomic_exams(submitted_docs)
     non_submitted_docs = get_result_from_plans(assessment_plans, False, [0])
-    print(non_submitted_docs)
+
     modified_result = {}
     total_processed_result = 0
     total_scaled_max_score = 0
     for result in non_submitted_docs:
-        score, scale, parent, docstatus, is_absent, maximum_score = (
+        (
+            score,
+            scale,
+            parent,
+            docstatus,
+            is_absent,
+            maximum_score,
+            custom_scoring_type,
+        ) = (
             result.get("score"),
             result.get("custom_scale"),
             result.get("parent"),
             result.get("docstatus"),
             result.get("custom_is_absent"),
             result.get("maximum_score"),
+            result.get("custom_scoring_type"),
         )
         if not is_absent and docstatus == 0:
             frappe.db.set_value(
@@ -193,7 +202,7 @@ def process_atomic_exam(assessment_group, academic_year, program, div=None):
                 "custom_processed_percentage",
                 processed_percentage,
             )
-            
+
         frappe.db.set_value("Assessment Result", parent, "docstatus", 1)
 
     for assess_plan in assessment_plans:
@@ -272,6 +281,7 @@ def get_result_from_plans(assessment_plans, group_by=False, docstatus=[0, 1]):
         assess_res_de_qb.parent,
         assess_res_qb.course,
         assess_res_de_qb.maximum_score,
+        assess_res_qb.custom_scoring_type,
     )
 
     return query.run(as_dict=True)
@@ -288,10 +298,10 @@ def calculate_ordering(assessment_plan):
         `tabAssessment Result`
     WHERE 
         assessment_plan = %(id)s
-        AND docstatus = 1) AS ranked_table ON  `tabAssessment Result`.name = ranked_table.name
+        AND docstatus = 1 AND custom_scoring_type=%(scoring_type)s) AS ranked_table ON  `tabAssessment Result`.name = ranked_table.name
 SET  `tabAssessment Result`.custom_rank = ranked_table.ranking;
 """,
-        values={"id": assessment_plan},
+        values={"id": assessment_plan, "scoring_type": "Marks"},
         as_dict=True,
     )
 

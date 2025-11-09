@@ -36,8 +36,8 @@ const throttledAutoSave = throttle(function () {
 
 }, 6000)
 
-function changeMarksData(value, columnId, rowIndex, maximumScore) {
-	if (Number(value.value) > Number(maximumScore)) {
+function changeMarksData(value, columnId, rowIndex, maximumScore, scoring_type) {
+	if (Number(value.value) > Number(maximumScore) && scoring_type == "Marks") {
 		const inputEl = document.querySelector(`input[column='${columnId}'][data-rowindex='${rowIndex}']`);
 		inputEl.value = "";
 		frappe.query_report.data[rowIndex][columnId] = "";
@@ -89,7 +89,7 @@ function createInputElement(value, column, row) {
 	const isRed = String(value).toLowerCase() === "ab";
 	const inputValue = isRed ? "style='background-color:var(--red-300);'" : "";
 
-	return `<input type="text" data-colindex="${column.colIndex}" ${inputValue} column="${column.fieldname}" data-rowindex="${row[0]?.rowIndex}" max="${column.maximum_score}" maximum-score="${column.maximum_score}" value="${value}" oninput="changeMarksData(this, '${column.id}', '${row[0]?.rowIndex}', '${column.maximum_score}')" />`;
+	return `<input type="text" data-colindex="${column.colIndex}" ${inputValue} column="${column.fieldname}" data-rowindex="${row[0]?.rowIndex}" max="${column.maximum_score}" maximum-score="${column.maximum_score}" value="${value}" oninput="changeMarksData(this, '${column.id}', '${row[0]?.rowIndex}', '${column.maximum_score}','${column.scoring_type}')" />`;
 }
 
 function formatter(value, row, column, data, defaultFormatter) {
@@ -126,7 +126,7 @@ function onload(report) {
 
 	frappe.require(["/assets/edu_quality/css/mark-entry-tool.css"]);
 	report.page.parent.classList.add("mark-entry-tool-report");
-
+	addNote()
 	report.page.add_inner_button(__('Save Marks Entry'), () => {
 		const message = `
         <div>    
@@ -140,7 +140,16 @@ function onload(report) {
 	});
 }
 
-
+function addNote() {
+	const noteContainer = frappe.query_report.parent.querySelector('.page-head .container');
+	const noteContainerDiv = document.createElement("div")
+	if (noteContainer.querySelector(".note-container")) {
+		return
+	}
+	noteContainerDiv.classList.add("note-container")
+	noteContainerDiv.innerHTML = `<p class="form-message blue my-0">Non Submitted assessment plans inside a assessment group or exam and their criterias won't show up for marking</p>`
+	noteContainer.appendChild(noteContainerDiv)
+}
 
 frappe.query_reports["Marks Entry Tool"] = {
 	"filters": [
