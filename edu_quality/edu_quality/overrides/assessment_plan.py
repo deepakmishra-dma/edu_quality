@@ -18,6 +18,7 @@ class CustomAssessmentPlan(AssessmentPlan):
                 "custom_type": self.custom_type,
                 "custom_textbook": ["in", ["ALL", "All", self.custom_textbook]],
                 "name": ["!=", self.name],
+                "docstatus": ["in", [0, 1]],
             },
         ):
             frappe.throw(

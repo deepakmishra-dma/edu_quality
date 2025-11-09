@@ -128,8 +128,9 @@ def insert_groups_into_db(bulk_data, headers, total_rows):
                             config_subject_name,
                             config_subject_textbook_used,
                             config_subject_allow_reval,
+                            marking_mode,
                             grading_scale,
-                        ) = row[:22]
+                        ) = row[:25]
 
                         if name:
                             program_flag = None
@@ -167,8 +168,12 @@ def insert_groups_into_db(bulk_data, headers, total_rows):
                             current_group.custom_is_final_exam_class_photo_required = (
                                 is_final_photo_req
                             )
-                            current_group.custom_process_passing =  process_pass_or_fail
-                            current_group.custom_passing_percentage = passing_percentage
+                            current_group.custom_process_passing = (
+                                process_pass_or_fail or 0
+                            )
+                            current_group.custom_passing_percentage = (
+                                passing_percentage or 0
+                            )
                             current_group.save(ignore_permissions=True)
                             is_composite_flag = int(is_composite_exam)
                             program_flag = program
@@ -195,6 +200,7 @@ def insert_groups_into_db(bulk_data, headers, total_rows):
                                 program_flag,
                                 subj_map,
                                 grading_scale,
+                                marking_mode,
                             )
                         progress = idx * 100 // total_rows
                         frappe.realtime.publish_progress(
@@ -241,6 +247,7 @@ def insert_assessment_plan(
     program,
     subj_map,
     grading_scale,
+    marking_mode,
 ):
     criterias = [subj_map[i] for i in subj_map]
     print(criterias)
@@ -262,6 +269,7 @@ def insert_assessment_plan(
             assess_plan.assessment_group = current_group.name
             assess_plan.student_group = div
             assess_plan.program = program
+            assess_plan.custom_scoring_type = marking_mode
             assess_plan.custom_type = config_subject_type
             assess_plan.custom_textbook = (
                 "ALL"
