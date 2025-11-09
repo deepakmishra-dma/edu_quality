@@ -169,6 +169,11 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
             location: "/fee",
           },
           {
+            label: "Result",
+            icon: IconCreditCard,
+            location: "/result",
+          },
+          {
             label: "School Calendar",
             icon: IconCalendar,
             location: "/calendar",
