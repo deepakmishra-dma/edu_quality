@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-// import Select from "react-select";
+
 import Modal from "react-modal";
 import { IconCalendar } from "@tabler/icons-react";
 import Select from "react-select";
-// import makeAnimated from "react-select/animated";
+
 import {
   useCLassName,
   useCLassList,
@@ -37,6 +37,10 @@ interface SelectedRow {
   name: string;
   index: number;
 }
+interface RowFields {
+  chapter: string;
+  textbook: string;
+}
 interface ItemDetail {
   name: string;
   owner: string;
@@ -63,6 +67,10 @@ export const Index = () => {
   const { data: cmap_headers } = useCmapHeaders();
   const [draggedList, setDraggedList] = useState<DraggedItem[]>([]);
   const [formDate, setFormDate] = useState("");
+  const [rowField, setRowField] = useState<RowFields>({
+    chapter: "",
+    textbook: "",
+  });
   const [toDate, setToDate] = useState("");
   const [itemDetails, setItemDetails] = useState<ItemDetail[]>([]);
   const [deletedModal, setDeletedModal] = useState(false);
@@ -106,15 +114,12 @@ export const Index = () => {
   const [selectedUnits, setSelectedUnits] = useState<{ [key: string]: string }>(
     {}
   );
-  console.log(
-    "current_year",
-    current_year?.data?.data?.map((i: any) => i?.name)
-  );
+
   const [selectedvalues, setSelectedValues] = useState({
     subjects: "",
     unit: [],
   });
-
+  console.log("row", rowField);
   const { data: classes } = useCLassList();
   const { data: class_name } = useCLassName(selectedClass);
   const exportToExcel = () => {
@@ -293,6 +298,7 @@ export const Index = () => {
   function insertModalClose() {
     setSelectedIDS("");
     setInsertModal(false);
+    setRowField({ chapter: "", textbook: "" });
   }
 
   const handleYearChange = (selectedOption: any) => {
@@ -307,8 +313,8 @@ export const Index = () => {
         parenttype: "CMAP",
         parent: selectedName,
         parentfield: "products",
-        // chapter: rowField?.chapter,
-        // textbook: rowField?.textbook,
+        chapter: rowField?.chapter,
+        textbook: rowField?.textbook,
         // subject: rowField?.subject,
       },
     };
@@ -475,7 +481,7 @@ export const Index = () => {
       unit: selectedOptions || [],
     }));
   };
-  console.log("selected", selectedvalues.unit);
+
   const handleSubjectChange = (selectedOption: any) => {
     setSelectedValues((prevState) => ({
       ...prevState,
@@ -693,6 +699,7 @@ export const Index = () => {
             isLoading={isLoading}
             setUnitModal={setUnitModal}
             cmap_table={cmap_table}
+            setRowField={setRowField}
             setSelectedIDS={setSelectedIDS}
             setSelectedName={setSelectedName}
             setSelectedItem={setSelectedItem}

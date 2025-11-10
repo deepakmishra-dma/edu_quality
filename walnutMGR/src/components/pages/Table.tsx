@@ -9,7 +9,7 @@ interface TableProps {
   isLoading: any;
 
   setDraggedList: any;
-
+  setRowField: any;
   draggedList: any;
   cmap_table: any;
   cmap_headers: any;
@@ -36,7 +36,7 @@ export const Table = ({
   draggedList,
   isLoading,
   setSelectedUnits,
-
+  setRowField,
   setSelectedRows,
   setDraggedList,
   selectedUnits,
@@ -410,7 +410,7 @@ export const Table = ({
                                               "answer_sheet"
                                           )?.label;
                                         setSelectedIDS(ids);
-
+                                        setRowField(val);
                                         setSelectedName(val?.name);
                                         setTimeout(() => {
                                           insertModalOpen();
@@ -514,7 +514,7 @@ export const Table = ({
                                                 "lesson_plan"
                                             )?.label;
                                           setSelectedIDS(ids);
-
+                                          setRowField(val);
                                           setSelectedName(val?.name);
                                           setTimeout(() => {
                                             insertModalOpen();
@@ -593,7 +593,7 @@ export const Table = ({
                                               "powerpoint_presentation"
                                           )?.label;
                                         setSelectedIDS(ids);
-
+                                        setRowField(val);
                                         setSelectedName(val?.name);
                                         setTimeout(() => {
                                           insertModalOpen();
@@ -705,7 +705,7 @@ export const Table = ({
                                                 items?.fieldname === "worksheet"
                                             )?.label;
                                           setSelectedIDS(ids);
-
+                                          setRowField(val);
                                           setSelectedName(val?.name);
                                           setTimeout(() => {
                                             insertModalOpen();
