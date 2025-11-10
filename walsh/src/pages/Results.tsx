@@ -30,7 +30,7 @@ export const Results = () => {
     { value: string; label: string }[]
   >([]);
   const [selectedYear, setSelectedYear] = useState("");
-
+  const [errorMessage, setErrorMessage] = useState("");
   const [selectedExam, setSelectedExam] = useState("");
   const [printFormat, setPrintFormat] = useState<PrintFormat>({
     html: "",
@@ -82,7 +82,14 @@ export const Results = () => {
         throw new Error("No Result Found");
       }
       const data = await resp.json();
-      setExamResult(data?.data);
+
+      if (data?.data?.length < 1) {
+        setErrorMessage("Result Not Found");
+        setExamResult([]); // Clear previous results
+      } else {
+        setExamResult(data?.data);
+        setErrorMessage(""); // Clear any previous error messages
+      }
     } catch (error) {
       console.log("error", error);
     }
@@ -233,7 +240,6 @@ export const Results = () => {
       e.target.value,
       classDetails?.data?.message?.division?.program
     );
-    assessmentResuktFilter(e.target.value, selectedExam);
   };
 
   let html = printFormat?.html;
@@ -250,6 +256,7 @@ export const Results = () => {
     setSelectedExam("");
     setExamOptions([]);
   };
+  console.log("errorMessage", errorMessage);
 
   return (
     <>
@@ -382,7 +389,19 @@ export const Results = () => {
               </select>
             </div>
           </div>
-
+          {errorMessage && (
+            <div
+              className="error-message"
+              style={{
+                textAlign: "center",
+                fontWeight: "bold",
+                color: "red",
+                marginTop: "1rem",
+              }}
+            >
+              {errorMessage}
+            </div>
+          )}
           {errorTrue ||
             (loading && (
               <p
@@ -396,6 +415,7 @@ export const Results = () => {
                 Loading...
               </p>
             ))}
+
           {errorTrue ||
             (error && (
               <p
@@ -412,6 +432,7 @@ export const Results = () => {
             ))}
           {!loading && !error && (
             <div
+              style={{ marginTop: "2rem" }}
               dangerouslySetInnerHTML={{ __html: combinedHtml }}
               className="print-format-gutter print-format"
             />
