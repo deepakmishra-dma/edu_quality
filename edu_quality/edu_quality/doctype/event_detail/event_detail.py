@@ -151,7 +151,7 @@ class EventDetail(Document):
                 subject = frappe.render_template(template.subject, context=context)
                 message = frappe.render_template(template.response, context=context)
                 frappe.sendmail(
-                    recipients=self.allowed_students(),
+                    recipients=self.get_allowed_students(),
                     subject=subject,
                     message=message,
                 )
@@ -172,7 +172,7 @@ class EventDetail(Document):
                 subject = frappe.render_template(template.subject, context=context)
                 message = frappe.render_template(template.response, context=context)
                 frappe.sendmail(
-                    recipients=self.participating_students(),
+                    recipients=self.get_participating_students(),
                     subject=subject,
                     message=message,
                 )
