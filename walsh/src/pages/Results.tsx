@@ -56,6 +56,10 @@ export const Results = () => {
         throw new Error("No Result Found");
       }
       const data = await resp.json();
+      if (data?.data?.length < 1) {
+        setErrorMessage("Result Not Found");
+        // setExamOptions({});
+      }
       if (data?.data?.length > 0) {
         const groupNames = data?.data?.map?.((i: any) => i.name);
 
@@ -149,8 +153,8 @@ export const Results = () => {
       );
     }
     if (selectedExam === "") {
-      printFormatView(undefined, undefined);
       setPrintFormat({ html: "", style: "" });
+      printFormatView(undefined, undefined);
       setError("");
       setErrorTrue(true);
     }
@@ -255,6 +259,7 @@ export const Results = () => {
     setSelectedYear("");
     setSelectedExam("");
     setExamOptions([]);
+    setErrorMessage("");
   };
   console.log("errorMessage", errorMessage);
 
