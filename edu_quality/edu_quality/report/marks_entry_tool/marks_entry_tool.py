@@ -83,7 +83,7 @@ def generate_column_dict(assess_plan):
         type_string = f"({assess_plan.get('maximum_score')} marks)"
     elif scoring_type == "Grades":
         type_string = f"(Grades - {grading_scale})"
-        
+
     return {
         "fieldname": gen_field_name(assess_plan),
         "label": f"{gen_label(assess_plan)}<br/> {type_string}",
@@ -172,7 +172,7 @@ def get_earlier_marks(filters, students, criterias):
                 "assessment_criteria": assess_res.get("assessment_criteria"),
             }
             if is_absent:
-                student[gen_field_name(assess_plan)] = is_absent
+                student[gen_field_name(assess_plan)] = "-"
             elif scoring_type == "Marks":
                 student[gen_field_name(assess_plan)] = score
             elif scoring_type == "Grades":
@@ -279,7 +279,7 @@ def enter_individual_marks(
         scale = assessment_criteria.get("custom_scale")
         scoring_type = assessment_criteria.get("scoring_type")
 
-        if str(score).lower() == "ab":
+        if str(score).lower() == "-" or score == None:
             score = 0
             is_absent = 1
 

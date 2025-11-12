@@ -68,7 +68,7 @@ function getNextElement(rowIndex, colIndex) {
 }
 
 function handleKeyDownEvent(event) {
-	if (event.key === 'Tab') {
+	if (event.key === 'Tab' || event.key === "Enter") {
 		event.preventDefault();
 
 		const { colindex, rowindex } = event.target.dataset;
@@ -86,7 +86,7 @@ function initializeKeyListener() {
 }
 
 function createInputElement(value, column, row) {
-	const isRed = String(value).toLowerCase() === "ab";
+	const isRed = String(value).toLowerCase() === "-";
 	const inputValue = isRed ? "style='background-color:var(--red-300);'" : "";
 
 	return `<input type="text" data-colindex="${column.colIndex}" ${inputValue} column="${column.fieldname}" data-rowindex="${row[0]?.rowIndex}" max="${column.maximum_score}" maximum-score="${column.maximum_score}" value="${value}" oninput="changeMarksData(this, '${column.id}', '${row[0]?.rowIndex}', '${column.maximum_score}','${column.scoring_type}')" />`;
@@ -117,7 +117,7 @@ async function saveCall() {
 	});
 
 	frappe.show_alert({
-		message: __('Saved'),
+		message: __('<i class="fa fa-save"></i>'),
 		indicator: 'green'
 	}, 2);
 }
@@ -138,8 +138,27 @@ function onload(report) {
 
 		});
 	});
+	report.page.add_inner_button(__('Process Result'), () => {
+		const message = `
+        <div>    
+            <p>Are you sure you want to Leave this page and go to exam processing?</p>
+        </div>`;
+
+		frappe.confirm(__(message), async () => {
+			goToProcessing()
+
+		});
+	});
 }
 
+function goToProcessing() {
+	const academic_year = frappe.query_report.get_filter_value("academic_year");
+	const school = frappe.query_report.get_filter_value("school");
+	const program = frappe.query_report.get_filter_value("program");
+	const exam = frappe.query_report.get_filter_value("assessment_group");
+
+	frappe.set_route("process-exam-result", { academic_year, school, program, exam })
+}
 function addNote() {
 	const noteContainer = frappe.query_report.parent.querySelector('.page-head .container');
 	const noteContainerDiv = document.createElement("div")
@@ -147,7 +166,14 @@ function addNote() {
 		return
 	}
 	noteContainerDiv.classList.add("note-container")
-	noteContainerDiv.innerHTML = `<p class="form-message blue my-0">Non Submitted assessment plans inside a assessment group or exam and their criterias won't show up for marking</p>`
+	noteContainerDiv.innerHTML = `
+	<div class="form-message blue my-0">
+	<ul>
+	<li>Non Submitted Exam Config Subjects inside an Exam Configuration and their subject components won't show up for marking</li>
+	<li>Use - for marking student as absent</li>
+	<li>Empty Columns will be marked as absent automatically, on first save</li>
+	</ul>
+	</div>`
 	noteContainer.appendChild(noteContainerDiv)
 }
 
