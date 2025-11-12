@@ -25,6 +25,7 @@
   {
    "fieldname": "template_of_reminders",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Template Of Reminders",
    "options": "Email Template"
   }
@@ -32,7 +33,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-06-05 17:53:02.731404",
+ "modified": "2024-07-01 12:34:30.716872",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Event Date",
