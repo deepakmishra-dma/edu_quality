@@ -19,7 +19,10 @@ class CustomAssessmentResult(AssessmentResult):
         self.validate_duplicate()
 
     def before_submit(self, method=None):
-        for detail in self.details and self.custom_scoring_type == "Marks":
+        for detail in self.details:
+            if self.custom_scoring_type != "Marks":
+                return
+            
             score = detail.get("score")
             scale = detail.get("scale")
             if detail.get("custom_is_absent") == 0:
