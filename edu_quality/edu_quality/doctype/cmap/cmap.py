@@ -445,6 +445,7 @@ def get_cmap_list(academic_year, program, subject, unit, from_date=None, end_dat
     cmap_query = (
         frappe.qb.from_(cmap_qb)
         .inner_join(cmap_assignment_qb)
+        .on(cmap_assignment_qb.parent == cmap_qb.name)
         .where(
             (cmap_qb.academic_year == academic_year)
             & (cmap_qb["class"] == program)
