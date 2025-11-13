@@ -28,12 +28,15 @@ def get_columns(assessment_group, filters):
 def get_subject_criteria_columns(assess_group, filters):
     assess_plan_qb = frappe.qb.DocType("Assessment Plan")
     assess_plan_cr_qb = frappe.qb.DocType("Assessment Plan Criteria")
+    subject_qb = frappe.qb.DocType("Course")
     division = filters.get("division")
 
     query = (
         frappe.qb.from_(assess_plan_qb)
         .inner_join(assess_plan_cr_qb)
         .on(assess_plan_qb.name == assess_plan_cr_qb.parent)
+        .inner_join(subject_qb)
+        .on(assess_plan_qb.course == subject_qb.name)
         .where(
             (assess_plan_qb.assessment_group == assess_group.get("name"))
             & (assess_plan_qb.student_group == division)
@@ -46,6 +49,7 @@ def get_subject_criteria_columns(assess_group, filters):
         assess_plan_cr_qb.custom_exam_type,
         assess_plan_cr_qb.custom_scale,
         assess_plan_cr_qb.custom_allow_revaluation,
+        subject_qb.custom_short_code,
         assess_plan_cr_qb.name.as_("assess_criteria_row_name"),
         assess_plan_qb.custom_scoring_type,
         assess_plan_qb.grading_scale,
@@ -86,7 +90,7 @@ def generate_column_dict(assess_plan):
 
     return {
         "fieldname": gen_field_name(assess_plan),
-        "label": f"{gen_label(assess_plan)}<br/> {type_string}",
+        "label": f"{gen_label(assess_plan,assess_plan.get('custom_short_code'))}<br/> {type_string}",
         "maximum_score": assess_plan.get("maximum_score"),
         "assessment_plan": assess_plan.get("name"),
         "assessment_criteria_row_name": assess_plan.get("assess_criteria_row_name"),
@@ -98,8 +102,8 @@ def generate_column_dict(assess_plan):
     }
 
 
-def gen_label(assess_plan):
-    return f"{assess_plan.get('course')} {assess_plan.get('assessment_criteria')}"
+def gen_label(assess_plan, short_code):
+    return f"{short_code or assess_plan.get('course')} {assess_plan.get('assessment_criteria')}"
 
 
 def gen_field_name(assess_plan):

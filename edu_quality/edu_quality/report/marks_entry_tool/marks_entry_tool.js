@@ -116,10 +116,10 @@ async function saveCall() {
 		}
 	});
 
-	frappe.show_alert({
-		message: __('<i class="fa fa-save"></i>'),
-		indicator: 'green'
-	}, 2);
+	// frappe.show_alert({
+	// 	message: __('<i class="fa fa-save"></i>'),
+	// 	indicator: 'green'
+	// }, 2);
 }
 function onload(report) {
 	initializeKeyListener();
