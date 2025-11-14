@@ -19,12 +19,15 @@ class CustomAssessmentResult(AssessmentResult):
         self.validate_duplicate()
 
     def before_submit(self, method=None):
+        total = 0
+        total_scaled_max_score = 0
         for detail in self.details:
             if self.custom_scoring_type != "Marks":
                 return
-            
+
             score = detail.get("score")
-            scale = detail.get("scale")
+            scale = detail.get("custom_scale") or 1
+            maximum_score = detail.get("maximum_score")
             if detail.get("custom_is_absent") == 0:
                 frappe.db.set_value(
                     "Assessment Result Detail",
@@ -32,3 +35,35 @@ class CustomAssessmentResult(AssessmentResult):
                     "custom_processed_result",
                     score * scale,
                 )
+                total += score * scale
+            total_scaled_max_score += maximum_score * scale
+
+        if self.custom_scoring_type != "Marks":
+            return
+
+        frappe.db.set_value(
+            "Assessment Result", self.name, "custom_total_processed_score", total
+        )
+
+        processed_percentage = (total / total_scaled_max_score) * 100
+
+        frappe.db.set_value(
+            "Assessment Result",
+            self.name,
+            "custom_processed_percentage",
+            0 if total_scaled_max_score == 0 else processed_percentage,
+        )
+
+        assessment_group_doc = frappe.get_doc("Assessment Group", self.assessment_group)
+
+        if (
+            assessment_group_doc.custom_process_passing
+            and processed_percentage >= assessment_group_doc.custom_passing_percentage
+        ):
+
+            frappe.db.set_value(
+                "Assessment Result",
+                self.name,
+                "custom_passed",
+                1,
+            )

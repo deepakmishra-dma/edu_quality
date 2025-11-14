@@ -174,7 +174,7 @@ def process_atomic_exam(assessment_group, academic_year, program, div=None):
             )
             modified_result[parent] = 1
             total_processed_result += score * (scale)
-            total_max_score += maximum_score * scale
+        total_scaled_max_score += maximum_score * scale
 
     for parent in modified_result:
         frappe.db.set_value(
@@ -196,12 +196,12 @@ def process_atomic_exam(assessment_group, academic_year, program, div=None):
                 1,
             )
 
-            frappe.db.set_value(
-                "Assessment Result",
-                parent,
-                "custom_processed_percentage",
-                processed_percentage,
-            )
+        frappe.db.set_value(
+            "Assessment Result",
+            parent,
+            "custom_processed_percentage",
+            0 if total_scaled_max_score == 0 else processed_percentage,
+        )
 
         frappe.db.set_value("Assessment Result", parent, "docstatus", 1)
 
