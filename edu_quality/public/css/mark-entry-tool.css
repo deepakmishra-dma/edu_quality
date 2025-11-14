@@ -10,7 +10,8 @@
 } */
 
 .mark-entry-tool-report .dt-instance-1 .dt-cell__content {
-  width: 100px !important;
+  width: 75px !important;
+  padding-right: 5px;
 }
 .mark-entry-tool-report .datatable .dt-row {
   height: auto;
