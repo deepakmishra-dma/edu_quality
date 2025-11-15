@@ -205,8 +205,7 @@ doc_events = {
     },
     "Student": {
         "after_insert": "edu_quality.public.py.student.after_insert",
-        "before_save": "edu_quality.public.py.student.before_save",
-        "on_update": "edu_quality.public.py.student.on_update",
+        "before_save": "edu_quality.public.py.student.before_save"
     },
     "Payment Entry": {
         "validate": "edu_quality.edu_quality.server_scripts.payment_entry.validate"
