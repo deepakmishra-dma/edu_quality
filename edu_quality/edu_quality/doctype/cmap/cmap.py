@@ -84,7 +84,7 @@ class CMAP(Document):
             added_material_required,
             field="material_required",
         )
-    
+
         self.item_code_field = ", ".join(
             str(item.get("item", "")) or "" for item in self.products or [""]
         )
@@ -417,7 +417,7 @@ def get_cmap_creation_headers():
     return columns
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist()
 def get_cmap_list(academic_year, program, subject, unit, from_date=None, end_date=None):
     if not academic_year:
         academic_year = current_academic_year()
@@ -441,9 +441,11 @@ def get_cmap_list(academic_year, program, subject, unit, from_date=None, end_dat
         subject_cond = cmap_qb.subject == subject
 
     item_detail_qb = frappe.qb.DocType("Item Detail")
-
+    cmap_assignment_qb = frappe.qb.DocType("CMAP Assignment")
     cmap_query = (
         frappe.qb.from_(cmap_qb)
+        .inner_join(cmap_assignment_qb)
+        .on(cmap_assignment_qb.parent == cmap_qb.name)
         .where(
             (cmap_qb.academic_year == academic_year)
             & (cmap_qb["class"] == program)
@@ -452,6 +454,7 @@ def get_cmap_list(academic_year, program, subject, unit, from_date=None, end_dat
             & (subject_cond)
             # & ((cmap_qb.plan_date.isnull()) | (cmap_qb.plan_date[from_date:end_date]))
         )
+        .groupby(cmap_qb.name)
         .select(
             cmap_qb.name,
             cmap_qb.academic_year,
@@ -462,6 +465,7 @@ def get_cmap_list(academic_year, program, subject, unit, from_date=None, end_dat
             cmap_qb["class"],
             cmap_qb.last_period_of_the_unit,
             cmap_qb.reserved_for_portion_circular,
+            GROUP_CONCAT(cmap_assignment_qb.real_date).as_("real_dates"),
         )
     )
 

@@ -31,16 +31,13 @@ function debounce(func, delay) {
 	};
 }
 
-const throttledAutoSave = debounce(function () {
+const throttledAutoSave = throttle(function () {
 	saveCall();
-	frappe.show_alert({
-		message: __('Autosaved'),
-		indicator: 'green'
-	}, 2);
+
 }, 6000)
 
-function changeMarksData(value, columnId, rowIndex, maximumScore) {
-	if (Number(value.value) > Number(maximumScore)) {
+function changeMarksData(value, columnId, rowIndex, maximumScore, scoring_type) {
+	if (Number(value.value) > Number(maximumScore) && scoring_type == "Marks") {
 		const inputEl = document.querySelector(`input[column='${columnId}'][data-rowindex='${rowIndex}']`);
 		inputEl.value = "";
 		frappe.query_report.data[rowIndex][columnId] = "";
@@ -60,7 +57,7 @@ function getNextElement(rowIndex, colIndex) {
 
 	if (nextRowIndex >= maxRows) {
 		nextRowIndex = 0;
-		if (nextColIndex + 1 < maxColumns) {
+		if (nextColIndex + 1 <= maxColumns) {
 			nextColIndex += 1;
 		} else {
 			nextColIndex = 3;
@@ -71,7 +68,7 @@ function getNextElement(rowIndex, colIndex) {
 }
 
 function handleKeyDownEvent(event) {
-	if (event.key === 'Tab') {
+	if (event.key === 'Tab' || event.key === "Enter") {
 		event.preventDefault();
 
 		const { colindex, rowindex } = event.target.dataset;
@@ -79,6 +76,7 @@ function handleKeyDownEvent(event) {
 
 		if (nextElement) {
 			nextElement.focus();
+			nextElement.select()
 		}
 	}
 }
@@ -88,10 +86,10 @@ function initializeKeyListener() {
 }
 
 function createInputElement(value, column, row) {
-	const isRed = String(value).toLowerCase() === "ab";
+	const isRed = String(value).toLowerCase() === "-";
 	const inputValue = isRed ? "style='background-color:var(--red-300);'" : "";
 
-	return `<input type="text" data-colindex="${column.colIndex}" ${inputValue} column="${column.fieldname}" data-rowindex="${row[0]?.rowIndex}" max="${column.maximum_score}" maximum-score="${column.maximum_score}" value="${value}" oninput="changeMarksData(this, '${column.id}', '${row[0]?.rowIndex}', '${column.maximum_score}')" />`;
+	return `<input type="text" data-colindex="${column.colIndex}" ${inputValue} column="${column.fieldname}" data-rowindex="${row[0]?.rowIndex}" max="${column.maximum_score}" maximum-score="${column.maximum_score}" value="${value}" oninput="changeMarksData(this, '${column.id}', '${row[0]?.rowIndex}', '${column.maximum_score}','${column.scoring_type}')" />`;
 }
 
 function formatter(value, row, column, data, defaultFormatter) {
@@ -103,40 +101,81 @@ function formatter(value, row, column, data, defaultFormatter) {
 
 	return value;
 }
-function saveCall() {
+async function saveCall() {
 	const filters = {};
 
 	frappe.query_report.filters.forEach(filter => {
 		filters[filter.fieldname] = frappe.query_report.get_filter_value(filter.fieldname);
 	});
 
-	frappe.call({
+	await frappe.call({
 		"method": "edu_quality.edu_quality.report.marks_entry_tool.marks_entry_tool.do_mark_entry",
 		args: {
 			data: frappe.query_report.data,
 			filters: filters,
 		}
 	});
+
+	// frappe.show_alert({
+	// 	message: __('<i class="fa fa-save"></i>'),
+	// 	indicator: 'green'
+	// }, 2);
 }
 function onload(report) {
 	initializeKeyListener();
 
 	frappe.require(["/assets/edu_quality/css/mark-entry-tool.css"]);
 	report.page.parent.classList.add("mark-entry-tool-report");
-
+	addNote()
 	report.page.add_inner_button(__('Save Marks Entry'), () => {
 		const message = `
         <div>    
             <p>Are you sure you want to Save Marks Entered?</p>
         </div>`;
 
-		frappe.confirm(__(message), () => {
-			saveCall()
+		frappe.confirm(__(message), async () => {
+			await saveCall()
+
+		});
+	});
+	report.page.add_inner_button(__('Process Result'), () => {
+		const message = `
+        <div>    
+            <p>Are you sure you want to Leave this page and go to exam processing?</p>
+        </div>`;
+
+		frappe.confirm(__(message), async () => {
+			goToProcessing()
+
 		});
 	});
 }
 
+function goToProcessing() {
+	const academic_year = frappe.query_report.get_filter_value("academic_year");
+	const school = frappe.query_report.get_filter_value("school");
+	const program = frappe.query_report.get_filter_value("program");
+	const exam = frappe.query_report.get_filter_value("assessment_group");
 
+	frappe.set_route("process-exam-result", { academic_year, school, program, exam })
+}
+function addNote() {
+	const noteContainer = frappe.query_report.parent.querySelector('.page-head .container');
+	const noteContainerDiv = document.createElement("div")
+	if (noteContainer.querySelector(".note-container")) {
+		return
+	}
+	noteContainerDiv.classList.add("note-container")
+	noteContainerDiv.innerHTML = `
+	<div class="form-message blue my-0">
+	<ul>
+	<li>Non Submitted Exam Config Subjects inside an Exam Configuration and their subject components won't show up for marking</li>
+	<li>Use - for marking student as absent</li>
+	<li>Empty Columns will be marked as absent automatically, on first save</li>
+	</ul>
+	</div>`
+	noteContainer.appendChild(noteContainerDiv)
+}
 
 frappe.query_reports["Marks Entry Tool"] = {
 	"filters": [

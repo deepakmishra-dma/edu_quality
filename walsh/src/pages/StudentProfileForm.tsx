@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   guardin_address,
   guardin_address2,
@@ -10,7 +10,7 @@ import {
   useDetailsList,
 } from "../components/queries/useGuardianList";
 import { Box, Text, Button } from "@mantine/core";
-import { IconEdit, IconSend } from "@tabler/icons-react";
+import { IconEdit } from "@tabler/icons-react";
 import OTPInput from "otp-input-react";
 import useStudentList from "../components/queries/useStudentList";
 
@@ -98,11 +98,10 @@ export const StudentProfleFOrm = ({
     details_list?.data?.message?.guardians?.find?.(
       (i: any) => i?.relation === "Mother"
     )?.guardian || "";
-  const { mutateAsync: mutateAsyncNumber, isError: numbersError } =
-    guardin_number_update();
+  const { mutateAsync: mutateAsyncNumber } = guardin_number_update();
   const { mutateAsync: mutateAsyncFatherNumbers } =
     guardin_father_number_update(FatherGuardian);
-  const { mutateAsync, isError: EmailError } = guardin_email_update();
+  const { mutateAsync } = guardin_email_update();
   const { mutateAsync: mutateAddress } = guardin_address();
 
   const MotherEmail =
@@ -506,17 +505,6 @@ export const StudentProfleFOrm = ({
     .toLocaleDateString("en-GB")
     .replace(/\//g, "-");
 
-  useEffect(() => {
-    if (numbersError) {
-      alert("No Permission to update other Guardian Number");
-    }
-  }, [numbersError]);
-  useEffect(() => {
-    if (EmailError) {
-      alert("No Permission to update other Guardian Email");
-    }
-  }, [EmailError]);
-
   return (
     <>
       <div style={{ display: "flex", flexDirection: "column", width: "700px" }}>
@@ -776,7 +764,7 @@ export const StudentProfleFOrm = ({
                       ...prevState,
                       mother_email: true,
                     }));
-                    // setNewEmail(MotherEmail || '');
+
                     setNewEmail((prevEmail) => ({
                       ...prevEmail,
                       mother_email_input: MotherEmail || "",
@@ -796,7 +784,9 @@ export const StudentProfleFOrm = ({
                       gap: "1rem",
                     }}
                   >
-                    <IconSend
+                    <Button
+                      sx={{ background: "green", color: "white" }}
+                      disabled={sendOtp.mother_email}
                       onClick={() => {
                         if (MotherMobile === "N/A") {
                           mutateAsync({
@@ -827,7 +817,10 @@ export const StudentProfleFOrm = ({
                           // <button></button>
                         }
                       }}
-                    />
+                    >
+                      Update
+                    </Button>
+
                     <Button
                       sx={{
                         backgroundColor: "red",
@@ -851,8 +844,7 @@ export const StudentProfleFOrm = ({
                         }));
                       }}
                     >
-                      {" "}
-                      Cancle
+                      Cancel
                     </Button>
                   </div>
                 </>
@@ -990,7 +982,9 @@ export const StudentProfleFOrm = ({
                       gap: "1rem",
                     }}
                   >
-                    <IconSend
+                    <Button
+                      sx={{ background: "green", color: "white" }}
+                      disabled={sendOtp.mother_number}
                       onClick={() => {
                         if (MotherEmail === "N/A") {
                           mutateAsyncNumber({
@@ -1020,7 +1014,9 @@ export const StudentProfleFOrm = ({
                           }));
                         }
                       }}
-                    />
+                    >
+                      Update
+                    </Button>
                     <Button
                       sx={{
                         backgroundColor: "red",
@@ -1044,8 +1040,7 @@ export const StudentProfleFOrm = ({
                         }));
                       }}
                     >
-                      {" "}
-                      Cancle
+                      Cancel
                     </Button>
                   </div>
                 </>
@@ -1183,8 +1178,9 @@ export const StudentProfleFOrm = ({
                       gap: "1rem",
                     }}
                   >
-                    <IconSend
-                      stroke={2}
+                    <Button
+                      sx={{ background: "green", color: "white" }}
+                      disabled={sendOtp.father_email}
                       onClick={() => {
                         if (FatherMobile === "N/A") {
                           mutateAsync({
@@ -1214,7 +1210,9 @@ export const StudentProfleFOrm = ({
                           }));
                         }
                       }}
-                    />
+                    >
+                      Update
+                    </Button>
                     <Button
                       sx={{
                         backgroundColor: "red",
@@ -1242,7 +1240,7 @@ export const StudentProfleFOrm = ({
                       }}
                     >
                       {" "}
-                      Cancle
+                      Cancel
                     </Button>
                   </div>
                 </>
@@ -1380,8 +1378,9 @@ export const StudentProfleFOrm = ({
                       gap: "1rem",
                     }}
                   >
-                    <IconSend
-                      stroke={2}
+                    <Button
+                      sx={{ background: "green", color: "white" }}
+                      disabled={sendOtp.father_number}
                       onClick={() => {
                         if (FatherEmail === "N/A") {
                           mutateAsyncFatherNumbers({
@@ -1411,7 +1410,9 @@ export const StudentProfleFOrm = ({
                           }));
                         }
                       }}
-                    />
+                    >
+                      Update
+                    </Button>
                     <Button
                       sx={{
                         backgroundColor: "red",
@@ -1439,7 +1440,7 @@ export const StudentProfleFOrm = ({
                       }}
                     >
                       {" "}
-                      Cancle
+                      Cancel
                     </Button>
                   </div>
                 </>
@@ -1563,15 +1564,15 @@ export const StudentProfleFOrm = ({
                       gap: "1rem",
                     }}
                   >
-                    <IconSend
-                      stroke={2}
+                    <Button
+                      sx={{ background: "green", color: "white" }}
                       onClick={() => {
                         mutateAddress({
                           name: selectedStudent,
                           address_line_1: addressguardian1,
                         }).then(() => {
                           detailsRefetch();
-                          // setAddressGuardian1(address_guardian || '')
+
                           setIsEditable((prevState) => ({
                             ...prevState,
                             address: false,
@@ -1582,7 +1583,9 @@ export const StudentProfleFOrm = ({
                           }));
                         });
                       }}
-                    />
+                    >
+                      Update
+                    </Button>
                     <Button
                       sx={{
                         backgroundColor: "red",
@@ -1602,7 +1605,7 @@ export const StudentProfleFOrm = ({
                       }}
                     >
                       {" "}
-                      Cancle
+                      Cancel
                     </Button>
                   </div>
                 </>
@@ -1679,8 +1682,8 @@ export const StudentProfleFOrm = ({
                       alignItems: "center",
                     }}
                   >
-                    <IconSend
-                      stroke={2}
+                    <Button
+                      sx={{ background: "green", color: "white" }}
                       onClick={() => {
                         mutateAddress2({
                           name: selectedStudent,
@@ -1697,7 +1700,9 @@ export const StudentProfleFOrm = ({
                           }));
                         });
                       }}
-                    />
+                    >
+                      Update
+                    </Button>
                     <Button
                       sx={{
                         backgroundColor: "red",
@@ -1717,7 +1722,7 @@ export const StudentProfleFOrm = ({
                       }}
                     >
                       {" "}
-                      Cancle
+                      Cancel
                     </Button>
                   </div>
                 </>
@@ -1791,8 +1796,8 @@ export const StudentProfleFOrm = ({
                       gap: "1rem",
                     }}
                   >
-                    <IconSend
-                      stroke={2}
+                    <Button
+                      sx={{ background: "green", color: "white" }}
                       onClick={() => {
                         mutateAsyncBloodGroup({
                           name: student.name,
@@ -1809,7 +1814,9 @@ export const StudentProfleFOrm = ({
                           }));
                         });
                       }}
-                    />
+                    >
+                      Update
+                    </Button>
                     <Button
                       sx={{
                         backgroundColor: "red",
@@ -1829,7 +1836,7 @@ export const StudentProfleFOrm = ({
                       }}
                     >
                       {" "}
-                      Cancle
+                      Cancel
                     </Button>
                   </div>
                 </>
@@ -1905,8 +1912,8 @@ export const StudentProfleFOrm = ({
                       gap: "1rem",
                     }}
                   >
-                    <IconSend
-                      stroke={2}
+                    <Button
+                      sx={{ background: "green", color: "white" }}
                       onClick={() => {
                         mutateAsyncAnnualIncome({
                           name: FatherGuardian,
@@ -1923,7 +1930,9 @@ export const StudentProfleFOrm = ({
                           }));
                         });
                       }}
-                    />
+                    >
+                      Update
+                    </Button>
                     <Button
                       sx={{
                         backgroundColor: "red",
@@ -1943,7 +1952,7 @@ export const StudentProfleFOrm = ({
                       }}
                     >
                       {" "}
-                      Cancle
+                      Cancel
                     </Button>
                   </div>
                 </>
@@ -2021,8 +2030,8 @@ export const StudentProfleFOrm = ({
                       alignItems: "center",
                     }}
                   >
-                    <IconSend
-                      stroke={2}
+                    <Button
+                      sx={{ background: "green", color: "white" }}
                       onClick={() => {
                         mutateAsyncAnnualIncome({
                           name: MotherGuardian,
@@ -2039,7 +2048,9 @@ export const StudentProfleFOrm = ({
                           }));
                         });
                       }}
-                    />
+                    >
+                      Update
+                    </Button>
                     <Button
                       sx={{
                         backgroundColor: "red",
@@ -2059,7 +2070,7 @@ export const StudentProfleFOrm = ({
                       }}
                     >
                       {" "}
-                      Cancle
+                      Cancel
                     </Button>
                   </div>
                 </>

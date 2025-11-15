@@ -14,8 +14,10 @@ def get_columns(assessment_group, filters):
     if not assessment_group:
         return []
     assess_group = frappe.get_doc("Assessment Group", assessment_group)
-    if assess_group.is_group:
-        frappe.throw("Can't calculate result of a assessment group of group type")
+    if assess_group.is_group or assess_group.custom_is_composite:
+        frappe.throw(
+            "Can't enter marks of a assessment group of group type or composite type"
+        )
 
     if assess_group.custom_is_composite:
         return get_composite_exam_columns(assess_group, filters)
@@ -26,15 +28,19 @@ def get_columns(assessment_group, filters):
 def get_subject_criteria_columns(assess_group, filters):
     assess_plan_qb = frappe.qb.DocType("Assessment Plan")
     assess_plan_cr_qb = frappe.qb.DocType("Assessment Plan Criteria")
+    subject_qb = frappe.qb.DocType("Course")
     division = filters.get("division")
 
     query = (
         frappe.qb.from_(assess_plan_qb)
         .inner_join(assess_plan_cr_qb)
         .on(assess_plan_qb.name == assess_plan_cr_qb.parent)
+        .inner_join(subject_qb)
+        .on(assess_plan_qb.course == subject_qb.name)
         .where(
             (assess_plan_qb.assessment_group == assess_group.get("name"))
             & (assess_plan_qb.student_group == division)
+            & (assess_plan_qb.docstatus == 1)
         )
     ).select(
         assess_plan_qb.star,
@@ -43,9 +49,19 @@ def get_subject_criteria_columns(assess_group, filters):
         assess_plan_cr_qb.custom_exam_type,
         assess_plan_cr_qb.custom_scale,
         assess_plan_cr_qb.custom_allow_revaluation,
+        subject_qb.custom_short_code,
         assess_plan_cr_qb.name.as_("assess_criteria_row_name"),
+        assess_plan_qb.custom_scoring_type,
+        assess_plan_qb.grading_scale,
     )
+
     data = query.run(as_dict=True) or []
+    # for plan in data:
+    #     if plan.get("docstatus") in [0, 2]:
+    #         frappe.throw(
+    #             "One or more assessment plan in the group is non submitted, submit all the plans in the group to score"
+    #         )
+    #         return []
     return [generate_column_dict(assess_plan) for assess_plan in data]
 
 
@@ -63,20 +79,31 @@ def get_composite_exam_columns(assess_group, filters):
 
 
 def generate_column_dict(assess_plan):
+    scoring_type = assess_plan.get("custom_scoring_type")
+    grading_scale = assess_plan.get("grading_scale")
+    type_string = ""
+
+    if scoring_type == "Marks":
+        type_string = f"({assess_plan.get('maximum_score')} marks)"
+    elif scoring_type == "Grades":
+        type_string = f"(Grades - {grading_scale})"
+
     return {
         "fieldname": gen_field_name(assess_plan),
-        "label": f"{gen_label(assess_plan)}<br/> ({assess_plan.get('maximum_score')} marks)",
+        "label": f"{gen_label(assess_plan,assess_plan.get('custom_short_code'))}<br/> {type_string}",
         "maximum_score": assess_plan.get("maximum_score"),
         "assessment_plan": assess_plan.get("name"),
         "assessment_criteria_row_name": assess_plan.get("assess_criteria_row_name"),
         "subject": assess_plan.get("subject"),
         "assessment_criteria": assess_plan.get("assessment_criteria"),
         "is_criteria": 1,
+        "scoring_type": assess_plan.get("custom_scoring_type"),
+        "custom_scale": assess_plan.get("custom_scale"),
     }
 
 
-def gen_label(assess_plan):
-    return f"{assess_plan.get('course')} {assess_plan.get('assessment_criteria')}"
+def gen_label(assess_plan, short_code):
+    return f"{short_code or assess_plan.get('course')} {assess_plan.get('assessment_criteria')}"
 
 
 def gen_field_name(assess_plan):
@@ -112,12 +139,15 @@ def get_earlier_marks(filters, students, criterias):
         .where(
             (assess_res_qb.assessment_plan.isin(plan_list or [None]))
             & (assess_res_qb.student.isin(students_list or [None]))
+            & (assess_res_qb.docstatus.isin([0, 1]))
         )
         .select(
             assess_res_qb.star,
             assessment_det_qb.assessment_criteria,
             assessment_det_qb.score,
             assessment_det_qb.custom_is_absent,
+            assessment_det_qb.grade,
+            assess_res_qb.custom_scoring_type,
         )
     )
 
@@ -136,15 +166,23 @@ def get_earlier_marks(filters, students, criterias):
         if curr_ref not in students_res:
             continue
         for assess_res in students_res[curr_ref]:
+            scoring_type = assess_res.get("custom_scoring_type")
+            is_absent = assess_res.get("custom_is_absent")
+            score = assess_res.get("score")
+            grade = assess_res.get("grade")
             assess_plan = {
                 "name": assess_res.get("assessment_plan"),
                 "course": assess_res.get("course"),
                 "assessment_criteria": assess_res.get("assessment_criteria"),
             }
-            student[gen_field_name(assess_plan)] = (
-                "AB" if assess_res.get("custom_is_absent") else assess_res.get("score")
-            )
-
+            if is_absent:
+                student[gen_field_name(assess_plan)] = "-"
+            elif scoring_type == "Marks":
+                student[gen_field_name(assess_plan)] = score
+            elif scoring_type == "Grades":
+                student[gen_field_name(assess_plan)] = grade
+            else:
+                student[gen_field_name(assess_plan)] = 0
     return students
 
 
@@ -210,6 +248,8 @@ def do_mark_entry(data, filters):
                         "assessment_criteria": {
                             "name": assessment_criteria,
                             "value": row[fieldname],
+                            "scoring_type": column_data.get("scoring_type"),
+                            "custom_scale": column_data.get("custom_scale"),
                         },
                         "assessment_plan": assessment_plan,
                     }
@@ -241,19 +281,33 @@ def enter_individual_marks(
         name = assessment_criteria.get("name")
         score = assessment_criteria.get("value")
         scale = assessment_criteria.get("custom_scale")
+        scoring_type = assessment_criteria.get("scoring_type")
 
-        if str(score).lower() == "ab":
+        if str(score).lower() == "-" or score == None:
             score = 0
             is_absent = 1
 
-        assessment_details.append(
-            {
-                "assessment_criteria": name,
-                "score": flt(score) or 0,
-                "custom_is_absent": is_absent,
-                "custom_scale": scale,
-            }
-        )
+        if scoring_type == "Marks":
+            assessment_details.append(
+                {
+                    "assessment_criteria": name,
+                    "score": flt(score) or 0,
+                    "custom_scale": scale,
+                    "custom_is_absent": is_absent,
+                }
+            )
+        elif scoring_type == "Grades":
+
+            assessment_details.append(
+                {
+                    "assessment_criteria": name,
+                    "score": 0,
+                    "custom_is_absent": is_absent,
+                    "custom_scale": scale,
+                    "grade": str(score).upper(),
+                }
+            )
+
     assessment_result = get_assessment_result_doc(ref_no, assessment_plan)
     assessment_result.update(
         {
