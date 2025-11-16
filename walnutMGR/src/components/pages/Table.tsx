@@ -23,9 +23,10 @@ interface TableProps {
   setUnitModal: any;
   openModal: any;
   selectedRows: any;
-  isEditMode: any;
+  setIsEditMode: any;
   setSelectedRows: any;
   setCmapNames: any;
+  setSelectedCodeValues: any;
   setItemDetails: any;
   deleteModalOpen: any;
   setInsertModal: any;
@@ -35,6 +36,7 @@ export const Table = ({
   isButtonClicked,
   draggedList,
   isLoading,
+  setSelectedCodeValues,
   setSelectedUnits,
   setRowField,
   setSelectedRows,
@@ -43,7 +45,7 @@ export const Table = ({
   cmap_table,
   selectedRows,
 
-  isEditMode,
+  setIsEditMode,
   cmap_headers,
 
   setShowButtons,
@@ -57,7 +59,13 @@ export const Table = ({
   deleteModalOpen,
   setInsertModal,
 }: TableProps) => {
+  const handleSelectNames = (value: string) => {
+    setSelectedCodeValues(value);
+  };
+
   const handleSelectAll = (e: any) => {
+    const isChecked = e.target.checked;
+    setIsEditMode(isChecked);
     setSelectedRows(
       e.target.checked
         ? draggedList.map((item: any, index: any) => ({
@@ -75,11 +83,14 @@ export const Table = ({
     index: number;
     name: string;
   }) => {
-    setSelectedRows((prevSelectedRows: any) =>
-      prevSelectedRows.some((row: any) => row.index === index)
-        ? prevSelectedRows.filter((row: any) => row.index !== index)
-        : [...prevSelectedRows, { index, name }]
-    );
+    const updatedSelectedRows = selectedRows.some(
+      (row: any) => row.index === index
+    )
+      ? selectedRows.filter((row: any) => row.index !== index)
+      : [...selectedRows, { index, name }];
+
+    setSelectedRows(updatedSelectedRows);
+    setIsEditMode(updatedSelectedRows.length > 0);
   };
 
   const unitModalOpen = () => {
@@ -155,17 +166,18 @@ export const Table = ({
                   >
                     <thead className="flex mt-5 h-[50px] mx-auto  w-full  bg-[#428bca] items-center">
                       <tr>
-                        {isEditMode && (
-                          <th className="w-[50px] text-[#fff] border-r-[1px] h-[50px] text-center">
-                            <input
-                              type="checkbox"
-                              checked={
-                                selectedRows.length === draggedList.length
-                              }
-                              onChange={handleSelectAll}
-                            />
-                          </th>
-                        )}
+                        {/* {isEditMode && ( */}
+                        <th className="w-[50px] text-[#fff] border-r-[1px] h-[50px] text-center">
+                          <input
+                            type="checkbox"
+                            checked={selectedRows.length === draggedList.length}
+                            onChange={handleSelectAll}
+                          />
+                        </th>
+                        <th className="text-[#fff] border-r-[1px] w-[100px] h-[50px] text-[12px]">
+                          Real Date
+                        </th>
+                        {/* )} */}
                         {cmap_table?.data?.message?.length > 0 &&
                           cmap_headers?.data?.message
                             ?.filter?.(
@@ -220,7 +232,14 @@ export const Table = ({
                         const lesson_plan = val?.lesson_plan
                           ?.split(",")
                           .map((item: any) => item.trim());
-
+                        const formatDate = (dateString: any) => {
+                          if (dateString) {
+                            const [year, month, day] = dateString.split("-");
+                            return `${day}-${month}-${year}`;
+                          } else {
+                            return "-";
+                          }
+                        };
                         return (
                           <>
                             <Draggable
@@ -235,38 +254,27 @@ export const Table = ({
                                   {...provided.draggableProps}
                                   {...provided.dragHandleProps}
                                 >
-                                  {isEditMode && (
-                                    <td className="w-[50px] border-[1px] flex items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px]">
-                                      <input
-                                        type="checkbox"
-                                        checked={selectedRows.some(
-                                          (row: any) => row.index === index
-                                        )}
-                                        onChange={() =>
-                                          handleSelectRow({
-                                            index,
-                                            name: val.name,
-                                          })
-                                        }
-                                      />
-                                    </td>
-                                  )}
-                                  {/* <td className="w-[100px] border-[1px] flex items-center justify-center flex items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px] ">
-                                      {cmap_headers?.data?.message?.find(
-                                        (items: any) =>
-                                          items?.fieldname === "academic_year"
-                                      )
-                                        ? val?.academic_year
-                                        : "NOT ASSIGNED"}
-                                    </td> */}
-                                  {/* <td className="w-[100px] border-[1px] flex items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px] p-2   ">
-                                      {cmap_headers?.data?.message?.find(
-                                        (items: any) =>
-                                          items?.fieldname === "subject"
-                                      )
-                                        ? val?.subject
-                                        : "NOT ASSIGNED"}
-                                    </td> */}
+                                  {/* {isEditMode && ( */}
+                                  <td className="w-[50px] border-[1px] flex items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px]">
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedRows.some(
+                                        (row: any) => row.index === index
+                                      )}
+                                      onChange={() => {
+                                        handleSelectRow({
+                                          index,
+                                          name: val.name,
+                                        });
+                                      }}
+                                    />
+                                  </td>
+                                  <td className="w-[100px] border-[1px] flex items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px]">
+                                    {formatDate(
+                                      val?.real_dates?.split?.(",")[0]
+                                    )}
+                                  </td>
+
                                   <td className="w-[100px] border-[1px] flex items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px] p-2   ">
                                     {cmap_headers?.data?.message?.find(
                                       (items: any) =>
@@ -284,14 +292,7 @@ export const Table = ({
                                       ? val?.reserved_for_portion_circular
                                       : "NOT ASSIGNED"}
                                   </td>
-                                  {/* <td className="w-[100px] border-[1px] flex items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px] p-2   ">
-                                      {cmap_headers?.data?.message?.find(
-                                        (items: any) =>
-                                          items?.fieldname === "class"
-                                      )
-                                        ? val?.class
-                                        : "NOT ASSIGNED"}
-                                    </td> */}
+
                                   <td className="w-[200px] border-[1px] flex flex-col items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px] p-2   ">
                                     <div className="flex justify-center flex-col items-center my-auto gap-2">
                                       <div className="flex items-center justify-center gap-2">
@@ -412,6 +413,7 @@ export const Table = ({
                                         setSelectedIDS(ids);
                                         setRowField(val);
                                         setSelectedName(val?.name);
+
                                         setTimeout(() => {
                                           insertModalOpen();
                                         }, 2000);
@@ -424,7 +426,7 @@ export const Table = ({
                                         (items: any) =>
                                           items?.fieldname === "answer_sheet"
                                       )
-                                        ? answer_sheet?.map((i: any) => {
+                                        ? answer_sheet?.map?.((i: any) => {
                                             return (
                                               <>
                                                 <div className="flex items-center justify-center gap-2">
@@ -434,6 +436,8 @@ export const Table = ({
                                                   <IconPencil
                                                     width={20}
                                                     onClick={() => {
+                                                      handleSelectNames(i);
+
                                                       const ids =
                                                         cmap_headers?.data?.message?.find(
                                                           (items: any) =>
@@ -441,10 +445,12 @@ export const Table = ({
                                                             "answer_sheet"
                                                         )?.label;
                                                       setSelectedItem(ids);
+
                                                       setSelectedIDS(ids);
                                                       setSelectedName(
                                                         val?.name
                                                       );
+
                                                       fetchData(val?.name);
                                                       setTimeout(() => {
                                                         openModal(ids);
@@ -454,20 +460,27 @@ export const Table = ({
                                                   <IconTrash
                                                     width={20}
                                                     onClick={() => {
-                                                      const ids =
-                                                        cmap_headers?.data?.message?.find(
-                                                          (items: any) =>
-                                                            items?.fieldname ===
-                                                            "answer_sheet"
-                                                        )?.label;
-                                                      setSelectedItem(ids);
-                                                      setSelectedName(
-                                                        val?.name
-                                                      );
-                                                      fetchData(val?.name);
-                                                      setTimeout(() => {
-                                                        deleteModalOpen();
-                                                      }, 2000);
+                                                      if (val?.real_dates) {
+                                                        alert(
+                                                          "This Product Code Cannot be Delete"
+                                                        );
+                                                      }
+                                                      if (!val?.real_dates) {
+                                                        const ids =
+                                                          cmap_headers?.data?.message?.find(
+                                                            (items: any) =>
+                                                              items?.fieldname ===
+                                                              "answer_sheet"
+                                                          )?.label;
+                                                        setSelectedItem(ids);
+                                                        setSelectedName(
+                                                          val?.name
+                                                        );
+                                                        fetchData(val?.name);
+                                                        setTimeout(() => {
+                                                          deleteModalOpen();
+                                                        }, 2000);
+                                                      }
                                                     }}
                                                   />
                                                 </div>
@@ -537,6 +550,7 @@ export const Table = ({
                                                   <IconPencil
                                                     width={20}
                                                     onClick={() => {
+                                                      handleSelectNames(i);
                                                       const ids =
                                                         cmap_headers?.data?.message?.find(
                                                           (items: any) =>
@@ -557,20 +571,27 @@ export const Table = ({
                                                   <IconTrash
                                                     width={20}
                                                     onClick={() => {
-                                                      const ids =
-                                                        cmap_headers?.data?.message?.find(
-                                                          (items: any) =>
-                                                            items?.fieldname ===
-                                                            "lesson_plan"
-                                                        )?.label;
-                                                      setSelectedItem(ids);
-                                                      setSelectedName(
-                                                        val?.name
-                                                      );
-                                                      fetchData(val?.name);
-                                                      setTimeout(() => {
-                                                        deleteModalOpen();
-                                                      }, 2000);
+                                                      if (val?.real_dates) {
+                                                        alert(
+                                                          "This Product Code Cannot be Delete"
+                                                        );
+                                                      }
+                                                      if (!val?.real_dates) {
+                                                        const ids =
+                                                          cmap_headers?.data?.message?.find(
+                                                            (items: any) =>
+                                                              items?.fieldname ===
+                                                              "lesson_plan"
+                                                          )?.label;
+                                                        setSelectedItem(ids);
+                                                        setSelectedName(
+                                                          val?.name
+                                                        );
+                                                        fetchData(val?.name);
+                                                        setTimeout(() => {
+                                                          deleteModalOpen();
+                                                        }, 2000);
+                                                      }
                                                     }}
                                                   />
                                                 </div>
@@ -618,6 +639,7 @@ export const Table = ({
                                                   <IconPencil
                                                     width={20}
                                                     onClick={() => {
+                                                      handleSelectNames(i);
                                                       const ids =
                                                         cmap_headers?.data?.message?.find(
                                                           (items: any) =>
@@ -638,20 +660,27 @@ export const Table = ({
                                                   <IconTrash
                                                     width={20}
                                                     onClick={() => {
-                                                      const ids =
-                                                        cmap_headers?.data?.message?.find(
-                                                          (items: any) =>
-                                                            items?.fieldname ===
-                                                            "powerpoint_presentation"
-                                                        )?.label;
-                                                      setSelectedName(
-                                                        val?.name
-                                                      );
-                                                      setSelectedItem(ids);
-                                                      fetchData(val?.name);
-                                                      setTimeout(() => {
-                                                        deleteModalOpen();
-                                                      }, 2000);
+                                                      if (val?.real_dates) {
+                                                        alert(
+                                                          "This Product Code Cannot be Delete"
+                                                        );
+                                                      }
+                                                      if (!val?.real_dates) {
+                                                        const ids =
+                                                          cmap_headers?.data?.message?.find(
+                                                            (items: any) =>
+                                                              items?.fieldname ===
+                                                              "powerpoint_presentation"
+                                                          )?.label;
+                                                        setSelectedName(
+                                                          val?.name
+                                                        );
+                                                        setSelectedItem(ids);
+                                                        fetchData(val?.name);
+                                                        setTimeout(() => {
+                                                          deleteModalOpen();
+                                                        }, 2000);
+                                                      }
                                                     }}
                                                   />
                                                 </div>
@@ -728,6 +757,7 @@ export const Table = ({
                                                 <IconPencil
                                                   width={20}
                                                   onClick={() => {
+                                                    handleSelectNames(i);
                                                     const ids =
                                                       cmap_headers?.data?.message?.find(
                                                         (items: any) =>
@@ -746,18 +776,27 @@ export const Table = ({
                                                 <IconTrash
                                                   width={20}
                                                   onClick={() => {
-                                                    const ids =
-                                                      cmap_headers?.data?.message?.find(
-                                                        (items: any) =>
-                                                          items?.fieldname ===
-                                                          "worksheet"
-                                                      )?.label;
-                                                    setSelectedName(val?.name);
-                                                    setSelectedItem(ids);
-                                                    fetchData(val?.name);
-                                                    setTimeout(() => {
-                                                      deleteModalOpen();
-                                                    }, 2000);
+                                                    if (val?.real_dates) {
+                                                      alert(
+                                                        "This Product Code Cannot be Delete"
+                                                      );
+                                                    }
+                                                    if (!val?.real_dates) {
+                                                      const ids =
+                                                        cmap_headers?.data?.message?.find(
+                                                          (items: any) =>
+                                                            items?.fieldname ===
+                                                            "worksheet"
+                                                        )?.label;
+                                                      setSelectedName(
+                                                        val?.name
+                                                      );
+                                                      setSelectedItem(ids);
+                                                      fetchData(val?.name);
+                                                      setTimeout(() => {
+                                                        deleteModalOpen();
+                                                      }, 2000);
+                                                    }
                                                   }}
                                                 />
                                               </div>

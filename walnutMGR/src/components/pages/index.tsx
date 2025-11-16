@@ -28,6 +28,9 @@ const customStyles = {
     bottom: "auto",
     marginRight: "-50%",
     transform: "translate(-50%, -50%)",
+    overflowY: "hidden",
+    overflow: "hidden",
+    zIndex: "-10000",
   },
 };
 
@@ -67,6 +70,8 @@ export const Index = () => {
   const { data: cmap_headers } = useCmapHeaders();
   const [draggedList, setDraggedList] = useState<DraggedItem[]>([]);
   const [formDate, setFormDate] = useState("");
+  const [isOverflowVisible, setIsOverflowVisible] = useState(false);
+  const [selectedCodeValues, setSelectedCodeValues] = useState("");
   const [rowField, setRowField] = useState<RowFields>({
     chapter: "",
     textbook: "",
@@ -94,6 +99,14 @@ export const Index = () => {
     cmap_first_period: "",
     cmap_second_period: "",
   });
+
+  const dynamicStyles = {
+    ...customStyles,
+    content: {
+      ...customStyles.content,
+      overflow: isOverflowVisible ? "visible" : "hidden",
+    },
+  };
   // Data for the MultiSelect component
   const unit_data = [1, 2, 3, 4].map((unit) => ({
     value: unit.toString(),
@@ -119,7 +132,7 @@ export const Index = () => {
     subjects: "",
     unit: [],
   });
-  console.log("row", rowField);
+
   const { data: classes } = useCLassList();
   const { data: class_name } = useCLassName(selectedClass);
   const exportToExcel = () => {
@@ -217,6 +230,7 @@ export const Index = () => {
         handleShowTable();
       } else {
         alert(` Product Code Not Deleted ${selectedOption?.value}`);
+        handleShowTable();
       }
     } catch (error) {
       console.error("Error updating the product:", error);
@@ -228,13 +242,16 @@ export const Index = () => {
       item: selectedOption?.value,
     };
     try {
-      const response = await fetch(`/api/resource/Item%20Detail/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        `/api/resource/Item%20Detail/${itemCodeValue}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
       if (response.ok) {
         const result = await response.json();
         console.log("Update response:", result);
@@ -248,11 +265,13 @@ export const Index = () => {
         handleShowTable();
       } else {
         alert(`selected Product Code Not Available ${selectedOption?.value}`);
+
         setSelectedOption((prevState) => ({
           ...prevState,
           label: "",
           value: "",
         }));
+        handleShowTable();
       }
     } catch (error) {
       console.error("Error updating the product:", error);
@@ -285,8 +304,9 @@ export const Index = () => {
       setDraggedList(cmap_table?.data?.message);
     }
   }, [setDraggedList, draggedList, cmap_table]);
+  const unitValues = selectedvalues?.unit?.map?.((i: any) => i?.value);
+  let printBtn = `https://uat.walnutedu.in/app/query-report/CMAP%20Print?academic_year=${selectedYear}&class=${selectedClass}&subject=%5B"${selectedvalues.subjects}"%5D&unit=%5B%22${unitValues}%22%5D`;
 
-  let printBtn = `https://uat.walnutedu.in/app/query-report/CMAP%20Print?academic_year=${selectedYear}&class=${selectedClass}&subject=%5B"${selectedvalues.subjects}"%5D&unit=%5B%22${selectedvalues.unit}%22%5D`;
   const handleChange = (selectedOption: any) => {
     setSelectedOption(selectedOption);
   };
@@ -304,7 +324,20 @@ export const Index = () => {
   const handleYearChange = (selectedOption: any) => {
     setSelectedYear(selectedOption ? selectedOption.value : "");
   };
+  console.log(
+    "item",
+    itemDetails?.find((val: any) => val?.item === selectedCodeValues)?.name
+  );
+  const itemCodeValue = itemDetails?.find(
+    (val: any) => val?.item === selectedCodeValues
+  )?.name;
+
   const insertFunc = async () => {
+    const chapters =
+      typeof rowField?.chapter === "string" ? rowField.chapter.split(",") : [];
+
+    const uniqueChapters = [...new Set(chapters.map((item) => item.trim()))];
+
     const payload = {
       data: {
         item: selectedOption?.value,
@@ -313,8 +346,8 @@ export const Index = () => {
         parenttype: "CMAP",
         parent: selectedName,
         parentfield: "products",
-        chapter: rowField?.chapter,
-        textbook: rowField?.textbook,
+        chapter: `${uniqueChapters}`,
+        textbook: rowField?.textbook?.split(",")[0],
         // subject: rowField?.subject,
       },
     };
@@ -340,6 +373,7 @@ export const Index = () => {
         handleShowTable();
       } else {
         alert(`selected Unit Not Available ${selectedOption?.value}`);
+        handleShowTable();
         setSelectProductCode("");
       }
     } catch (error) {
@@ -404,6 +438,15 @@ export const Index = () => {
             cmap_name_two: "",
           }));
           setShowButtons(false);
+        } else {
+          // Handle API error
+          const errorData = await response.json();
+          const errorMessage =
+            errorData && errorData.message
+              ? JSON.parse(errorData.message).message
+              : "Unknown error"; // Extract error message or use a default message
+          alert(`Error: ${errorMessage}`); // Show alert with error message from API
+          handleShowTable();
         }
       }
 
@@ -430,6 +473,15 @@ export const Index = () => {
             cmap_name_one: "",
             cmap_name_two: "",
           }));
+        } else {
+          // Handle API error
+          const errorData = await response.json();
+          const errorMessage =
+            errorData && errorData.message
+              ? JSON.parse(errorData.message).message
+              : "Unknown error"; // Extract error message or use a default message
+          alert(`Error: ${errorMessage}`);
+          handleShowTable();
         }
         setShowButtons(false);
       }
@@ -469,7 +521,7 @@ export const Index = () => {
       }
       alert("Selected records deleted successfully");
       setSelectedRows([]);
-
+      setIsEditMode(false);
       handleShowTable();
     } catch (error) {
       console.error("Error:", error);
@@ -667,6 +719,7 @@ export const Index = () => {
             </a>
           </div>
         </div>
+
         <div className="  mt-5  mx-auto ">
           {isButtonClicked && isLoading && (
             <div>
@@ -703,6 +756,7 @@ export const Index = () => {
             setSelectedIDS={setSelectedIDS}
             setSelectedName={setSelectedName}
             setSelectedItem={setSelectedItem}
+            setSelectedCodeValues={setSelectedCodeValues}
             selectedUnits={selectedUnits}
             setSelectedUnits={setSelectedUnits}
             openModal={openModal}
@@ -711,7 +765,7 @@ export const Index = () => {
             setItemDetails={setItemDetails}
             deleteModalOpen={deleteModalOpen}
             setCmapNames={setCmapNames}
-            isEditMode={isEditMode}
+            setIsEditMode={setIsEditMode}
             setShowButtons={setShowButtons}
             draggedList={draggedList}
             setDraggedList={setDraggedList}
@@ -722,7 +776,7 @@ export const Index = () => {
         <Modal
           isOpen={modalIsOpen}
           onRequestClose={closeModal}
-          style={customStyles}
+          style={dynamicStyles}
           contentLabel="Example Modal"
         >
           <div className="flex justify-between w-[500px] p-0 m-0 ">
@@ -752,14 +806,13 @@ export const Index = () => {
               styles={{
                 control: (provided) => ({
                   ...provided,
-                  minHeight: "40px",
                 }),
                 menu: (provided) => ({
                   ...provided,
-                  maxHeight: "100px",
-                  overflowY: "auto",
                 }),
               }}
+              onMenuOpen={() => setIsOverflowVisible(true)}
+              onMenuClose={() => setIsOverflowVisible(false)}
             />
           </div>
           <input
@@ -801,10 +854,10 @@ export const Index = () => {
         <Modal
           isOpen={insertModal}
           onRequestClose={insertModalClose}
-          style={customStyles}
+          style={dynamicStyles}
           contentLabel="Example Modal"
         >
-          <div className="flex justify-between w-[500px] p-0 m-0">
+          <div className="flex justify-between w-[500px] p-0 m-0 ">
             <h1 className="text-[#666] font-bold text-[20px] mx-auto">
               Product Details
             </h1>
@@ -819,29 +872,31 @@ export const Index = () => {
             </button>
           </div>
           <div className="border-[1px] w-full mt-2"></div>
-          <div className="relative">
+          <div
+            className=""
+            // onClick={() => setIsOverflowVisible(!isOverflowVisible)}
+          >
             <Select
               id="productCode"
               value={selectedOption}
               onChange={handleChange}
               options={options}
               placeholder="Select Product Code"
-              className="w-full p-1 border-[1px]"
+              className="w-full p-1 border-[1px] "
               styles={{
                 control: (provided) => ({
                   ...provided,
-                  minHeight: "40px",
                 }),
                 menu: (provided) => ({
                   ...provided,
-                  maxHeight: "100px",
-                  overflowY: "auto",
                 }),
               }}
+              onMenuOpen={() => setIsOverflowVisible(true)}
+              onMenuClose={() => setIsOverflowVisible(false)}
             />
           </div>
           <input
-            type="hidden"
+            type="button"
             name="selectedProductCode"
             value={selectProductCode}
           />
