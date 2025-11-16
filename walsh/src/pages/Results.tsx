@@ -80,7 +80,7 @@ export const Results = () => {
   ) => {
     try {
       const resp = await fetch(
-        `/api/resource/Assessment%20Result?filters=[["academic_year", "=", "${selected_year}"], ["assessment_group", "=", "${selected_exam}"], ["program", "=", "${classDetails?.data?.message?.division?.program}"], ["student", "=", "${selectedStudent}"]]`
+        `/api/resource/Assessment%20Result?filters=[["academic_year", "=", "${selected_year}"], ["assessment_group", "=", "${selected_exam}"], ["program", "=", "${classDetails?.data?.message?.division?.program}"], ["student", "=", "${selectedStudent}"], ["docstatus", "=", "1"]]`
       );
       if (!resp.ok) {
         throw new Error("No Result Found");
