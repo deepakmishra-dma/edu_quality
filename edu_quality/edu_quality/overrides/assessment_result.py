@@ -44,7 +44,7 @@ class CustomAssessmentResult(AssessmentResult):
             d.custom_scaled_maximum_score = d.maximum_score * d.custom_scale
             d.custom_processed_grade = get_grade(
                 self.grading_scale,
-                (flt(d.custom_processed_result) / d.custom_scaled_maximum_score) * 100,
+                (flt(d.custom_processed_result) / d.maximum_score) * 100,
             )
             self.total_score += d.score
             self.custom_total_processed_score += d.custom_processed_result
@@ -52,11 +52,11 @@ class CustomAssessmentResult(AssessmentResult):
 
         self.custom_processed_grade = get_grade(
             self.grading_scale,
-            (self.custom_total_processed_score / self.custom_scaled_maximum_score)
+            (self.custom_total_processed_score / self.maximum_score)
             * 100,
         )
         self.custom_processed_percentage = (
-            self.custom_total_processed_score / self.custom_scaled_maximum_score
+            self.custom_total_processed_score / self.maximum_score
         ) * 100
         return self
 
@@ -66,11 +66,12 @@ class CustomAssessmentResult(AssessmentResult):
         self.process_result()
 
     def before_submit(self, method=None):
-        self.process_result()
-        assessment_group_doc = frappe.get_doc("Assessment Group", self.assessment_group)
-        if (
-            assessment_group_doc.custom_process_passing
-            and self.custom_processed_percentage
-            >= assessment_group_doc.custom_passing_percentage
-        ):
-            self.custom_passed = 1
+        if self.custom_scoring_type == "Marks":
+            self.process_result()
+            assessment_group_doc = frappe.get_doc("Assessment Group", self.assessment_group)
+            if (
+                assessment_group_doc.custom_process_passing
+                and self.custom_processed_percentage
+                >= assessment_group_doc.custom_passing_percentage
+            ):
+                self.custom_passed = 1
