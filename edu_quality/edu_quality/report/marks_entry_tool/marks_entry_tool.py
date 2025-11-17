@@ -32,27 +32,35 @@ def get_subject_criteria_columns(assess_group, filters):
     division = filters.get("division")
 
     query = (
-        frappe.qb.from_(assess_plan_qb)
-        .inner_join(assess_plan_cr_qb)
-        .on(assess_plan_qb.name == assess_plan_cr_qb.parent)
-        .inner_join(subject_qb)
-        .on(assess_plan_qb.course == subject_qb.name)
-        .where(
-            (assess_plan_qb.assessment_group == assess_group.get("name"))
-            & (assess_plan_qb.student_group == division)
-            & (assess_plan_qb.docstatus == 1)
+        (
+            frappe.qb.from_(assess_plan_qb)
+            .inner_join(assess_plan_cr_qb)
+            .on(assess_plan_qb.name == assess_plan_cr_qb.parent)
+            .inner_join(subject_qb)
+            .on(assess_plan_qb.course == subject_qb.name)
+            .where(
+                (assess_plan_qb.assessment_group == assess_group.get("name"))
+                & (assess_plan_qb.student_group == division)
+                & (assess_plan_qb.docstatus == 1)
+            )
         )
-    ).select(
-        assess_plan_qb.star,
-        assess_plan_cr_qb.assessment_criteria,
-        assess_plan_cr_qb.maximum_score,
-        assess_plan_cr_qb.custom_exam_type,
-        assess_plan_cr_qb.custom_scale,
-        assess_plan_cr_qb.custom_allow_revaluation,
-        subject_qb.custom_short_code,
-        assess_plan_cr_qb.name.as_("assess_criteria_row_name"),
-        assess_plan_qb.custom_scoring_type,
-        assess_plan_qb.grading_scale,
+        .orderby(
+            assess_plan_qb.course,
+            assess_plan_qb.custom_type,
+            assess_plan_cr_qb.assessment_criteria,
+        )
+        .select(
+            assess_plan_qb.star,
+            assess_plan_cr_qb.assessment_criteria,
+            assess_plan_cr_qb.maximum_score,
+            assess_plan_cr_qb.custom_exam_type,
+            assess_plan_cr_qb.custom_scale,
+            assess_plan_cr_qb.custom_allow_revaluation,
+            subject_qb.custom_short_code,
+            assess_plan_cr_qb.name.as_("assess_criteria_row_name"),
+            assess_plan_qb.custom_scoring_type,
+            assess_plan_qb.grading_scale,
+        )
     )
 
     data = query.run(as_dict=True) or []
@@ -170,19 +178,32 @@ def get_earlier_marks(filters, students, criterias):
             is_absent = assess_res.get("custom_is_absent")
             score = assess_res.get("score")
             grade = assess_res.get("grade")
+            docstatus = assess_res.get("docstatus")
             assess_plan = {
                 "name": assess_res.get("assessment_plan"),
                 "course": assess_res.get("course"),
                 "assessment_criteria": assess_res.get("assessment_criteria"),
             }
             if is_absent:
-                student[gen_field_name(assess_plan)] = "-"
+                student[gen_field_name(assess_plan)] = {
+                    "content": "-",
+                    "docstatus": docstatus,
+                }
             elif scoring_type == "Marks":
-                student[gen_field_name(assess_plan)] = score
+                student[gen_field_name(assess_plan)] = {
+                    "content": score,
+                    "docstatus": docstatus,
+                }
             elif scoring_type == "Grades":
-                student[gen_field_name(assess_plan)] = grade
+                student[gen_field_name(assess_plan)] = {
+                    "content": grade,
+                    "docstatus": docstatus,
+                }
             else:
-                student[gen_field_name(assess_plan)] = 0
+                student[gen_field_name(assess_plan)] = {
+                    "content": 0,
+                    "docstatus": docstatus,
+                }
     return students
 
 
@@ -242,12 +263,13 @@ def do_mark_entry(data, filters):
             assessment_plan = column_data.get("assessment_plan")
             fieldname = column_data.get("fieldname")
             assessment_criteria = column_data.get("assessment_criteria")
+
             if fieldname in row:
                 assessment_details.append(
                     {
                         "assessment_criteria": {
                             "name": assessment_criteria,
-                            "value": row[fieldname],
+                            "value": get_field_value(row, fieldname),
                             "scoring_type": column_data.get("scoring_type"),
                             "custom_scale": column_data.get("custom_scale"),
                         },
@@ -267,6 +289,12 @@ def enter_marks(ref_no, criterias):
             plan_hash[assessment_plan].append(criteria)
     for plan in plan_hash:
         enter_individual_marks(ref_no, plan_hash[plan], plan)
+
+
+def get_field_value(row, fieldname):
+    if isinstance(row[fieldname], dict):
+        return row.get(fieldname, {}).get("content")
+    return row[fieldname]
 
 
 def enter_individual_marks(
@@ -309,6 +337,10 @@ def enter_individual_marks(
             )
 
     assessment_result = get_assessment_result_doc(ref_no, assessment_plan)
+
+    if not assessment_result:
+        return
+
     assessment_result.update(
         {
             "student": ref_no,
@@ -325,7 +357,7 @@ def get_assessment_result_doc(ref_no, assessment_plan):
         filters={
             "student": ref_no,
             "assessment_plan": assessment_plan,
-            "docstatus": ["not in", [1, 2]],
+            "docstatus": ["not in", [2]],
         },
     )
 
@@ -334,7 +366,6 @@ def get_assessment_result_doc(ref_no, assessment_plan):
         if doc.docstatus == 0:
             return doc
         elif doc.docstatus == 1:
-            frappe.msgprint(_("Result already Submitted"))
             return None
     else:
         return frappe.new_doc("Assessment Result")
@@ -348,3 +379,37 @@ def gen_hash(columns):
             hashmap[field_name] = column
 
     return hashmap
+
+
+@frappe.whitelist()
+def cancel_result(field_name, ref_no, filters):
+    filters = json.loads(filters) if isinstance(filters, str) else filters
+    print(filters, field_name, ref_no, filters)
+    columns = get_columns(filters.get("assessment_group"), filters)
+    hashed_columns = gen_hash(columns)
+
+    assess_plan = hashed_columns[field_name]
+
+    program = filters.get("program")
+    academic_year = filters.get("academic_year")
+    if frappe.db.exists(
+        "Assessment Result",
+        {
+            "docstatus": 1,
+            "student": ref_no,
+            "academic_year": academic_year,
+            "program": program,
+            "assessment_plan": assess_plan.get("assessment_plan"),
+        },
+    ):
+        res_doc = frappe.get_doc(
+            "Assessment Result",
+            {
+                "docstatus": 1,
+                "student": ref_no,
+                "academic_year": academic_year,
+                "program": program,
+                "assessment_plan": assess_plan.get("assessment_plan"),
+            },
+        )
+        res_doc.cancel()

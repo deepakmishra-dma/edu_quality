@@ -37,17 +37,43 @@ const throttledAutoSave = throttle(function () {
 }, 6000)
 
 function changeMarksData(value, columnId, rowIndex, maximumScore, scoring_type) {
+	const inputEl = document.querySelector(`input[column='${columnId}'][data-rowindex='${rowIndex}']`);
+
+	if (inputEl && inputEl.dataset && inputEl.dataset.docstatus === "1") {
+		const message = `
+        <div>    
+            <p>You Have Entered Marks in a submitted result, do you want to cancel it for processing ?</p>
+        </div>`;
+
+		frappe.confirm(__(message), async () => {
+			console.log(rowIndex)
+			const ref_no = frappe.query_report.data[rowIndex].ref_no
+			await cancelResult(columnId, ref_no)
+
+		});
+
+	}
+
 	if (Number(value.value) > Number(maximumScore) && scoring_type == "Marks") {
-		const inputEl = document.querySelector(`input[column='${columnId}'][data-rowindex='${rowIndex}']`);
+
 		inputEl.value = "";
-		frappe.query_report.data[rowIndex][columnId] = "";
+		writeMarks(rowIndex, columnId, "");
 		return;
 	}
-	frappe.query_report.data[rowIndex][columnId] = value.value;
+
+	writeMarks(rowIndex, columnId, value.value)
 
 	throttledAutoSave()
 }
+function writeMarks(rowIndex, columnId, value) {
+	if (frappe.query_report.data[rowIndex][columnId]) {
+		frappe.query_report.data[rowIndex][columnId]["content"] = value;
+	}
+	else {
+		frappe.query_report.data[rowIndex][columnId] = { "content": value }
+	}
 
+}
 function getNextElement(rowIndex, colIndex) {
 	const maxRows = frappe.query_report.data.length;
 	const maxColumns = frappe.query_report.columns.length;
@@ -85,18 +111,25 @@ function initializeKeyListener() {
 	document.addEventListener('keydown', handleKeyDownEvent);
 }
 
-function createInputElement(value, column, row) {
+function createInputElement(value, column, row, docstatus) {
 	const isRed = String(value).toLowerCase() === "-";
+	const classes = [""]
 	const inputValue = isRed ? "style='background-color:var(--red-300);'" : "";
-
-	return `<input type="text" data-colindex="${column.colIndex}" ${inputValue} column="${column.fieldname}" data-rowindex="${row[0]?.rowIndex}" max="${column.maximum_score}" maximum-score="${column.maximum_score}" value="${value}" oninput="changeMarksData(this, '${column.id}', '${row[0]?.rowIndex}', '${column.maximum_score}','${column.scoring_type}')" />`;
+	if (isRed) {
+		classes.push("absent-input")
+	}
+	if (docstatus == 1) {
+		classes.push("submitted-input")
+	}
+	return `<input type="text" data-docstatus="${docstatus || 0}" data-colindex="${column.colIndex}" class="${classes.join(" ")}" column="${column.fieldname}" data-rowindex="${row && row[0] && row[0].rowIndex}" max="${column.maximum_score}" maximum-score="${column.maximum_score}" value="${value}" oninput="changeMarksData(this, '${column.id}', '${row[0]?.rowIndex}', '${column.maximum_score}','${column.scoring_type}')" />`;
 }
 
 function formatter(value, row, column, data, defaultFormatter) {
 	value = defaultFormatter(value, row, column, data);
-
+	const values = data[column.fieldname]
+	const docstatus = values && values.docstatus
 	if (column.is_criteria) {
-		value = createInputElement(value, column, row);
+		value = createInputElement(value, column, row, docstatus);
 	}
 
 	return value;
@@ -116,11 +149,31 @@ async function saveCall() {
 		}
 	});
 
-	// frappe.show_alert({
-	// 	message: __('<i class="fa fa-save"></i>'),
-	// 	indicator: 'green'
-	// }, 2);
+	frappe.show_alert({
+		message: __('<i class="fa fa-save"></i>'),
+		indicator: 'green'
+	}, 2);
 }
+const cancelResult = debounce(async (field_name, ref_no) => {
+	const filters = {};
+
+	frappe.query_report.filters.forEach(filter => {
+		filters[filter.fieldname] = frappe.query_report.get_filter_value(filter.fieldname);
+	});
+	await frappe.call({
+		"method": "edu_quality.edu_quality.report.marks_entry_tool.marks_entry_tool.cancel_result",
+		args: {
+			ref_no: ref_no,
+			field_name: field_name,
+			filters: filters,
+		}
+	});
+
+	frappe.show_alert({
+		message: __(`Cancelled for ${ref_no} successfully`),
+		indicator: 'green'
+	}, 2);
+}, 1000)
 function onload(report) {
 	initializeKeyListener();
 

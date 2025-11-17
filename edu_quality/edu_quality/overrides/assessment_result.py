@@ -16,39 +16,61 @@ class CustomAssessmentResult(AssessmentResult):
         self.validate_maximum_score()
         if self.custom_scoring_type == "Marks":
             self.validate_grade()
+            self.validate_processed_result()
+
+        if self.custom_scoring_type == "Grades":
+            self.duplicate_grades()
+
         self.validate_duplicate()
 
-    def before_submit(self, method=None):
-        total = 0
+    def calculate_scaled_maximum_score(self):
         total_scaled_max_score = 0
-        for detail in self.details:
-            if self.custom_scoring_type != "Marks":
-                return
+        for d in self.details:
+            total_scaled_max_score += d.maximum_score * d.custom_scale
+        self.custom_scaled_maximum_score = total_scaled_max_score
 
-            score = detail.get("score")
-            scale = detail.get("custom_scale") or 1
-            maximum_score = detail.get("maximum_score")
-
-            if not detail.get("custom_is_absent"):
-                detail.custom_processed_result = score * scale
-
-                total += score * scale
-
-            total_scaled_max_score += maximum_score * scale
-
-        if self.custom_scoring_type != "Marks":
+    def duplicate_grades(self):
+        if self.docstatus in [1, 2]:
             return
+        for d in self.details:
+            d.custom_processed_grade = d.grade
 
-        self.custom_total_processed_score = total
-        processed_percentage = (total / total_scaled_max_score) * 100
+    def process_result(self):
+        self.total_score = 0.0
+        self.custom_total_processed_score = 0.0
+        self.custom_scaled_maximum_score = 0.0
+        for d in self.details:
+            d.custom_processed_result = d.score * d.custom_scale
+            d.custom_scaled_maximum_score = d.maximum_score * d.custom_scale
+            d.custom_processed_grade = get_grade(
+                self.grading_scale,
+                (flt(d.custom_processed_result) / d.custom_scaled_maximum_score) * 100,
+            )
+            self.total_score += d.score
+            self.custom_total_processed_score += d.custom_processed_result
+            self.custom_scaled_maximum_score += d.custom_scaled_maximum_score
 
-        self.custom_processed_percentage = (
-            0 if total_scaled_max_score == 0 else processed_percentage
+        self.custom_processed_grade = get_grade(
+            self.grading_scale,
+            (self.custom_total_processed_score / self.custom_scaled_maximum_score)
+            * 100,
         )
-        assessment_group_doc = frappe.get_doc("Assessment Group", self.assessment_group)
+        self.custom_processed_percentage = (
+            self.custom_total_processed_score / self.custom_scaled_maximum_score
+        ) * 100
+        return self
 
+    def validate_processed_result(self):
+        if self.docstatus in [1, 2]:
+            return
+        self.process_result()
+
+    def before_submit(self, method=None):
+        self.process_result()
+        assessment_group_doc = frappe.get_doc("Assessment Group", self.assessment_group)
         if (
             assessment_group_doc.custom_process_passing
-            and processed_percentage >= assessment_group_doc.custom_passing_percentage
+            and self.custom_processed_percentage
+            >= assessment_group_doc.custom_passing_percentage
         ):
             self.custom_passed = 1
