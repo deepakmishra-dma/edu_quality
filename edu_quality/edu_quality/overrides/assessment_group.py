@@ -250,7 +250,7 @@ def insert_assessment_plan(
     marking_mode,
 ):
     criterias = [subj_map[i] for i in subj_map]
-    print(criterias)
+
     for div in divs:
         name = frappe.db.get_value(
             "Assessment Plan",
@@ -293,7 +293,7 @@ def insert_assessment_plan(
 
             assess_plan.save(ignore_permissions=True)
         else:
-            for criteria in criteria:
+            for criteria in criterias:
                 assess_plan_cr = frappe.new_doc("Assessment Plan Criteria")
                 assess_plan_cr.parent = name
                 assess_plan_cr.parenttype = "Assessment Plan"

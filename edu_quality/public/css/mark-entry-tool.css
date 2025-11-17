@@ -33,3 +33,10 @@
 .mark-entry-tool-report .dt-cell--focus .dt-cell__content {
   border: var(--dt-focus-border-width) solid transparent !important;
 }
+
+.mark-entry-tool-report .absent-input {
+  background-color: var(--red-300);
+}
+.mark-entry-tool-report .submitted-input {
+  background-color: var(--blue-300);
+}
