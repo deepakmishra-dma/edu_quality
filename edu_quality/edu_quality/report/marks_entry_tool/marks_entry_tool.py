@@ -333,6 +333,7 @@ def enter_individual_marks(
                     "custom_is_absent": is_absent,
                     "custom_scale": scale,
                     "grade": str(score).upper(),
+                    "custom_processed_grade": str(score).upper(),
                 }
             )
 
