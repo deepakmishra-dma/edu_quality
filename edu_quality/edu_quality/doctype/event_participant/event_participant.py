@@ -2,6 +2,7 @@
 # For license information, please see license.txt
 
 import frappe
+from frappe import _
 from frappe.model.document import Document
 
 
@@ -50,4 +51,41 @@ def export_participant_data(event_detail):
     )
     for p in participant:
         data.append(frappe.json.loads(p.data))
+    return data
+
+
+@frappe.whitelist()
+def get_data(**kwargs):
+    data = {}
+
+    # Fetch event detail data if provided
+    event_detail = kwargs.get("event_detail")
+    if event_detail:
+        event_data = frappe.get_value(
+            "Event Detail", event_detail, ["event", "event_starts_on", "school"], as_dict=True
+        )
+        if event_data:
+            data.update(event_data)
+
+    # Fetch student data if reference number is provided
+    refno = kwargs.get("refno")
+    if refno:
+        # Build filters dictionary
+        filters = {"reference_number": refno}
+        school = kwargs.get("school")
+        if school:
+            filters["school"] = school
+        
+        # Check if the user has access to the student data
+        student = frappe.get_value(
+            "Student", filters,
+            ["name", "student_name", "program"],
+            as_dict=True,
+        )
+        if student:
+            if frappe.has_permission("Student", "read", student.name):
+                data.update(student)
+            else:
+                frappe.throw(_("You do not have permission to access this student's data"))
+
     return data
