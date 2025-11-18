@@ -26,9 +26,7 @@ export const Fee = () => {
   const [paymentRequests, setPaymentRequests] = useState<string[]>([]);
   const [studentFee, setStudentFee] = useState("");
   const [paymentSchedule, setPaymentSchedule] = useState<PaymentSchedule[]>([]);
-  const [payDeatils, setPayDetails] = useState<PaymentDetails | undefined>(
-    undefined
-  );
+  const [payDeatils, setPayDetails] = useState<PaymentDetails[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   useEffect(() => {
@@ -100,10 +98,11 @@ export const Fee = () => {
         setLoading(true);
         if (paymentRequests.length === 0) {
           setError("No payment schedule available");
-          setPayDetails(undefined);
+          setPayDetails([]);
           setLoading(false);
           return;
         }
+        const detailsArray = [];
         for (let name of paymentRequests) {
           const response = await fetch(
             `/api/resource/Payment%20Request/${name}`
@@ -112,14 +111,16 @@ export const Fee = () => {
             throw new Error("No payment schedule available");
           }
           const data = await response.json();
-          setPayDetails(data?.data);
+          detailsArray.push(data?.data);
         }
+        setPayDetails(detailsArray);
+        console.log("data", detailsArray);
         setError(null);
       } catch (error: any) {
         setError(error.message || "Error fetching payment request details");
 
         console.log("error", error);
-        setPayDetails(undefined);
+        setPayDetails([]);
       } finally {
         setLoading(false);
       }
@@ -176,6 +177,23 @@ export const Fee = () => {
   useEffect(() => {
     fetchFeesDetails();
   }, [studentFee]);
+  const combineSchedulesWithDetails = (schedules: any, details: any) => {
+    return schedules.map((schedule: any) => {
+      const detail =
+        details.find(
+          (detail: any) => detail.payment_term === schedule.payment_term
+        ) || {};
+      return { ...schedule, ...detail };
+    });
+  };
+  const combinedData = combineSchedulesWithDetails(paymentSchedule, payDeatils);
+  const formatDate = (dateString: any) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
   return (
     <>
       <Box>
@@ -317,63 +335,25 @@ export const Fee = () => {
             <>
               <div>
                 {!loading && !error && paymentSchedule.length > 0 && (
-                  <Table style={{ textAlign: "center" }}>
-                    <thead style={{ background: studentProfileColor + "22" }}>
+                  <Table>
+                    <thead>
                       <tr>
                         <th>
-                          <Text
-                            sx={{
-                              color: studentProfileColor,
-                              textAlign: "center",
-                            }}
-                          >
-                            Term
-                          </Text>
+                          <Text>Term</Text>
                         </th>
                         <th>
-                          <Text
-                            sx={{
-                              color: studentProfileColor,
-                              textAlign: "center",
-                            }}
-                          >
-                            DueDate
-                          </Text>
+                          <Text>DueDate</Text>
                         </th>
                         <th>
-                          <Text
-                            sx={{
-                              color: studentProfileColor,
-                              textAlign: "center",
-                            }}
-                          >
-                            Amount
-                          </Text>
+                          <Text>Amount</Text>
                         </th>
                         <th>
-                          <Text
-                            sx={{
-                              color: studentProfileColor,
-                              textAlign: "center",
-                            }}
-                          >
-                            Status
-                          </Text>
+                          <Text>Status</Text>
                         </th>
                       </tr>
                     </thead>
                     <tbody>
-                      {paymentSchedule?.map?.((i: any) => {
-                        const formatDate = (dateString: string) => {
-                          const date = new Date(dateString);
-                          const day = String(date.getDate()).padStart(2, "0");
-                          const month = String(date.getMonth() + 1).padStart(
-                            2,
-                            "0"
-                          );
-                          const year = date.getFullYear();
-                          return `${day}-${month}-${year}`;
-                        };
+                      {combinedData?.map?.((i: any) => {
                         return (
                           <>
                             <tr>
@@ -384,15 +364,14 @@ export const Fee = () => {
                                 <Text>{formatDate(i?.due_date)}</Text>
                               </td>
                               <td>
-                                <Text>₹{payDeatils?.grand_total}</Text>
+                                <Text>₹{i?.payment_amount}</Text>
                               </td>
                               <td>
                                 <Text>
-                                  {payDeatils?.status === "Paid" &&
-                                  payDeatils?.payment_term ===
-                                    i?.payment_term ? (
+                                  {i?.status === "Paid" &&
+                                  i?.payment_term === i?.payment_term ? (
                                     <a
-                                      href={payDeatils?.payment_url}
+                                      href={i?.payment_url}
                                       target="_blank"
                                       style={{
                                         color: "white",
@@ -405,11 +384,10 @@ export const Fee = () => {
                                     >
                                       Download
                                     </a>
-                                  ) : payDeatils?.status === "Initiated" &&
-                                    payDeatils?.payment_term ===
-                                      i?.payment_term ? (
+                                  ) : i?.status === "Initiated" &&
+                                    i?.payment_term === i?.payment_term ? (
                                     <a
-                                      href={payDeatils?.payment_url}
+                                      href={i?.payment_url}
                                       target="_blank"
                                       style={{
                                         color: "white",
