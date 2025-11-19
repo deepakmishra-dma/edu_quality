@@ -114,7 +114,7 @@ export const Fee = () => {
           detailsArray.push(data?.data);
         }
         setPayDetails(detailsArray);
-        console.log("data", detailsArray);
+
         setError(null);
       } catch (error: any) {
         setError(error.message || "Error fetching payment request details");
@@ -178,9 +178,9 @@ export const Fee = () => {
     fetchFeesDetails();
   }, [studentFee]);
   const combineSchedulesWithDetails = (schedules: any, details: any) => {
-    return schedules.map((schedule: any) => {
+    return schedules.map?.((schedule: any) => {
       const detail =
-        details.find(
+        details.find?.(
           (detail: any) => detail.payment_term === schedule.payment_term
         ) || {};
       return { ...schedule, ...detail };
