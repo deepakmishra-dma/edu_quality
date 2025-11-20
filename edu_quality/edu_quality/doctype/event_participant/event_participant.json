@@ -15,14 +15,25 @@
   "section_break_mpyv",
   "event_detail",
   "event",
+  "payment_required",
   "column_break_scaw",
-  "starts_on",
   "school",
-  "section_break_vefk",
-  "participant_details",
+  "starts_on",
+  "payment_details_section",
+  "paid",
+  "transaction_id",
+  "column_break_choy",
+  "outstanding_amount",
+  "paid_amount",
   "data_tab",
   "section_break_vjib",
-  "data",
+  "field_1",
+  "field_3",
+  "field_5",
+  "column_break_ysnq",
+  "field_2",
+  "field_4",
+  "field_6",
   "section_break_lwk1",
   "amended_from"
  ],
@@ -69,11 +80,6 @@
    "fieldtype": "Section Break"
   },
   {
-   "fieldname": "data",
-   "fieldtype": "JSON",
-   "label": "Data"
-  },
-  {
    "fetch_from": "event_detail.school",
    "fieldname": "school",
    "fieldtype": "Link",
@@ -102,19 +108,9 @@
    "fieldtype": "Section Break"
   },
   {
-   "fieldname": "section_break_vefk",
-   "fieldtype": "Section Break"
-  },
-  {
    "fieldname": "data_tab",
    "fieldtype": "Tab Break",
    "label": "Data"
-  },
-  {
-   "fieldname": "participant_details",
-   "fieldtype": "HTML",
-   "label": "Participant Details",
-   "options": "<div id=\"participant_details\">\n\n</div>"
   },
   {
    "fetch_from": "student.student_name",
@@ -133,12 +129,91 @@
    "fieldname": "refno",
    "fieldtype": "Data",
    "label": "Reference Number"
+  },
+  {
+   "depends_on": "eval: doc.payment_required == 1",
+   "fieldname": "payment_details_section",
+   "fieldtype": "Section Break",
+   "label": "Payment Details"
+  },
+  {
+   "default": "0",
+   "fieldname": "paid",
+   "fieldtype": "Check",
+   "label": "Paid",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval: doc.paid == 1",
+   "fieldname": "transaction_id",
+   "fieldtype": "Data",
+   "label": "Transaction ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_choy",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "outstanding_amount",
+   "fieldtype": "Currency",
+   "label": "Outstanding Amount",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval: doc.paid == 1",
+   "fieldname": "paid_amount",
+   "fieldtype": "Currency",
+   "label": "Paid Amount",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "field_1",
+   "fieldtype": "Data",
+   "label": "Field 1"
+  },
+  {
+   "fieldname": "field_3",
+   "fieldtype": "Data",
+   "label": "Field 3"
+  },
+  {
+   "fieldname": "field_5",
+   "fieldtype": "Data",
+   "label": "Field 5"
+  },
+  {
+   "fieldname": "column_break_ysnq",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "field_2",
+   "fieldtype": "Data",
+   "label": "Field 2"
+  },
+  {
+   "fieldname": "field_4",
+   "fieldtype": "Data",
+   "label": "Field 4"
+  },
+  {
+   "fieldname": "field_6",
+   "fieldtype": "Data",
+   "label": "Field 6"
+  },
+  {
+   "default": "0",
+   "fieldname": "payment_required",
+   "fieldtype": "Check",
+   "label": "Payment Required"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-27 14:09:15.987008",
+ "modified": "2024-07-03 14:26:14.739165",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Event Participant",
