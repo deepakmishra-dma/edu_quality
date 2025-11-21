@@ -1,5 +1,7 @@
 // Copyright (c) 2024, Hybrowlabs Technologies and contributors
 // For license information, please see license.txt
+let criteriasChanged = []
+
 function throttle(func, limit) {
 	let lastFunc;
 	let lastRan;
@@ -32,7 +34,7 @@ function debounce(func, delay) {
 }
 
 const throttledAutoSave = throttle(function () {
-	saveCall();
+	saveCall(true);
 
 }, 6000)
 
@@ -63,6 +65,7 @@ function changeMarksData(value, columnId, rowIndex, maximumScore, scoring_type) 
 
 	writeMarks(rowIndex, columnId, value.value)
 
+
 	throttledAutoSave()
 }
 function writeMarks(rowIndex, columnId, value) {
@@ -72,6 +75,8 @@ function writeMarks(rowIndex, columnId, value) {
 	else {
 		frappe.query_report.data[rowIndex][columnId] = { "content": value }
 	}
+
+	criteriasChanged.push({ "ref_no": frappe.query_report.data[rowIndex]["ref_no"], "student_name": frappe.query_report.data[rowIndex]["student_name"], [columnId]: frappe.query_report.data[rowIndex][columnId] })
 
 }
 function getNextElement(rowIndex, colIndex) {
@@ -134,21 +139,24 @@ function formatter(value, row, column, data, defaultFormatter) {
 
 	return value;
 }
-async function saveCall() {
+async function saveCall(autoSave = false) {
 	const filters = {};
-
+	console.log(criteriasChanged)
 	frappe.query_report.filters.forEach(filter => {
 		filters[filter.fieldname] = frappe.query_report.get_filter_value(filter.fieldname);
 	});
-
+	let data = frappe.query_report.data
+	if (autoSave) {
+		data = criteriasChanged
+	}
 	await frappe.call({
 		"method": "edu_quality.edu_quality.report.marks_entry_tool.marks_entry_tool.do_mark_entry",
 		args: {
-			data: frappe.query_report.data,
+			data: data,
 			filters: filters,
 		}
 	});
-
+	criteriasChanged = []
 	frappe.show_alert({
 		message: __('<i class="fa fa-save"></i>'),
 		indicator: 'green'
@@ -174,6 +182,7 @@ const cancelResult = debounce(async (field_name, ref_no) => {
 		indicator: 'green'
 	}, 2);
 }, 1000)
+
 function onload(report) {
 	initializeKeyListener();
 
