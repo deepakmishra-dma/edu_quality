@@ -52,8 +52,7 @@ class CustomAssessmentResult(AssessmentResult):
 
         self.custom_processed_grade = get_grade(
             self.grading_scale,
-            (self.custom_total_processed_score / self.maximum_score)
-            * 100,
+            (self.custom_total_processed_score / self.maximum_score) * 100,
         )
         self.custom_processed_percentage = (
             self.custom_total_processed_score / self.maximum_score
@@ -65,10 +64,30 @@ class CustomAssessmentResult(AssessmentResult):
             return
         self.process_result()
 
+    def calculate_ordering(self):
+        frappe.db.sql(
+            """
+        Update `tabAssessment Result` 
+    INNER JOIN (SELECT 
+        RANK() OVER (ORDER BY custom_total_processed_score DESC) AS ranking,
+        name
+    FROM 
+        `tabAssessment Result`
+    WHERE 
+        assessment_plan = %(id)s
+        AND docstatus = 1 AND custom_scoring_type=%(scoring_type)s) AS ranked_table ON  `tabAssessment Result`.name = ranked_table.name
+SET  `tabAssessment Result`.custom_rank = ranked_table.ranking;
+""",
+            values={"id": self.assessment_plan, "scoring_type": "Marks"},
+            as_dict=True,
+        )
+
     def before_submit(self, method=None):
         if self.custom_scoring_type == "Marks":
             self.process_result()
-            assessment_group_doc = frappe.get_doc("Assessment Group", self.assessment_group)
+            assessment_group_doc = frappe.get_doc(
+                "Assessment Group", self.assessment_group
+            )
             if (
                 assessment_group_doc.custom_process_passing
                 and self.custom_processed_percentage

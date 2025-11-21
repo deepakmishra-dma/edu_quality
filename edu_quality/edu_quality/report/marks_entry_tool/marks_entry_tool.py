@@ -7,6 +7,7 @@ from edu_quality.public.py.utils import to_snake_case
 import json
 from frappe.utils import flt
 from edu_quality.public.py.utils import get_div_students as get_div_stud
+from frappe.model.mapper import get_mapped_doc
 
 
 @frappe.whitelist()
@@ -304,6 +305,13 @@ def enter_individual_marks(
 ):
     assessment_details = []
     is_absent = 0
+    assessment_result = get_assessment_result_doc(ref_no, assessment_plan)
+
+    if not assessment_result:
+        return
+
+    assessment_details = [i for i in assessment_result.details]
+
     for criteria in criterias:
         assessment_criteria = criteria.get("assessment_criteria")
         name = assessment_criteria.get("name")
@@ -316,17 +324,19 @@ def enter_individual_marks(
             is_absent = 1
 
         if scoring_type == "Marks":
-            assessment_details.append(
+            update_modified_assessment_criteria(
+                assessment_details,
                 {
                     "assessment_criteria": name,
                     "score": flt(score) or 0,
                     "custom_scale": scale,
                     "custom_is_absent": is_absent,
-                }
+                },
             )
-        elif scoring_type == "Grades":
 
-            assessment_details.append(
+        elif scoring_type == "Grades":
+            update_modified_assessment_criteria(
+                assessment_details,
                 {
                     "assessment_criteria": name,
                     "score": 0,
@@ -334,13 +344,8 @@ def enter_individual_marks(
                     "custom_scale": scale,
                     "grade": str(score).upper(),
                     "custom_processed_grade": str(score).upper(),
-                }
+                },
             )
-
-    assessment_result = get_assessment_result_doc(ref_no, assessment_plan)
-
-    if not assessment_result:
-        return
 
     assessment_result.update(
         {
@@ -370,6 +375,19 @@ def get_assessment_result_doc(ref_no, assessment_plan):
             return None
     else:
         return frappe.new_doc("Assessment Result")
+
+
+def update_modified_assessment_criteria(
+    assessment_details,
+    criteria,
+):
+    all_criterias = [i.get("assessment_criteria") for i in assessment_details]
+
+    if criteria.get("assessment_criteria") in all_criterias:
+        index = all_criterias.index(criteria.get("assessment_criteria"))
+        assessment_details[index] = criteria
+    else:
+        assessment_details.append(criteria)
 
 
 def gen_hash(columns):
