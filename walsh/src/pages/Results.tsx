@@ -1,9 +1,11 @@
-import { Box, Stack, Text } from "@mantine/core";
+import { Box, Stack, Text, Button } from "@mantine/core";
 import useStudentList from "../components/queries/useStudentList";
 import { useEffect, useMemo, useState } from "react";
 import useStudentProfileColor from "../components/hooks/useStudentProfileColor";
 import { useSearchParams } from "react-router-dom";
 import useClassDetails from "../components/queries/useClassDetails";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 import {
   useAcademicCurrentYear,
@@ -14,7 +16,32 @@ interface PrintFormat {
   html: string;
   style: string;
 }
+const handleDownloadPdf = () => {
+  const input = document.getElementById("print-format-container");
+  if (input) {
+    html2canvas(input).then((canvas) => {
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF();
+      const imgWidth = 210; // A4 width in mm
+      const pageHeight = 297; // A4 height in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
 
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save("download.pdf");
+    });
+  }
+};
 export const Results = () => {
   const [selectedStudent, setSelectedStudent] = useState<string>("");
 
@@ -436,11 +463,31 @@ export const Results = () => {
               </p>
             ))}
           {!loading && !error && (
-            <div
-              style={{ marginTop: "2rem" }}
-              dangerouslySetInnerHTML={{ __html: combinedHtml }}
-              className="print-format-gutter print-format"
-            />
+            <>
+              <div>
+                <Button
+                  onClick={handleDownloadPdf}
+                  sx={{
+                    margin: "0px auto",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: 10,
+                    backgroundColor: studentProfileColor,
+                    textAlign: "center",
+                    marginTop: "1rem",
+                  }}
+                >
+                  Download
+                </Button>
+                <div
+                  id="print-format-container"
+                  style={{ marginTop: "2rem" }}
+                  dangerouslySetInnerHTML={{ __html: combinedHtml }}
+                  className="print-format-gutter print-format"
+                />
+              </div>
+            </>
           )}
         </Box>
       </Box>
