@@ -80,12 +80,12 @@ def get_columns(filters):
     school_fields = generate_school_fields(filters.get("class"))
     extra_fields = generate_extra_school_qty(filters.get("class"))
     columns = [
-        # {
-        #     "fieldname": "period",
-        #     "label": "Period No.",
-        #     "fieldtype": "Data",
-        #     "width": 75,
-        # },
+        {
+            "fieldname": "period",
+            "label": "Period No.",
+            "fieldtype": "Data",
+            "width": 75,
+        },
         {
             "fieldname": "product_code",
             "label": "Product Code",
@@ -255,6 +255,7 @@ def get_data_from_queries(filters=None):
         .select(
             item.custom_chapter.as_("chapter"),
             cmap.name,
+            cmap.period,
             cmap["class"],
             cmap.plan_date,
             item_detail.item.as_("product_code"),
