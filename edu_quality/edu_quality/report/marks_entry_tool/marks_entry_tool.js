@@ -41,20 +41,7 @@ const throttledAutoSave = throttle(function () {
 function changeMarksData(value, columnId, rowIndex, maximumScore, scoring_type) {
 	const inputEl = document.querySelector(`input[column='${columnId}'][data-rowindex='${rowIndex}']`);
 
-	if (inputEl && inputEl.dataset && inputEl.dataset.docstatus === "1") {
-		const message = `
-        <div>    
-            <p>You Have Entered Marks in a submitted result, do you want to cancel it for processing ?</p>
-        </div>`;
 
-		frappe.confirm(__(message), async () => {
-			console.log(rowIndex)
-			const ref_no = frappe.query_report.data[rowIndex].ref_no
-			await cancelResult(columnId, ref_no)
-
-		});
-
-	}
 
 	if (Number(value.value) > Number(maximumScore) && scoring_type == "Marks") {
 
@@ -79,6 +66,8 @@ function writeMarks(rowIndex, columnId, value) {
 	criteriasChanged.push({ "ref_no": frappe.query_report.data[rowIndex]["ref_no"], "student_name": frappe.query_report.data[rowIndex]["student_name"], [columnId]: frappe.query_report.data[rowIndex][columnId] })
 
 }
+
+
 function getNextElement(rowIndex, colIndex) {
 	const maxRows = frappe.query_report.data.length;
 	const maxColumns = frappe.query_report.columns.length;
@@ -95,7 +84,12 @@ function getNextElement(rowIndex, colIndex) {
 		}
 	}
 
-	return document.querySelector(`input[data-rowindex="${nextRowIndex}"][data-colindex="${nextColIndex}"]`);
+	nextEl = document.querySelector(`input[data-rowindex="${nextRowIndex}"][data-colindex="${nextColIndex}"]`)
+
+	if (nextEl && nextEl.dataset.docstatus == 1)
+		return getNextElement(nextRowIndex, nextColIndex)
+	return nextEl
+
 }
 
 function handleKeyDownEvent(event) {
@@ -120,13 +114,16 @@ function createInputElement(value, column, row, docstatus) {
 	const isRed = String(value).toLowerCase() === "-";
 	const classes = [""]
 	const inputValue = isRed ? "style='background-color:var(--red-300);'" : "";
+	let inputDisabled = false
 	if (isRed) {
 		classes.push("absent-input")
 	}
 	if (docstatus == 1) {
+		inputDisabled = true
 		classes.push("submitted-input")
 	}
-	return `<input type="text" data-docstatus="${docstatus || 0}" data-colindex="${column.colIndex}" class="${classes.join(" ")}" column="${column.fieldname}" data-rowindex="${row && row[0] && row[0].rowIndex}" max="${column.maximum_score}" maximum-score="${column.maximum_score}" value="${value}" oninput="changeMarksData(this, '${column.id}', '${row[0]?.rowIndex}', '${column.maximum_score}','${column.scoring_type}')" />`;
+
+	return `<input type="text" ${inputDisabled ? "disabled='true'" : ""} data-docstatus="${docstatus || 0}" data-colindex="${column.colIndex - 1}" class="${classes.join(" ")}" column="${column.fieldname}" data-rowindex="${row && row[0] && row[0].rowIndex}" max="${column.maximum_score}" maximum-score="${column.maximum_score}" value="${value}" oninput="changeMarksData(this, '${column.id}', '${row[0]?.rowIndex}', '${column.maximum_score}','${column.scoring_type}')" />`;
 }
 
 function formatter(value, row, column, data, defaultFormatter) {
@@ -141,7 +138,7 @@ function formatter(value, row, column, data, defaultFormatter) {
 }
 async function saveCall(autoSave = false) {
 	const filters = {};
-	console.log(criteriasChanged)
+
 	frappe.query_report.filters.forEach(filter => {
 		filters[filter.fieldname] = frappe.query_report.get_filter_value(filter.fieldname);
 	});
@@ -162,23 +159,22 @@ async function saveCall(autoSave = false) {
 		indicator: 'green'
 	}, 2);
 }
-const cancelResult = debounce(async (field_name, ref_no) => {
+const cancelResult = debounce(async (ref_nos) => {
 	const filters = {};
 
 	frappe.query_report.filters.forEach(filter => {
 		filters[filter.fieldname] = frappe.query_report.get_filter_value(filter.fieldname);
 	});
 	await frappe.call({
-		"method": "edu_quality.edu_quality.report.marks_entry_tool.marks_entry_tool.cancel_result",
+		"method": "edu_quality.edu_quality.report.marks_entry_tool.marks_entry_tool.cancel_result_rows",
 		args: {
-			ref_no: ref_no,
-			field_name: field_name,
+			ref_nos: ref_nos,
 			filters: filters,
 		}
 	});
 
 	frappe.show_alert({
-		message: __(`Cancelled for ${ref_no} successfully`),
+		message: __(`Cancelled for ${ref_nos.join(",")} successfully`),
 		indicator: 'green'
 	}, 2);
 }, 1000)
@@ -210,7 +206,31 @@ function onload(report) {
 			goToProcessing()
 
 		});
+
+
 	});
+	report.page.add_inner_button(__('Cancel Result'), () => {
+		let indexes = frappe.query_report.datatable.rowmanager.getCheckedRows();
+		let selected_rows = indexes.map(i => frappe.query_report.data[i]);
+
+		if (selected_rows.length == 0) {
+			frappe.msgprint(__("Select a row before cancelling a result"))
+			return
+		}
+		const ref_nos = selected_rows.map((selected_row) => selected_row.ref_no)
+		let message = `
+			<div>
+				
+				<p>Are you sure you want to cancel result for selected row ? this will cancel all the results in a row irrespective of subject</p>
+			</div>`;
+
+
+		frappe.confirm(__(message), async () => {
+			await cancelResult(ref_nos)
+		})
+
+
+	})
 }
 
 function goToProcessing() {
@@ -293,4 +313,9 @@ frappe.query_reports["Marks Entry Tool"] = {
 	],
 	"formatter": formatter,
 	"onload": onload,
+	get_datatable_options(options) {
+		return Object.assign(options, {
+			checkboxColumn: true
+		});
+	}
 };

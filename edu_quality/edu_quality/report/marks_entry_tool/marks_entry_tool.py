@@ -400,14 +400,7 @@ def gen_hash(columns):
     return hashmap
 
 
-@frappe.whitelist()
-def cancel_result(field_name, ref_no, filters):
-    filters = json.loads(filters) if isinstance(filters, str) else filters
-    print(filters, field_name, ref_no, filters)
-    columns = get_columns(filters.get("assessment_group"), filters)
-    hashed_columns = gen_hash(columns)
-
-    assess_plan = hashed_columns[field_name]
+def cancel_result(assess_plan, ref_no, filters):
 
     program = filters.get("program")
     academic_year = filters.get("academic_year")
@@ -418,7 +411,7 @@ def cancel_result(field_name, ref_no, filters):
             "student": ref_no,
             "academic_year": academic_year,
             "program": program,
-            "assessment_plan": assess_plan.get("assessment_plan"),
+            "assessment_plan": assess_plan,
         },
     ):
         res_doc = frappe.get_doc(
@@ -428,7 +421,19 @@ def cancel_result(field_name, ref_no, filters):
                 "student": ref_no,
                 "academic_year": academic_year,
                 "program": program,
-                "assessment_plan": assess_plan.get("assessment_plan"),
+                "assessment_plan": assess_plan,
             },
         )
         res_doc.cancel()
+
+
+@frappe.whitelist()
+def cancel_result_rows(ref_nos, filters):
+    ref_nos = json.loads(ref_nos) if isinstance(ref_nos, str) else ref_nos
+    filters = json.loads(filters) if isinstance(filters, str) else filters
+    columns = get_columns(filters.get("assessment_group"), filters)
+
+    assess_plans = set([i.get("assessment_plan") for i in columns])
+    for ref_no in ref_nos:
+        for assess_plan in assess_plans:
+            cancel_result(assess_plan, ref_no, filters)
