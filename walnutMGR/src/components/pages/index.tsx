@@ -65,6 +65,10 @@ interface DraggedItem {
   name: string;
   period: string;
 }
+interface CmapItem {
+  real_dates?: string; // Adjust the type based on your actual data structure
+  // Add other properties of your CmapItem here
+}
 
 export const Index = () => {
   const { data: cmap_headers } = useCmapHeaders();
@@ -82,6 +86,7 @@ export const Index = () => {
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
   const [modalIsOpen, setIsOpen] = useState(false);
   const [selectedName, setSelectedName] = useState("");
+  const [selectedCmapItem, setSelectedCmapItem] = useState<CmapItem>({});
   const [selectedItem, setSelectedItem] = useState("");
   const [insertModal, setInsertModal] = useState(false);
   const [isButtonClicked, setIsButtonClicked] = useState(true);
@@ -296,9 +301,7 @@ export const Index = () => {
     setSelectedIDS("");
     setIsOpen(false);
   }
-  const handleEdit = () => {
-    setIsEditMode(true);
-  };
+
   useEffect(() => {
     if (cmap_table?.data?.message) {
       setDraggedList(cmap_table?.data?.message);
@@ -324,10 +327,7 @@ export const Index = () => {
   const handleYearChange = (selectedOption: any) => {
     setSelectedYear(selectedOption ? selectedOption.value : "");
   };
-  console.log(
-    "item",
-    itemDetails?.find((val: any) => val?.item === selectedCodeValues)?.name
-  );
+
   const itemCodeValue = itemDetails?.find(
     (val: any) => val?.item === selectedCodeValues
   )?.name;
@@ -440,12 +440,7 @@ export const Index = () => {
           setShowButtons(false);
         } else {
           // Handle API error
-          const errorData = await response.json();
-          const errorMessage =
-            errorData && errorData.message
-              ? JSON.parse(errorData.message).message
-              : "Unknown error"; // Extract error message or use a default message
-          alert(`Error: ${errorMessage}`); // Show alert with error message from API
+          alert(`Error: Periods not updated`);
           handleShowTable();
         }
       }
@@ -475,12 +470,8 @@ export const Index = () => {
           }));
         } else {
           // Handle API error
-          const errorData = await response.json();
-          const errorMessage =
-            errorData && errorData.message
-              ? JSON.parse(errorData.message).message
-              : "Unknown error"; // Extract error message or use a default message
-          alert(`Error: ${errorMessage}`);
+
+          alert(`Error: Periods not updated`);
           handleShowTable();
         }
         setShowButtons(false);
@@ -497,34 +488,41 @@ export const Index = () => {
 
   const handleEditCancel = () => {
     setIsEditMode(false);
-
+    setSelectedCmapItem({ real_dates: "" });
     setSelectedRows([]);
   };
+
   const handleEditSave = async () => {
-    const selectedRowNames = selectedRows?.map((i: any) => i?.name);
+    if (selectedCmapItem?.real_dates) {
+      alert("This Cmap Cannot Be Delete");
+      setSelectedCmapItem({ real_dates: "" });
+    }
+    if (!selectedCmapItem?.real_dates) {
+      try {
+        const selectedRowNames = selectedRows?.map((i: any) => i?.name);
+        for (const name of selectedRowNames) {
+          const response = await fetch(`/api/resource/CMAP/${name}`, {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
 
-    try {
-      for (const name of selectedRowNames) {
-        const response = await fetch(`/api/resource/CMAP/${name}`, {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (response.ok) {
-          const result = await response.json();
-          console.log(`Record ${name} deleted successfully:`, result);
-        } else {
-          console.error(`Failed to delete record ${name}`);
+          if (response.ok) {
+            const result = await response.json();
+            console.log(`Record ${name} deleted successfully:`, result);
+          } else {
+            console.error(`Failed to delete record ${name}`);
+          }
         }
+        alert("Selected records deleted successfully");
+        setSelectedRows([]);
+        setIsEditMode(false);
+        setSelectedCmapItem({ real_dates: "" });
+        handleShowTable();
+      } catch (error) {
+        console.error("Error:", error);
       }
-      alert("Selected records deleted successfully");
-      setSelectedRows([]);
-      setIsEditMode(false);
-      handleShowTable();
-    } catch (error) {
-      console.error("Error:", error);
     }
   };
   const handleUnitSelectChange = (selectedOptions: any) => {
@@ -756,6 +754,7 @@ export const Index = () => {
             setSelectedIDS={setSelectedIDS}
             setSelectedName={setSelectedName}
             setSelectedItem={setSelectedItem}
+            setSelectedCmapItem={setSelectedCmapItem}
             setSelectedCodeValues={setSelectedCodeValues}
             selectedUnits={selectedUnits}
             setSelectedUnits={setSelectedUnits}
@@ -963,12 +962,6 @@ export const Index = () => {
                   >
                     Print
                   </a>
-                  <button
-                    onClick={handleEdit}
-                    className="bg-[#428bca] p-3 text-white rounded-[5px] "
-                  >
-                    Edit
-                  </button>
                 </>
               ) : (
                 <>

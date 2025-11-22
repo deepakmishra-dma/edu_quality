@@ -7,6 +7,7 @@ import { useEffect } from "react";
 interface TableProps {
   isButtonClicked: boolean;
   isLoading: any;
+  setSelectedCmapItem: any;
 
   setDraggedList: any;
   setRowField: any;
@@ -37,6 +38,7 @@ export const Table = ({
   draggedList,
   isLoading,
   setSelectedCodeValues,
+  setSelectedCmapItem,
   setSelectedUnits,
   setRowField,
   setSelectedRows,
@@ -262,6 +264,7 @@ export const Table = ({
                                         (row: any) => row.index === index
                                       )}
                                       onChange={() => {
+                                        setSelectedCmapItem(val);
                                         handleSelectRow({
                                           index,
                                           name: val.name,
