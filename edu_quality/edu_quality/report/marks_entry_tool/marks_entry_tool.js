@@ -32,11 +32,16 @@ function debounce(func, delay) {
 		debounceTimer = setTimeout(() => func.apply(context, args), delay);
 	};
 }
-
-const throttledAutoSave = throttle(function () {
-	saveCall(true);
-
-}, 6000)
+const fetchSaveOnlyOnce = function () {
+	let loading = false
+	return async function () {
+		if (loading) return
+		loading = true
+		await saveCall(true);
+		loading = false
+	}
+}
+const throttledAutoSave = throttle(fetchSaveOnlyOnce(), 6000)
 
 function changeMarksData(value, columnId, rowIndex, maximumScore, scoring_type) {
 	const inputEl = document.querySelector(`input[column='${columnId}'][data-rowindex='${rowIndex}']`);
@@ -63,7 +68,7 @@ function writeMarks(rowIndex, columnId, value) {
 		frappe.query_report.data[rowIndex][columnId] = { "content": value }
 	}
 
-	criteriasChanged.push({ "ref_no": frappe.query_report.data[rowIndex]["ref_no"], "student_name": frappe.query_report.data[rowIndex]["student_name"], [columnId]: frappe.query_report.data[rowIndex][columnId] })
+	criteriasChanged.push(frappe.query_report.data[rowIndex])
 
 }
 
@@ -172,7 +177,7 @@ const cancelResult = debounce(async (ref_nos) => {
 			filters: filters,
 		}
 	});
-
+	frappe.query_report.refresh()
 	frappe.show_alert({
 		message: __(`Cancelled for ${ref_nos.join(",")} successfully`),
 		indicator: 'green'
