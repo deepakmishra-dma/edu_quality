@@ -425,6 +425,10 @@ def cancel_result(assess_plan, ref_no, filters):
             },
         )
         res_doc.cancel()
+        
+        amended_doc = frappe.copy_doc(res_doc)
+        amended_doc.amended_from = res_doc.name
+        amended_doc.save()
 
 
 @frappe.whitelist()
