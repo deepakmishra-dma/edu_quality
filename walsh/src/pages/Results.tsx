@@ -102,7 +102,6 @@ export const Results = () => {
   };
 
   const assessmentGroupName = async (exam_options: any) => {
-    console.log("exam", exam_options);
     const examnames: any[] = [];
     try {
       for (const name of exam_options) {
@@ -115,12 +114,11 @@ export const Results = () => {
         const data = await resp.json();
         examnames.push(data?.data);
 
-        const options = examnames.map((i: any) => ({
+        const options = examnames?.map?.((i: any) => ({
           value: i.name,
           label: i.assessment_group_name,
         }));
         setExamOptions(options);
-        console.log("group names", examnames);
       }
     } catch (error) {
       console.log("error", error);
