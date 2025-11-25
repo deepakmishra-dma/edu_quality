@@ -85,7 +85,6 @@ export const Results = () => {
       const data = await resp.json();
       if (data?.data?.length < 1) {
         setErrorMessage("Result Not Found");
-        // setExamOptions({});
       }
       if (data?.data?.length > 0) {
         const groupNames = data?.data?.map?.((i: any) => i.name);
@@ -94,13 +93,39 @@ export const Results = () => {
           value: name,
           label: name,
         }));
-        setExamOptions(examOpts);
+
+        assessmentGroupName(examOpts);
       }
     } catch (error) {
       console.log("error", error);
     }
   };
 
+  const assessmentGroupName = async (exam_options: any) => {
+    console.log("exam", exam_options);
+    const examnames: any[] = [];
+    try {
+      for (const name of exam_options) {
+        const resp = await fetch(
+          `/api/resource/Assessment%20Group/${name.value}`
+        );
+        if (!resp.ok) {
+          throw new Error("No Result Found");
+        }
+        const data = await resp.json();
+        examnames.push(data?.data);
+
+        const options = examnames.map((i: any) => ({
+          value: i.name,
+          label: i.assessment_group_name,
+        }));
+        setExamOptions(options);
+        console.log("group names", examnames);
+      }
+    } catch (error) {
+      console.log("error", error);
+    }
+  };
   const assessmentResuktFilter = async (
     selected_year: string,
     selected_exam: string
@@ -288,7 +313,6 @@ export const Results = () => {
     setExamOptions([]);
     setErrorMessage("");
   };
-  console.log("errorMessage", errorMessage);
 
   return (
     <>
