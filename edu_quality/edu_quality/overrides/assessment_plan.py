@@ -18,15 +18,27 @@ class CustomAssessmentPlan(AssessmentPlan):
                 "custom_type": self.custom_type,
                 "custom_textbook": ["in", ["ALL", "All", self.custom_textbook]],
                 "name": ["!=", self.name],
+                "docstatus": ["in", [0, 1]],
             },
         ):
             frappe.throw(
                 f"{self.custom_type} Exam for this subject,division,textbook and assessment group already exists"
             )
+
         check_for_duplicates(self)
+        check_for_empty_scale(self)
 
     def autoname(self, method=None):
         self.name = name_func(self)
+
+
+def check_for_empty_scale(self):
+    for criteria in self.assessment_criteria:
+        if criteria.get("custom_scale") == 0:
+            frappe.errprint(
+                f"Scale 0 is not allowed for {criteria.get('assessment_criteria')},Setting it to 1"
+            )
+            criteria.custom_scale = 1
 
 
 @frappe.whitelist()
@@ -38,8 +50,11 @@ def name_func(assessment_plan_doc):
     )
     division = frappe.get_doc("Student Group", assessment_plan_doc.get("student_group"))
     program = frappe.get_doc("Program", division.get("program"))
-    frappe.errprint(assessment_plan_doc)
-    if str(assessment_plan_doc.get("custom_textbook")).lower() != "all":
+
+    if (
+        assessment_plan_doc.get("custom_textbook")
+        and str(assessment_plan_doc.get("custom_textbook")).lower() != "all"
+    ):
         textbook_short = frappe.get_doc(
             "Textbook", assessment_plan_doc.get("custom_textbook")
         ).get("short_code")
