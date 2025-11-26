@@ -85,6 +85,9 @@ export const Results = () => {
       const data = await resp.json();
       if (data?.data?.length < 1) {
         setErrorMessage("Result Not Found");
+        setPrintFormat({ html: "", style: "" });
+        setSelectedExam("");
+        setExamOptions([]);
       }
       if (data?.data?.length > 0) {
         const groupNames = data?.data?.map?.((i: any) => i.name);
@@ -139,6 +142,9 @@ export const Results = () => {
 
       if (data?.data?.length < 1) {
         setErrorMessage("Result Not Found");
+        setPrintFormat({ html: "", style: "" });
+        setSelectedExam("");
+
         setExamResult([]); // Clear previous results
       } else {
         setExamResult(data?.data);
@@ -204,8 +210,8 @@ export const Results = () => {
     }
     if (selectedExam === "") {
       setPrintFormat({ html: "", style: "" });
-      printFormatView(undefined, undefined);
-      setError("");
+
+      setError("Select year and exam");
       setErrorTrue(true);
     }
   }, [
@@ -487,6 +493,12 @@ export const Results = () => {
           {!loading && !error && (
             <>
               <div>
+                <div
+                  id="print-format-container"
+                  style={{ marginTop: "2rem" }}
+                  dangerouslySetInnerHTML={{ __html: combinedHtml }}
+                  className="print-format-gutter print-format"
+                />
                 <Button
                   onClick={handleDownloadPdf}
                   sx={{
@@ -495,6 +507,9 @@ export const Results = () => {
                     alignItems: "center",
                     justifyContent: "center",
                     borderRadius: 10,
+                    position: "absolute",
+                    bottom: "14rem",
+                    left: "19rem",
                     backgroundColor: studentProfileColor,
                     textAlign: "center",
                     marginTop: "1rem",
@@ -502,12 +517,6 @@ export const Results = () => {
                 >
                   Download
                 </Button>
-                <div
-                  id="print-format-container"
-                  style={{ marginTop: "2rem" }}
-                  dangerouslySetInnerHTML={{ __html: combinedHtml }}
-                  className="print-format-gutter print-format"
-                />
               </div>
             </>
           )}
