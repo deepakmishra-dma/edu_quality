@@ -1,4 +1,4 @@
-import { Box, Stack, Text, Button } from "@mantine/core";
+import { Box, Stack, Text, Button, Select } from "@mantine/core";
 import useStudentList from "../components/queries/useStudentList";
 import { useEffect, useMemo, useState } from "react";
 import useStudentProfileColor from "../components/hooks/useStudentProfileColor";
@@ -223,9 +223,9 @@ export const Results = () => {
   ]);
 
   const handleExamChange = (e: any) => {
-    setSelectedExam(e.target.value);
+    setSelectedExam(e);
 
-    assessmentResuktFilter(selectedYear, e.target.value);
+    assessmentResuktFilter(selectedYear, e);
   };
 
   const subjectOptions = useMemo(() => {
@@ -295,11 +295,8 @@ export const Results = () => {
   }, [selectedUnit, unitOptions]);
 
   const handleYearChange = (e: any) => {
-    setSelectedYear(e.target.value);
-    assessmentGroupFilter(
-      e.target.value,
-      classDetails?.data?.message?.division?.program
-    );
+    setSelectedYear(e);
+    assessmentGroupFilter(e, classDetails?.data?.message?.division?.program);
   };
 
   let html = printFormat?.html;
@@ -399,9 +396,8 @@ export const Results = () => {
             >
               <span style={{ color: studentProfileColor }}>Academic Year:</span>
 
-              <select
+              <Select
                 style={{
-                  backgroundColor: "#f3f3f3",
                   border: "none",
                   borderRadius: "8px",
                   boxShadow: "none",
@@ -409,15 +405,10 @@ export const Results = () => {
                   padding: "8px",
                 }}
                 value={selectedYear}
-                onChange={handleYearChange}
-              >
-                <option value="">Select Year</option>
-                {years.map?.((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
+                onChange={(value) => handleYearChange(value)}
+                placeholder="Select Year"
+                data={years.map((year) => ({ value: year, label: year }))}
+              />
             </div>
             <div
               style={{
@@ -428,7 +419,7 @@ export const Results = () => {
               }}
             >
               <span style={{ color: studentProfileColor }}>Select Exam:</span>
-              <select
+              {/* <select
                 style={{
                   backgroundColor: "#f3f3f3",
                   border: "none",
@@ -446,7 +437,20 @@ export const Results = () => {
                     {option.label}
                   </option>
                 ))}
-              </select>
+              </select> */}
+              <Select
+                style={{
+                  border: "none",
+                  borderRadius: "8px",
+                  boxShadow: "none",
+                  width: "25vh",
+                  padding: "8px",
+                }}
+                value={selectedExam}
+                onChange={handleExamChange}
+                placeholder="Select Year"
+                data={examOptions}
+              />
             </div>
           </div>
           {errorMessage && (
