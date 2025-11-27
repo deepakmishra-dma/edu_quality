@@ -170,7 +170,7 @@ export const Results = () => {
             doc: "Assessment Result",
             name: `${exam_name}`,
             program: class_name,
-            print_format: "Report_Print_Configuration_Unit_test_format",
+            print_format: "walsh_exam_print_format",
             no_letterhead: 0,
             letterhead: "Default letter head",
             _lang: "en",
@@ -419,25 +419,7 @@ export const Results = () => {
               }}
             >
               <span style={{ color: studentProfileColor }}>Select Exam:</span>
-              {/* <select
-                style={{
-                  backgroundColor: "#f3f3f3",
-                  border: "none",
-                  borderRadius: "8px",
-                  boxShadow: "none",
-                  width: "25vh",
-                  padding: "8px",
-                }}
-                value={selectedExam}
-                onChange={handleExamChange}
-              >
-                <option value="">Select Exam</option>
-                {examOptions.map?.((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select> */}
+
               <Select
                 style={{
                   border: "none",
@@ -512,7 +494,7 @@ export const Results = () => {
                     justifyContent: "center",
                     borderRadius: 10,
                     position: "absolute",
-                    bottom: "14rem",
+                    bottom: "16rem",
                     left: "19rem",
                     backgroundColor: studentProfileColor,
                     textAlign: "center",
