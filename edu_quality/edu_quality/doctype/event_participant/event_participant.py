@@ -4,18 +4,51 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
-
+from edu_quality.common.utils.auth import set_user_permissions
 
 class EventParticipant(Document):
     @frappe.whitelist()
     def get_participant_details(self):
         return frappe.json.loads(self.data)
+    
+    def after_insert(self):
+        self.form_hash = frappe.generate_hash(self.name, length=20)
+        self.save(ignore_permissions=True)
+        guardian = frappe.get_all(
+            "Student Guardian", {"parent": self.student}, pluck="guardian"
+        )
+        users = frappe.get_all("Guardian", {"name": ("in", guardian)}, pluck="user")
+        for user in users:
+            set_user_permissions(user, self.doctype, self.name)
+
+        # Send registration link to the student
+        emails = frappe.get_all("Guardian", {"name": ("in", guardian)}, pluck="email_address")
+        form_url = f"{frappe.utils.get_url()}/get-web-form?hash={self.form_hash}&redirect_url=event-registration-form"
+        subject = f"Event Registration Link: {self.event_detail}"
+        message = f"Please click on the following link to complete your registration: {form_url}"
+        self.send_registration_link(emails, subject, message)
+
+
+    def on_trash(self):
+        user_permission = frappe.get_all(
+            "User Permission", {"allow": self.doctype, "for_value": self.name}, pluck="name"
+        )
+        if user_permission:
+            for perm in user_permission:
+                frappe.delete_doc("User Permission", perm, ignore_permissions=True)
+
+    def send_registration_link(self, emails=[], subject="", message=""):
+        frappe.sendmail(
+            recipients=emails,
+            subject=subject,
+            message=message,
+        )
 
     def on_submit(self):
         if self.payment_required:
             if self.outstanding_amount < 0:
                 self.outstanding_amount = 0
-            if not self.paid or self.outstanding_amount != 0:
+            if not self.paid or self.outstanding_amount > 0:
                 frappe.throw("Payment is pending")
         if not frappe.db.exists(
             "Student Data", {"student": self.student, "parent": self.event_detail}
@@ -24,6 +57,7 @@ class EventParticipant(Document):
             participant.student = self.student
             participant.student_name = self.student_name
             participant.refno = self.refno
+            participant.event_participant_link = self.name
             participant.parent = self.event_detail
             participant.parenttype = "Event Detail"
             participant.parentfield = "participating_students"
@@ -33,7 +67,10 @@ class EventParticipant(Document):
         if data:
             amount = data.get("amount")
             self.payment_required = self.paid = 1
-            self.outstanding_amount -= amount
+            if self.outstanding_amount > 0:
+                self.outstanding_amount -= amount
+            else:
+                self.outstanding_amount = 0
             self.paid_amount = amount
             self.save(ignore_permissions=True)
             self.submit()

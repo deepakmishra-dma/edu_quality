@@ -54,18 +54,25 @@ class EventDetail(Document):
         return students
 
     @frappe.whitelist()
-    def send_registration_link(self, data):
-        data = frappe.parse_json(data)
-        base_url = frappe.utils.get_url() + "/event-registration-form/"
-        for d in data:
-            registration_url = base_url + d.get("name")
-            student = frappe.get_doc("Student", d.get("student"))
-            frappe.sendmail(
-                recipients=student.student_email_id,
-                subject="Registration Link",
-                message=f"Click on the link to register for the event: {registration_url}",
-            )
+    def send_registration_link(self):
+        """
+        Send registration link to the students
+        """
+        # Create the event participants. The Email will be sent to the students
+        self.create_event_participants()
         return True
+    
+    def create_event_participants(self):
+        """
+        Create event participants for the allowed students and send the registration link
+        """
+        students = self.get_allowed_students()
+        for student in students:
+            if not frappe.db.exists("Event Participant", {"student": student}):                    
+                participant = frappe.new_doc("Event Participant")
+                participant.student = student
+                participant.event_detail = self.name
+                participant.save(ignore_permissions=True)
 
     def validate_students(self):
         if isinstance(self.student_status, str):
@@ -132,8 +139,8 @@ class EventDetail(Document):
         """
         Send reminders for the event based on the settings
         """
-        self.send_event_reminders()
         self.send_registration_reminders()
+        self.send_event_reminders()
 
     def send_registration_reminders(self):
         """
@@ -144,14 +151,16 @@ class EventDetail(Document):
         for d in dates:
             if d.date == today_date:
                 if not d.template_of_reminders:
-                    frappe.log_error(f"No template found for event registration reminders: {self.name}")
+                    frappe.log_error(
+                        f"No template found for event registration reminders: {self.name}"
+                    )
                     continue
                 template = frappe.get_doc("Email Template", d.template_of_reminders)
                 context = self.as_dict()
                 subject = frappe.render_template(template.subject, context=context)
                 message = frappe.render_template(template.response, context=context)
                 frappe.sendmail(
-                    recipients=self.get_allowed_students(),
+                    recipients=self.get_student_emails(),
                     subject=subject,
                     message=message,
                 )
@@ -165,14 +174,16 @@ class EventDetail(Document):
         for d in dates:
             if d.date == today_date:
                 if not d.template_of_reminders:
-                    frappe.log_error(f"No template found for event reminders: {self.name}")
+                    frappe.log_error(
+                        f"No template found for event reminders: {self.name}"
+                    )
                     continue
                 template = frappe.get_doc("Email Template", d.template_of_reminders)
                 context = self.as_dict()
                 subject = frappe.render_template(template.subject, context=context)
                 message = frappe.render_template(template.response, context=context)
                 frappe.sendmail(
-                    recipients=self.get_participating_students(),
+                    recipients=self.get_student_emails(participating=True),
                     subject=subject,
                     message=message,
                 )
@@ -198,8 +209,8 @@ class EventDetail(Document):
             if self.student_status:
                 statuses = [status.strip() for status in self.student_status.split(",")]
                 filters["student_status"] = ["in", statuses]
-            
-        return frappe.get_all("Student", filters, pluck="student_email_id")
+
+        return frappe.get_all("Student", filters, pluck="name")
 
     def get_participating_students(self):
         """
@@ -210,8 +221,22 @@ class EventDetail(Document):
             {"parent": self.name, "parentfield": "participating_students"},
             pluck="student",
         )
-        emails = frappe.get_all("Student", {"name": ["in", students]}, pluck="student_email_id")
-        return emails
+        return students
+
+    def get_student_emails(self, participating=False):
+        """
+        Get the student emails based on the students
+        Args:
+            students (list): List of students
+            participating (bool): True for participating students, False for allowed students
+        """
+        if participating:
+            students = self.get_participating_students()
+        else:
+            students = self.get_allowed_students()
+        return frappe.get_all(
+            "Student", {"name": ["in", students]}, pluck="student_email_id"
+        )
 
 
 def get_event_dates(type, parent):
@@ -221,7 +246,7 @@ def get_event_dates(type, parent):
     return frappe.get_all(
         "Event Date",
         {"parent": parent, "parentfield": type},
-        ["date", "template_of_reminders"]
+        ["date", "template_of_reminders"],
     )
 
 
