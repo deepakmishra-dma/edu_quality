@@ -35,7 +35,9 @@
   "field_4",
   "field_6",
   "section_break_lwk1",
-  "amended_from"
+  "amended_from",
+  "column_break_ylhx",
+  "form_hash"
  ],
  "fields": [
   {
@@ -119,6 +121,7 @@
    "label": "Student Name"
   },
   {
+   "fetch_from": "student.program",
    "fieldname": "class",
    "fieldtype": "Link",
    "label": "Class",
@@ -208,12 +211,24 @@
    "fieldname": "payment_required",
    "fieldtype": "Check",
    "label": "Payment Required"
+  },
+  {
+   "fieldname": "column_break_ylhx",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "form_hash",
+   "fieldtype": "Data",
+   "label": "Form Hash",
+   "no_copy": 1,
+   "print_hide": 1,
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-07-03 14:26:14.739165",
+ "modified": "2024-07-05 13:40:26.606235",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Event Participant",

@@ -86,12 +86,11 @@ function sendRegistrationLink(frm) {
     frappe.call({
         doc: frm.doc,
         method: 'send_registration_link',
-        args: {
-            data: frm.doc.allowed_students
-        },
         callback: function (response) {
             if (response.message) {
-                frappe.msgprint("Registration Link Sent Successfully");
+                frappe.show_alert("Registration Link Sent Successfully");
+            }else{
+                frappe.show_alert("Failed to send registration link");
             }
         }
     });
