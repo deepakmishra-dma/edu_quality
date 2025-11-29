@@ -23,9 +23,10 @@ class EventParticipant(Document):
 
         # Send registration link to the student
         emails = frappe.get_all("Guardian", {"name": ("in", guardian)}, pluck="email_address")
-        form_url = f"{frappe.utils.get_url()}/get-web-form?hash={self.form_hash}&redirect_to=event-registration-form"
+        web_form = frappe.get_value("Event", self.event, "web_form")
+        form_url = f"{frappe.utils.get_url()}/get-web-form?hash={self.form_hash}&redirect_to={web_form}"
         subject = f"Event Registration Link: {self.event_detail}"
-        message = f"Please click on the following link to complete your registration: {form_url}"
+        message = f"Please click on the following link to complete your event registration: {form_url}"
         self.send_registration_link(emails, subject, message)
 
 
