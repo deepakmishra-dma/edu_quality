@@ -25,13 +25,14 @@ class CMAP(Document):
         class_sortcode = frappe.db.get_value(
             "Class Type", self.get("class"), "short_code"
         )
-        self.name = f"{self.academic_year}-{course_short_code}{class_sortcode}{self.unit}{self.period}"
-        return self.name
+        self.cmap_code = f"{self.academic_year}-{course_short_code}{class_sortcode}{self.unit}{self.period}"
+        return self.cmap_code
 
-    def autoname(self, method=None):
-        self.name_func()
+    # def autoname(self, method=None):
+    #     self.name_func()
 
     def before_save(self):
+        self.name_func()
         if not self.is_new():
             doc_before_save = frappe.get_doc(self.doctype, self.name)
             for original_child in doc_before_save.table_vwbr:
@@ -84,7 +85,7 @@ class CMAP(Document):
             added_material_required,
             field="material_required",
         )
-    
+
         self.item_code_field = ", ".join(
             str(item.get("item", "")) or "" for item in self.products or [""]
         )
@@ -103,15 +104,17 @@ class CMAP(Document):
             idx += 1
 
     def after_insert(self, method=None):
+        # self.name_func()
         insert_cmap_assignees(self)
 
     def on_update(self, method=None):
-        old_doc = self.get_doc_before_save()
-        if old_doc and (
-            self.reserved_for_portion_circular != old_doc.reserved_for_portion_circular
-            or self.period != old_doc.period
-        ):
-            frappe.rename_doc("CMAP", old_doc.name, self.name_func())
+        # old_doc = self.get_doc_before_save()
+        # if old_doc and (
+        #     self.reserved_for_portion_circular != old_doc.reserved_for_portion_circular
+        #     or self.period != old_doc.period
+        # ):
+        #     self.name_func()
+        pass
 
 
 def insert_cmap_assignees(self):
@@ -417,7 +420,7 @@ def get_cmap_creation_headers():
     return columns
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist()
 def get_cmap_list(academic_year, program, subject, unit, from_date=None, end_date=None):
     if not academic_year:
         academic_year = current_academic_year()
@@ -441,9 +444,11 @@ def get_cmap_list(academic_year, program, subject, unit, from_date=None, end_dat
         subject_cond = cmap_qb.subject == subject
 
     item_detail_qb = frappe.qb.DocType("Item Detail")
-
+    cmap_assignment_qb = frappe.qb.DocType("CMAP Assignment")
     cmap_query = (
         frappe.qb.from_(cmap_qb)
+        .inner_join(cmap_assignment_qb)
+        .on(cmap_assignment_qb.parent == cmap_qb.name)
         .where(
             (cmap_qb.academic_year == academic_year)
             & (cmap_qb["class"] == program)
@@ -452,6 +457,7 @@ def get_cmap_list(academic_year, program, subject, unit, from_date=None, end_dat
             & (subject_cond)
             # & ((cmap_qb.plan_date.isnull()) | (cmap_qb.plan_date[from_date:end_date]))
         )
+        .groupby(cmap_qb.name)
         .select(
             cmap_qb.name,
             cmap_qb.academic_year,
@@ -462,6 +468,7 @@ def get_cmap_list(academic_year, program, subject, unit, from_date=None, end_dat
             cmap_qb["class"],
             cmap_qb.last_period_of_the_unit,
             cmap_qb.reserved_for_portion_circular,
+            GROUP_CONCAT(cmap_assignment_qb.real_date).as_("real_dates"),
         )
     )
 

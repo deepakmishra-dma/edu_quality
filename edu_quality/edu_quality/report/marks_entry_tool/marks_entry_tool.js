@@ -1,5 +1,7 @@
 // Copyright (c) 2024, Hybrowlabs Technologies and contributors
 // For license information, please see license.txt
+let criteriasChanged = []
+
 function throttle(func, limit) {
 	let lastFunc;
 	let lastRan;
@@ -30,26 +32,46 @@ function debounce(func, delay) {
 		debounceTimer = setTimeout(() => func.apply(context, args), delay);
 	};
 }
+const fetchSaveOnlyOnce = function () {
+	let loading = false
+	return async function () {
+		if (loading) return
+		loading = true
+		await saveCall(true);
+		loading = false
+	}
+}
+const throttledAutoSave = throttle(fetchSaveOnlyOnce(), 6000)
 
-const throttledAutoSave = debounce(function () {
-	saveCall();
-	frappe.show_alert({
-		message: __('Autosaved'),
-		indicator: 'green'
-	}, 2);
-}, 6000)
+function changeMarksData(value, columnId, rowIndex, maximumScore, scoring_type) {
+	const inputEl = document.querySelector(`input[column='${columnId}'][data-rowindex='${rowIndex}']`);
 
-function changeMarksData(value, columnId, rowIndex, maximumScore) {
-	if (Number(value.value) > Number(maximumScore)) {
-		const inputEl = document.querySelector(`input[column='${columnId}'][data-rowindex='${rowIndex}']`);
+
+
+	if (Number(value.value) > Number(maximumScore) && scoring_type == "Marks") {
+
 		inputEl.value = "";
-		frappe.query_report.data[rowIndex][columnId] = "";
+		writeMarks(rowIndex, columnId, "");
 		return;
 	}
-	frappe.query_report.data[rowIndex][columnId] = value.value;
+
+	writeMarks(rowIndex, columnId, value.value)
+
 
 	throttledAutoSave()
 }
+function writeMarks(rowIndex, columnId, value) {
+	if (frappe.query_report.data[rowIndex][columnId]) {
+		frappe.query_report.data[rowIndex][columnId]["content"] = value;
+	}
+	else {
+		frappe.query_report.data[rowIndex][columnId] = { "content": value }
+	}
+
+	criteriasChanged.push(frappe.query_report.data[rowIndex])
+
+}
+
 
 function getNextElement(rowIndex, colIndex) {
 	const maxRows = frappe.query_report.data.length;
@@ -60,18 +82,23 @@ function getNextElement(rowIndex, colIndex) {
 
 	if (nextRowIndex >= maxRows) {
 		nextRowIndex = 0;
-		if (nextColIndex + 1 < maxColumns) {
+		if (nextColIndex + 1 <= maxColumns) {
 			nextColIndex += 1;
 		} else {
 			nextColIndex = 3;
 		}
 	}
 
-	return document.querySelector(`input[data-rowindex="${nextRowIndex}"][data-colindex="${nextColIndex}"]`);
+	nextEl = document.querySelector(`input[data-rowindex="${nextRowIndex}"][data-colindex="${nextColIndex}"]`)
+
+	if (nextEl && nextEl.dataset.docstatus == 1)
+		return getNextElement(nextRowIndex, nextColIndex)
+	return nextEl
+
 }
 
 function handleKeyDownEvent(event) {
-	if (event.key === 'Tab') {
+	if (event.key === 'Tab' || event.key === "Enter") {
 		event.preventDefault();
 
 		const { colindex, rowindex } = event.target.dataset;
@@ -79,6 +106,7 @@ function handleKeyDownEvent(event) {
 
 		if (nextElement) {
 			nextElement.focus();
+			nextElement.select()
 		}
 	}
 }
@@ -87,56 +115,154 @@ function initializeKeyListener() {
 	document.addEventListener('keydown', handleKeyDownEvent);
 }
 
-function createInputElement(value, column, row) {
-	const isRed = String(value).toLowerCase() === "ab";
+function createInputElement(value, column, row, docstatus) {
+	const isRed = String(value).toLowerCase() === "-";
+	const classes = [""]
 	const inputValue = isRed ? "style='background-color:var(--red-300);'" : "";
+	let inputDisabled = false
+	if (isRed) {
+		classes.push("absent-input")
+	}
+	if (docstatus == 1) {
+		inputDisabled = true
+		classes.push("submitted-input")
+	}
 
-	return `<input type="text" data-colindex="${column.colIndex}" ${inputValue} column="${column.fieldname}" data-rowindex="${row[0]?.rowIndex}" max="${column.maximum_score}" maximum-score="${column.maximum_score}" value="${value}" oninput="changeMarksData(this, '${column.id}', '${row[0]?.rowIndex}', '${column.maximum_score}')" />`;
+	return `<input type="text" ${inputDisabled ? "disabled='true'" : ""} data-docstatus="${docstatus || 0}" data-colindex="${column.colIndex - 1}" class="${classes.join(" ")}" column="${column.fieldname}" data-rowindex="${row && row[0] && row[0].rowIndex}" max="${column.maximum_score}" maximum-score="${column.maximum_score}" value="${value}" oninput="changeMarksData(this, '${column.id}', '${row[0]?.rowIndex}', '${column.maximum_score}','${column.scoring_type}')" />`;
 }
 
 function formatter(value, row, column, data, defaultFormatter) {
 	value = defaultFormatter(value, row, column, data);
-
+	const values = data[column.fieldname]
+	const docstatus = values && values.docstatus
 	if (column.is_criteria) {
-		value = createInputElement(value, column, row);
+		value = createInputElement(value, column, row, docstatus);
 	}
 
 	return value;
 }
-function saveCall() {
+async function saveCall(autoSave = false) {
 	const filters = {};
 
 	frappe.query_report.filters.forEach(filter => {
 		filters[filter.fieldname] = frappe.query_report.get_filter_value(filter.fieldname);
 	});
-
-	frappe.call({
+	let data = frappe.query_report.data
+	if (autoSave) {
+		data = criteriasChanged
+	}
+	await frappe.call({
 		"method": "edu_quality.edu_quality.report.marks_entry_tool.marks_entry_tool.do_mark_entry",
 		args: {
-			data: frappe.query_report.data,
+			data: data,
 			filters: filters,
 		}
 	});
+	criteriasChanged = []
+	frappe.show_alert({
+		message: __('<i class="fa fa-save"></i>'),
+		indicator: 'green'
+	}, 2);
 }
+const cancelResult = debounce(async (ref_nos) => {
+	const filters = {};
+
+	frappe.query_report.filters.forEach(filter => {
+		filters[filter.fieldname] = frappe.query_report.get_filter_value(filter.fieldname);
+	});
+	await frappe.call({
+		"method": "edu_quality.edu_quality.report.marks_entry_tool.marks_entry_tool.cancel_result_rows",
+		args: {
+			ref_nos: ref_nos,
+			filters: filters,
+		}
+	});
+	frappe.query_report.refresh()
+	frappe.show_alert({
+		message: __(`Cancelled for ${ref_nos.join(",")} successfully`),
+		indicator: 'green'
+	}, 2);
+}, 1000)
+
 function onload(report) {
 	initializeKeyListener();
 
 	frappe.require(["/assets/edu_quality/css/mark-entry-tool.css"]);
 	report.page.parent.classList.add("mark-entry-tool-report");
-
+	addNote()
 	report.page.add_inner_button(__('Save Marks Entry'), () => {
 		const message = `
         <div>    
             <p>Are you sure you want to Save Marks Entered?</p>
         </div>`;
 
-		frappe.confirm(__(message), () => {
-			saveCall()
+		frappe.confirm(__(message), async () => {
+			await saveCall()
+
 		});
 	});
+	report.page.add_inner_button(__('Process Result'), () => {
+		const message = `
+        <div>    
+            <p>Are you sure you want to Leave this page and go to exam processing?</p>
+        </div>`;
+
+		frappe.confirm(__(message), async () => {
+			goToProcessing()
+
+		});
+
+
+	});
+	report.page.add_inner_button(__('Cancel Result'), () => {
+		let indexes = frappe.query_report.datatable.rowmanager.getCheckedRows();
+		let selected_rows = indexes.map(i => frappe.query_report.data[i]);
+
+		if (selected_rows.length == 0) {
+			frappe.msgprint(__("Select a row before cancelling a result"))
+			return
+		}
+		const ref_nos = selected_rows.map((selected_row) => selected_row.ref_no)
+		let message = `
+			<div>
+				
+				<p>Are you sure you want to cancel result for selected row ? this will cancel all the results in a row irrespective of subject</p>
+			</div>`;
+
+
+		frappe.confirm(__(message), async () => {
+			await cancelResult(ref_nos)
+		})
+
+
+	})
 }
 
+function goToProcessing() {
+	const academic_year = frappe.query_report.get_filter_value("academic_year");
+	const school = frappe.query_report.get_filter_value("school");
+	const program = frappe.query_report.get_filter_value("program");
+	const exam = frappe.query_report.get_filter_value("assessment_group");
 
+	frappe.set_route("process-exam-result", { academic_year, school, program, exam })
+}
+function addNote() {
+	const noteContainer = frappe.query_report.parent.querySelector('.page-head .container');
+	const noteContainerDiv = document.createElement("div")
+	if (noteContainer.querySelector(".note-container")) {
+		return
+	}
+	noteContainerDiv.classList.add("note-container")
+	noteContainerDiv.innerHTML = `
+	<div class="form-message blue my-0">
+	<ul>
+	<li>Non Submitted Exam Config Subjects inside an Exam Configuration and their subject components won't show up for marking</li>
+	<li>Use - for marking student as absent</li>
+	<li>Empty Columns will be marked as absent automatically, on first save</li>
+	</ul>
+	</div>`
+	noteContainer.appendChild(noteContainerDiv)
+}
 
 frappe.query_reports["Marks Entry Tool"] = {
 	"filters": [
@@ -192,4 +318,9 @@ frappe.query_reports["Marks Entry Tool"] = {
 	],
 	"formatter": formatter,
 	"onload": onload,
+	get_datatable_options(options) {
+		return Object.assign(options, {
+			checkboxColumn: true
+		});
+	}
 };

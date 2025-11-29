@@ -7,6 +7,7 @@ frappe.pages['process-exam-result'].on_page_load = function (wrapper) {
 		single_column: true
 	});
 	globalPage = page
+
 	onLoad()
 }
 
@@ -69,8 +70,19 @@ function onLoad() {
 			}
 		}
 	])
+	if (frappe.route_options) {
+		updateFilters()
+	}
 	addProcessButton()
 }
+
+function updateFilters() {
+	filtersRef.set_value("acad_year", frappe.route_options.academic_year)
+	filtersRef.set_value("school", frappe.route_options.school)
+	filtersRef.set_value("program", frappe.route_options.program)
+	filtersRef.set_value("exam_name", frappe.route_options.exam)
+}
+
 function addProcessButton() {
 	globalPage.set_primary_action('Process Result', processResult)
 }

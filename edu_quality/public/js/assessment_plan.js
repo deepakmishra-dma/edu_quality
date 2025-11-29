@@ -73,3 +73,22 @@ async function get_textbooks(frm) {
     frm.set_df_property('custom_textbook', "options", data)
     frm.refresh_field("custom_textbook")
 }
+
+frappe.ui.form.on("Assessment Plan Criteria", {
+    "custom_scale": function (frm, cdt, cdn) {
+        console.log(frm, cdt, cdn)
+        var d = locals[cdt][cdn];
+        frm.doc.assessment_criteria.forEach(function (row, i) {
+
+            if (row.custom_scale === 0 && row.name == d.name) {
+
+                frappe.msgprint('0 Scale is not allowed, Setting it to 1');
+                // frappe.model.remove_from_locals(cdt, cdn);
+                frappe.model.set_value(cdt, cdn, "custom_scale", 1)
+                frm.refresh_field('assessment_criteria');
+
+                return false;
+            }
+        });
+    }
+})

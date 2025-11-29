@@ -17,12 +17,14 @@ import {
   IconStar,
   IconCalendar,
   // IconFileDescription,
+  IconReport,
   IconUser,
   IconCreditCard,
   IconLink,
   IconPrinter,
 } from "@tabler/icons";
 import { IconClock } from "@tabler/icons-react";
+// import { IconReport } from "@tabler/icons-react";
 import { useLogout } from "@refinedev/core";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -167,6 +169,11 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
             label: "Fee",
             icon: IconCreditCard,
             location: "/fee",
+          },
+          {
+            label: "Result",
+            icon: IconReport,
+            location: "/result",
           },
           {
             label: "School Calendar",
