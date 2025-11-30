@@ -102,7 +102,7 @@ export const Results = () => {
       console.log("error", error);
     }
   };
-  console.log("exa,", selectedUnitExam);
+
   const handleDownloadPdf = () => {
     const input = document.getElementById("print-format-container");
     if (input) {
