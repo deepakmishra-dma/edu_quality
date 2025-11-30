@@ -16,32 +16,7 @@ interface PrintFormat {
   html: string;
   style: string;
 }
-const handleDownloadPdf = () => {
-  const input = document.getElementById("print-format-container");
-  if (input) {
-    html2canvas(input).then((canvas) => {
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF();
-      const imgWidth = 210; // A4 width in mm
-      const pageHeight = 297; // A4 height in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
 
-      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-
-      pdf.save("download.pdf");
-    });
-  }
-};
 export const Results = () => {
   const [selectedStudent, setSelectedStudent] = useState<string>("");
 
@@ -66,7 +41,7 @@ export const Results = () => {
   const { data: current_year } = useAcademicCurrentYear();
   const { data: next_year } = useAcademicNextYear();
   const studentProfileColor = useStudentProfileColor(selectedStudent);
-
+  const [selectedUnitExam, setSelectedUnitExam] = useState("");
   const [searchParams] = useSearchParams();
   const searchedStudent = searchParams.get("student");
   const [selectedSubject, setSelectedSubject] = useState<string>("");
@@ -77,7 +52,7 @@ export const Results = () => {
   ) => {
     try {
       const resp = await fetch(
-        `/api/resource/Assessment%20Group?filters=[["custom_academic_year",%20"=",%20"${selected_year}"],["custom_program",%20"=",%20"${class_name}"]]`
+        `/api/resource/Assessment%20Group?filters=[["custom_academic_year",%20"=",%20"${selected_year}"],["custom_program",%20"=",%20"${class_name}"],["custom_show_in_app","=", "1"]]`
       );
       if (!resp.ok) {
         throw new Error("No Result Found");
@@ -125,6 +100,34 @@ export const Results = () => {
       }
     } catch (error) {
       console.log("error", error);
+    }
+  };
+
+  const handleDownloadPdf = () => {
+    const input = document.getElementById("print-format-container");
+    if (input) {
+      const scale = 8;
+      html2canvas(input, { scale }).then((canvas) => {
+        const imgData = canvas.toDataURL("image/png", 1.0);
+        const pdf = new jsPDF("p", "mm", "a4");
+        const imgWidth = 210; // A4 width in mm
+        const pageHeight = 297; // A4 height in mm
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        let heightLeft = imgHeight;
+        let position = 0;
+
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+
+        while (heightLeft >= 0) {
+          position = heightLeft - imgHeight;
+          pdf.addPage();
+          pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+        }
+        const download_name = `${selectedStudent} ${selectedUnitExam}`;
+        pdf.save(download_name);
+      });
     }
   };
   const assessmentResuktFilter = async (
@@ -224,7 +227,9 @@ export const Results = () => {
 
   const handleExamChange = (e: any) => {
     setSelectedExam(e);
-
+    const selectedLabel =
+      examOptions.find((option) => option.value === e)?.label || "";
+    setSelectedUnitExam(selectedLabel);
     assessmentResuktFilter(selectedYear, e);
   };
 
@@ -313,6 +318,7 @@ export const Results = () => {
     setSelectedExam("");
     setExamOptions([]);
     setErrorMessage("");
+    setSelectedUnitExam("");
   };
 
   return (
@@ -493,9 +499,9 @@ export const Results = () => {
                     alignItems: "center",
                     justifyContent: "center",
                     borderRadius: 10,
-                    position: "absolute",
+                    position: "relative",
                     bottom: "16rem",
-                    left: "19rem",
+
                     backgroundColor: studentProfileColor,
                     textAlign: "center",
                     marginTop: "1rem",
