@@ -22,12 +22,7 @@ class EventParticipant(Document):
             set_user_permissions(user, self.doctype, self.name)
 
         # Send registration link to the student
-        emails = frappe.get_all("Guardian", {"name": ("in", guardian)}, pluck="email_address")
-        web_form = frappe.get_value("Event", self.event, "web_form")
-        form_url = f"{frappe.utils.get_url()}/get-web-form?hash={self.form_hash}&redirect_to={web_form}"
-        subject = f"Event Registration Link: {self.event_detail}"
-        message = f"Please click on the following link to complete your event registration: {form_url}"
-        self.send_registration_link(emails, subject, message)
+        self.send_registration_link()
 
 
     def on_trash(self):
@@ -38,12 +33,39 @@ class EventParticipant(Document):
             for perm in user_permission:
                 frappe.delete_doc("User Permission", perm, ignore_permissions=True)
 
-    def send_registration_link(self, emails=[], subject="", message=""):
-        frappe.sendmail(
-            recipients=emails,
-            subject=subject,
-            message=message,
-        )
+    def send_registration_link(self, email_template=None):
+        # Early exit if no student is associated
+        guardian = frappe.get_all("Student Guardian", {"parent": self.student}, pluck="guardian")
+        if not guardian:
+            return
+    
+        emails = frappe.get_all("Guardian", {"name": ("in", guardian)}, pluck="email_address")
+        # Early exit if no emails are found
+        if not emails:
+            return
+    
+        # Get web form URL
+        web_form = frappe.get_value("Event", self.event, "web_form") or "event-registration"
+        form_url = f"{frappe.utils.get_url()}/get-web-form?hash={self.form_hash}&redirect_to={web_form}"
+    
+        # Determine the email template to use
+        if not email_template:
+            email_template = frappe.get_value("Event Detail", self.event_detail, "registration_email_template")
+    
+        # Build context
+        context = frappe.get_doc("Event Detail", self.event_detail).as_dict()
+        context.update({"form_url": form_url, **self.as_dict()})
+    
+        # Determine subject and message
+        if email_template:
+            subject = frappe.render_template(frappe.get_value("Email Template", email_template, "subject"), context)
+            message = frappe.render_template(frappe.get_value("Email Template", email_template, "response"), context)
+        else:
+            subject = f"Registration for {self.event}"
+            message = f"Please click on the following link to complete your registration: <a href='{form_url}'>{form_url}</a>"
+    
+        # Send email
+        frappe.sendmail(recipients=emails, subject=subject, message=message)
 
     def on_submit(self):
         if self.payment_required:

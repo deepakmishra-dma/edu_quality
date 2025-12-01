@@ -59,20 +59,26 @@ class EventDetail(Document):
         Send registration link to the students
         """
         # Create the event participants. The Email will be sent to the students
-        self.create_event_participants()
+        frappe.enqueue(self.create_event_participants)
         return True
     
     def create_event_participants(self):
         """
         Create event participants for the allowed students and send the registration link
         """
-        students = self.get_allowed_students()
-        for student in students:
-            if not frappe.db.exists("Event Participant", {"student": student}):                    
-                participant = frappe.new_doc("Event Participant")
-                participant.student = student
-                participant.event_detail = self.name
-                participant.save(ignore_permissions=True)
+        try:
+            students = self.get_allowed_students()
+            for student in students:
+                if not frappe.db.exists("Event Participant", {"student": student, "event_detail": self.name}):                    
+                    participant = frappe.new_doc("Event Participant")
+                    participant.student = student
+                    participant.event_detail = self.name
+                    participant.save(ignore_permissions=True)
+                else:
+                    doc = frappe.get_doc("Event Participant", {"student": student, "event_detail": self.name})
+                    doc.send_registration_link()
+        except:
+            frappe.log_error(f"Error while sending registration link for event: {self.name}", frappe.get_traceback())
 
     def validate_students(self):
         if isinstance(self.student_status, str):
