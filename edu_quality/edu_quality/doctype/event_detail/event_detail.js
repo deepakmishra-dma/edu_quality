@@ -88,9 +88,15 @@ function sendRegistrationLink(frm) {
         method: 'send_registration_link',
         callback: function (response) {
             if (response.message) {
-                frappe.show_alert("Registration Link Sent Successfully");
+                frappe.show_alert({
+                    message: __("Registration Link Sent Successfully"),
+                    indicator: 'green'
+                });
             }else{
-                frappe.show_alert("Failed to send registration link");
+                frappe.show_alert({
+                    message: __("Failed to send Registration Link"),
+                    indicator: 'red'
+                });
             }
         }
     });
