@@ -1,0 +1,110 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-07-03 10:41:06.113525",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "descriptive_exam",
+  "question_paper",
+  "student",
+  "academic__year",
+  "school",
+  "subject",
+  "program",
+  "student_group",
+  "amended_from",
+  "questions"
+ ],
+ "fields": [
+  {
+   "fieldname": "program",
+   "fieldtype": "Link",
+   "label": "Program",
+   "options": "Program"
+  },
+  {
+   "fieldname": "subject",
+   "fieldtype": "Link",
+   "label": "Subject",
+   "options": "Course"
+  },
+  {
+   "fieldname": "student",
+   "fieldtype": "Link",
+   "label": "Student",
+   "options": "Student"
+  },
+  {
+   "fieldname": "academic__year",
+   "fieldtype": "Link",
+   "label": "Academic  Year",
+   "options": "Academic Year"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Descriptive Exam Result",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "school",
+   "fieldtype": "Link",
+   "label": "School",
+   "options": "School"
+  },
+  {
+   "fieldname": "student_group",
+   "fieldtype": "Link",
+   "label": "Division",
+   "options": "Student Group"
+  },
+  {
+   "fieldname": "descriptive_exam",
+   "fieldtype": "Link",
+   "label": "Descriptive Exam",
+   "options": "Descriptive Exam"
+  },
+  {
+   "fieldname": "questions",
+   "fieldtype": "Table",
+   "label": "Questions",
+   "options": "Descriptive Exam Result Question"
+  },
+  {
+   "fieldname": "question_paper",
+   "fieldtype": "Link",
+   "label": "Question Paper",
+   "options": "Descriptive Question Paper"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2024-07-09 08:02:26.995451",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "Descriptive Exam Result",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
