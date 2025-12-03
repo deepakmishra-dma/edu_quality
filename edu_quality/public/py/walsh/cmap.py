@@ -10,7 +10,7 @@ def get_students():
     students = frappe.get_all(
         "Student", filters={"guardian": guardian.name, "enabled": 1}, fields=["*"]
     )
-    print("check", students)
+
     return students
 
 
