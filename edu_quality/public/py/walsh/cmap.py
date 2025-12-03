@@ -8,8 +8,9 @@ def get_students():
     user = frappe.session.user
     guardian = frappe.get_cached_doc("Guardian", {"user": user})
     students = frappe.get_all(
-        "Student", filters={"guardian": guardian.name}, fields=["*"]
+        "Student", filters={"guardian": guardian.name, "enabled": 1}, fields=["*"]
     )
+    print("check", students)
     return students
 
 
@@ -20,7 +21,7 @@ def get_student_class_details(student):
     )
     program_enrollments = frappe.get_all(
         "Program Enrollment",
-        filters={"student": student, "academic_year": current_yr,'docstatus':1},
+        filters={"student": student, "academic_year": current_yr, "docstatus": 1},
         fields=["program", "student_group"],
     )
     if not len(program_enrollments):
@@ -173,8 +174,7 @@ def get_portion_circulars(unit, division):
             product = products[j].get("name")
             url = products[j].get("url")
             if url and item_hash[product] != url:
-                products[j]["url"] = url  
-
+                products[j]["url"] = url
 
         if subject not in subject_hash:
             subject_hash[subject] = {textbook: {chapter: [i]}}
