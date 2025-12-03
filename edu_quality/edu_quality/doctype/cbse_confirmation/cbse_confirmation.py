@@ -44,7 +44,8 @@ class CBSEConfirmation(Document):
             'survey_nolaneroad': student.address_line_2,
             'colonysocietyarea': student.landmark,
             'city': student.city,
-            'pincode': student.pincode
+            'pincode': student.pincode,
+            'student_status': student.student_status
         })
         
         for guard in student.guardians:
