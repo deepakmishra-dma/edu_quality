@@ -266,8 +266,7 @@ class CustomStudent(Student):
             else:
                 return self.refund_deposit(None,balance,company.default_deposit_account)
         else:
-            return frappe.throw("No Deposit Found!")
-        
+            return None,0,company.default_deposit_account
 
     def refund_deposit(self,fee,amount,account):
         company = frappe.get_doc("Company",frappe.defaults.get_user_default("company"))
