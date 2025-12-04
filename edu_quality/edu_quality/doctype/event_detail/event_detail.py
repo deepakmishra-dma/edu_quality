@@ -50,7 +50,6 @@ class EventDetail(Document):
                 },
                 fields=["name", "student_name"],
             )
-            print(students, school, refno_list)
         return students
 
     @frappe.whitelist()

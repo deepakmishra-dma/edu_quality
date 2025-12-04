@@ -45,8 +45,13 @@ class EventParticipant(Document):
             return
     
         # Get web form URL
-        web_form = frappe.get_value("Event", self.event, "web_form") or "event-registration"
-        form_url = f"{frappe.utils.get_url()}/get-web-form?hash={self.form_hash}&redirect_to={web_form}"
+        web_form = frappe.get_value("Event", self.event, "web_form")
+        if web_form:
+            route = frappe.get_value("Web Form", web_form, "route")
+        else:
+            route = "event-registration"
+
+        form_url = f"{frappe.utils.get_url()}/get-web-form?hash={self.form_hash}&redirect_to={route}"
     
         # Determine the email template to use
         if not email_template:
