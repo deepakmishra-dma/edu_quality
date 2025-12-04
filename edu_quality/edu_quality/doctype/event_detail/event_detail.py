@@ -17,6 +17,8 @@ class EventDetail(Document):
 
     def before_save(self):
         self.update_classes()
+        if self.all_students:
+            self.allowed_students = []
 
     def update_classes(self):
         event = frappe.get_doc("Event", self.event)
