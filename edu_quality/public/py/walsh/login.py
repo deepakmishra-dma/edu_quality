@@ -182,7 +182,7 @@ def send_otp(phone_no):
                 "error_type": "student_disabled",
                 "error_message": "All students for this guardian are disabled.",
             }
-        print("guardian", guardian.name)
+
         if not guardian:
             return {
                 "error": True,
