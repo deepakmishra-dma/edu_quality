@@ -175,8 +175,11 @@ def gen_field_name(assess_plan):
     return f"{to_snake_case(assess_plan.get('name'))} - ({assess_plan.get('course')}-{assess_plan.get('assessment_criteria')})"
 
 
-def get_div_students(division):
-    data = get_div_stud(division)
+def get_div_students(division, mode=None, ref_no=None):
+    if not mode:
+        data = get_div_stud(division)
+    else:
+        data = get_div_stud(division, ref_no)
     return [
         {"ref_no": student.get("student"), "student_name": student.get("student_name")}
         for student in data
@@ -184,11 +187,13 @@ def get_div_students(division):
 
 
 def get_data(filters, criterias, assessment_group_doc):
+    mode = filters.get("mode")
+    ref_no = filters.get("ref_no")
     division = filters.get("division")
-    students = get_div_students(division)
+    students = get_div_students(division, mode, ref_no)
+
     if not assessment_group_doc.custom_is_kg_exam:
         get_earlier_marks(filters, students, criterias)
-
     else:
         get_desc_earlier_marks(filters, students)
     return students
@@ -271,6 +276,7 @@ def get_earlier_marks(filters, students, criterias):
             assessment_det_qb.custom_is_absent,
             assessment_det_qb.grade,
             assess_res_qb.custom_scoring_type,
+            assessment_det_qb.custom_online_assessment,
         )
     )
 
@@ -294,6 +300,7 @@ def get_earlier_marks(filters, students, criterias):
             score = assess_res.get("score")
             grade = assess_res.get("grade")
             docstatus = assess_res.get("docstatus")
+            online_assess = assess_res.get("custom_online_assessment")
             assess_plan = {
                 "name": assess_res.get("assessment_plan"),
                 "course": assess_res.get("course"),
@@ -303,21 +310,25 @@ def get_earlier_marks(filters, students, criterias):
                 student[gen_field_name(assess_plan)] = {
                     "content": "-",
                     "docstatus": docstatus,
+                    "online_assess": online_assess,
                 }
             elif scoring_type == "Marks":
                 student[gen_field_name(assess_plan)] = {
                     "content": score,
                     "docstatus": docstatus,
+                    "online_assess": online_assess,
                 }
             elif scoring_type == "Grades":
                 student[gen_field_name(assess_plan)] = {
                     "content": grade,
                     "docstatus": docstatus,
+                    "online_assess": online_assess,
                 }
             else:
                 student[gen_field_name(assess_plan)] = {
                     "content": 0,
                     "docstatus": docstatus,
+                    "online_assess": online_assess,
                 }
     return students
 
@@ -326,11 +337,13 @@ def execute(filters=None):
     assessment_group = filters.get("assessment_group")
     assess_group_doc = frappe.get_doc("Assessment Group", assessment_group)
     criterias = get_columns(assessment_group, filters)
+
     columns = [
         {"fieldname": "ref_no", "label": "Ref No"},
         {"fieldname": "student_name", "label": "Name"},
         *criterias,
     ]
+
     data = get_data(filters, criterias, assess_group_doc)
     if not criterias:
         return [], []
@@ -362,7 +375,7 @@ def get_divisions_class_type(txt, filters):
     return [{"value": div.get("name"), "description": ""} for div in all_divs]
 
 
-def assessment_mark_entry(data, hashed_columns):
+def assessment_mark_entry(data, hashed_columns, mode):
     for row in data:
         assessment_details = []
         ref_no = row.get("ref_no")
@@ -380,6 +393,7 @@ def assessment_mark_entry(data, hashed_columns):
                             "value": get_field_value(row, fieldname),
                             "scoring_type": column_data.get("scoring_type"),
                             "custom_scale": column_data.get("custom_scale"),
+                            "custom_online_assessment": mode or 0,
                         },
                         "assessment_plan": assessment_plan,
                     }
@@ -462,7 +476,7 @@ def create_kg_mark(ref_no, exams, desc_exam):
 def do_mark_entry(data, filters):
     data = json.loads(data) if isinstance(data, str) else data
     filters = json.loads(filters) if isinstance(filters, str) else filters
-
+    mode = filters.get("mode")
     columns = get_columns(filters.get("assessment_group"), filters)
     hashed_columns = gen_hash(columns)
     assessment_group_doc = frappe.get_doc(
@@ -470,7 +484,7 @@ def do_mark_entry(data, filters):
     )
 
     if not assessment_group_doc.custom_is_kg_exam:
-        assessment_mark_entry(data, hashed_columns)
+        assessment_mark_entry(data, hashed_columns, mode)
     else:
         enter_kg_mark(data, hashed_columns)
 
@@ -513,6 +527,7 @@ def enter_individual_marks(
         score = assessment_criteria.get("value")
         scale = assessment_criteria.get("custom_scale")
         scoring_type = assessment_criteria.get("scoring_type")
+        online_assessment = assessment_criteria.get("custom_online_assessment")
 
         if str(score).lower() == "-" or score == None:
             score = 0
@@ -526,6 +541,7 @@ def enter_individual_marks(
                     "score": flt(score) or 0,
                     "custom_scale": scale,
                     "custom_is_absent": is_absent,
+                    "custom_online_assessment": online_assessment,
                 },
             )
 
@@ -539,6 +555,7 @@ def enter_individual_marks(
                     "custom_scale": scale,
                     "grade": str(score).upper(),
                     "custom_processed_grade": str(score).upper(),
+                    "custom_online_assessment": online_assessment,
                 },
             )
 
@@ -610,7 +627,7 @@ def update_modified_desc_exam(
     criteria,
 ):
     all_criterias = [i.get("question") for i in assessment_details]
-    print(all_criterias)
+
     if criteria.get("question") in all_criterias:
         index = all_criterias.index(criteria.get("question"))
         assessment_details[index] = criteria
@@ -666,6 +683,7 @@ def cancel_result_rows(ref_nos, filters):
     columns = get_columns(filters.get("assessment_group"), filters)
 
     assess_plans = set([i.get("assessment_plan") for i in columns])
+
     for ref_no in ref_nos:
         for assess_plan in assess_plans:
             cancel_result(assess_plan, ref_no, filters)

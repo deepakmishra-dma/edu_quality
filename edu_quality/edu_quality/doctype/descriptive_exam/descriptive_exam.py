@@ -30,82 +30,58 @@ def name_func(descriptive_exam_doc):
     academic_year = extract_year_from_academic_year_name(
         descriptive_exam_doc.get("academic_year") or current_academic_year()
     )
-
+    subject = frappe.get_doc("Subject", descriptive_exam_doc.subject)
     class_type = program.get("program_name")
 
     class_type_doc = frappe.get_doc("Class Type", class_type)
 
-    return f"{descriptive_exam_doc.name1} {class_type_doc.short_code}{division.get('student_group_name')} {academic_year}"
+    return f"{descriptive_exam_doc.name1} {subject.get('custom_short_code')}{class_type_doc.short_code}{division.get('student_group_name')} {academic_year}"
 
 
+# edu_quality.edu_quality.doctype.descriptive_exam.descriptive_exam.add_question
 @frappe.whitelist()
-def add_question(source_name, target_doc=None, ignore_permissions=False):
-    # def postprocess(source, target):
-    #     set_missing_values(source, target)
-    #     # Get the advance paid Journal Entries in Sales Invoice Advance
-    #     if target.get("allocate_advances_automatically"):
-    #         target.set_advances()
+def add_question(docnames):
+    parsed_docnames = json.loads(docnames) if isinstance(docnames, str) else docnames
+    res = get_all_children_of_multiple_docs("Descriptive Question", parsed_docnames)
 
-    # def set_missing_values(source, target):
-    #     target.flags.ignore_permissions = True
-    #     target.run_method("set_missing_values")
-    #     target.run_method("set_po_nos")
-    #     target.run_method("calculate_taxes_and_totals")
+    return res
+    pass
 
-    #     if source.company_address:
-    #         target.update({"company_address": source.company_address})
-    #     else:
-    #         # set company address
-    #         target.update(get_company_address(target.company))
 
-    #     if target.company_address:
-    #         target.update(
-    #             get_fetch_values(
-    #                 "Sales Invoice", "company_address", target.company_address
-    #             )
-    #         )
-
-    #     # set the redeem loyalty points if provided via shopping cart
-    #     if source.loyalty_points and source.order_type == "Shopping Cart":
-    #         target.redeem_loyalty_points = 1
-
-    #     target.debit_to = get_party_account("Customer", source.customer, source.company)
-
-    doclist = get_mapped_doc(
-        "Descriptive Question",
-        source_name,
-        {
-            "Descriptive Question": {
-                "doctype": "Descriptive Exam Question",
-                "field_map": {
-                    "question": "name",
-                    "parent_question": "parent_question",
-                },
-            }
-        },
-        target_doc,
-        ignore_permissions=ignore_permissions,
+def get_all_children(parent_doctype, parent_name):
+    """Recursively fetch all child nodes of a tree document using frappe.qb."""
+    ChildDoc = frappe.qb.DocType(parent_doctype)
+    children = (
+        frappe.qb.from_(ChildDoc)
+        .select(ChildDoc.name, ChildDoc.parent_question)
+        .where(ChildDoc.parent_question == parent_name)
+        .run(as_dict=True)
     )
 
-    doc = get_mapped_doc(
-        "Descriptive Question",  # Source doctype
-        source_name,  # Source name (usually the ID of the source document)
-        {
-            "Descriptive Question": {  # Source doctype key
-                "doctype": "Descriptive Exam",  # Target doctype
-                "field_map": {"name": "question"},
-                "add_if_empty": True,  # Create target doc if not exists
-            },
-            "Descriptive Question": {  # Source doctype item
-                "name": "questions",
-                "doctype": "Descriptive Exam Question",  # Target doctype item
-                "field_map": {
-                    "name": "question",
-                },
-                "add_if_empty": True,
-            },
-        },
-        target_doc,  # Optional target doc
-    )
+    all_children = [{"name": parent_name}]  # Include the parent name in the result
+    for child in children:
+        all_children.append(child)
+        child_children = get_all_children(parent_doctype, child["name"])
+        all_children.extend(child_children)
+    return all_children
 
-    return doc
+
+def get_all_children_of_multiple_docs(parent_doctype, parent_names):
+    """Fetch all child nodes of multiple tree documents."""
+    all_children = []
+    for parent_name in parent_names:
+        all_children.extend(get_all_children(parent_doctype, parent_name))
+    return deduplicate_dicts(all_children)
+
+
+def deduplicate_dicts(dicts):
+    seen = {}
+    deduped_list = []
+
+    for d in dicts:
+        name = d["name"]
+        if name not in seen:
+            seen[name] = True
+            deduped_list.append(d)
+
+    return deduped_list

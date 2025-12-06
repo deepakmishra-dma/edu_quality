@@ -1,11 +1,11 @@
 {
+ "_comments": "[{\"comment\": \"Action Failed<br><br>Descriptive Exam Result: Options must be a valid DocType for field Question ...\", \"by\": \"Administrator\", \"name\": \"e1f73aac93\"}]",
  "actions": [],
  "allow_rename": 1,
  "creation": "2024-07-04 10:22:30.270513",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "parent_assessment_group",
   "name1",
   "academic_year",
   "school",
@@ -60,14 +60,6 @@
    "reqd": 1
   },
   {
-   "fieldname": "parent_assessment_group",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Parent Assessment Group",
-   "options": "Assessment Group",
-   "reqd": 1
-  },
-  {
    "fieldname": "subject",
    "fieldtype": "Link",
    "label": "Subject",
@@ -88,7 +80,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-07-09 08:27:02.273487",
+ "modified": "2024-07-11 10:12:51.350856",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Descriptive Exam",

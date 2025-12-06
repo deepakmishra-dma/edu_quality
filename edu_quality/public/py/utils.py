@@ -628,14 +628,25 @@ def render_template_with_exception(template, data):
         return ""
 
 
-def get_div_students(division):
-    data = frappe.db.get_all(
-        "Program Enrollment",
-        filters={
+def get_div_students(division, ref_no=None):
+    if ref_no:
+        filters = {
+            "student_group": division,
+            "docstatus": 1,
+            "student": ref_no,
+            "custom_status": ["in", ["Current student", "Defaulter"]],
+        }
+
+    else:
+        filters = {
             "student_group": division,
             "docstatus": 1,
             "custom_status": ["in", ["Current student", "Defaulter"]],
-        },
+        }
+
+    data = frappe.db.get_list(
+        "Program Enrollment",
+        filters=filters,
         fields=["student_name", "name", "student"],
         order_by="CAST(roll_no AS UNSIGNED)",
     )
