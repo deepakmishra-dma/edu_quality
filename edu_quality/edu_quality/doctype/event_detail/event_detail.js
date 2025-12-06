@@ -6,6 +6,7 @@ frappe.ui.form.on("Event Detail", {
     add_to_participating: (frm) => { addToParticipating(frm); },
 
     refresh(frm) {
+        $("[data-fieldname='all_students'").attr("title", "Select all students from the selected classes and school");
         frm.add_custom_button('Send Registration Link', () => {
             sendRegistrationLink(frm);
         });
@@ -85,12 +86,17 @@ function sendRegistrationLink(frm) {
     frappe.call({
         doc: frm.doc,
         method: 'send_registration_link',
-        args: {
-            data: frm.doc.allowed_students
-        },
         callback: function (response) {
             if (response.message) {
-                frappe.msgprint("Registration Link Sent Successfully");
+                frappe.show_alert({
+                    message: __("Registration Link Sent Successfully"),
+                    indicator: 'green'
+                });
+            }else{
+                frappe.show_alert({
+                    message: __("Failed to send Registration Link"),
+                    indicator: 'red'
+                });
             }
         }
     });

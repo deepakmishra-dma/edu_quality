@@ -6,6 +6,7 @@ export interface ClassDetails {
     name: string
     custom_school: string
     academic_year: string
+    program: string
   }
   "program": {
     program_name: string

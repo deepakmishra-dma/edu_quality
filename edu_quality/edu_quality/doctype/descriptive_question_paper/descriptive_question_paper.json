@@ -1,0 +1,75 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-07-04 10:23:42.572110",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "id",
+  "question_paper_pdf",
+  "academic_year",
+  "evaluating_teacher",
+  "descriptive_exam",
+  "questions"
+ ],
+ "fields": [
+  {
+   "fieldname": "id",
+   "fieldtype": "Data",
+   "label": "ID"
+  },
+  {
+   "fieldname": "question_paper_pdf",
+   "fieldtype": "Attach",
+   "label": "Question Paper PDF"
+  },
+  {
+   "fieldname": "academic_year",
+   "fieldtype": "Link",
+   "label": "Academic Year",
+   "options": "Academic Year"
+  },
+  {
+   "fieldname": "evaluating_teacher",
+   "fieldtype": "Link",
+   "label": "Evaluating Teacher",
+   "options": "Instructor"
+  },
+  {
+   "fieldname": "descriptive_exam",
+   "fieldtype": "Link",
+   "label": "Descriptive Exam",
+   "options": "Descriptive Exam"
+  },
+  {
+   "fieldname": "questions",
+   "fieldtype": "Table",
+   "label": "Questions",
+   "options": "Descriptive Question Paper Question"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-07-09 08:01:53.407359",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "Descriptive Question Paper",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1,6 +1,7 @@
 import frappe
 from frappe.utils import today
 import json
+from frappe.auth import LoginManager
 
 
 def current_academic_year():
@@ -287,3 +288,28 @@ def add_referral(referred_by, referred_student):
         return frappe.throw("Student already Referred!")
     frappe.db.set_value("Student", referred_student, "referred_by", referred_by)
     return add_referral_discount(referred_by)
+
+
+
+def set_user_permission(user,doctype,docname):
+    if frappe.db.exists("User Permission",{"user":user,"allow":doctype,"for_value":docname}):
+        return
+    frappe.get_doc({
+        "doctype":"User Permission",
+        "user":user,
+        "allow":doctype,
+        "for_value":docname
+    }).insert(ignore_permissions=True)
+
+
+def set_form_user(doctype,docname):
+    form_map = {
+        'Student Applicant': 'walnut-school-student-application',
+        'CBSE Confirmation': 'cbse-confirmation'
+    }
+    if frappe.db.exists("User Permission",{'allow':doctype,'for_value':docname}):
+            user = frappe.db.get_value("User Permission",{'allow':doctype,'for_value':docname},'user')
+            login_manager = LoginManager()
+            login_manager.login_as(user)
+            return frappe.utils.get_url() + "/" + form_map.get(doctype) + "/" +  docname + "/edit"
+    frappe.throw("User Not set for this Application!")
