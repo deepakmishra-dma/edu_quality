@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "format:{subject_shortcode}-{question}",
  "creation": "2024-07-04 17:36:17.313238",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -11,11 +12,11 @@
   "is_group",
   "old_parent",
   "parent_question",
-  "class_type",
   "academic_year",
   "min_marks",
   "max_marks",
   "subject",
+  "subject_short_code",
   "question"
  ],
  "fields": [
@@ -43,19 +44,15 @@
    "default": "0",
    "fieldname": "is_group",
    "fieldtype": "Check",
+   "hidden": 1,
    "label": "Is Group"
   },
   {
    "fieldname": "old_parent",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Old Parent",
    "options": "Descriptive Question"
-  },
-  {
-   "fieldname": "class_type",
-   "fieldtype": "Link",
-   "label": "Class Type",
-   "options": "Class Type"
   },
   {
    "fieldname": "academic_year",
@@ -90,15 +87,22 @@
    "ignore_user_permissions": 1,
    "label": "Parent Question",
    "options": "Descriptive Question"
+  },
+  {
+   "fetch_from": "subject.custom_short_code",
+   "fieldname": "subject_short_code",
+   "fieldtype": "Data",
+   "label": "Subject Short Code"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_tree": 1,
  "links": [],
- "modified": "2024-07-09 07:53:05.928406",
+ "modified": "2024-07-11 10:09:55.177203",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Descriptive Question",
+ "naming_rule": "Expression",
  "nsm_parent_field": "parent_question",
  "owner": "Administrator",
  "permissions": [

@@ -8,22 +8,48 @@ function addQuestionButton(frm) {
             target: frm,
             date_field: undefined,
             setters: {
-                class_type: "1",
-                parent_question: ""
+                // class_type: "1",
+                // parent_question: ""
             },
             // data_fields: data_fields,
             get_query: () => {
                 return {
-                    parent_question: ["is", "set"]
+                    parent_question: ["is", "not_set"]
                 }
             },
-            // add_filters_group: 1,
+            add_filters_group: 1,
             // allow_child_item_selection: opts.allow_child_item_selection,
             // child_fieldname: opts.child_fieldname,
             // child_columns: opts.child_columns,
             // size: opts.size,
-            action: function (selections, args) {
-                console.log(selections, args)
+            action: async function (selections, args) {
+                const data = await frappe.call({
+                    "method": "edu_quality.edu_quality.doctype.descriptive_exam.descriptive_exam.add_question",
+                    args: {
+                        docnames: selections
+                    }
+                });
+                let existing_values = new Set();
+
+                // Populate the set with existing child table values
+                frm.doc.questions.forEach(function (row) {
+                    let value = `${row.question}`;
+                    existing_values.add(value);
+                });
+
+                if (data && data.message) {
+                    data.message.forEach(function (data) {
+                        let new_value = `${data.name}`;
+
+                        if (existing_values.has(new_value)) return
+                        let child_row = frm.add_child('questions');
+
+                        frappe.model.set_value(child_row.doctype, child_row.name, 'question', data.name);
+                        frappe.model.set_value(child_row.doctype, child_row.name, 'parent_question', data.parent_question);
+
+                    });
+                    frm.refresh_field('questions');
+                }
             },
         });
 
@@ -47,8 +73,8 @@ frappe.ui.form.on("Descriptive Exam", {
     refresh(frm) {
         addQuestionButton(frm)
         addCreateQuestionPaper(frm)
-        // frm.set_df_property('questions', 'cannot_add_rows', true);
-        // frm.set_df_property('questions', 'cannot_delete_rows', true);
+        frm.set_df_property('questions', 'cannot_add_rows', true);
+        frm.set_df_property('questions', 'cannot_delete_rows', true);
         frm.set_query("academic_year", function () {
             return {
                 "query": "edu_quality.public.py.utils.academic_year_query"
