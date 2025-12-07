@@ -44,15 +44,28 @@ class CBSEConfirmation(Document):
             'survey_nolaneroad': student.address_line_2,
             'colonysocietyarea': student.landmark,
             'city': student.city,
-            'pincode': student.pincode
+            'pincode': student.pincode,
+            'student_status': student.student_status
         })
         
         for guard in student.guardians:
             if guard.relation.lower() in ['father', 'mother']:
                 self._update_guardian_details(guard)
-            
+        
+        self.get_subject_details()
         
         self.save(ignore_permissions=True)
+
+    def get_subject_details(self):
+        ac_yr = frappe.db.get_value("Academic Year", {'custom_current_academic_year': 1}, 'name')
+        program_enrollment = frappe.get_doc("Program Enrollment", {'student': self.student, 'academic_year': ac_yr, 'docstatus': 1})
+        i=1
+        for subject in program_enrollment.courses:
+            if i<7:
+                self.update({
+                    f"subject_{i}": subject.course
+                })
+            i=i+1
 
     def _construct_full_name(self, first_name, middle_name, last_name):
         """
@@ -113,7 +126,6 @@ def get_form_details(hash):
     Raises:
         frappe.PermissionError: If the CBSE Confirmation document with the provided hash is not found.
     """
-    print(hash)
     if not frappe.db.exists("CBSE Confirmation", {'form_hash': hash}):
         frappe.throw("Form Not Found!")
     docname = frappe.db.get_value("CBSE Confirmation", {'form_hash': hash}, 'name')
