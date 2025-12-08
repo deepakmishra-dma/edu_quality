@@ -1,6 +1,3 @@
-# Copyright (c) 2024, Hybrowlabs Technologies and contributors
-# For license information, please see license.txt
-
 import frappe
 from frappe.model.document import Document
 import json
@@ -9,7 +6,7 @@ from edu_quality.public.py.utils import extract_year_from_academic_year_name
 from frappe.model.mapper import get_mapped_doc
 
 
-class DescriptiveExam(Document):
+class DescriptiveExamPaper(Document):
     def autoname(self, method=None):
         self.name = name_func(self)
         pass
@@ -30,7 +27,7 @@ def name_func(descriptive_exam_doc):
     academic_year = extract_year_from_academic_year_name(
         descriptive_exam_doc.get("academic_year") or current_academic_year()
     )
-    subject = frappe.get_doc("Subject", descriptive_exam_doc.subject)
+    subject = frappe.get_doc("Course", descriptive_exam_doc.subject)
     class_type = program.get("program_name")
 
     class_type_doc = frappe.get_doc("Class Type", class_type)
@@ -38,7 +35,7 @@ def name_func(descriptive_exam_doc):
     return f"{descriptive_exam_doc.name1} {subject.get('custom_short_code')}{class_type_doc.short_code}{division.get('student_group_name')} {academic_year}"
 
 
-# edu_quality.edu_quality.doctype.descriptive_exam.descriptive_exam.add_question
+# edu_quality.edu_quality.doctype.descriptive_exam_paper.descriptive_exam_paper.add_question
 @frappe.whitelist()
 def add_question(docnames):
     parsed_docnames = json.loads(docnames) if isinstance(docnames, str) else docnames

@@ -28,7 +28,7 @@
   {
    "fetch_from": "question.parent_question",
    "fieldname": "parent_question",
-   "fieldtype": "Link",
+   "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Parent Question",
    "options": "Question"
@@ -37,7 +37,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-07-09 07:52:54.010122",
+ "modified": "2024-07-12 03:30:55.183718",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Descriptive Exam Question",

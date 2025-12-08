@@ -322,7 +322,7 @@ function addNote() {
 	noteContainerDiv.classList.add("note-container", "blue", "form-message", "my-0")
 	noteContainerDiv.innerHTML = `
 	
-	<ul>
+	<ul style="padding-left:16px;">
 	<li>Non Submitted Exam Config Subjects inside an Exam Configuration and their subject components won't show up for marking</li>
 	<li>Use - for marking student as absent</li>
 	<li>Empty Columns will be marked as absent automatically, on first save</li>

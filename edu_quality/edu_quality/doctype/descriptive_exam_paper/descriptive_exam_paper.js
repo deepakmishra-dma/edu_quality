@@ -24,7 +24,7 @@ function addQuestionButton(frm) {
             // size: opts.size,
             action: async function (selections, args) {
                 const data = await frappe.call({
-                    "method": "edu_quality.edu_quality.doctype.descriptive_exam.descriptive_exam.add_question",
+                    "method": "edu_quality.edu_quality.doctype.descriptive_exam_paper.descriptive_exam_paper.add_question",
                     args: {
                         docnames: selections
                     }
@@ -43,7 +43,7 @@ function addQuestionButton(frm) {
 
                         if (existing_values.has(new_value)) return
                         let child_row = frm.add_child('questions');
-
+                        console.log(child_row)
                         frappe.model.set_value(child_row.doctype, child_row.name, 'question', data.name);
                         frappe.model.set_value(child_row.doctype, child_row.name, 'parent_question', data.parent_question);
 
@@ -56,24 +56,24 @@ function addQuestionButton(frm) {
     })
 }
 
-function addCreateQuestionPaper(frm) {
-    frm.add_custom_button("Add Question Paper", () => {
-        if (!frm.doc.__islocal) {
-            frappe.model.with_doctype('Descriptive Question Paper', function () {
-                var new_doc = frappe.model.get_new_doc('Descriptive Question Paper');
-                new_doc.descriptive_exam = frm.doc.name
-                frappe.set_route('Form', new_doc.doctype, new_doc.name);
-            });
-        }
-    })
-}
+// function addCreateQuestionPaper(frm) {
+//     frm.add_custom_button("Add Question Paper", () => {
+//         if (!frm.doc.__islocal) {
+//             frappe.model.with_doctype('Descriptive Question Paper', function () {
+//                 var new_doc = frappe.model.get_new_doc('Descriptive Question Paper');
+//                 new_doc.descriptive_exam = frm.doc.name
+//                 frappe.set_route('Form', new_doc.doctype, new_doc.name);
+//             });
+//         }
+//     })
+// }
 
-frappe.ui.form.on("Descriptive Exam", {
+frappe.ui.form.on("Descriptive Exam Paper", {
 
     refresh(frm) {
         addQuestionButton(frm)
-        addCreateQuestionPaper(frm)
-        frm.set_df_property('questions', 'cannot_add_rows', true);
+        // addCreateQuestionPaper(frm) 
+        // frm.set_df_property('questions', 'cannot_add_rows', true);
         frm.set_df_property('questions', 'cannot_delete_rows', true);
         frm.set_query("academic_year", function () {
             return {
