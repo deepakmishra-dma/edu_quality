@@ -1,8 +1,8 @@
 {
- "_comments": "[{\"comment\": \"Action Failed<br><br>Descriptive Exam Result: Options must be a valid DocType for field Question ...\", \"by\": \"Administrator\", \"name\": \"e1f73aac93\"}]",
  "actions": [],
  "allow_rename": 1,
- "creation": "2024-07-04 10:22:30.270513",
+ "creation": "2024-07-11 22:04:12.183695",
+ "default_view": "List",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
@@ -32,6 +32,14 @@
    "reqd": 1
   },
   {
+   "fieldname": "school",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "School",
+   "options": "School",
+   "reqd": 1
+  },
+  {
    "fieldname": "program",
    "fieldtype": "Link",
    "label": "Program",
@@ -39,24 +47,10 @@
    "reqd": 1
   },
   {
-   "fieldname": "questions",
-   "fieldtype": "Table",
-   "label": "Questions",
-   "options": "Descriptive Exam Question"
-  },
-  {
    "fieldname": "student_group",
    "fieldtype": "Link",
    "label": "Division",
    "options": "Student Group",
-   "reqd": 1
-  },
-  {
-   "fieldname": "school",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "School",
-   "options": "School",
    "reqd": 1
   },
   {
@@ -67,11 +61,27 @@
    "reqd": 1
   },
   {
+   "fieldname": "questions",
+   "fieldtype": "Table",
+   "label": "Questions",
+   "options": "Descriptive Exam Question"
+  },
+  {
    "fieldname": "amended_from",
    "fieldtype": "Link",
    "label": "Amended From",
    "no_copy": 1,
-   "options": "Descriptive Exam",
+   "options": "Descriptive Exam Paper",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Descriptive Exam Paper",
    "print_hide": 1,
    "read_only": 1,
    "search_index": 1
@@ -80,10 +90,10 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-07-11 10:12:51.350856",
+ "modified": "2024-07-12 03:29:07.331987",
  "modified_by": "Administrator",
  "module": "Edu Quality",
- "name": "Descriptive Exam",
+ "name": "Descriptive Exam Paper",
  "owner": "Administrator",
  "permissions": [
   {

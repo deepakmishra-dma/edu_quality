@@ -15,17 +15,31 @@ def get_columns(assessment_group, filters):
     if not assessment_group:
         return []
     assess_group = frappe.get_doc("Assessment Group", assessment_group)
+
+    if not assess_group.custom_is_kg_exam:
+        extra_columns = [
+            {"fieldname": "ref_no", "label": "Ref No"},
+            {"fieldname": "student_name", "label": "Name"},
+        ]
+
+    if assess_group.custom_is_kg_exam:
+        extra_columns = [
+            {"fieldname": "question", "label": "Question"},
+        ]
+
     if assess_group.is_group or assess_group.custom_is_composite:
         frappe.throw(
             "Can't enter marks of a assessment group of group type or composite type"
         )
 
     if assess_group.custom_is_composite:
-        return get_composite_exam_columns(assess_group, filters)
+        columns = get_composite_exam_columns(assess_group, filters)
     elif assess_group.custom_is_kg_exam:
-        return get_kg_columns(assess_group, filters)
+        columns = get_kg_columns(assess_group, filters)
     else:
-        return get_subject_criteria_columns(assess_group, filters)
+        columns = get_subject_criteria_columns(assess_group, filters)
+    print(columns, "yy")
+    return [*extra_columns, *columns], columns
 
 
 def get_subject_criteria_columns(assess_group, filters):
@@ -77,36 +91,17 @@ def get_subject_criteria_columns(assess_group, filters):
 
 
 def get_kg_columns(assessment_group, filters):
-    kg_exam_qb = frappe.qb.DocType("Descriptive Exam")
-    kg_ques_qb = frappe.qb.DocType("Descriptive Exam Question")
-    subject_qb = frappe.qb.DocType("Course")
+
     division = filters.get("division")
+    mode = filters.get("mode")
+    ref_no = filters.get("ref_no")
 
-    query = (
-        (
-            frappe.qb.from_(kg_exam_qb)
-            .inner_join(kg_ques_qb)
-            .on(kg_exam_qb.name == kg_ques_qb.parent)
-            .inner_join(subject_qb)
-            .on(kg_exam_qb.subject == subject_qb.name)
-            .where(
-                (kg_exam_qb.parent_assessment_group == assessment_group.get("name"))
-                & (kg_exam_qb.student_group == division)
-                # & (kg_exam_qb.docstatus == 1)
-                & (kg_ques_qb.selected == 1)
-            )
-        )
-        .orderby(kg_exam_qb.subject, kg_ques_qb.question, kg_ques_qb.parent_question)
-        .select(
-            kg_exam_qb.star,
-            kg_ques_qb.question,
-            kg_ques_qb.name.as_("desc_name_row_name"),
-            subject_qb.custom_short_code,
-        )
-    )
+    if not mode:
+        students = get_div_students(division)
+    else:
+        students = get_div_students(division, ref_no)
 
-    data = query.run(as_dict=True) or []
-    return [generate_desc_column_dict(desc_exam) for desc_exam in data]
+    return [generate_desc_column_dict(student) for student in students]
 
 
 def get_composite_exam_columns(assess_group, filters):
@@ -125,13 +120,13 @@ def get_composite_exam_columns(assess_group, filters):
 def generate_desc_column_dict(desc_exam):
     return {
         "fieldname": gen_desc_field_name(desc_exam),
-        "label": f"{gen_desc_label(desc_exam,desc_exam.get('custom_short_code'))}<br/>",
-        "assessment_plan": desc_exam.get("name"),
-        "assessment_criteria_row_name": desc_exam.get("desc_name_row_name"),
-        "subject": desc_exam.get("subject"),
-        "assessment_criteria": desc_exam.get("question"),
+        "label": f"{gen_desc_label(desc_exam)}<br/>",
+        # "assessment_plan": desc_exam.get("name"),
+        # "assessment_criteria_row_name": desc_exam.get("desc_name_row_name"),
+        # "subject": desc_exam.get("subject"),
+        # "assessment_criteria": desc_exam.get("question"),
         "is_criteria": 1,
-        "scoring_type": "Grades",
+        # "scoring_type": "Grades",
     }
 
 
@@ -159,16 +154,16 @@ def generate_column_dict(assess_plan):
     }
 
 
-def gen_desc_label(desc_exam, short_code):
-    return f"{short_code or desc_exam.get('subject')} {desc_exam.get('question')}"
+def gen_desc_label(student):
+    return f"{student.get('student_name')}<br/>({student.get('ref_no')})"
 
 
 def gen_label(assess_plan, short_code):
     return f"{short_code or assess_plan.get('course') or assess_plan.get('subject')} {assess_plan.get('assessment_criteria')}"
 
 
-def gen_desc_field_name(desc_exam):
-    return f"{to_snake_case(desc_exam.get('name'))} - ({desc_exam.get('subject')}-{desc_exam.get('question')})"
+def gen_desc_field_name(student):
+    return student.get("ref_no")
 
 
 def gen_field_name(assess_plan):
@@ -180,6 +175,9 @@ def get_div_students(division, mode=None, ref_no=None):
         data = get_div_stud(division)
     else:
         data = get_div_stud(division, ref_no)
+
+    print(data, "hh")
+
     return [
         {"ref_no": student.get("student"), "student_name": student.get("student_name")}
         for student in data
@@ -195,62 +193,89 @@ def get_data(filters, criterias, assessment_group_doc):
     if not assessment_group_doc.custom_is_kg_exam:
         get_earlier_marks(filters, students, criterias)
     else:
-        get_desc_earlier_marks(filters, students)
+        return get_desc_earlier_marks(filters, students)
     return students
 
 
 def get_desc_earlier_marks(filters, students):
+    assessment_group = filters.get("assessment_group")
+
+    assess_plan_qb = frappe.qb.DocType("Assessment Plan")
+    desc_exam_paper_qb = frappe.qb.DocType("Descriptive Exam Paper")
+    desc_exam_paper_ques_qb = frappe.qb.DocType("Descriptive Exam Question")
     desc_exam_re_qb = frappe.qb.DocType("Descriptive Exam Result")
+    assess_res_qb = frappe.qb.DocType("Assessment Result")
     desc_exam_re_ques_qb = frappe.qb.DocType("Descriptive Exam Result Question")
     students_list = [student.get("ref_no") for student in students]
 
-    query = (
-        frappe.qb.from_(desc_exam_re_qb)
-        .left_join(desc_exam_re_ques_qb)
-        .on((desc_exam_re_ques_qb.parent == desc_exam_re_qb.name))
+    asess_plans_query = (
+        frappe.qb.from_(assess_plan_qb)
         .where(
-            (desc_exam_re_qb.student.isin(students_list or [None]))
-            & (desc_exam_re_qb.docstatus.isin([0, 1]))
+            (assess_plan_qb.assessment_group == assessment_group)
+            & (assess_plan_qb.docstatus == 1)
+            & (assess_plan_qb.custom_is_descriptive)
         )
+        .select(assess_plan_qb.star)
+    )
+
+    paper_query = (
+        frappe.qb.from_(asess_plans_query)
+        .inner_join(desc_exam_paper_qb)
+        .on(desc_exam_paper_qb.name == asess_plans_query.custom_descriptive_exam)
+        .inner_join(desc_exam_paper_ques_qb)
+        .on(desc_exam_paper_qb.name == desc_exam_paper_ques_qb.parent)
+        .where(desc_exam_paper_ques_qb.docstatus == 1)
         .select(
-            desc_exam_re_qb.star,
-            desc_exam_re_ques_qb.question,
-            desc_exam_re_ques_qb.score,
-            desc_exam_re_ques_qb.grade,
+            desc_exam_paper_ques_qb.question,
+            asess_plans_query.name.as_("assessment_plan"),
         )
     )
 
+    questions_data = paper_query.run(as_dict=True)
+    plan_list = set([question.get("assessment_plan") for question in questions_data])
+
+    query = (
+        frappe.qb.from_(assess_res_qb)
+        .left_join(desc_exam_re_qb)
+        .on((desc_exam_re_qb.assessment_result == assess_res_qb.name))
+        .inner_join(desc_exam_re_ques_qb)
+        .on(desc_exam_re_ques_qb.parent == desc_exam_re_qb.name)
+        .where(
+            (assess_res_qb.assessment_plan.isin(plan_list or [None]))
+            & (assess_res_qb.student.isin(students_list or [None]))
+            & (assess_res_qb.docstatus.isin([0, 1]))
+        )
+        .select(
+            assess_res_qb.star,
+            desc_exam_re_ques_qb.question,
+            desc_exam_re_ques_qb.score,
+        )
+    )
+    question_hash = {}
     data = query.run(as_dict=True)
+    for res in data:
+        question = res.get("question")
+        student = res.get("student")
+        assess_plan = res.get("assessment_plan")
+        score = res.get("score")
 
-    students_res = {}
-
-    for assess_res in data:
-        student = assess_res.get("student")
-        if assess_res.student in students_res:
-            students_res[student].append(assess_res)
+        if question not in question_hash:
+            question_hash[question] = {
+                "question": question,
+                "assessment_plan": assess_plan,
+                student: score,
+            }
         else:
-            students_res[student] = [assess_res]
+            question_hash[question][student] = score
 
-    for student in students:
-        curr_ref = student.get("ref_no")
-
-        if curr_ref not in students_res:
-            continue
-
-        for desc_exam_res in students_res[curr_ref]:
-            score = desc_exam_res.get("score")
-            docstatus = desc_exam_res.get("docstatus")
-            desc_exam = {
-                "name": desc_exam_res.get("name"),
-                "course": desc_exam_res.get("subject"),
-                "question": desc_exam_res.get("question"),
-            }
-            student[gen_desc_field_name(desc_exam)] = {
-                "content": score,
-                "docstatus": docstatus,
-            }
-
-    return students
+    result = []
+    for question in questions_data:
+        question_name = question.get("question")
+        if question_name in question_hash:
+            result.append(question_hash[question_name])
+        else:
+            result.append(question)
+    return result
 
 
 def get_earlier_marks(filters, students, criterias):
@@ -336,18 +361,13 @@ def get_earlier_marks(filters, students, criterias):
 def execute(filters=None):
     assessment_group = filters.get("assessment_group")
     assess_group_doc = frappe.get_doc("Assessment Group", assessment_group)
-    criterias = get_columns(assessment_group, filters)
-
-    columns = [
-        {"fieldname": "ref_no", "label": "Ref No"},
-        {"fieldname": "student_name", "label": "Name"},
-        *criterias,
-    ]
+    all_columns, criterias = get_columns(assessment_group, filters)
 
     data = get_data(filters, criterias, assess_group_doc)
+    print(data, "yololos")
     if not criterias:
         return [], []
-    return columns, data
+    return all_columns, data
 
 
 # edu_quality.edu_quality.report.marks_entry_tool.marks_entry_tool.get_divisions_class_type
@@ -402,37 +422,19 @@ def assessment_mark_entry(data, hashed_columns, mode):
 
 
 def enter_kg_mark(data, hashed_columns):
-
+    print(data, hashed_columns)
     desc_exams_hash = {}
-    for row in data:
-        ref_no = row.get("ref_no")
-        for column in hashed_columns:
+    student_data = {}
+    for datum in data:
 
-            column_data = hashed_columns[column]
-            desc_exam = column_data.get("assessment_plan")
+        for student in hashed_columns:
+            if student in datum:
+                hashed_columns[student][datum.get("question")] = datum.get(student)
 
-            fieldname = column_data.get("fieldname")
-            question = column_data.get("assessment_criteria")
-
-            if fieldname in row:
-                if not fieldname in desc_exams_hash:
-                    desc_exams_hash[desc_exam] = [
-                        {
-                            "exam_name": desc_exam,
-                            "question": question,
-                            "score": get_field_value(row, fieldname),
-                        }
-                    ]
-                else:
-                    desc_exams_hash[desc_exam].append(
-                        {
-                            "exam_name": desc_exam,
-                            "question": question,
-                            "score": get_field_value(row, fieldname),
-                        }
-                    )
-            for plan in desc_exams_hash:
-                create_kg_mark(ref_no, desc_exams_hash[plan], plan)
+    for student in hashed_columns:
+        create_kg_mark(
+            student,
+        )
 
 
 def create_kg_mark(ref_no, exams, desc_exam):
@@ -477,7 +479,8 @@ def do_mark_entry(data, filters):
     data = json.loads(data) if isinstance(data, str) else data
     filters = json.loads(filters) if isinstance(filters, str) else filters
     mode = filters.get("mode")
-    columns = get_columns(filters.get("assessment_group"), filters)
+    all_columns, columns = get_columns(filters.get("assessment_group"), filters)
+    print(columns, "ddd")
     hashed_columns = gen_hash(columns)
     assessment_group_doc = frappe.get_doc(
         "Assessment Group", filters.get("assessment_group")
@@ -680,7 +683,7 @@ def cancel_result(assess_plan, ref_no, filters):
 def cancel_result_rows(ref_nos, filters):
     ref_nos = json.loads(ref_nos) if isinstance(ref_nos, str) else ref_nos
     filters = json.loads(filters) if isinstance(filters, str) else filters
-    columns = get_columns(filters.get("assessment_group"), filters)
+    all_c, columns = get_columns(filters.get("assessment_group"), filters)
 
     assess_plans = set([i.get("assessment_plan") for i in columns])
 

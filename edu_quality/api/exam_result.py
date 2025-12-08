@@ -204,7 +204,7 @@ def process_atomic_exam(assessment_group, academic_year, program, div=None):
         )
 
         frappe.db.set_value("Assessment Result", parent, "docstatus", 1)
-
+    
     for assess_plan in assessment_plans:
         plan = assess_plan.get("name")
         calculate_ranking = assess_plan.get("custom_calculate_ranks")

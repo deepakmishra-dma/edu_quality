@@ -12,6 +12,7 @@
   "is_group",
   "old_parent",
   "parent_question",
+  "parent_descriptive_question",
   "academic_year",
   "min_marks",
   "max_marks",
@@ -93,12 +94,19 @@
    "fieldname": "subject_short_code",
    "fieldtype": "Data",
    "label": "Subject Short Code"
+  },
+  {
+   "fieldname": "parent_descriptive_question",
+   "fieldtype": "Link",
+   "ignore_user_permissions": 1,
+   "label": "Parent Descriptive Question",
+   "options": "Descriptive Question"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_tree": 1,
  "links": [],
- "modified": "2024-07-11 10:09:55.177203",
+ "modified": "2024-07-12 03:27:39.231170",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Descriptive Question",
