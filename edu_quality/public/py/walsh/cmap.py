@@ -1,6 +1,7 @@
 import frappe
 from edu_quality.edu_quality.report.portion_circular.portion_circular import get_data
 from datetime import datetime
+from edu_quality.public.py.walsh.login import logout
 
 
 @frappe.whitelist()
@@ -8,8 +9,14 @@ def get_students():
     user = frappe.session.user
     guardian = frappe.get_cached_doc("Guardian", {"user": user})
     students = frappe.get_all(
-        "Student", filters={"guardian": guardian.name, "enabled": 1}, fields=["*"]
+        "Student", filters={"guardian": guardian.name}, fields=["*"]
     )
+    student_disabled = any(student.get("enabled") == 0 for student in students)
+    # if any one of student disabled log out the parent
+    if student_disabled:
+        logout()
+        frappe.throw(("Not permitted"), frappe.PermissionError)
+        return []
 
     return students
 
