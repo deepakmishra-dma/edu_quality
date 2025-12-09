@@ -83,42 +83,79 @@ async function AddStudent(values, frm) {
 }
 
 function sendRegistrationLink(frm) {
-    frappe.call({
-        doc: frm.doc,
-        method: 'send_registration_link',
-        callback: function (response) {
-            if (response.message) {
-                frappe.show_alert({
-                    message: __("Registration Link Sent Successfully"),
-                    indicator: 'green'
-                });
-            }else{
-                frappe.show_alert({
-                    message: __("Failed to send Registration Link"),
-                    indicator: 'red'
-                });
-            }
+    frappe.confirm(
+        'Are you sure you want to send registration link to all allowed students?',
+        () => {
+            frappe.call({
+                doc: frm.doc,
+                method: 'send_registration_link',
+                callback: function (response) {
+                    if (response.message) {
+                        frappe.show_alert({
+                            message: __("Registration Link Sent Successfully"),
+                            indicator: 'green'
+                        });
+                    } else {
+                        frappe.show_alert({
+                            message: __("Failed to send Registration Link"),
+                            indicator: 'red'
+                        });
+                    }
+                }
+            });
+        },
+        () => { 
+            frappe.show_alert({
+                message: __("Action Cancelled"),
+                indicator: 'blue'
+            });
         }
-    });
+    );
+
 }
 
 
 function addToParticipating(frm) {
-    let allowed_students = frm.doc.allowed_students;
     let participating_students = frm.doc.participating_students;
 
-    allowed_students.forEach(student => {
-        if (student.__checked) {
-            let already_participating = participating_students.some(participant => participant.student === student.student);
+    function addStudents(allowed_students) {
+        if (frm.doc.all_students) {
+            allowed_students.forEach(student => {
+                let already_participating = participating_students.some(participant => participant.student === student);
 
-            if (!already_participating) {
-                let new_row = frm.add_child("participating_students");
-                new_row.student = student.student;
-                new_row.student_name = student.student_name;
-            }
+                if (!already_participating) {
+                    let new_row = frm.add_child("participating_students");
+                    new_row.student = student;
+                }
+            });
+        } else {
+            allowed_students.forEach(student => {
+                if (student.__checked) {
+                    let already_participating = participating_students.some(participant => participant.student === student.student);
+
+                    if (!already_participating) {
+                        let new_row = frm.add_child("participating_students");
+                        new_row.student = student.student;
+                        new_row.student_name = student.student_name;
+                    }
+                }
+            });
         }
-    });
+        frm.refresh_field("participating_students");
+        frm.refresh();
+    }
 
-    frm.refresh_field("participating_students");
-    frm.refresh();
+    if (frm.doc.all_students) {
+        frappe.call({
+            doc: frm.doc,
+            method: 'get_allowed_students',
+            callback: function (response) {
+                if (response.message) {
+                    addStudents(response.message);
+                }
+            }
+        });
+    } else {
+        addStudents(frm.doc.allowed_students);
+    }
 }
