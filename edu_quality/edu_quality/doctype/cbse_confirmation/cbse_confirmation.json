@@ -8,6 +8,7 @@
  "field_order": [
   "student_section",
   "student",
+  "student_status",
   "form_hash",
   "column_break_onhw",
   "status",
@@ -55,6 +56,14 @@
   "city",
   "pincode",
   "approximate_annual_income",
+  "subject_details_section",
+  "subject_1",
+  "subject_2",
+  "subject_3",
+  "column_break_ccar",
+  "subject_4",
+  "subject_5",
+  "subject_6",
   "section_break_kpgo",
   "amended_from"
  ],
@@ -329,12 +338,57 @@
    "fieldname": "form_hash",
    "fieldtype": "Data",
    "label": "Form Hash"
+  },
+  {
+   "fieldname": "student_status",
+   "fieldtype": "Data",
+   "label": "Student Status",
+   "read_only": 1
+  },
+  {
+   "fieldname": "subject_details_section",
+   "fieldtype": "Section Break",
+   "label": "Subject Details"
+  },
+  {
+   "fieldname": "subject_1",
+   "fieldtype": "Data",
+   "label": "Subject 1"
+  },
+  {
+   "fieldname": "subject_2",
+   "fieldtype": "Data",
+   "label": "Subject 2"
+  },
+  {
+   "fieldname": "subject_3",
+   "fieldtype": "Data",
+   "label": "Subject 3"
+  },
+  {
+   "fieldname": "column_break_ccar",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "subject_4",
+   "fieldtype": "Data",
+   "label": "Subject 4"
+  },
+  {
+   "fieldname": "subject_5",
+   "fieldtype": "Data",
+   "label": "Subject 5"
+  },
+  {
+   "fieldname": "subject_6",
+   "fieldtype": "Data",
+   "label": "Subject 6"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-07-08 17:35:29.747541",
+ "modified": "2024-07-10 12:48:36.262888",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "CBSE Confirmation",

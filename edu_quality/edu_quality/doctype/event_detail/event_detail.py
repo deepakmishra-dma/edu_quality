@@ -17,6 +17,8 @@ class EventDetail(Document):
 
     def before_save(self):
         self.update_classes()
+        if self.all_students:
+            self.allowed_students = []
 
     def update_classes(self):
         event = frappe.get_doc("Event", self.event)
@@ -50,19 +52,18 @@ class EventDetail(Document):
                 },
                 fields=["name", "student_name"],
             )
-            print(students, school, refno_list)
         return students
 
     @frappe.whitelist()
-    def send_registration_link(self):
+    def send_registration_link(self, email_template=None):
         """
         Send registration link to the students
         """
         # Create the event participants. The Email will be sent to the students
-        frappe.enqueue(self.create_event_participants)
+        frappe.enqueue(self.create_event_participants, email_template=email_template)
         return True
     
-    def create_event_participants(self):
+    def create_event_participants(self, email_template=None):
         """
         Create event participants for the allowed students and send the registration link
         """
@@ -76,7 +77,7 @@ class EventDetail(Document):
                     participant.save(ignore_permissions=True)
                 else:
                     doc = frappe.get_doc("Event Participant", {"student": student, "event_detail": self.name})
-                    doc.send_registration_link()
+                    doc.send_registration_link(email_template)
         except:
             frappe.log_error(f"Error while sending registration link for event: {self.name}", frappe.get_traceback())
 
@@ -158,18 +159,10 @@ class EventDetail(Document):
             if d.date == today_date:
                 if not d.template_of_reminders:
                     frappe.log_error(
-                        f"No template found for event registration reminders: {self.name}"
+                        f"No template found for event registration reminders: {self.name} for date: {d.date}"
                     )
                     continue
-                template = frappe.get_doc("Email Template", d.template_of_reminders)
-                context = self.as_dict()
-                subject = frappe.render_template(template.subject, context=context)
-                message = frappe.render_template(template.response, context=context)
-                frappe.sendmail(
-                    recipients=self.get_student_emails(),
-                    subject=subject,
-                    message=message,
-                )
+                self.send_registration_link(d.template_of_reminders)
 
     def send_event_reminders(self):
         """
