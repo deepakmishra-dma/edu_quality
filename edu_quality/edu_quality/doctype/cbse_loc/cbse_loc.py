@@ -4,22 +4,23 @@
 import frappe
 from frappe.model.document import Document
 from edu_quality.edu_quality.server_scripts.utils import set_user_permission, set_form_user
+from nextai.funnel.custom_trigger import trigger_event
 
-class CBSEConfirmation(Document):
+class CBSELOC(Document):
     """
-    A Document class representing CBSE Confirmation details.
+    A Document class representing CBSE LOC details.
     Automatically fills student details upon insertion.
     """
     def after_insert(self):
         """Called after the document is inserted. Triggers autofill of student details."""
         self.autofill_student_details()        
         self.set_guardian_permission(self.form_user)
-        frappe.db.set_value('CBSE Confirmation', self.name, 'form_hash', frappe.generate_hash(self.name, length=20))
+        frappe.db.set_value('CBSE LOC', self.name, 'form_hash', frappe.generate_hash(self.name, length=20))
         self.reload()
     
     def set_guardian_permission(self, user):
-        """Set permission for the guardian user to access the CBSE Confirmation document."""
-        set_user_permission(user, "CBSE Confirmation", self.name)
+        """Set permission for the guardian user to access the CBSE LOC document."""
+        set_user_permission(user, "CBSE LOC", self.name)
 
     def autofill_student_details(self):
         """
@@ -85,6 +86,15 @@ class CBSEConfirmation(Document):
         if last_name:
             parts.append(last_name)
         return ' '.join(parts)
+    
+    
+    @frappe.whitelist()
+    def send_webform_link(self):
+        trigger_event(doc=self, event='send_cbse_form')
+
+    @frappe.whitelist()
+    def send_doc_after_filling(self):
+        trigger_event(doc=self, event='send_cbse_attachment')
 
     def _update_guardian_details(self, guardian):
         """
@@ -115,30 +125,30 @@ class CBSEConfirmation(Document):
 @frappe.whitelist(allow_guest=True)
 def get_form_details(hash):
     """
-    Retrieves the CBSE Confirmation document details based on the provided hash.
+    Retrieves the CBSE LOC document details based on the provided hash.
     
     Args:
-        hash (str): The unique hash associated with the CBSE Confirmation document.
+        hash (str): The unique hash associated with the CBSE LOC document.
     
     Returns:
         dict: A dictionary containing the form user details.
     
     Raises:
-        frappe.PermissionError: If the CBSE Confirmation document with the provided hash is not found.
+        frappe.PermissionError: If the CBSE LOC document with the provided hash is not found.
     """
-    if not frappe.db.exists("CBSE Confirmation", {'form_hash': hash}):
+    if not frappe.db.exists("CBSE LOC", {'form_hash': hash}):
         frappe.throw("Form Not Found!")
-    docname = frappe.db.get_value("CBSE Confirmation", {'form_hash': hash}, 'name')
-    return set_form_user("CBSE Confirmation", docname)
+    docname = frappe.db.get_value("CBSE LOC", {'form_hash': hash}, 'name')
+    return set_form_user("CBSE LOC", docname)
 
 
 @frappe.whitelist()
 def generate_confirmations(program):
     """
-    Generates CBSE Confirmation documents for students enrolled in the given program.
+    Generates CBSE LOC documents for students enrolled in the given program.
     
     Args:
-        program (str): The name of the program for which CBSE Confirmations need to be generated.
+        program (str): The name of the program for which CBSE LOCs need to be generated.
     
     Returns:
         dict: A dictionary containing the status (success or failure) and an error message (if applicable).
@@ -153,17 +163,17 @@ def generate_confirmations(program):
 
 def student_confirmation_generation(program):
     """
-    Helper function to generate CBSE Confirmation documents for students enrolled in the given program.
+    Helper function to generate CBSE LOC documents for students enrolled in the given program.
     
     Args:
-        program (str): The name of the program for which CBSE Confirmations need to be generated.
+        program (str): The name of the program for which CBSE LOCs need to be generated.
     """
     ac_yr = frappe.db.get_value("Academic Year", {'custom_current_academic_year': 1}, 'name')
     students = frappe.get_all("Program Enrollment", filters={'program': program, 'docstatus': 1, 'academic_year': ac_yr, 'custom_status': "Current student"}, fields=['student'])
     for student in students:
         try:
-            if not frappe.db.exists("CBSE Confirmation", {'student': student.student}):
-                doc = frappe.new_doc("CBSE Confirmation")
+            if not frappe.db.exists("CBSE LOC", {'student': student.student}):
+                doc = frappe.new_doc("CBSE LOC")
                 doc.student = student.student
                 doc.save(ignore_permissions=True)
         except Exception as e:
