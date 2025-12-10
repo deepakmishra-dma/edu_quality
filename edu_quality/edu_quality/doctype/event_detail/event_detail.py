@@ -22,18 +22,14 @@ class EventDetail(Document):
 
     def update_classes(self):
         event = frappe.get_doc("Event", self.event)
-        # Get the existing classes
-        existing_classes = frappe.db.get_all(
-            "Classes", filters={"parent": self.name}, pluck="class"
-        )
+
         # Remove classes that are no longer applicable
         self.classes_applicable_to = []
 
         # Add new applicable classes
         for cls in event.custom_classes:
             class_name = cls.get("class")
-            if class_name not in existing_classes:
-                self.append("classes_applicable_to", {"class": class_name})
+            self.append("classes_applicable_to", {"class": class_name})
 
     @frappe.whitelist()
     def get_students(self, args):
@@ -186,7 +182,7 @@ class EventDetail(Document):
                     subject=subject,
                     message=message,
                 )
-
+    @frappe.whitelist()
     def get_allowed_students(self):
         """
         Get the allowed students
