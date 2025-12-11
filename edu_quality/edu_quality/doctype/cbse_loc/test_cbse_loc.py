@@ -5,5 +5,5 @@
 from frappe.tests.utils import FrappeTestCase
 
 
-class TestCBSEConfirmation(FrappeTestCase):
+class TestCBSELOC(FrappeTestCase):
 	pass

@@ -1,4 +1,4 @@
-frappe.listview_settings['CBSE Confirmation'] = {
+frappe.listview_settings['CBSE LOC'] = {
     refresh: function (listview) {
         listview.page.add_menu_item(__("Generate Confirmations"), function () {
 
@@ -16,7 +16,7 @@ frappe.listview_settings['CBSE Confirmation'] = {
                 primary_action_label: "Generate",
                 primary_action(values) {
                     frappe.call({
-                        method: "edu_quality.edu_quality.doctype.cbse_confirmation.cbse_confirmation.generate_confirmations",
+                        method: "edu_quality.edu_quality.doctype.cbse_loc.cbse_loc.generate_confirmations",
                         type: "POST",
                         args: {
                             program: values.program
