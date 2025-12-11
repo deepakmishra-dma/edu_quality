@@ -17,6 +17,12 @@ class CBSELOC(Document):
         self.set_guardian_permission(self.form_user)
         frappe.db.set_value('CBSE LOC', self.name, 'form_hash', frappe.generate_hash(self.name, length=20))
         self.reload()
+        self.send_webform_link()
+
+    def before_save(self):
+        old_doc = self.get_doc_before_save()
+        if old_doc.status == 'Not Filled' and self.status == 'Filled':
+            self.send_doc_after_filling()
     
     def set_guardian_permission(self, user):
         """Set permission for the guardian user to access the CBSE LOC document."""
