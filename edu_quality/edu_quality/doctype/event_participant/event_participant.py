@@ -65,12 +65,12 @@ class EventParticipant(Document):
         if email_template:
             subject = frappe.render_template(frappe.get_value("Email Template", email_template, "subject"), context)
             message = frappe.render_template(frappe.get_value("Email Template", email_template, "response"), context)
+            # Send email
+            frappe.sendmail(recipients=emails, subject=subject, message=message)
         else:
-            subject = f"Registration for {self.event}"
-            message = f"Please click on the following link to complete your registration: <a href='{form_url}'>{form_url}</a>"
-    
-        # Send email
-        frappe.sendmail(recipients=emails, subject=subject, message=message)
+            event_detail_doc = frappe.get_doc("Event Detail", self.event_detail)
+            from frappe.integrations.doctype.webhook.webhook import enqueue_webhook
+            frappe.enqueue(enqueue_webhook, doc=event_detail_doc, webhook={"name": "Event Detail Error"})
 
     def on_submit(self):
         if self.payment_required:

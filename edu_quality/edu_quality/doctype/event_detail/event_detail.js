@@ -104,7 +104,7 @@ function sendRegistrationLink(frm) {
                 }
             });
         },
-        () => { 
+        () => {
             frappe.show_alert({
                 message: __("Action Cancelled"),
                 indicator: 'blue'
@@ -120,13 +120,10 @@ function addToParticipating(frm) {
 
     function addStudents(allowed_students) {
         if (frm.doc.all_students) {
+            frm.clear_table("participating_students");
             allowed_students.forEach(student => {
-                let already_participating = participating_students.some(participant => participant.student === student);
-
-                if (!already_participating) {
-                    let new_row = frm.add_child("participating_students");
-                    new_row.student = student;
-                }
+                let new_row = frm.add_child("participating_students");
+                new_row.student = student;
             });
         } else {
             allowed_students.forEach(student => {
@@ -142,20 +139,36 @@ function addToParticipating(frm) {
             });
         }
         frm.refresh_field("participating_students");
+        frm.save();
         frm.refresh();
-    }
-
-    if (frm.doc.all_students) {
-        frappe.call({
-            doc: frm.doc,
-            method: 'get_allowed_students',
-            callback: function (response) {
-                if (response.message) {
-                    addStudents(response.message);
-                }
-            }
+        frappe.show_alert({
+            message: __("Students Added Successfully"),
+            indicator: 'green'
         });
-    } else {
-        addStudents(frm.doc.allowed_students);
     }
+    let message = frm.doc.student_status ? `Student with status <b>${frm.doc.student_status}</b> will be added to participating students. Do you want to continue?` : `Do you want to add students to participating students?`;
+    frappe.confirm(
+        message,
+        () => {
+            if (frm.doc.all_students) {
+                frappe.call({
+                    doc: frm.doc,
+                    method: 'get_allowed_students',
+                    callback: function (response) {
+                        if (response.message) {
+                            addStudents(response.message);
+                        }
+                    }
+                });
+            } else {
+                addStudents(frm.doc.allowed_students);
+            }
+        },
+        () => {
+            frappe.show_alert({
+                message: __("Action Cancelled"),
+                indicator: 'blue'
+            });
+        }
+    );
 }
