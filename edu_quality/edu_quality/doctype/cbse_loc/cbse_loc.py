@@ -21,6 +21,8 @@ class CBSELOC(Document):
 
     def before_save(self):
         old_doc = self.get_doc_before_save()
+        if not old_doc:
+            return
         if old_doc.status == 'Not Filled' and self.status == 'Filled':
             self.send_doc_after_filling()
     
