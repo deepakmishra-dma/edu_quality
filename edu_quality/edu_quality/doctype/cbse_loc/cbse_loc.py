@@ -98,11 +98,11 @@ class CBSELOC(Document):
     
     @frappe.whitelist()
     def send_webform_link(self):
-        trigger_event(doc=self, event='send_cbse_form')
+        trigger_event(doc=self, event_name='send_cbse_form')
 
     @frappe.whitelist()
     def send_doc_after_filling(self):
-        trigger_event(doc=self, event='send_cbse_attachment')
+        trigger_event(doc=self, event_name='send_cbse_attachment')
 
     def _update_guardian_details(self, guardian):
         """
