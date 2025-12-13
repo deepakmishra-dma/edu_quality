@@ -305,7 +305,7 @@ def set_user_permission(user,doctype,docname):
 def set_form_user(doctype,docname):
     form_map = {
         'Student Applicant': 'walnut-school-student-application',
-        'CBSE Confirmation': 'cbse-confirmation'
+        'CBSE LOC': 'cbse-confirmation'
     }
     if frappe.db.exists("User Permission",{'allow':doctype,'for_value':docname}):
             user = frappe.db.get_value("User Permission",{'allow':doctype,'for_value':docname},'user')
