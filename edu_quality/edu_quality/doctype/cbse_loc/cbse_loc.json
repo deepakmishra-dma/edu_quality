@@ -78,7 +78,7 @@
    "fieldtype": "Link",
    "label": "Amended From",
    "no_copy": 1,
-   "options": "CBSE Confirmation",
+   "options": "CBSE LOC",
    "print_hide": 1,
    "read_only": 1,
    "search_index": 1
@@ -310,7 +310,7 @@
   },
   {
    "fieldname": "approximate_annual_income",
-   "fieldtype": "Currency",
+   "fieldtype": "Data",
    "label": "Approximate Annual Income"
   },
   {
@@ -388,7 +388,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-07-10 12:48:36.262888",
+ "modified": "2024-07-15 19:56:45.799929",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "CBSE LOC",
@@ -411,5 +411,22 @@
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": []
+ "states": [
+  {
+   "color": "Yellow",
+   "title": "Not Filled"
+  },
+  {
+   "color": "Blue",
+   "title": "Filled"
+  },
+  {
+   "color": "Green",
+   "title": "Approved"
+  },
+  {
+   "color": "Red",
+   "title": "Rejected"
+  }
+ ]
 }

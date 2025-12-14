@@ -313,3 +313,34 @@ def set_form_user(doctype,docname):
             login_manager.login_as(user)
             return frappe.utils.get_url() + "/" + form_map.get(doctype) + "/" +  docname + "/edit"
     frappe.throw("User Not set for this Application!")
+
+
+
+def validate_aadhar(aadhar):
+    if len(aadhar)!= 12:
+        return False
+    try:
+        int(aadhar)
+    except ValueError:
+        return False
+    return True
+
+
+def format_mobile_number(number):
+    # Remove non-numeric characters
+    cleaned_number = ''.join(filter(str.isdigit, number))
+    
+    # Handle country code if present
+    if len(cleaned_number) > 10:
+        cleaned_number = cleaned_number[-10:]
+    
+    return cleaned_number
+
+def validate_mobile_number(number):
+    if len(number)!= 10:
+        return False
+    try:
+        int(number)
+    except ValueError:
+        return False
+    return True
