@@ -10,6 +10,13 @@ frappe.listview_settings['CBSE LOC'] = {
                         label: "Class",
                         fieldtype: "Link",
                         options: "Program"
+                    },
+                    {
+                        fieldname: "status",
+                        label: "Student Status",
+                        fieldtype: "Select",
+                        options: ["Current student", "Defaulter", "New student"],
+                        default: "Current student"
                     }
                 ],
                 size: "small",
@@ -19,7 +26,8 @@ frappe.listview_settings['CBSE LOC'] = {
                         method: "edu_quality.edu_quality.doctype.cbse_loc.cbse_loc.generate_confirmations",
                         type: "POST",
                         args: {
-                            program: values.program
+                            program: values.program,
+                            status: values.status
                         },
                         callback: function (response) {
                             if (response.message.status == "1") {

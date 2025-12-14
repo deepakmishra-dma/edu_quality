@@ -3,14 +3,15 @@
 
 import frappe
 from frappe.model.document import Document
-from edu_quality.edu_quality.server_scripts.utils import set_user_permission, set_form_user
+from edu_quality.edu_quality.server_scripts.utils import (set_user_permission, set_form_user, 
+                                                          validate_aadhar, format_mobile_number,
+                                                          validate_mobile_number)
 from nextai.funnel.custom_trigger import trigger_event
 
+from frappe.core.doctype.communication.email import make
+
 class CBSELOC(Document):
-    """
-    A Document class representing CBSE LOC details.
-    Automatically fills student details upon insertion.
-    """
+   
     def after_insert(self):
         """Called after the document is inserted. Triggers autofill of student details."""
         self.autofill_student_details()        
@@ -25,7 +26,33 @@ class CBSELOC(Document):
             return
         if old_doc.status == 'Not Filled' and self.status == 'Filled':
             self.send_doc_after_filling()
+
+    def validate(self):
+        self.validate_aadhar_number()
+        self.validate_mobile_numbers()
+        self.validate_income()
+
+
+    def validate_income(self):
+        if self.approximate_annual_income == "Select Income Range":
+            frappe.throw("Please Select Approximate Annual Income")
     
+    def validate_aadhar_number(self):
+        if not validate_aadhar(self.aadhar_number):
+            frappe.throw("Invalid Aadhar Number")
+
+    def validate_mobile_numbers(self):
+        invalid_numbers = []
+        if self.father_mobile_number and not validate_mobile_number(self.father_mobile_number):
+            invalid_numbers.append("Father's")
+        if self.mother_mobile_number and not validate_mobile_number(self.mother_mobile_number):
+            invalid_numbers.append("Mother's")
+        
+        if invalid_numbers:
+            frappe.throw(f"{', '.join(invalid_numbers)} Mobile Number(s) are Invalid! [Use 10-digit mobile number, no spaces, symbols]")
+
+
+        
     def set_guardian_permission(self, user):
         """Set permission for the guardian user to access the CBSE LOC document."""
         set_user_permission(user, "CBSE LOC", self.name)
@@ -102,7 +129,31 @@ class CBSELOC(Document):
 
     @frappe.whitelist()
     def send_doc_after_filling(self):
-        trigger_event(doc=self, event_name='send_cbse_attachment')
+        try:
+            template = frappe.get_doc("Email Template", "Confirm Student Details for  CBSE Board - Attachment")
+            make(
+                doctype="CBSE LOC",
+                name=self.name,
+                send_email=1,
+                recipients = self.get_recipients(),
+                print_format="Standard",
+                print_letterhead= 0,
+                read_receipt=1,
+                email_template="Confirm Student Details for  CBSE Board - Attachment",
+                subject = template.subject,
+                message = template.response
+            )
+        except Exception as e:
+            frappe.log_error(e)
+
+    def get_recipients(self):
+        recipients = []
+        if self.father_email:
+            recipients.append(self.father_email)
+        if self.mother_email and self.mother_email!= self.father_email:
+            recipients.append(self.mother_email)
+        return ", ".join(recipients)
+
 
     def _update_guardian_details(self, guardian):
         """
@@ -124,7 +175,7 @@ class CBSELOC(Document):
             f'{relation}_middle_name': doc.middle_name,
             f'{relation}_last_name': doc.last_name,
             f'{relation}_full_name': full_name,
-            f'{relation}_mobile_number': doc.mobile_number,
+            f'{relation}_mobile_number': format_mobile_number(doc.mobile_number),
             f'{relation}_email': doc.email_address
         }
         
@@ -169,7 +220,7 @@ def generate_confirmations(program):
     
 
 
-def student_confirmation_generation(program):
+def student_confirmation_generation(program,status="Current student"):
     """
     Helper function to generate CBSE LOC documents for students enrolled in the given program.
     
@@ -177,7 +228,7 @@ def student_confirmation_generation(program):
         program (str): The name of the program for which CBSE LOCs need to be generated.
     """
     ac_yr = frappe.db.get_value("Academic Year", {'custom_current_academic_year': 1}, 'name')
-    students = frappe.get_all("Program Enrollment", filters={'program': program, 'docstatus': 1, 'academic_year': ac_yr, 'custom_status': "Current student"}, fields=['student'])
+    students = frappe.get_all("Program Enrollment", filters={'program': program, 'docstatus': 1, 'academic_year': ac_yr, 'custom_status': status}, fields=['student'])
     for student in students:
         try:
             if not frappe.db.exists("CBSE LOC", {'student': student.student}):
