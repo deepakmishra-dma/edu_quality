@@ -647,7 +647,7 @@ def get_div_students(division, ref_no=None):
     data = frappe.db.get_list(
         "Program Enrollment",
         filters=filters,
-        fields=["student_name", "name", "student"],
+        fields=["student_name", "name", "student","roll_no"],
         order_by="CAST(roll_no AS UNSIGNED)",
     )
 
