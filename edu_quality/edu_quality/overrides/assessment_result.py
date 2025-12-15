@@ -24,8 +24,10 @@ class CustomAssessmentResult(AssessmentResult):
         self.validate_duplicate()
 
     def calculate_scaled_maximum_score(self):
+
         total_scaled_max_score = 0
         for d in self.details:
+            d.custom_scale = d.custom_scale or 1
             total_scaled_max_score += d.maximum_score * d.custom_scale
         self.custom_scaled_maximum_score = total_scaled_max_score
 
@@ -40,6 +42,7 @@ class CustomAssessmentResult(AssessmentResult):
         self.custom_total_processed_score = 0.0
         self.custom_scaled_maximum_score = 0.0
         for d in self.details:
+            d.custom_scale = d.custom_scale or 1
             d.custom_processed_result = d.score * d.custom_scale
             d.custom_scaled_maximum_score = d.maximum_score * d.custom_scale
             d.custom_processed_grade = get_grade(
