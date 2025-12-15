@@ -331,7 +331,8 @@ def validate_aadhar(aadhar):
 def format_mobile_number(number):
     # Remove non-numeric characters
     cleaned_number = ''.join(filter(str.isdigit, number))
-    
+    if not cleaned_number:
+        return ""
     # Handle country code if present
     if len(cleaned_number) > 10:
         cleaned_number = cleaned_number[-10:]
