@@ -235,6 +235,7 @@
    "label": "Photos From Wal-T"
   },
   {
+   "depends_on": "eval: doc.all_students == 1 || doc.allowed_students.length != 0",
    "fieldname": "add_to_participating",
    "fieldtype": "Button",
    "label": "Add to Participating"
@@ -317,7 +318,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-07-10 16:11:37.379617",
+ "modified": "2024-07-16 19:11:32.225501",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Event Detail",

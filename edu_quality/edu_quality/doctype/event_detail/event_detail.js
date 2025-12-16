@@ -7,9 +7,7 @@ frappe.ui.form.on("Event Detail", {
 
     refresh(frm) {
         $("[data-fieldname='all_students'").attr("title", "Select all students from the selected classes and school");
-        frm.add_custom_button('Send Registration Link', () => {
-            sendRegistrationLink(frm);
-        });
+        sendRegistrationLink(frm);
         // Function to set query for student fields
         function set_student_query(fieldname) {
             frm.set_query('student', fieldname, function (doc, cdt, cdn) {
@@ -28,6 +26,10 @@ frappe.ui.form.on("Event Detail", {
             child_table => { set_student_query(child_table); }
         );
     },
+
+    registration_type: (frm) => {
+        sendRegistrationLink(frm);
+    }
 });
 
 function showAddStudent(frm) {
@@ -82,36 +84,41 @@ async function AddStudent(values, frm) {
     frm.refresh();
 }
 
-function sendRegistrationLink(frm) {
-    frappe.confirm(
-        'Are you sure you want to send registration link to all allowed students?',
-        () => {
-            frappe.call({
-                doc: frm.doc,
-                method: 'send_registration_link',
-                callback: function (response) {
-                    if (response.message) {
-                        frappe.show_alert({
-                            message: __("Registration Link Sent Successfully"),
-                            indicator: 'green'
-                        });
-                    } else {
-                        frappe.show_alert({
-                            message: __("Failed to send Registration Link"),
-                            indicator: 'red'
-                        });
-                    }
+function sendRegistrationLink(frm, toggle_button = false) {
+    if (frm.doc.registration_type === 'Pre-registered' || frm.doc.registration_type === 'Mix') {
+        frm.add_custom_button('Send Registration Link', () => {
+            frappe.confirm(
+                'Are you sure you want to send registration link to all allowed students?',
+                () => {
+                    frappe.call({
+                        doc: frm.doc,
+                        method: 'send_registration_link',
+                        callback: function (response) {
+                            if (response.message) {
+                                frappe.show_alert({
+                                    message: __("Registration Link Sent Successfully"),
+                                    indicator: 'green'
+                                });
+                            } else {
+                                frappe.show_alert({
+                                    message: __("Failed to send Registration Link"),
+                                    indicator: 'red'
+                                });
+                            }
+                        }
+                    });
+                },
+                () => {
+                    frappe.show_alert({
+                        message: __("Action Cancelled"),
+                        indicator: 'blue'
+                    });
                 }
-            });
-        },
-        () => {
-            frappe.show_alert({
-                message: __("Action Cancelled"),
-                indicator: 'blue'
-            });
-        }
-    );
-
+            );
+        });
+    }else{
+        frm.remove_custom_button('Send Registration Link');
+    }
 }
 
 
