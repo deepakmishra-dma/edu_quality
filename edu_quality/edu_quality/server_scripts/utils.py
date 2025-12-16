@@ -317,6 +317,8 @@ def set_form_user(doctype,docname):
 
 
 def validate_aadhar(aadhar):
+    if not aadhar:
+        return True
     if len(aadhar)!= 12:
         return False
     try:
@@ -329,7 +331,8 @@ def validate_aadhar(aadhar):
 def format_mobile_number(number):
     # Remove non-numeric characters
     cleaned_number = ''.join(filter(str.isdigit, number))
-    
+    if not cleaned_number:
+        return ""
     # Handle country code if present
     if len(cleaned_number) > 10:
         cleaned_number = cleaned_number[-10:]
@@ -337,6 +340,8 @@ def format_mobile_number(number):
     return cleaned_number
 
 def validate_mobile_number(number):
+    if not number:
+        return True
     if len(number)!= 10:
         return False
     try:
