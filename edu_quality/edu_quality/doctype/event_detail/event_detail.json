@@ -20,6 +20,7 @@
   "registration_last_date",
   "department",
   "secondary_poc_name",
+  "web_form",
   "section_break_izud",
   "is_team",
   "team",
@@ -302,7 +303,7 @@
    "label": "Registration Open Date"
   },
   {
-   "depends_on": "eval: doc.registration_type == \"Pre-registered\"",
+   "depends_on": "eval: doc.registration_type == \"Pre-registered\" ||  doc.registration_type == \"Mix\"",
    "fieldname": "registration_last_date",
    "fieldtype": "Date",
    "label": "Registration Last Date"
@@ -314,11 +315,18 @@
    "label": "Registration Email Template",
    "options": "Email Template",
    "reqd": 1
+  },
+  {
+   "depends_on": "eval: doc.registration_type == \"Pre-registered\" || doc.registration_type == \"Mix\"",
+   "fieldname": "web_form",
+   "fieldtype": "Link",
+   "label": "Web Form",
+   "options": "Web Form"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-07-16 19:11:32.225501",
+ "modified": "2024-07-17 17:48:32.868013",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Event Detail",
