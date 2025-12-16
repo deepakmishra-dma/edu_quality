@@ -12,6 +12,7 @@
   "column_break_oswr",
   "refno",
   "class",
+  "division",
   "section_break_mpyv",
   "event_detail",
   "event",
@@ -30,10 +31,18 @@
   "field_1",
   "field_3",
   "field_5",
+  "field_7",
+  "field_9",
+  "field_11",
+  "field_13",
   "column_break_ysnq",
   "field_2",
   "field_4",
   "field_6",
+  "field_8",
+  "field_10",
+  "field_12",
+  "field_14",
   "section_break_lwk1",
   "amended_from",
   "column_break_ylhx",
@@ -223,12 +232,58 @@
    "no_copy": 1,
    "print_hide": 1,
    "read_only": 1
+  },
+  {
+   "fetch_from": "student.custom_division",
+   "fieldname": "division",
+   "fieldtype": "Data",
+   "label": "Division"
+  },
+  {
+   "fieldname": "field_7",
+   "fieldtype": "Data",
+   "label": "Field 7"
+  },
+  {
+   "fieldname": "field_9",
+   "fieldtype": "Data",
+   "label": "Field 9"
+  },
+  {
+   "fieldname": "field_11",
+   "fieldtype": "Data",
+   "label": "Field 11"
+  },
+  {
+   "fieldname": "field_13",
+   "fieldtype": "Data",
+   "label": "Field 13"
+  },
+  {
+   "fieldname": "field_8",
+   "fieldtype": "Data",
+   "label": "Field 8"
+  },
+  {
+   "fieldname": "field_10",
+   "fieldtype": "Data",
+   "label": "Field 10"
+  },
+  {
+   "fieldname": "field_12",
+   "fieldtype": "Data",
+   "label": "Field 12"
+  },
+  {
+   "fieldname": "field_14",
+   "fieldtype": "Data",
+   "label": "Field 14"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-07-05 13:40:26.606235",
+ "modified": "2024-07-17 17:58:04.344483",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Event Participant",
