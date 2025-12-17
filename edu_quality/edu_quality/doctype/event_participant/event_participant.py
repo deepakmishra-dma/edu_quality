@@ -45,11 +45,8 @@ class EventParticipant(Document):
             return
     
         # Get web form URL
-        web_form = frappe.get_value("Event", self.event, "web_form")
-        if web_form:
-            route = frappe.get_value("Web Form", web_form, "route")
-        else:
-            route = "event-registration"
+        web_form = frappe.get_value("Event Detail", self.event_detail, "web_form")
+        route = frappe.get_value("Web Form", web_form, "route")
 
         form_url = f"{frappe.utils.get_url()}/get-web-form?hash={self.form_hash}&redirect_to={route}"
     
@@ -58,19 +55,15 @@ class EventParticipant(Document):
             email_template = frappe.get_value("Event Detail", self.event_detail, "registration_email_template")
     
         # Build context
-        context = frappe.get_doc("Event Detail", self.event_detail).as_dict()
-        context.update({"form_url": form_url, **self.as_dict()})
+        context = {"form_url": form_url, "event_detail": self.event_detail}
     
         # Determine subject and message
-        if email_template:
+        if email_template and web_form:
             subject = frappe.render_template(frappe.get_value("Email Template", email_template, "subject"), context)
             message = frappe.render_template(frappe.get_value("Email Template", email_template, "response"), context)
             # Send email
             frappe.sendmail(recipients=emails, subject=subject, message=message)
-        else:
-            event_detail_doc = frappe.get_doc("Event Detail", self.event_detail)
-            from frappe.integrations.doctype.webhook.webhook import enqueue_webhook
-            frappe.enqueue(enqueue_webhook, doc=event_detail_doc, webhook={"name": "Event Detail Error"})
+            
 
     def on_submit(self):
         if self.payment_required:

@@ -84,7 +84,7 @@ async function AddStudent(values, frm) {
     frm.refresh();
 }
 
-function sendRegistrationLink(frm, toggle_button = false) {
+function sendRegistrationLink(frm) {
     if (frm.doc.registration_type === 'Pre-registered' || frm.doc.registration_type === 'Mix') {
         frm.add_custom_button('Send Registration Link', () => {
             frappe.confirm(
