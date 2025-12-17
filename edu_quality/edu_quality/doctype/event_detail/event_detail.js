@@ -147,7 +147,6 @@ function addToParticipating(frm) {
         }
         frm.refresh_field("participating_students");
         frm.save();
-        frm.refresh();
         frappe.show_alert({
             message: __("Students Added Successfully"),
             indicator: 'green'
