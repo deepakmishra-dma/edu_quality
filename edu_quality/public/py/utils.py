@@ -647,8 +647,82 @@ def get_div_students(division, ref_no=None):
     data = frappe.db.get_list(
         "Program Enrollment",
         filters=filters,
-        fields=["student_name", "name", "student","roll_no"],
+        fields=["student_name", "name", "student", "roll_no"],
         order_by="CAST(roll_no AS UNSIGNED)",
     )
 
     return data
+
+
+def get_descriptive_result(assessment_group, student):
+
+    assess_res_qb = frappe.qb.DocType("Assessment Result")
+    assess_res_de_qb = frappe.qb.DocType("Assessment Result Detail")
+
+    query = (
+        frappe.qb.from_(assess_res_qb)
+        .where(assess_res_qb.docstatus == 1)
+        .inner_join(assess_res_de_qb)
+        .on(assess_res_qb.name == assess_res_de_qb.parent)
+    ).select(
+        assess_res_de_qb.name.as_("criteria_name"),
+        assess_res_qb.name,
+        assess_res_qb.course,
+        assess_res_de_qb.custom_question,
+        assess_res_de_qb.custom_parent_question,
+        assess_res_de_qb.grade,
+        assess_res_de_qb.custom_processed_grade,
+        assess_res_qb.custom_processed_grade.as_("total_processed_grade"),
+        assess_res_qb.custom_total_processed_score,
+        assess_res_de_qb.custom_processed_result,
+    )
+
+    data = query.run(as_dict=True)
+    return split_desc_hash(generate_child_questions_hash(data))
+
+
+def split_desc_hash(data):
+    subject_question = {}
+    for result_key in data:
+        if not len(data[result_key]):
+            continue
+
+        subject = data[result_key][0].get("course")
+        if not subject in subject_question:
+            subject_question[subject] = data[result_key]
+        else:
+            subject_question[subject].extend(data[result_key])
+    return subject_question
+
+
+def generate_child_questions_hash(data):
+    assessments_result_hash = {}
+    final_result = {}
+    for result in data:
+        if result.name not in assessments_result_hash:
+            assessments_result_hash[result.name] = [result]
+        else:
+            assessments_result_hash[result.name].append(result)
+
+    for subject_wise_result in assessments_result_hash:
+        tree_data = build_tree_iteratively(assessments_result_hash[subject_wise_result])
+        final_result[subject_wise_result] = tree_data
+
+    return final_result
+
+
+def build_tree_iteratively(nodes):
+    node_dict = {node["custom_question"]: node for node in nodes}
+    tree = []
+    for node in nodes:
+        parent_question = node["custom_parent_question"]
+        if parent_question == None:
+            tree.append(node)
+        else:
+            parent_node = node_dict.get(parent_question)
+            if parent_node:
+                if "children" not in parent_node:
+                    parent_node["children"] = []
+                parent_node["children"].append(node)
+                parent_node["children_length"] = len(parent_node["children"])
+    return tree

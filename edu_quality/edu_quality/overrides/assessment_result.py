@@ -3,7 +3,7 @@ from education.education.doctype.assessment_result.assessment_result import (
     AssessmentResult,
 )
 from edu_quality.public.py.utils import extract_year_from_academic_year_name
-from education.education.api import get_assessment_details, get_grade
+from education.education.api import get_assessment_details, get_grade as inner_get_grade
 from frappe.utils import flt
 import education.education
 
@@ -48,6 +48,7 @@ class CustomAssessmentResult(AssessmentResult):
             d.custom_processed_grade = get_grade(
                 self.grading_scale,
                 (flt(d.custom_processed_result) / d.maximum_score) * 100,
+                self.custom_total_processed_score,
             )
             self.total_score += d.score
             self.custom_total_processed_score += d.custom_processed_result
@@ -56,6 +57,12 @@ class CustomAssessmentResult(AssessmentResult):
         self.custom_processed_grade = get_grade(
             self.grading_scale,
             (self.custom_total_processed_score / self.maximum_score) * 100,
+            self.custom_total_processed_score,
+        )
+        self.grade = get_grade(
+            self.grading_scale,
+            (self.total_score / self.maximum_score) * 100,
+            self.total_score,
         )
         self.custom_processed_percentage = (
             self.custom_total_processed_score / self.maximum_score
@@ -97,3 +104,22 @@ SET  `tabAssessment Result`.custom_rank = ranked_table.ranking;
                 >= assessment_group_doc.custom_passing_percentage
             ):
                 self.custom_passed = 1
+
+
+def get_grade(grading_scale, percentage, score):
+    use_score_map = frappe.db.get_value(
+        "Grading Scale", grading_scale, "custom_use_score_mapping"
+    )
+
+    if use_score_map:
+        grading_scale_interval = frappe.db.get_value(
+            "Grading Scale Interval",
+            filters={"parent": grading_scale, "custom_score_mapping": score},
+            fieldname="grade_code",
+        )
+        if not grading_scale_interval:
+            return ""
+
+        return grading_scale_interval or ""
+    else:
+        return inner_get_grade(grading_scale, percentage)
