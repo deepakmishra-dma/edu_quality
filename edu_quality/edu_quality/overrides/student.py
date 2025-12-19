@@ -312,7 +312,7 @@ class CustomStudent(Student):
                 pe.update({dimension: ref_doc.get(dimension)})
 
         pe.update({
-            "reference_no": fee if fee else "",
+            "reference_no": fee if fee else "Old Deposit",
             "reference_date": frappe.utils.nowdate(),
         })
         try:
