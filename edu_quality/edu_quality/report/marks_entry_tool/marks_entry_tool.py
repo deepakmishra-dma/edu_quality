@@ -414,9 +414,8 @@ def assessment_mark_entry(data, hashed_columns, mode):
         ref_no = row.get("ref_no")
 
         for column in hashed_columns:
-
+            column_data = hashed_columns[column]
             column_data, assessment_plan, fieldname, assessment_criteria = (
-                hashed_columns[column],
                 column_data.get("assessment_plan"),
                 column_data.get("fieldname"),
                 column_data.get("assessment_criteria"),
@@ -489,7 +488,6 @@ def enter_kg_mark(data, hashed_columns):
         for plan in student_data[student]:
             for assessment_plan in student_data[student][plan]:
                 enter_criteria_marks(student, student_data[student][plan], plan, True)
-
 
 
 # edu_quality.edu_quality.report.marks_entry_tool.marks_entry_tool.do_mark_entry
@@ -718,4 +716,3 @@ def cancel_result_rows(ref_nos, filters):
     for ref_no in ref_nos:
         for assess_plan in assess_plans:
             cancel_result(assess_plan, ref_no, filters)
-
