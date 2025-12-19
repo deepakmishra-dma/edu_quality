@@ -172,6 +172,17 @@ def send_otp(phone_no):
         guardian_number = remove_indian_country_code(phone_with_country_code)
 
         guardian = get_guardian(guardian_number)
+        students = frappe.get_all(
+            "Student", filters={"guardian": guardian.name}, fields=["*"]
+        )
+        any_disabled = any(student["enabled"] == 0 for student in students)
+        if not students or any_disabled:
+            return {
+                "error": True,
+                "error_type": "student_disabled",
+                "error_message": "All students for this guardian are disabled.",
+            }
+
         if not guardian:
             return {
                 "error": True,
@@ -296,7 +307,7 @@ def register_push_notice(**kwargs):
     save_push_notification_token(push_token)
 
 
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=True)
 def logout(push_token=None):
     remove_push_notification_token(push_token, True)
     login_manager = LoginManager()

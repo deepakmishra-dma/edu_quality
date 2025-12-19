@@ -10,13 +10,14 @@
   "student",
   "student_name",
   "refno",
-  "position",
   "student_status",
-  "column_break_hhgf",
   "program",
+  "column_break_hhgf",
+  "position",
   "division",
   "date_of_winning",
-  "date_of_prize_given"
+  "date_of_prize_given",
+  "event_participant_link"
  ],
  "fields": [
   {
@@ -78,13 +79,21 @@
    "fetch_from": "student.student_status",
    "fieldname": "student_status",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Student Status"
+  },
+  {
+   "fieldname": "event_participant_link",
+   "fieldtype": "Link",
+   "label": "Event Participant Link",
+   "options": "Event Participant",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-06-12 11:27:48.207394",
+ "modified": "2024-07-15 11:33:46.520283",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Student Data",

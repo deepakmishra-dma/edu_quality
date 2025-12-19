@@ -12,19 +12,41 @@
   "column_break_oswr",
   "refno",
   "class",
+  "division",
   "section_break_mpyv",
   "event_detail",
   "event",
+  "payment_required",
   "column_break_scaw",
-  "starts_on",
   "school",
-  "section_break_vefk",
-  "participant_details",
+  "starts_on",
+  "payment_details_section",
+  "payment_status",
+  "transaction_id",
+  "column_break_choy",
+  "outstanding_amount",
+  "paid_amount",
   "data_tab",
   "section_break_vjib",
-  "data",
+  "field_1",
+  "field_3",
+  "field_5",
+  "field_7",
+  "field_9",
+  "field_11",
+  "field_13",
+  "column_break_ysnq",
+  "field_2",
+  "field_4",
+  "field_6",
+  "field_8",
+  "field_10",
+  "field_12",
+  "field_14",
   "section_break_lwk1",
-  "amended_from"
+  "amended_from",
+  "column_break_ylhx",
+  "form_hash"
  ],
  "fields": [
   {
@@ -69,11 +91,6 @@
    "fieldtype": "Section Break"
   },
   {
-   "fieldname": "data",
-   "fieldtype": "JSON",
-   "label": "Data"
-  },
-  {
    "fetch_from": "event_detail.school",
    "fieldname": "school",
    "fieldtype": "Link",
@@ -102,19 +119,9 @@
    "fieldtype": "Section Break"
   },
   {
-   "fieldname": "section_break_vefk",
-   "fieldtype": "Section Break"
-  },
-  {
    "fieldname": "data_tab",
    "fieldtype": "Tab Break",
    "label": "Data"
-  },
-  {
-   "fieldname": "participant_details",
-   "fieldtype": "HTML",
-   "label": "Participant Details",
-   "options": "<div id=\"participant_details\">\n\n</div>"
   },
   {
    "fetch_from": "student.student_name",
@@ -123,6 +130,7 @@
    "label": "Student Name"
   },
   {
+   "fetch_from": "student.program",
    "fieldname": "class",
    "fieldtype": "Link",
    "label": "Class",
@@ -133,12 +141,149 @@
    "fieldname": "refno",
    "fieldtype": "Data",
    "label": "Reference Number"
+  },
+  {
+   "depends_on": "eval: doc.payment_required == 1",
+   "fieldname": "payment_details_section",
+   "fieldtype": "Section Break",
+   "label": "Payment Details"
+  },
+  {
+   "depends_on": "eval: doc.payment_status == \"Paid\"",
+   "fieldname": "transaction_id",
+   "fieldtype": "Data",
+   "label": "Transaction ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_choy",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "outstanding_amount",
+   "fieldtype": "Currency",
+   "label": "Outstanding Amount",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval: doc.payment_status == \"Paid\"",
+   "fieldname": "paid_amount",
+   "fieldtype": "Currency",
+   "label": "Paid Amount",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "field_1",
+   "fieldtype": "Data",
+   "label": "Field 1"
+  },
+  {
+   "fieldname": "field_3",
+   "fieldtype": "Data",
+   "label": "Field 3"
+  },
+  {
+   "fieldname": "field_5",
+   "fieldtype": "Data",
+   "label": "Field 5"
+  },
+  {
+   "fieldname": "column_break_ysnq",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "field_2",
+   "fieldtype": "Data",
+   "label": "Field 2"
+  },
+  {
+   "fieldname": "field_4",
+   "fieldtype": "Data",
+   "label": "Field 4"
+  },
+  {
+   "fieldname": "field_6",
+   "fieldtype": "Data",
+   "label": "Field 6"
+  },
+  {
+   "default": "0",
+   "fieldname": "payment_required",
+   "fieldtype": "Check",
+   "label": "Payment Required"
+  },
+  {
+   "fieldname": "column_break_ylhx",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "form_hash",
+   "fieldtype": "Data",
+   "label": "Form Hash",
+   "no_copy": 1,
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fetch_from": "student.custom_division",
+   "fieldname": "division",
+   "fieldtype": "Data",
+   "label": "Division"
+  },
+  {
+   "fieldname": "field_7",
+   "fieldtype": "Data",
+   "label": "Field 7"
+  },
+  {
+   "fieldname": "field_9",
+   "fieldtype": "Data",
+   "label": "Field 9"
+  },
+  {
+   "fieldname": "field_11",
+   "fieldtype": "Data",
+   "label": "Field 11"
+  },
+  {
+   "fieldname": "field_13",
+   "fieldtype": "Data",
+   "label": "Field 13"
+  },
+  {
+   "fieldname": "field_8",
+   "fieldtype": "Data",
+   "label": "Field 8"
+  },
+  {
+   "fieldname": "field_10",
+   "fieldtype": "Data",
+   "label": "Field 10"
+  },
+  {
+   "fieldname": "field_12",
+   "fieldtype": "Data",
+   "label": "Field 12"
+  },
+  {
+   "fieldname": "field_14",
+   "fieldtype": "Data",
+   "label": "Field 14"
+  },
+  {
+   "default": "Not Paid",
+   "fieldname": "payment_status",
+   "fieldtype": "Select",
+   "label": "Payment Status",
+   "options": "Not Paid\nPaid"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-27 14:09:15.987008",
+ "modified": "2024-07-18 18:06:26.055346",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Event Participant",

@@ -5,7 +5,7 @@ frappe.listview_settings["Birthday Card"] = {
     refresh: function (listview) {
         listview.page.add_inner_button(__("Print Birthday Cards"), async function () {
             const dialog = new frappe.ui.Dialog({
-                title: __('Print Todays Birthday Cards'),
+                title: __('Print Birthday Cards'),
                 fields: [
                     {
                         fieldtype: 'Date',
@@ -27,16 +27,22 @@ frappe.listview_settings["Birthday Card"] = {
                         fieldname: 'student_status',
                         options: ['New student', 'Current student', 'Cancelled', 'Not attending', 'Defaulter', 'Alumni'],
                     },
+                    {
+                        fieldtype: 'Link',
+                        label: __('School'),
+                        fieldname: 'school',
+                        options: 'School',
+                    },
                 ],
                 primary_action_label: __('Submit'),
                 primary_action: async function (values) {
                     const headers = new Headers();
                     headers.append('X-Frappe-CSRF-Token', frappe.csrf_token);
                     headers.append('Content-Type', 'application/json');
-                    const payload = { "from_date": values.from_date, "to_date": values.to_date, "student_status": values.student_status}
+                    const payload = { "from_date": values.from_date, "to_date": values.to_date, "student_status": values.student_status, "school": values.school}
 
                     try {
-                        const response = await fetch(`/api/method/edu_quality.edu_quality.doctype.birthday_card.birthday_card.print_todays_birthday_card`, {
+                        const response = await fetch(`/api/method/edu_quality.edu_quality.doctype.birthday_card.birthday_card.print_birthday_cards`, {
                             method: 'POST',
                             headers: headers,
                             body: JSON.stringify(payload)
@@ -45,7 +51,7 @@ frappe.listview_settings["Birthday Card"] = {
                         const file = await response.blob();
                         await handleFileResponse(file, values);
                     } catch (e) {
-                        console.error("An error occurred while trying to print today's birthday cards:", e);
+                        console.error("An error occurred while trying to print birthday cards:", e);
                     } finally {
                         if (pdfUrl) {
                             URL.revokeObjectURL(pdfUrl);

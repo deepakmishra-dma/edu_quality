@@ -180,6 +180,7 @@ doc_events = {
     "Program Enrollment": {
         "on_submit": [
             "edu_quality.public.py.fee.create_fees",
+            "edu_quality.public.py.fee.collect_birthday_details_on_submit",
         ],
         "before_insert": "edu_quality.public.py.fee.sync_student_data",
         "after_insert": [
@@ -263,7 +264,7 @@ scheduler_events = {
         "0 6 * * *": ["edu_quality.tasks.schedule_birthday_greeting"],
         "* * * * *": [
             "edu_quality.cmap_jobs.send_ptm_notifications_to_students",
-            "edu_quality.cmap_jobs.notify_teacher_before_half_hour_job",
+            "edu_quality.cmap_jobs.notify_teacher_before_one_hour_job",
         ],
     },
     "daily": [

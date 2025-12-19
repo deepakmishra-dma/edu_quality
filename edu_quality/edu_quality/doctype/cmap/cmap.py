@@ -25,13 +25,14 @@ class CMAP(Document):
         class_sortcode = frappe.db.get_value(
             "Class Type", self.get("class"), "short_code"
         )
-        self.name = f"{self.academic_year}-{course_short_code}{class_sortcode}{self.unit}{self.period}"
-        return self.name
+        self.cmap_code = f"{self.academic_year}-{course_short_code}{class_sortcode}{self.unit}{self.period}"
+        return self.cmap_code
 
-    def autoname(self, method=None):
-        self.name_func()
+    # def autoname(self, method=None):
+    #     self.name_func()
 
     def before_save(self):
+        self.name_func()
         if not self.is_new():
             doc_before_save = frappe.get_doc(self.doctype, self.name)
             for original_child in doc_before_save.table_vwbr:
@@ -103,15 +104,17 @@ class CMAP(Document):
             idx += 1
 
     def after_insert(self, method=None):
+        # self.name_func()
         insert_cmap_assignees(self)
 
     def on_update(self, method=None):
-        old_doc = self.get_doc_before_save()
-        if old_doc and (
-            self.reserved_for_portion_circular != old_doc.reserved_for_portion_circular
-            or self.period != old_doc.period
-        ):
-            frappe.rename_doc("CMAP", old_doc.name, self.name_func())
+        # old_doc = self.get_doc_before_save()
+        # if old_doc and (
+        #     self.reserved_for_portion_circular != old_doc.reserved_for_portion_circular
+        #     or self.period != old_doc.period
+        # ):
+        #     self.name_func()
+        pass
 
 
 def insert_cmap_assignees(self):

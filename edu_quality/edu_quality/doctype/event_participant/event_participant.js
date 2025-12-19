@@ -1,11 +1,11 @@
 // Copyright (c) 2024, Hybrowlabs Technologies and contributors
 // For license information, please see license.txt
 
-frappe.ui.form.on("Event Participant", {
-    refresh(frm) {
-        showParticipantDetails(frm);
-    },
-});
+// frappe.ui.form.on("Event Participant", {
+//     refresh(frm) {
+//         showParticipantDetails(frm);
+//     },
+// });
 
 function titleCase(str) {
     return str.toLowerCase().split(' ').map(function (word) {

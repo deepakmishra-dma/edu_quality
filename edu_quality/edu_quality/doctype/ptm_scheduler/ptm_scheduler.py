@@ -16,10 +16,13 @@ import csv
 
 
 class PTMScheduler(Document):
-	pass
-
-
-
+    
+    @frappe.whitelist()
+    def get_teacher(self):
+        if self.teacher_alias:
+            teachers = frappe.get_all("Teacher Alias Group", filters={"alias": self.teacher_alias}, pluck="parent")
+            teacher = frappe.get_value("Instructor", {"instructor_name": ["in", teachers], "custom_school": self.branch})
+            return teacher
 
 
 @frappe.whitelist()

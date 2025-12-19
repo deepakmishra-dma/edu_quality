@@ -102,7 +102,7 @@ def print_birthday_card(birthday_cards):
 
 
 @frappe.whitelist()
-def print_todays_birthday_card(from_date, to_date, student_status=None):
+def print_birthday_cards(from_date, to_date, student_status=None, school=None):
     academic_year = current_academic_year()
     query = """
         SELECT birthday_card.name
@@ -127,6 +127,10 @@ def print_todays_birthday_card(from_date, to_date, student_status=None):
     if student_status:
         query += "AND student.student_status = %(student_status)s"
         values["student_status"] = student_status
+    
+    if school:
+        query += "AND student.school = %(school)s"
+        values["school"] = school
 
     all_birthdays = frappe.db.sql(query=query, as_dict=True, values=values)
     birthday_cards = [i.name for i in all_birthdays]

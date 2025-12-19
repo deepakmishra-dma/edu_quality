@@ -20,6 +20,7 @@
   "registration_last_date",
   "department",
   "secondary_poc_name",
+  "web_form",
   "section_break_izud",
   "is_team",
   "team",
@@ -41,6 +42,7 @@
   "event_timeline_tab",
   "event_dates_section",
   "dates_of_event",
+  "registration_email_template",
   "event_registration_reminder",
   "event_reminder",
   "winning_details_tab",
@@ -234,6 +236,7 @@
    "label": "Photos From Wal-T"
   },
   {
+   "depends_on": "eval: doc.all_students == 1 || doc.allowed_students.length != 0",
    "fieldname": "add_to_participating",
    "fieldtype": "Button",
    "label": "Add to Participating"
@@ -269,7 +272,7 @@
    "reqd": 1
   },
   {
-   "description": "Enter student status as comma separated values",
+   "description": "Enter student status as comma separated values. (Case Sensitive*)",
    "fieldname": "student_status",
    "fieldtype": "Data",
    "label": "Student Status"
@@ -300,15 +303,30 @@
    "label": "Registration Open Date"
   },
   {
-   "depends_on": "eval: doc.registration_type == \"Pre-registered\"",
+   "depends_on": "eval: doc.registration_type == \"Pre-registered\" ||  doc.registration_type == \"Mix\"",
    "fieldname": "registration_last_date",
    "fieldtype": "Date",
    "label": "Registration Last Date"
+  },
+  {
+   "description": "Default Email Template for Event Registration",
+   "fieldname": "registration_email_template",
+   "fieldtype": "Link",
+   "label": "Registration Email Template",
+   "mandatory_depends_on": "eval: doc.registration_type == \"Pre-registered\" || doc.registration_type == \"Mix\"",
+   "options": "Email Template"
+  },
+  {
+   "depends_on": "eval: doc.registration_type == \"Pre-registered\" || doc.registration_type == \"Mix\"",
+   "fieldname": "web_form",
+   "fieldtype": "Link",
+   "label": "Web Form For Registration",
+   "options": "Web Form"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-06-27 14:47:34.747848",
+ "modified": "2024-07-18 10:58:42.893245",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Event Detail",

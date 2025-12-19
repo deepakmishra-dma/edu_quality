@@ -85,8 +85,10 @@ def before_save(doc, method=None):
         if prev_doc and prev_doc.student_status != doc.student_status:
             if doc.student_status == "Defaulter":
                 suspend_google_user(doc.student_email_id)
+                doc.enabled = 0
             else:
                 unsuspend_google_user(doc.student_email_id)
+                doc.enabled = 1
         comment_on_possible_dropout(doc, prev_doc)
     except Exception as e:
         frappe.logger("google_user").exception(e)
