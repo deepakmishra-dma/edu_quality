@@ -13,6 +13,14 @@ class EventParticipant(Document):
     
     def after_insert(self):
         self.form_hash = frappe.generate_hash(self.name, length=20)
+        # Set Payment Required and Amount based on the Event Detail and Web Form
+        if self.event_detail:
+            web_form_name = frappe.get_value("Event Detail", self.event_detail, "web_form")
+            web_form = frappe.get_value("Web Form", web_form_name, ["amount", "accept_payment"], as_dict=True)
+            if web_form:
+                self.outstanding_amount = web_form.amount
+                self.payment_required = web_form.accept_payment
+
         self.save(ignore_permissions=True)
         guardian = frappe.get_all(
             "Student Guardian", {"parent": self.student}, pluck="guardian"
@@ -34,6 +42,10 @@ class EventParticipant(Document):
                 frappe.delete_doc("User Permission", perm, ignore_permissions=True)
 
     def send_registration_link(self, email_template=None):
+        # Early exit if paid
+        if self.payment_status == "Paid":
+            return
+        
         # Early exit if no student is associated
         guardian = frappe.get_all("Student Guardian", {"parent": self.student}, pluck="guardian")
         if not guardian:
@@ -67,10 +79,17 @@ class EventParticipant(Document):
 
     def on_submit(self):
         if self.payment_required:
-            if self.outstanding_amount < 0:
-                self.outstanding_amount = 0
+            self.outstanding_amount = max(self.outstanding_amount, 0)
+            
             if self.payment_status != "Paid" or self.outstanding_amount > 0:
-                frappe.throw("Payment is pending")
+                frappe.throw("Payment is pending, please make the payment to submit the form")
+            else:
+                try:
+                    from nextai.funnel.custom_trigger import trigger_event
+                    trigger_event(doc=self, event_name="event_payment_success")
+                except ImportError:  # Assuming the specific exception for module not found
+                    frappe.log_error("Chatnext is not installed", "ImportError")
+
         if not frappe.db.exists(
             "Student Data", {"student": self.student, "parent": self.event_detail}
         ):
@@ -79,6 +98,7 @@ class EventParticipant(Document):
             participant.student_name = self.student_name
             participant.refno = self.refno
             participant.event_participant_link = self.name
+            participant.payment_status = self.payment_status if self.payment_required else None
             participant.parent = self.event_detail
             participant.parenttype = "Event Detail"
             participant.parentfield = "participating_students"
@@ -87,13 +107,10 @@ class EventParticipant(Document):
     def validate_payment(self, data=None):
         if data:
             amount = data.get("amount")
-            self.payment_required = 1
             self.payment_status = "Paid"
-            if self.outstanding_amount > 0:
-                self.outstanding_amount -= amount
-            else:
-                self.outstanding_amount = 0
+            self.outstanding_amount -= amount
             self.paid_amount = amount
+            self.paid_date = frappe.utils.today()
             self.save(ignore_permissions=True)
             self.submit()
             return {"status": "success", "message": "Payment Successful"}
