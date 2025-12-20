@@ -23,6 +23,7 @@
   "payment_details_section",
   "payment_status",
   "transaction_id",
+  "paid_date",
   "column_break_choy",
   "outstanding_amount",
   "paid_amount",
@@ -124,6 +125,7 @@
    "label": "Data"
   },
   {
+   "allow_on_submit": 1,
    "fetch_from": "student.student_name",
    "fieldname": "student_name",
    "fieldtype": "Data",
@@ -175,16 +177,19 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "field_1",
    "fieldtype": "Data",
    "label": "Field 1"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "field_3",
    "fieldtype": "Data",
    "label": "Field 3"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "field_5",
    "fieldtype": "Data",
    "label": "Field 5"
@@ -194,16 +199,19 @@
    "fieldtype": "Column Break"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "field_2",
    "fieldtype": "Data",
    "label": "Field 2"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "field_4",
    "fieldtype": "Data",
    "label": "Field 4"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "field_6",
    "fieldtype": "Data",
    "label": "Field 6"
@@ -233,41 +241,49 @@
    "label": "Division"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "field_7",
    "fieldtype": "Data",
    "label": "Field 7"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "field_9",
    "fieldtype": "Data",
    "label": "Field 9"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "field_11",
    "fieldtype": "Data",
    "label": "Field 11"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "field_13",
    "fieldtype": "Data",
    "label": "Field 13"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "field_8",
    "fieldtype": "Data",
    "label": "Field 8"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "field_10",
    "fieldtype": "Data",
    "label": "Field 10"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "field_12",
    "fieldtype": "Data",
    "label": "Field 12"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "field_14",
    "fieldtype": "Data",
    "label": "Field 14"
@@ -278,12 +294,19 @@
    "fieldtype": "Select",
    "label": "Payment Status",
    "options": "Not Paid\nPaid"
+  },
+  {
+   "depends_on": "eval: doc.payment_status == \"Paid\"",
+   "fieldname": "paid_date",
+   "fieldtype": "Date",
+   "label": "Paid Date",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-07-18 18:06:26.055346",
+ "modified": "2024-07-19 12:13:30.102129",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Event Participant",
