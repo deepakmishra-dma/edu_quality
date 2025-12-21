@@ -156,7 +156,10 @@ function addReferral(frm) {
 }
 
 // function to format the date in dd-mm-yyyy
-function formatDate(inputDate) {
+function formatDate(inputDate, type="due_date") {
+    if (inputDate === undefined && type === "paid_date") {
+        return 'Paid';
+    }
     // Destructure the input date parts directly
     const [year, month, day] = inputDate.split('-');
     
@@ -179,6 +182,9 @@ function addFeeDetails(frm) {
             },
             callback: function (r) {
                 const feesContainer = frm.$wrapper[0].querySelector("#fees");
+                if (feesContainer === null) {
+                    return;
+                }
                 if (r.message && r.message.length) {
                     const rows = r.message.map((item, index) => {
                         const { payment_term, description, due_date, invoice_portion, payment_amount, outstanding, parent, doctype, paid_date } = item;
@@ -191,7 +197,7 @@ function addFeeDetails(frm) {
                                 <td>${formatDate(due_date)}</td>
                                 <td>${invoice_portion}%</td>
                                 <td>${rupee.format(payment_amount)}</td>
-                                <td>${outstanding === 0 ? formatDate(paid_date) : 'Not Paid'}</td>
+                                <td>${outstanding === 0 ? formatDate(paid_date, "paid_date") : 'Not Paid'}</td>
                                 <td><a href="${link}" target="_blank">Open</a></td>
                             </tr>`;
                     }).join('');
@@ -208,7 +214,7 @@ function addFeeDetails(frm) {
                                         <th scope="col">Due Date</th>
                                         <th scope="col">Invoice Portion</th>
                                         <th scope="col">Payment Amount</th>
-                                        <th scope="col">Paid Date</th>
+                                        <th scope="col">Paid Date/Status</th>
                                         <th scope="col">Action</th>
                                     </tr>
                                 </thead>
@@ -232,6 +238,9 @@ function addDepositDetails(frm) {
             method: "get_deposit_details",
             callback: function (r) {
                 const depositContainer = frm.$wrapper[0].querySelector("#deposit");
+                if (depositContainer === null) {
+                    return;
+                }
                 if (r.message && r.message.length) {
                     const rows = r.message.map((item, index) => `
                         <tr>
@@ -249,7 +258,7 @@ function addDepositDetails(frm) {
                                     <tr>
                                         <th>Sr.No</th>
                                         <th scope="col">Payment Amount</th>
-                                        <th scope="col">Paid Date</th>
+                                        <th scope="col">Paid Date/Status</th>
                                         <th scope="col">Action</th>
                                     </tr>
                                 </thead>
@@ -273,6 +282,9 @@ function addHDTicketDetails(frm) {
             method: "get_hd_ticket_details",
             callback: function (r) {
                 const ticketsContainer = frm.$wrapper[0].querySelector("#tickets");
+                if (ticketsContainer === null) {
+                    return;
+                }
                 if (r.message && r.message.length) {
                     const rows = r.message.map(({ name, refno, subject, status }) => `
                         <tr>
@@ -316,6 +328,9 @@ function addParentDetails(frm) {
             method: "get_parents_details",
             callback: function (r) {
                 const parentsContainer = frm.$wrapper[0].querySelector("#parents");
+                if (parentsContainer === null) {
+                    return;
+                }
                 if (r.message && r.message.length) {
                     const rows = r.message.map((item, index) => `
                         <tr>
