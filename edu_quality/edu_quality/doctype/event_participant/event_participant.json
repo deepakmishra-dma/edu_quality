@@ -1,0 +1,333 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:{student}-{event_detail}",
+ "creation": "2024-06-26 19:34:59.507172",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "student_details_section",
+  "student",
+  "student_name",
+  "column_break_oswr",
+  "refno",
+  "class",
+  "division",
+  "section_break_mpyv",
+  "event_detail",
+  "event",
+  "payment_required",
+  "column_break_scaw",
+  "school",
+  "starts_on",
+  "payment_details_section",
+  "payment_status",
+  "transaction_id",
+  "paid_date",
+  "column_break_choy",
+  "outstanding_amount",
+  "paid_amount",
+  "data_tab",
+  "section_break_vjib",
+  "field_1",
+  "field_3",
+  "field_5",
+  "field_7",
+  "field_9",
+  "field_11",
+  "field_13",
+  "column_break_ysnq",
+  "field_2",
+  "field_4",
+  "field_6",
+  "field_8",
+  "field_10",
+  "field_12",
+  "field_14",
+  "section_break_lwk1",
+  "amended_from",
+  "column_break_ylhx",
+  "form_hash"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_lwk1",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Event Participant",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "event_detail",
+   "fieldtype": "Link",
+   "label": "Event Detail",
+   "options": "Event Detail"
+  },
+  {
+   "fetch_from": "event_detail.event",
+   "fieldname": "event",
+   "fieldtype": "Link",
+   "label": "Event",
+   "options": "Event"
+  },
+  {
+   "fieldname": "column_break_scaw",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "event_detail.event_starts_on",
+   "fieldname": "starts_on",
+   "fieldtype": "Datetime",
+   "label": "Starts On"
+  },
+  {
+   "fieldname": "section_break_vjib",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fetch_from": "event_detail.school",
+   "fieldname": "school",
+   "fieldtype": "Link",
+   "label": "School",
+   "options": "School"
+  },
+  {
+   "fieldname": "student_details_section",
+   "fieldtype": "Section Break",
+   "label": "Student Details"
+  },
+  {
+   "fieldname": "student",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Student",
+   "options": "Student",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_oswr",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_mpyv",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "data_tab",
+   "fieldtype": "Tab Break",
+   "label": "Data"
+  },
+  {
+   "allow_on_submit": 1,
+   "fetch_from": "student.student_name",
+   "fieldname": "student_name",
+   "fieldtype": "Data",
+   "label": "Student Name"
+  },
+  {
+   "fetch_from": "student.program",
+   "fieldname": "class",
+   "fieldtype": "Link",
+   "label": "Class",
+   "options": "Program"
+  },
+  {
+   "fetch_from": "student.reference_number",
+   "fieldname": "refno",
+   "fieldtype": "Data",
+   "label": "Reference Number"
+  },
+  {
+   "depends_on": "eval: doc.payment_required == 1",
+   "fieldname": "payment_details_section",
+   "fieldtype": "Section Break",
+   "label": "Payment Details"
+  },
+  {
+   "depends_on": "eval: doc.payment_status == \"Paid\"",
+   "fieldname": "transaction_id",
+   "fieldtype": "Data",
+   "label": "Transaction ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_choy",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "outstanding_amount",
+   "fieldtype": "Currency",
+   "label": "Outstanding Amount",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval: doc.payment_status == \"Paid\"",
+   "fieldname": "paid_amount",
+   "fieldtype": "Currency",
+   "label": "Paid Amount",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "field_1",
+   "fieldtype": "Data",
+   "label": "Field 1"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "field_3",
+   "fieldtype": "Data",
+   "label": "Field 3"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "field_5",
+   "fieldtype": "Data",
+   "label": "Field 5"
+  },
+  {
+   "fieldname": "column_break_ysnq",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "field_2",
+   "fieldtype": "Data",
+   "label": "Field 2"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "field_4",
+   "fieldtype": "Data",
+   "label": "Field 4"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "field_6",
+   "fieldtype": "Data",
+   "label": "Field 6"
+  },
+  {
+   "default": "0",
+   "fieldname": "payment_required",
+   "fieldtype": "Check",
+   "label": "Payment Required"
+  },
+  {
+   "fieldname": "column_break_ylhx",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "form_hash",
+   "fieldtype": "Data",
+   "label": "Form Hash",
+   "no_copy": 1,
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fetch_from": "student.custom_division",
+   "fieldname": "division",
+   "fieldtype": "Data",
+   "label": "Division"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "field_7",
+   "fieldtype": "Data",
+   "label": "Field 7"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "field_9",
+   "fieldtype": "Data",
+   "label": "Field 9"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "field_11",
+   "fieldtype": "Data",
+   "label": "Field 11"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "field_13",
+   "fieldtype": "Data",
+   "label": "Field 13"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "field_8",
+   "fieldtype": "Data",
+   "label": "Field 8"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "field_10",
+   "fieldtype": "Data",
+   "label": "Field 10"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "field_12",
+   "fieldtype": "Data",
+   "label": "Field 12"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "field_14",
+   "fieldtype": "Data",
+   "label": "Field 14"
+  },
+  {
+   "default": "Not Paid",
+   "fieldname": "payment_status",
+   "fieldtype": "Select",
+   "label": "Payment Status",
+   "options": "Not Paid\nPaid"
+  },
+  {
+   "depends_on": "eval: doc.payment_status == \"Paid\"",
+   "fieldname": "paid_date",
+   "fieldtype": "Date",
+   "label": "Paid Date",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2024-07-19 12:13:30.102129",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "Event Participant",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}
