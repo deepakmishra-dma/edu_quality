@@ -1,5 +1,6 @@
 import frappe
 from frappe.utils.data import *
+from frappe.utils import get_datetime, now_datetime, add_to_date
 
 import datetime
 import requests
@@ -59,80 +60,74 @@ def test():
 def compare_time(time_str, minute_difference):
     try:
         # Convert time string to datetime object
-        time_obj = datetime.datetime.strptime(time_str, "%I:%M %p")
+        time_obj = get_datetime(time_str)
 
-        # Calculate half an hour before the current time
-        half_hour_before = datetime.datetime.now() - datetime.timedelta(
-            minutes=minute_difference
-        )
+        # Calculate the time before the current time by the specified minute difference
+        current_time = now_datetime()
+        comparison_time = add_to_date(current_time, minutes=minute_difference)
 
-        # Check if the given time is half an hour or less before the current time
-        return time_obj <= half_hour_before
-    except Exception as e:
-        print(f"Error comparing time: {e}")
+        # Check if the given time is within the specified difference before the current time
+        return time_obj <= comparison_time
+    except:
+        # Log the error message
+        frappe.log_error(f"Error comparing time for PTM Scheduler", frappe.get_traceback())
         return False
 
 
 def get_user_id_of_instructor(teacher_id):
-    try:
-        instructor = frappe.get_doc("Instructor", teacher_id)
-        employee = frappe.get_doc("Employee", instructor.employee)
-        return employee.user_id
-    except Exception as e:
+    employee = frappe.get_value('Instructor', teacher_id, 'employee')
+    user_id = frappe.get_value('Employee', employee, 'user_id')
+    
+    if user_id:
+        return user_id
+    else:
         frappe.log_error(
-            f"Error in getting user ID for instructor {teacher_id}: {str(e)}"
+            f"User ID not found for instructor {teacher_id}"
         )
         return None
 
 
 @frappe.whitelist()
-def notify_teacher_before_half_hour_job():
-    minute_difference = 30
-    data = frappe.get_all(
+def notify_teacher_before_one_hour_job():
+    minute_difference = 60
+
+    # Retrieve PTM Scheduler records that need notification
+    ptms = frappe.get_all(
         "PTM Scheduler",
-        filters={"is_notified": 0, "date": frappe.utils.today()},
+        filters={"is_notified": 0, "date": today()},
         fields=[
-            "name",
-            "slot",
-            "subject",
-            "teacher",
-            "date",
-            "division",
-            "branch",
-            "day",
-            "gmeet_link",
+            "name", "slot", "subject", "teacher", "division", "gmeet_link"
         ],
     )
     notifi_added = []
-    content = "PTM Meeting is scheduled soon. Please be prepared. <a href='{0}'>{0}</a>"
+    content_template = "PTM Meeting is scheduled For <b>Division:</b> {0}, <b>Subject:</b> {1} at <b>{2}</b>.<br>Join: <a href='{3}'>{3}</a>"
 
-    # Iterate over PTM Scheduler records
-    for record in data:
-        slot = record.get("slot")
+    for ptm in ptms:
+        slot = ptm.get("slot")
         if slot:
-            # Extract the end time from the slot string
-            timef = slot.split("-")[1].strip() if "-" in slot else slot.strip()
+            # Extract the start time from the slot
+            timef = slot.split("-")[0].strip() if "-" in slot else slot.strip()
             if timef and compare_time(timef, minute_difference):
-                # Get the teacher ID and corresponding user ID
-                teacher_id = record.get("teacher")
-                user_id_teacher = get_user_id_of_instructor(teacher_id)
+                # Get the user ID of the teacher
+                user_id_teacher = get_user_id_of_instructor(ptm.teacher)
                 if user_id_teacher:
-                    notifi_added.append(record.get("name"))
-                    # Add mention with the notification content
+                    # Notify the teacher
+                    notifi_added.append(ptm.name)
+                    # Create a comment mentioning the teacher
+                    content = content_template.format(ptm.division, ptm.subject, timef, ptm.gmeet_link)
                     add_mentions(
                         comment_by="Administrator",
                         user_id=user_id_teacher,
-                        content=content.format(record.get("gmeet_link")),
+                        content=content,
                         reference_doctype="PTM Scheduler",
-                        reference_name=record.get("name"),
-                        name=teacher_id,
+                        reference_name=ptm.name,
+                        name=ptm.teacher,
                     )
 
-    # Update is_notified flag for notified records
     if notifi_added:
-        # Construct SQL query to update is_notified flag
-        sql = """UPDATE `tabPTM Scheduler` SET is_notified = 1 WHERE name IN %(li)s"""
-        frappe.db.sql(sql, {"li": tuple(notifi_added)})
+        # Update the is_notified flag in a batch
+        sql_query = """UPDATE `tabPTM Scheduler` SET is_notified = 1 WHERE name IN %s"""
+        frappe.db.sql(sql_query, (tuple(notifi_added),))
         frappe.db.commit()
 
 
