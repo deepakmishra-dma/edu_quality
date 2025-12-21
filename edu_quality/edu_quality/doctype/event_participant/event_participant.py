@@ -106,7 +106,9 @@ class EventParticipant(Document):
 
     def validate_payment(self, data=None):
         if data:
-            amount = data.get("amount")
+            amount = data.get("amount") or 0
+            if isinstance(amount, str):
+                amount = float(amount)
             self.payment_status = "Paid"
             self.outstanding_amount -= amount
             self.paid_amount = amount
