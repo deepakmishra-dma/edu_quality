@@ -25,7 +25,7 @@ async function folderExists(parent, newFolder) {
     }
 
 }
-function uploadImage(image, folder, image_name) {
+function uploadImage(image, folder, image_name, docname) {
 
     return fetch(image).then((res) => res.blob()).then((blob) => {
         const formData = new FormData();
@@ -34,6 +34,10 @@ function uploadImage(image, folder, image_name) {
         formData.append('file', file, image_name)
         formData.append('folder', "home/" + folder)
         formData.append('is_private', 1)
+        formData.append("doctype", "Student ID Card")
+        formData.append("docname", docname)
+
+        formData.append('method', "edu_quality.edu_quality.doctype.student_id_card.student_id_card.auto_crop")
         nativeInterface.logToNative(formData)
         return fetch("/api/method/upload_file", {
             method: 'POST',
@@ -210,22 +214,23 @@ frappe.listview_settings['Student ID Card'] = {
                         if (!image || !idCard) return frappe.msgprint("Take a photo or id card not found")
                         if (image == idCard.photo_taken) return frappe.msgprint("Error uploading, image uploaded has the same file url as the previous one")
                         await folderExists("Home", `${values.school}-${values.academic_year}`)
-                        const img = await uploadImage(image, `${values.school}-${values.academic_year}`, `${values.refNo}-${idCard.name}.jpg`)
+                        const img = await uploadImage(image, `${values.school}-${values.academic_year}`, `${values.refNo}-${idCard.name}.jpg`, idCard.name)
                         image = ""
-                        const payload = { ...idCard, photo_taken: img, status: "CLICKED", "photo_taken_time": getMysqlDate(new Date()) }
+                        const payload = { ...idCard, status: "CLICKED", "photo_taken_time": getMysqlDate(new Date()) }
                         const data = await updateIDCard(idCard.name, payload)
-                        const service_account = await frappe.get_single("Google Service Account")
+                        // const service_account = await frappe.get_single("Google Service Account")
 
-                        await frappe.call({
-                            method: "edu_quality.api.google_drive_upload.upload_file",
-                            args: {
-                                file_url: img,
-                                folder_name: service_account.get('id_card_folder'),
-                                type: "POST",
-                            }, callback: () => {
+                        // await frappe.call({
+                        //     method: "edu_quality.api.google_drive_upload.upload_file",
+                        //     args: {
+                        //         file_url: img,
+                        //         folder_name: service_account.get('id_card_folder'),
+                        //         method: "",
+                        //         type: "POST",
+                        //     }, callback: () => {
 
-                            }
-                        })
+                        //     }
+                        // })
 
                     } catch (e) {
                         findAndToggleFooterButton(d, false, "Upload")
