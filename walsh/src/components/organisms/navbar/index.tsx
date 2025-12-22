@@ -170,11 +170,13 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
           //   icon: IconCreditCard,
           //   location: "/fee",
           // },
+
           {
             label: "Result",
             icon: IconReport,
             location: "/result",
           },
+
           {
             label: "School Calendar",
             icon: IconCalendar,

@@ -18,6 +18,7 @@ class StudentExit(Document):
 	def before_save(self):
 		self.update_details()
 
+	@frappe.whitelist()
 	def update_details(self):
 		student = frappe.get_doc("Student",self.student)
 		try:
@@ -47,6 +48,7 @@ class StudentExit(Document):
 				self.refund_amount = 0
 			self.get_attendance_details()
 			self.get_subjects()
+			# self.save()
 		except Exception as e:
 			frappe.logger('dep').exception(e)
 			self.deposit_amount = 0 
