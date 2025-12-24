@@ -84,6 +84,7 @@ class EventParticipant(Document):
             if self.payment_status != "Paid" or self.outstanding_amount > 0:
                 frappe.throw("Payment is pending, please make the payment to submit the form")
             else:
+                self.create_payment_entry()
                 try:
                     from nextai.funnel.custom_trigger import trigger_event
                     trigger_event(doc=self, event_name="event_payment_success")
@@ -106,7 +107,9 @@ class EventParticipant(Document):
 
     def validate_payment(self, data=None):
         if data:
-            amount = data.get("amount")
+            amount = data.get("amount") or 0
+            if isinstance(amount, str):
+                amount = float(amount)
             self.payment_status = "Paid"
             self.outstanding_amount -= amount
             self.paid_amount = amount
@@ -116,7 +119,40 @@ class EventParticipant(Document):
             return {"status": "success", "message": "Payment Successful"}
         else:
             return {"status": "error", "message": "Payment data not found"}
-
+        
+    def create_payment_entry(self):
+        user = frappe.session.user
+        frappe.set_user("Administrator")
+        paid_from = frappe.get_value("School", self.school, "event_account")
+        company = frappe.get_value("Account", paid_from, "company")
+        paid_to = frappe.get_value("Company", company, "default_easebuzz_account")
+        cost_center = frappe.get_value("Company", company, "cost_center")
+        payment_entry = frappe.get_doc(
+            {
+                "doctype": "Payment Entry",
+                "payment_type": "Receive",
+                "company": company,
+                "cost_center": cost_center,
+                "posting_date": frappe.utils.nowdate(),
+                "reference_date": frappe.utils.nowdate(),
+                "party_type": "Student",
+                "party": self.student,
+                "party_name": self.student_name,
+                "paid_from": paid_from,
+                "paid_to": paid_to,
+                "paid_amount": self.paid_amount,
+                "received_amount": self.paid_amount,
+                "reference_doctype": self.doctype,  # 'Fees' or 'Fee Advance'
+                "reference_name": self.name,
+                "mode_of_payment": "Online",
+                "reference_no": self.transaction_id,
+                "school": self.school,
+                "program": self.program,
+            }
+        )
+        payment_entry.insert(ignore_permissions=True)
+        payment_entry.submit()
+        frappe.set_user(user)
 
 @frappe.whitelist()
 def export_participant_data(event_detail):
