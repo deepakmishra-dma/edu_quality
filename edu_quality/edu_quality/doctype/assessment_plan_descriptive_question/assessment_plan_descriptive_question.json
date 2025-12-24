@@ -1,0 +1,59 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-07-15 08:58:16.178972",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "question",
+  "parent_question",
+  "score",
+  "max_marks",
+  "min_marks"
+ ],
+ "fields": [
+  {
+   "fieldname": "question",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Question",
+   "options": "Descriptive Question"
+  },
+  {
+   "fieldname": "parent_question",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Parent Question",
+   "options": "Question"
+  },
+  {
+   "fieldname": "score",
+   "fieldtype": "Float",
+   "label": "Score"
+  },
+  {
+   "fieldname": "max_marks",
+   "fieldtype": "Float",
+   "label": "Max Marks"
+  },
+  {
+   "fieldname": "min_marks",
+   "fieldtype": "Float",
+   "label": "Min Marks"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-07-15 09:21:43.203611",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "Assessment Plan Descriptive Question",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

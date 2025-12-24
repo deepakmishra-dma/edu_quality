@@ -41,6 +41,24 @@ const fetchSaveOnlyOnce = function () {
 		loading = false
 	}
 }
+
+function addDescriptiveFilters() {
+	frappe.query_report.add_filter({
+		"fieldname": "desc_exam_name",
+		"label": __("Exam Name"),
+		"fieldtype": "Link",
+		"options": "Descriptive Exam"
+
+	});
+	frappe.query_report.add_filter({
+		"fieldname": "desc_exam_ques",
+		"label": __("Exam Question Paper"),
+		"fieldtype": "Link",
+		"options": "Descriptive Question Paper"
+	});
+
+	// frappe.query_report.remove_filter("assessment_group")
+}
 const throttledAutoSave = throttle(fetchSaveOnlyOnce(), 6000)
 
 function changeMarksData(value, columnId, rowIndex, maximumScore, scoring_type) {
@@ -115,7 +133,7 @@ function initializeKeyListener() {
 	document.addEventListener('keydown', handleKeyDownEvent);
 }
 
-function createInputElement(value, column, row, docstatus) {
+function createInputElement(value, column, row, docstatus, onlineAssess) {
 	const isRed = String(value).toLowerCase() === "-";
 	const classes = [""]
 	const inputValue = isRed ? "style='background-color:var(--red-300);'" : "";
@@ -127,19 +145,35 @@ function createInputElement(value, column, row, docstatus) {
 		inputDisabled = true
 		classes.push("submitted-input")
 	}
+	if (onlineAssess == 1) {
+		classes.push("assess-input")
+	}
 
-	return `<input type="text" ${inputDisabled ? "disabled='true'" : ""} data-docstatus="${docstatus || 0}" data-colindex="${column.colIndex - 1}" class="${classes.join(" ")}" column="${column.fieldname}" data-rowindex="${row && row[0] && row[0].rowIndex}" max="${column.maximum_score}" maximum-score="${column.maximum_score}" value="${value}" oninput="changeMarksData(this, '${column.id}', '${row[0]?.rowIndex}', '${column.maximum_score}','${column.scoring_type}')" />`;
+	return `<input type="text" ${inputDisabled ? "disabled='true'" : ""} data-docstatus="${docstatus || 0}" data-colindex="${column.colIndex - 1}" class="${classes.join(' ')}" column="${column.fieldname}" data-rowindex="${row && row[0] && row[0].rowIndex}" max="${column.maximum_score}" maximum-score="${column.maximum_score}" value="${value}" oninput="changeMarksData(this, '${column.id}', '${row[0]?.rowIndex}', '${column.maximum_score}','${column.scoring_type}')" />`;
 }
 
 function formatter(value, row, column, data, defaultFormatter) {
 	value = defaultFormatter(value, row, column, data);
 	const values = data[column.fieldname]
 	const docstatus = values && values.docstatus
+	const onlineAssess = values && values.online_assess
 	if (column.is_criteria) {
-		value = createInputElement(value, column, row, docstatus);
+		value = createInputElement(value, column, row, docstatus, onlineAssess);
 	}
 
 	return value;
+}
+function switchToNormal() {
+
+	const filters = frappe.query_report.get_filter_values();
+
+	// Iterate through each filter and clear its value
+
+	frappe.query_report.set_filter_value("mode", '');
+	frappe.query_report.set_filter_value("ref_no", '');
+
+
+	frappe.query_report.refresh();
 }
 async function saveCall(autoSave = false) {
 	const filters = {};
@@ -186,6 +220,7 @@ const cancelResult = debounce(async (ref_nos) => {
 
 function onload(report) {
 	initializeKeyListener();
+	var queryParams = frappe.utils.get_query_params();
 
 	frappe.require(["/assets/edu_quality/css/mark-entry-tool.css"]);
 	report.page.parent.classList.add("mark-entry-tool-report");
@@ -236,6 +271,23 @@ function onload(report) {
 
 
 	})
+	if (frappe.query_report.get_filter_value("mode")) {
+		report.page.add_inner_button(__('Switch to Marks Entry'), () => {
+
+			let message = `
+				<div>
+					
+					<p>Are you sure you want to go to normal marks entry</p>
+				</div>`;
+
+			frappe.confirm(__(message), async () => {
+				switchToNormal()
+			})
+
+
+		})
+	}
+
 }
 
 function goToProcessing() {
@@ -252,20 +304,38 @@ function addNote() {
 	if (noteContainer.querySelector(".note-container")) {
 		return
 	}
-	noteContainerDiv.classList.add("note-container")
+	const legends = [
+		{ label: "Absent", "class": "absent-input" },
+		{ label: "Online Assessment", "class": "assess-input" },
+		{ label: "Submitted/Processed", "class": "submitted-input" },
+
+	]
+	const legendContainer = document.createElement('div')
+	legendContainer.classList.add("legend-container")
+
+	const generatedLegends = legends.map((el) => {
+		return `<div class="legend"><div class="${el.class}"></div><div>${el.label}</div></div>`
+	}).join('')
+
+	legendContainer.innerHTML = generatedLegends
+
+	noteContainerDiv.classList.add("note-container", "blue", "form-message", "my-0")
 	noteContainerDiv.innerHTML = `
-	<div class="form-message blue my-0">
-	<ul>
+	
+	<ul style="padding-left:16px;">
 	<li>Non Submitted Exam Config Subjects inside an Exam Configuration and their subject components won't show up for marking</li>
 	<li>Use - for marking student as absent</li>
 	<li>Empty Columns will be marked as absent automatically, on first save</li>
+	<li>Yellow Columns will be marked as absent automatically, on first save</li>
 	</ul>
-	</div>`
+	`
+	noteContainerDiv.appendChild(legendContainer)
 	noteContainer.appendChild(noteContainerDiv)
 }
 
 frappe.query_reports["Marks Entry Tool"] = {
 	"filters": [
+
 		{
 			"fieldname": "academic_year",
 			"fieldtype": "Link",
@@ -314,13 +384,81 @@ frappe.query_reports["Marks Entry Tool"] = {
 				const academic_year = frappe.query_report.get_filter_value("academic_year");
 				return { filters: { "program": program, academic_year: academic_year } };
 			}
+		}, {
+			"fieldname": "mode",
+			"label": __("Online Mode"),
+			"fieldtype": "Check",
+			"hidden": true
+		},
+		{
+			"fieldname": "ref_no",
+			"label": __("Online Mode"),
+			"fieldtype": "Link",
+			"options": "Student",
+			"hidden": true,
 		}
 	],
 	"formatter": formatter,
 	"onload": onload,
+
 	get_datatable_options(options) {
 		return Object.assign(options, {
 			checkboxColumn: true
 		});
 	}
+};
+
+frappe.query_report.add_filter = function (filter) {
+	if (!this.filters.some(existingFilter => existingFilter.fieldname === filter.fieldname)) {
+
+		let filter_area = this.page.page_form;
+		const df = filter
+		if (df.fieldtype === "Break") return;
+
+		let f = this.page.add_field(df, filter_area);
+
+		if (df.default) {
+			f.set_input(df.default);
+		}
+
+		if (df.get_query) f.get_query = df.get_query;
+		if (df.on_change) f.on_change = df.on_change;
+
+		df.onchange = () => {
+			this.refresh_filters_dependency();
+
+			let current_filters = this.get_filter_values();
+			if (
+				this.previous_filters &&
+				JSON.stringify(this.previous_filters) === JSON.stringify(current_filters)
+			) {
+				// filter values have not changed
+				return;
+			}
+
+			// clear previous_filters after 10 seconds, to allow refresh for new data
+			this.previous_filters = current_filters;
+			setTimeout(() => (this.previous_filters = null), 10000);
+
+			if (f.on_change) {
+				f.on_change(this);
+			} else {
+				if (this.prepared_report) {
+					this.reset_report_view();
+				} else if (!this._no_refresh) {
+					this.refresh(true);
+				}
+			}
+		};
+
+		f = Object.assign(f, df);
+
+		this.filters.push(f);
+		this.refresh()
+	}
+};
+
+frappe.query_report.remove_filter = function (fieldname) {
+	this.filters = this.filters.filter(filter => filter.fieldname !== fieldname);
+	this.refresh()
 };

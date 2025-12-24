@@ -266,8 +266,7 @@ class CustomStudent(Student):
             else:
                 return self.refund_deposit(None,balance,company.default_deposit_account)
         else:
-            return frappe.throw("No Deposit Found!")
-        
+            return None,0,company.default_deposit_account
 
     def refund_deposit(self,fee,amount,account):
         company = frappe.get_doc("Company",frappe.defaults.get_user_default("company"))
@@ -313,7 +312,7 @@ class CustomStudent(Student):
                 pe.update({dimension: ref_doc.get(dimension)})
 
         pe.update({
-            "reference_no": fee if fee else "",
+            "reference_no": fee if fee else "Old Deposit",
             "reference_date": frappe.utils.nowdate(),
         })
         try:

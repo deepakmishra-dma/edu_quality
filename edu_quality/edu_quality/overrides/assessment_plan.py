@@ -79,7 +79,10 @@ def check_for_duplicates(assessment_plan_doc):
         )
         if criteria_name not in dup_cr_hash:
             dup_cr_hash[criteria_name] = True
-        elif criteria_name in dup_cr_hash:
+        elif (
+            criteria_name in dup_cr_hash
+            and assessment_plan_doc.custom_is_descriptive == 0
+        ):
             frappe.throw(
                 "Assessment Criteria with same exam type already present in  the exam/assessment plan"
             )
@@ -89,3 +92,40 @@ def check_for_duplicates(assessment_plan_doc):
 def get_assessment_cr_textbooks():
     textbooks = frappe.db.get_all("Textbook")
     return ["ALL"] + [i.get("name") for i in textbooks]
+
+
+@frappe.whitelist()
+def get_questions(paper):
+
+    exam_paper = frappe.get_doc("Descriptive Exam Paper", paper)
+
+    create_descriptive_criteria()
+    print(exam_paper.questions)
+    questions = [question.question for question in exam_paper.questions]
+
+    all_questions = frappe.db.get_all(
+        "Descriptive Question",
+        filters={"name": ["in", questions]},
+        fields=["name", "parent_descriptive_question", "max_marks", "min_marks"],
+    )
+
+    result = []
+
+    for question in all_questions:
+        result.append(
+            {
+                "custom_question": question.name,
+                "custom_parent_question": question.parent_descriptive_question,
+                "custom_scale": 1,
+                "assessment_criteria": "Descriptive Question",
+                "maximum_score": question.max_marks,
+            }
+        )
+    return result
+
+
+def create_descriptive_criteria():
+    if not frappe.db.exists("Assessment Criteria", "Descriptive Question"):
+        doc = frappe.new_doc("Assessment Criteria")
+        doc.assessment_criteria = "Descriptive Question"
+        doc.insert(ignore_permissions=True)
