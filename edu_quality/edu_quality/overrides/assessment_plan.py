@@ -16,6 +16,8 @@ class CustomAssessmentPlan(AssessmentPlan):
                 "course": self.course,
                 "student_group": self.student_group,
                 "custom_type": self.custom_type,
+                "custom_is_descriptive": self.custom_is_descriptive,
+                "custom_is_remark": self.custom_is_remark,
                 "custom_textbook": ["in", ["ALL", "All", self.custom_textbook]],
                 "name": ["!=", self.name],
                 "docstatus": ["in", [0, 1]],
@@ -30,6 +32,74 @@ class CustomAssessmentPlan(AssessmentPlan):
 
     def autoname(self, method=None):
         self.name = name_func(self)
+
+    def after_insert(self, method=None):
+        frappe.enqueue(
+            on_amend,
+            self=self,
+            queue="long",
+            timeout=600,
+        )
+
+
+def on_amend(self):
+    if not self.amended_from:
+        return
+
+    old_results = frappe.get_all(
+        "Assessment Result",
+        {"assessment_plan": self.amended_from, "docstatus": ["in", [0, 1]]},
+        ["name"],
+    )
+
+    if not old_results:
+        return
+    total = len(old_results)
+    processed = 0
+
+    def update_progress():
+        frappe.publish_progress(
+            processed / total * 100, title="Recreating Assessment Results"
+        )
+
+    for result in old_results:
+        res_doc = frappe.get_doc("Assessment Result", result.get("name"))
+        new_doc = frappe.copy_doc(res_doc)
+        new_doc.amended_from = None
+        new_doc.assessment_plan = self.name
+        new_doc.maximum_score = self.maximum_assessment_score
+        combine_new_plan_cr_results(self, new_doc)
+        new_doc.save()
+
+        processed += 1
+        update_progress()
+
+
+def combine_new_plan_cr_results(self, new_doc):
+    cr = {}
+    visited = {}
+    for cr in self.assessment_criteria:
+        cr[gen_field(cr, self.custom_is_descriptive)] = cr
+
+    for de in new_doc.details:
+        cr_field = gen_field(de, self.custom_is_descriptive)
+        cr_data = cr[cr_field]
+        visited = {cr_field}
+        if cr_data:
+            de.maximum_score = cr_data.get("maximum_score")
+            de.custom_scale = cr_data.get("custom_scale")
+            de.custom_allow_revaluation = cr_data.get("custom_allow_revaluation")
+
+    for cr_key in cr:
+        if cr_key not in visited:
+            cr_data = cr[cr_key]
+            new_doc.append("details", cr_data)
+
+
+def gen_field(data, is_descriptive):
+    if not is_descriptive:
+        return data.get("asessment_criteria")
+    return f"{data.get('custom_question')} {data.get('assessment_criteria')}"
 
 
 def check_for_empty_scale(self):
@@ -62,13 +132,20 @@ def name_func(assessment_plan_doc):
     academic_year = extract_year_from_academic_year_name(
         assessment_plan_doc.get("academic_year") or current_academic_year()
     )
+    extra = ""
+
+    if assessment_plan_doc.get("custom_is_remark"):
+        extra += "REM"
+    if assessment_plan_doc.get("custom_is_descriptive"):
+        extra += "DE"
+
     subject = frappe.get_doc("Course", assessment_plan_doc.get("course"))
     type = "S"
     if assessment_plan_doc.get("custom_type") == "Summative":
         type = "S"
     if assessment_plan_doc.get("custom_type") == "Formative":
         type = "F"
-    return f"{assessment_plan_doc.get('assessment_group')} {academic_year} {type}{subject.get('custom_short_code')}{textbook_short}{program.get('program_name')}{division.get('student_group_name')}"
+    return f"{assessment_plan_doc.get('assessment_group')} {academic_year} {type}{subject.get('custom_short_code')}{textbook_short}{program.get('program_name')}{division.get('student_group_name')}{f' {extra}' if extra else ''}"
 
 
 def check_for_duplicates(assessment_plan_doc):

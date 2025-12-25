@@ -415,7 +415,7 @@ def assessment_mark_entry(data, hashed_columns, mode):
 
         for column in hashed_columns:
             column_data = hashed_columns[column]
-            column_data, assessment_plan, fieldname, assessment_criteria = (
+            assessment_plan, fieldname, assessment_criteria = (
                 column_data.get("assessment_plan"),
                 column_data.get("fieldname"),
                 column_data.get("assessment_criteria"),

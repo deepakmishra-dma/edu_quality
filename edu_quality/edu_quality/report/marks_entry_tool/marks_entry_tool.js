@@ -42,24 +42,8 @@ const fetchSaveOnlyOnce = function () {
 	}
 }
 
-function addDescriptiveFilters() {
-	frappe.query_report.add_filter({
-		"fieldname": "desc_exam_name",
-		"label": __("Exam Name"),
-		"fieldtype": "Link",
-		"options": "Descriptive Exam"
 
-	});
-	frappe.query_report.add_filter({
-		"fieldname": "desc_exam_ques",
-		"label": __("Exam Question Paper"),
-		"fieldtype": "Link",
-		"options": "Descriptive Question Paper"
-	});
-
-	// frappe.query_report.remove_filter("assessment_group")
-}
-const throttledAutoSave = throttle(fetchSaveOnlyOnce(), 6000)
+// const throttledAutoSave = throttle(fetchSaveOnlyOnce(), 6000)
 
 function changeMarksData(value, columnId, rowIndex, maximumScore, scoring_type) {
 	const inputEl = document.querySelector(`input[column='${columnId}'][data-rowindex='${rowIndex}']`);
@@ -76,7 +60,7 @@ function changeMarksData(value, columnId, rowIndex, maximumScore, scoring_type) 
 	writeMarks(rowIndex, columnId, value.value)
 
 
-	throttledAutoSave()
+	// throttledAutoSave()
 }
 function writeMarks(rowIndex, columnId, value) {
 	if (frappe.query_report.data[rowIndex][columnId]) {
@@ -389,6 +373,10 @@ frappe.query_reports["Marks Entry Tool"] = {
 			"label": __("Online Mode"),
 			"fieldtype": "Check",
 			"hidden": true
+		}, {
+			"fieldname": "Remarks",
+			"label": __("Remarks"),
+			"fieldtype": "Check",
 		},
 		{
 			"fieldname": "ref_no",
@@ -408,57 +396,3 @@ frappe.query_reports["Marks Entry Tool"] = {
 	}
 };
 
-frappe.query_report.add_filter = function (filter) {
-	if (!this.filters.some(existingFilter => existingFilter.fieldname === filter.fieldname)) {
-
-		let filter_area = this.page.page_form;
-		const df = filter
-		if (df.fieldtype === "Break") return;
-
-		let f = this.page.add_field(df, filter_area);
-
-		if (df.default) {
-			f.set_input(df.default);
-		}
-
-		if (df.get_query) f.get_query = df.get_query;
-		if (df.on_change) f.on_change = df.on_change;
-
-		df.onchange = () => {
-			this.refresh_filters_dependency();
-
-			let current_filters = this.get_filter_values();
-			if (
-				this.previous_filters &&
-				JSON.stringify(this.previous_filters) === JSON.stringify(current_filters)
-			) {
-				// filter values have not changed
-				return;
-			}
-
-			// clear previous_filters after 10 seconds, to allow refresh for new data
-			this.previous_filters = current_filters;
-			setTimeout(() => (this.previous_filters = null), 10000);
-
-			if (f.on_change) {
-				f.on_change(this);
-			} else {
-				if (this.prepared_report) {
-					this.reset_report_view();
-				} else if (!this._no_refresh) {
-					this.refresh(true);
-				}
-			}
-		};
-
-		f = Object.assign(f, df);
-
-		this.filters.push(f);
-		this.refresh()
-	}
-};
-
-frappe.query_report.remove_filter = function (fieldname) {
-	this.filters = this.filters.filter(filter => filter.fieldname !== fieldname);
-	this.refresh()
-};

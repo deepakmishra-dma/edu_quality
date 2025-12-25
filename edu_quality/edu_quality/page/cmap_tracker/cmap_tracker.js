@@ -18,7 +18,7 @@ frappe.pages['cmap-tracker'].on_page_load = async function (wrapper) {
 	});
 	globalPage = page
 
-	onLoad(page)
+	onLoad()
 }
 frappe.pages['cmap-tracker'].refresh = async function (wrapper) {
 
@@ -283,9 +283,9 @@ function make_fieldgroup(parent, ddf_list) {
 
 }
 const headers = [
-	{ textContent: 'Period No.', className: "period-no-header", colSpan: 1 },
-	{ textContent: 'Chapter Name', colSpan: 2 },
-	{ textContent: 'Products', colSpan: 1 },
+	{ textContent: 'Period No.', className: "period-no-header sticky-header period", colSpan: 1 },
+	{ textContent: 'Chapter Name',className:"sticky-header chapter", colSpan: 2 },
+	{ textContent: 'Products',className:"sticky-header product", colSpan: 1 },
 	{ textContent: 'Broadcast', colSpan: 1 },
 	{ textContent: 'Parent Note', colSpan: 1 },
 	{ textContent: 'Classwork', colSpan: 1 },
@@ -360,9 +360,9 @@ function createRow(period_no, chapter_name, products, broadcast, parent_note, cl
 
 	const filters = getFilters()
 	return `<tr>
-	<td >${period_no}</td>
-	<td colspan="2">${chapter_name}</td>
-	<td>${products}</td>
+	<td style="position:sticky;left:0px;background:var(--bg-color);" >${period_no}</td>
+	<td colspan="2" style="position:sticky;left:127px;background:var(--bg-color);">${chapter_name}</td>
+	<td style="position:sticky;left:254px;background:var(--bg-color);">${products}</td>
 	<td  data-toggle="tooltip" data-placement="top"${broadcast ? `style="color: var(--dt-primary-color);"` : ""} title="${broadcast}"><i class="fa fa-file" aria-hidden="true"></i></td>
 	<td data-toggle="tooltip" data-placement="top"${parent_note ? `style="color: var(--dt-primary-color);"` : ""} title="${parent_note}"><i class="fa fa-file" aria-hidden="true"></i></td>
 	<td  data-toggle="tooltip" data-placement="top"${class_work ? `style="color: var(--dt-primary-color);"` : ""} title="${class_work}"><i class="fa fa-file" aria-hidden="true"></i></td>
