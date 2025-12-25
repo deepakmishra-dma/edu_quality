@@ -256,8 +256,8 @@ function createTable(data) {
 	// { "address": "Lorem ipsum test", "student": "Aryan", "photo": "https://thumbs.dreamstime.com/b/pet-animal-cute-white-cat-turkish-ankara-141360014.jpg", drop_type: "onboard" }]
 	if (data)
 
-		data.forEach((row, index) => {
-			const row_html = createRow(row.image, row.student_name, row.drop_address || '', row.student_id, row.drop_type, index === 0, 0, index)
+		data.forEach((row) => {
+			const row_html = createRow(row.image, row.student_name, row.drop_address || '', row.student_id, row.drop_type)
 			tbody.innerHTML += (row_html)
 		})
 
