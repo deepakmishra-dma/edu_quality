@@ -7,7 +7,7 @@ frappe.ui.form.on("Event Detail", {
 
     refresh(frm) {
         $("[data-fieldname='all_students'").attr("title", "Select all students from the selected classes and school");
-        sendRegistrationLink(frm);
+        // sendRegistrationLink(frm);
         // Function to set query for student fields
         function set_student_query(fieldname) {
             frm.set_query('student', fieldname, function (doc, cdt, cdn) {
@@ -27,9 +27,9 @@ frappe.ui.form.on("Event Detail", {
         );
     },
 
-    registration_type: (frm) => {
-        sendRegistrationLink(frm);
-    }
+    // registration_type: (frm) => {
+    //     sendRegistrationLink(frm);
+    // }
 });
 
 function showAddStudent(frm) {
