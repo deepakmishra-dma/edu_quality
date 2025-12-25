@@ -41,7 +41,7 @@ const fetchSaveOnlyOnce = function () {
 		loading = false
 	}
 }
-const throttledAutoSave = throttle(fetchSaveOnlyOnce(), 6000)
+// const throttledAutoSave = throttle(fetchSaveOnlyOnce(), 6000)
 
 function changeMarksData(value, columnId, rowIndex, maximumScore, scoring_type) {
 	const inputEl = document.querySelector(`input[column='${columnId}'][data-rowindex='${rowIndex}']`);
@@ -58,7 +58,7 @@ function changeMarksData(value, columnId, rowIndex, maximumScore, scoring_type) 
 	writeMarks(rowIndex, columnId, value.value)
 
 
-	throttledAutoSave()
+	// throttledAutoSave()
 }
 function writeMarks(rowIndex, columnId, value) {
 	if (frappe.query_report.data[rowIndex][columnId]) {
