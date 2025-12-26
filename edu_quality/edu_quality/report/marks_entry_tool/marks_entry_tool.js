@@ -42,10 +42,9 @@ const fetchSaveOnlyOnce = function () {
 	}
 }
 
-
 // const throttledAutoSave = throttle(fetchSaveOnlyOnce(), 6000)
 
-function changeMarksData(value, columnId, rowIndex, maximumScore, scoring_type) {
+function changeMarksData(value, columnId, rowIndex, maximumScore, scoring_type, columnIndex) {
 	const inputEl = document.querySelector(`input[column='${columnId}'][data-rowindex='${rowIndex}']`);
 
 
@@ -53,23 +52,23 @@ function changeMarksData(value, columnId, rowIndex, maximumScore, scoring_type) 
 	if (Number(value.value) > Number(maximumScore) && scoring_type == "Marks") {
 
 		inputEl.value = "";
-		writeMarks(rowIndex, columnId, "");
+		writeMarks(rowIndex, columnId, "", columnIndex);
 		return;
 	}
 
-	writeMarks(rowIndex, columnId, value.value)
+	writeMarks(rowIndex, columnId, value.value, columnIndex)
 
 
 	// throttledAutoSave()
 }
-function writeMarks(rowIndex, columnId, value) {
+function writeMarks(rowIndex, columnId, value, columnIndex) {
 	if (frappe.query_report.data[rowIndex][columnId]) {
 		frappe.query_report.data[rowIndex][columnId]["content"] = value;
 	}
 	else {
 		frappe.query_report.data[rowIndex][columnId] = { "content": value }
 	}
-
+	frappe.query_report.datatable.bodyRenderer.cellmanager.updateCell(columnIndex, rowIndex, value, true)
 	criteriasChanged.push(frappe.query_report.data[rowIndex])
 
 }
@@ -133,7 +132,7 @@ function createInputElement(value, column, row, docstatus, onlineAssess) {
 		classes.push("assess-input")
 	}
 
-	return `<input type="text" ${inputDisabled ? "disabled='true'" : ""} data-docstatus="${docstatus || 0}" data-colindex="${column.colIndex - 1}" class="${classes.join(' ')}" column="${column.fieldname}" data-rowindex="${row && row[0] && row[0].rowIndex}" max="${column.maximum_score}" maximum-score="${column.maximum_score}" value="${value}" oninput="changeMarksData(this, '${column.id}', '${row[0]?.rowIndex}', '${column.maximum_score}','${column.scoring_type}')" />`;
+	return `<input type="text" ${inputDisabled ? "disabled='true'" : ""} data-docstatus="${docstatus || 0}" data-colindex="${column.colIndex - 1}" class="${classes.join(' ')}" column="${column.fieldname}" data-rowindex="${row && row[0] && row[0].rowIndex}" max="${column.maximum_score}" maximum-score="${column.maximum_score}" value="${value}" oninput="changeMarksData(this, '${column.id}', '${row[0]?.rowIndex}', '${column.maximum_score}','${column.scoring_type}',${column.colIndex})" />`;
 }
 
 function formatter(value, row, column, data, defaultFormatter) {
