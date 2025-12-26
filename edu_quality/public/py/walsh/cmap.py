@@ -1,6 +1,7 @@
 import frappe
 from edu_quality.edu_quality.report.portion_circular.portion_circular import get_data
 from datetime import datetime
+from edu_quality.public.py.walsh.login import logout
 
 
 @frappe.whitelist()
@@ -10,6 +11,13 @@ def get_students():
     students = frappe.get_all(
         "Student", filters={"guardian": guardian.name}, fields=["*"]
     )
+    student_disabled = any(student.get("enabled") == 0 for student in students)
+    # if any one of student disabled log out the parent
+    if student_disabled:
+        logout()
+        frappe.throw(("Not permitted"), frappe.PermissionError)
+        return []
+
     return students
 
 
@@ -20,7 +28,7 @@ def get_student_class_details(student):
     )
     program_enrollments = frappe.get_all(
         "Program Enrollment",
-        filters={"student": student, "academic_year": current_yr,'docstatus':1},
+        filters={"student": student, "academic_year": current_yr, "docstatus": 1},
         fields=["program", "student_group"],
     )
     if not len(program_enrollments):
@@ -173,8 +181,7 @@ def get_portion_circulars(unit, division):
             product = products[j].get("name")
             url = products[j].get("url")
             if url and item_hash[product] != url:
-                products[j]["url"] = url  
-
+                products[j]["url"] = url
 
         if subject not in subject_hash:
             subject_hash[subject] = {textbook: {chapter: [i]}}

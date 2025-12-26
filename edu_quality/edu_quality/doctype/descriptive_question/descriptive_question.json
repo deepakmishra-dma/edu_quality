@@ -1,0 +1,133 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:{subject_shortcode}-{question}",
+ "creation": "2024-07-04 17:36:17.313238",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_itzt",
+  "lft",
+  "rgt",
+  "is_group",
+  "old_parent",
+  "parent_question",
+  "parent_descriptive_question",
+  "academic_year",
+  "min_marks",
+  "max_marks",
+  "subject",
+  "subject_short_code",
+  "question"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_itzt",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "lft",
+   "fieldtype": "Int",
+   "hidden": 1,
+   "label": "Left",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "rgt",
+   "fieldtype": "Int",
+   "hidden": 1,
+   "label": "Right",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_group",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Is Group"
+  },
+  {
+   "fieldname": "old_parent",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Old Parent",
+   "options": "Descriptive Question"
+  },
+  {
+   "fieldname": "academic_year",
+   "fieldtype": "Link",
+   "label": "Academic Year",
+   "options": "Academic Year"
+  },
+  {
+   "fieldname": "min_marks",
+   "fieldtype": "Float",
+   "label": "Min Marks"
+  },
+  {
+   "fieldname": "max_marks",
+   "fieldtype": "Float",
+   "label": "Max Marks"
+  },
+  {
+   "fieldname": "subject",
+   "fieldtype": "Link",
+   "label": "Subject",
+   "options": "Course"
+  },
+  {
+   "fieldname": "question",
+   "fieldtype": "Data",
+   "label": "Question"
+  },
+  {
+   "fieldname": "parent_question",
+   "fieldtype": "Link",
+   "ignore_user_permissions": 1,
+   "label": "Parent Question",
+   "options": "Descriptive Question"
+  },
+  {
+   "fetch_from": "subject.custom_short_code",
+   "fieldname": "subject_short_code",
+   "fieldtype": "Data",
+   "label": "Subject Short Code"
+  },
+  {
+   "fieldname": "parent_descriptive_question",
+   "fieldtype": "Link",
+   "ignore_user_permissions": 1,
+   "label": "Parent Descriptive Question",
+   "options": "Descriptive Question"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_tree": 1,
+ "links": [],
+ "modified": "2024-07-12 03:27:39.231170",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "Descriptive Question",
+ "naming_rule": "Expression",
+ "nsm_parent_field": "parent_question",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

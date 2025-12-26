@@ -18,6 +18,7 @@ class StudentExit(Document):
 	def before_save(self):
 		self.update_details()
 
+	@frappe.whitelist()
 	def update_details(self):
 		student = frappe.get_doc("Student",self.student)
 		try:
@@ -47,6 +48,7 @@ class StudentExit(Document):
 				self.refund_amount = 0
 			self.get_attendance_details()
 			self.get_subjects()
+			# self.save()
 		except Exception as e:
 			frappe.logger('dep').exception(e)
 			self.deposit_amount = 0 
@@ -109,9 +111,13 @@ class StudentExit(Document):
 
 
 	def on_submit(self):
+		if not self.cancellation_letter:
+			frappe.throw("Cancellation Letter is required!")
+		if not self.date_of_leaving:
+			frappe.throw("Date of Leaving is required!")
 		student = frappe.get_doc("Student", self.student)
 		student.custom_cancellation_letter = self.cancellation_letter
 		student.date_of_leaving = self.date_of_leaving 
-		student.leaving_certificate_number = self.leaving_certificate_number
+		# student.leaving_certificate_number = self.leaving_certificate_number 
 		student.save(ignore_permissions=True)
 		student.cancel_student(self.academic_year,self.cancellation_type)
