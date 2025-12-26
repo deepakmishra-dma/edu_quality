@@ -42,7 +42,6 @@ const fetchSaveOnlyOnce = function () {
 	}
 }
 
-
 // const throttledAutoSave = throttle(fetchSaveOnlyOnce(), 6000)
 
 function changeMarksData(value, columnId, rowIndex, maximumScore, scoring_type) {

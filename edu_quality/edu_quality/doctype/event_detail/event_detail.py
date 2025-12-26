@@ -51,7 +51,7 @@ class EventDetail(Document):
         return students
 
     @frappe.whitelist()
-    def send_registration_link(self):
+    def send_registration_link(self, email_template=None):
         """
         Send registration link to the students
         """
@@ -61,10 +61,10 @@ class EventDetail(Document):
             frappe.enqueue(enqueue_webhook, doc=self, webhook={"name": "Event Detail Error"})
             return False
         else:
-            frappe.enqueue(self.create_event_participants)
+            frappe.enqueue(self.create_event_participants, email_template=email_template)
             return True
     
-    def create_event_participants(self):
+    def create_event_participants(self, email_template=None):
         """
         Create event participants for the allowed students and send the registration link
         """
@@ -76,9 +76,10 @@ class EventDetail(Document):
                     participant.student = student
                     participant.event_detail = self.name
                     participant.save(ignore_permissions=True)
+                    participant.send_registration_link(email_template)
                 else:
                     participant = frappe.get_doc("Event Participant", {"student": student, "event_detail": self.name})
-                    participant.send_registration_link(self.registration_email_template)
+                    participant.send_registration_link(email_template)
         except:
             frappe.log_error(f"Error while sending registration link for event: {self.name}", frappe.get_traceback())
 

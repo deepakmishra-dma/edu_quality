@@ -29,10 +29,6 @@ class EventParticipant(Document):
         for user in users:
             set_user_permissions(user, self.doctype, self.name)
 
-        # Send registration link to the student
-        self.send_registration_link()
-
-
     def on_trash(self):
         user_permission = frappe.get_all(
             "User Permission", {"allow": self.doctype, "for_value": self.name}, pluck="name"
