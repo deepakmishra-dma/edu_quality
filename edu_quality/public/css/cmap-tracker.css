@@ -74,3 +74,17 @@ td {
 .cmap-tracker [data-fieldname="submitbtn"] {
   margin-top: 12px;
 }
+
+.cmap-tracker .sticky-header {
+  position: sticky;
+}
+
+.cmap-tracker .sticky-header.period {
+  left: 0;
+}
+.cmap-tracker .sticky-header.chapter {
+  left: 127px;
+}
+.cmap-tracker .sticky-header.product {
+  left: 254px;
+}
