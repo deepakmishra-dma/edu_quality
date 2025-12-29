@@ -61,6 +61,10 @@ function changeMarksData(value, columnId, rowIndex, maximumScore, scoring_type, 
 
 	// throttledAutoSave()
 }
+function updateCell(value, columnId, rowIndex, maximumScore, scoring_type, columnIndex) {
+	frappe.query_report.datatable.bodyRenderer.cellmanager.updateCell(columnIndex, rowIndex, value.value, true)
+}
+
 function writeMarks(rowIndex, columnId, value, columnIndex) {
 	if (frappe.query_report.data[rowIndex][columnId]) {
 		frappe.query_report.data[rowIndex][columnId]["content"] = value;
@@ -68,7 +72,7 @@ function writeMarks(rowIndex, columnId, value, columnIndex) {
 	else {
 		frappe.query_report.data[rowIndex][columnId] = { "content": value }
 	}
-	frappe.query_report.datatable.bodyRenderer.cellmanager.updateCell(columnIndex, rowIndex, value, true)
+
 	criteriasChanged.push(frappe.query_report.data[rowIndex])
 
 }
@@ -129,7 +133,7 @@ function createInputElement(value, column, row, docstatus) {
 		classes.push("submitted-input")
 	}
 
-	return `<input type="text" ${inputDisabled ? "disabled='true'" : ""} data-docstatus="${docstatus || 0}" data-colindex="${column.colIndex - 1}" class="${classes.join(' ')}" column="${column.fieldname}" data-rowindex="${row && row[0] && row[0].rowIndex}" max="${column.maximum_score}" maximum-score="${column.maximum_score}" value="${value}" oninput="changeMarksData(this, '${column.id}', '${row[0]?.rowIndex}', '${column.maximum_score}','${column.scoring_type}',${column.colIndex})" />`;
+	return `<input type="text" ${inputDisabled ? "disabled='true'" : ""} data-docstatus="${docstatus || 0}" data-colindex="${column.colIndex - 1}" class="${classes.join(' ')}" column="${column.fieldname}" data-rowindex="${row && row[0] && row[0].rowIndex}" max="${column.maximum_score}" maximum-score="${column.maximum_score}" value="${value}" oninput="changeMarksData(this, '${column.id}', '${row[0]?.rowIndex}', '${column.maximum_score}','${column.scoring_type}',${column.colIndex})" onfocusout="updateCell(this, '${column.id}', '${row[0]?.rowIndex}', '${column.maximum_score}','${column.scoring_type}',${column.colIndex})" />`;
 }
 
 function formatter(value, row, column, data, defaultFormatter) {
