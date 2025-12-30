@@ -376,11 +376,12 @@ frappe.query_reports["Marks Entry Tool"] = {
 			"label": __("Online Mode"),
 			"fieldtype": "Check",
 			"hidden": true
-		}, {
-			"fieldname": "Remarks",
-			"label": __("Remarks"),
-			"fieldtype": "Check",
 		},
+		// {
+		// 	"fieldname": "Remarks",
+		// 	"label": __("Remarks"),
+		// 	"fieldtype": "Check",
+		// },
 		{
 			"fieldname": "ref_no",
 			"label": __("Online Mode"),
