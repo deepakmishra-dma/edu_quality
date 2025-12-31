@@ -177,8 +177,8 @@ def get_questions(paper):
     exam_paper = frappe.get_doc("Descriptive Exam Paper", paper)
 
     create_descriptive_criteria()
-    print(exam_paper.questions)
-    questions = [question.question for question in exam_paper.questions]
+    
+    questions = [question.question for question in exam_paper.questions if question.selected]
 
     all_questions = frappe.db.get_all(
         "Descriptive Question",

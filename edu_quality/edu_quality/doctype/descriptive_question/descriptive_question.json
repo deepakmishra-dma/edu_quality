@@ -1,7 +1,7 @@
 {
  "actions": [],
+ "allow_import": 1,
  "allow_rename": 1,
- "autoname": "format:{subject_shortcode}-{question}",
  "creation": "2024-07-04 17:36:17.313238",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -11,7 +11,6 @@
   "rgt",
   "is_group",
   "old_parent",
-  "parent_question",
   "parent_descriptive_question",
   "academic_year",
   "min_marks",
@@ -58,8 +57,10 @@
   {
    "fieldname": "academic_year",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Academic Year",
-   "options": "Academic Year"
+   "options": "Academic Year",
+   "reqd": 1
   },
   {
    "fieldname": "min_marks",
@@ -74,20 +75,15 @@
   {
    "fieldname": "subject",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Subject",
-   "options": "Course"
+   "options": "Course",
+   "reqd": 1
   },
   {
    "fieldname": "question",
    "fieldtype": "Data",
    "label": "Question"
-  },
-  {
-   "fieldname": "parent_question",
-   "fieldtype": "Link",
-   "ignore_user_permissions": 1,
-   "label": "Parent Question",
-   "options": "Descriptive Question"
   },
   {
    "fetch_from": "subject.custom_short_code",
@@ -106,12 +102,11 @@
  "index_web_pages_for_search": 1,
  "is_tree": 1,
  "links": [],
- "modified": "2024-07-12 03:27:39.231170",
+ "modified": "2024-07-25 08:58:02.509931",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Descriptive Question",
- "naming_rule": "Expression",
- "nsm_parent_field": "parent_question",
+ "nsm_parent_field": "parent_descriptive_question",
  "owner": "Administrator",
  "permissions": [
   {
