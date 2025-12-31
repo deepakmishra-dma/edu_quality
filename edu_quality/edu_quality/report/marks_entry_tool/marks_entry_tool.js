@@ -1,6 +1,6 @@
 // Copyright (c) 2024, Hybrowlabs Technologies and contributors
 // For license information, please see license.txt
-let criteriasChanged = []
+let criteriasChanged = {}
 
 function throttle(func, limit) {
 	let lastFunc;
@@ -72,8 +72,37 @@ function writeMarks(rowIndex, columnId, value, columnIndex) {
 	else {
 		frappe.query_report.data[rowIndex][columnId] = { "content": value }
 	}
+	const { ref_no,
+		roll_no,
+		student_name,
+		assessment_criteria,
+		assessment_plan,
+		question
+	} = frappe.query_report.data[rowIndex]
 
-	criteriasChanged.push(frappe.query_report.data[rowIndex])
+	const payload = {
+		ref_no: ref_no,
+		roll_no: roll_no,
+		student_name: student_name,
+		assessment_criteria: assessment_criteria,
+		assessment_plan: assessment_plan,
+		question: question,
+		[columnId]: frappe.query_report.data[rowIndex][columnId]
+	}
+
+	if (!ref_no && !student_name) {
+		if (!criteriasChanged[`${question} ${assessment_plan}`])
+			criteriasChanged[`${question} ${assessment_plan}`] = {};
+
+		Object.assign(criteriasChanged[`${question} ${assessment_plan}`], payload);
+	}
+
+	else if (ref_no && student_name) {
+		if (!criteriasChanged[ref_no])
+			criteriasChanged[ref_no] = {};
+
+		Object.assign(criteriasChanged[ref_no], payload);
+	}
 
 }
 
@@ -172,14 +201,17 @@ async function saveCall(autoSave = false) {
 	if (autoSave) {
 		data = criteriasChanged
 	}
+	console.log(criteriasChanged)
 	await frappe.call({
 		"method": "edu_quality.edu_quality.report.marks_entry_tool.marks_entry_tool.do_mark_entry",
 		args: {
-			data: data,
+			data: Object.keys(criteriasChanged).map((key) => {
+				return criteriasChanged[key]
+			}),
 			filters: filters,
 		}
 	});
-	criteriasChanged = []
+	criteriasChanged = {}
 	frappe.show_alert({
 		message: __('<i class="fa fa-save"></i>'),
 		indicator: 'green'

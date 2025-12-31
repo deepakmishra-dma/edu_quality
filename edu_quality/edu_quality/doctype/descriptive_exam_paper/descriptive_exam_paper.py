@@ -9,7 +9,20 @@ from frappe.model.mapper import get_mapped_doc
 class DescriptiveExamPaper(Document):
     def autoname(self, method=None):
         self.name = name_func(self)
-        pass
+
+    def before_validate(self):
+        if self.get("__unsaved") and self.get("__islocal") and frappe.flags.in_import:
+            questions = [question.question for question in self.questions]
+            result = add_question(questions)
+
+            for question in result:
+                question_name = question.get("name")
+                par_ques_name = question.get("parent_descriptive_question")
+                if question_name not in questions:
+                    self.append(
+                        "questions",
+                        {"question": question_name, "parent_question": par_ques_name},
+                    )
 
 
 @frappe.whitelist()
@@ -19,20 +32,16 @@ def name_func(descriptive_exam_doc):
         if isinstance(descriptive_exam_doc, str)
         else descriptive_exam_doc
     )
-    division = frappe.get_doc(
-        "Student Group", descriptive_exam_doc.get("student_group")
-    )
-    program = frappe.get_doc("Program", division.get("program"))
 
     academic_year = extract_year_from_academic_year_name(
         descriptive_exam_doc.get("academic_year") or current_academic_year()
     )
     subject = frappe.get_doc("Course", descriptive_exam_doc.subject)
-    class_type = program.get("program_name")
+    class_type = descriptive_exam_doc.get("class_type")
 
     class_type_doc = frappe.get_doc("Class Type", class_type)
 
-    return f"{descriptive_exam_doc.name1} {subject.get('custom_short_code')}{class_type_doc.short_code}{division.get('student_group_name')} {academic_year}"
+    return f"{descriptive_exam_doc.name1} {subject.get('custom_short_code')}{class_type_doc.short_code} {academic_year}"
 
 
 # edu_quality.edu_quality.doctype.descriptive_exam_paper.descriptive_exam_paper.add_question
@@ -42,23 +51,26 @@ def add_question(docnames):
     res = get_all_children_of_multiple_docs("Descriptive Question", parsed_docnames)
 
     return res
-    pass
 
 
-def get_all_children(parent_doctype, parent_name):
+def get_all_children(parent_doctype, parent_name, parent_descriptive_question=None):
     """Recursively fetch all child nodes of a tree document using frappe.qb."""
     ChildDoc = frappe.qb.DocType(parent_doctype)
     children = (
         frappe.qb.from_(ChildDoc)
-        .select(ChildDoc.name, ChildDoc.parent_question)
-        .where(ChildDoc.parent_question == parent_name)
+        .select(ChildDoc.name, ChildDoc.parent_descriptive_question)
+        .where(ChildDoc.parent_descriptive_question == parent_name)
         .run(as_dict=True)
     )
 
-    all_children = [{"name": parent_name}]  # Include the parent name in the result
+    all_children = [
+        {"name": parent_name, "parent_question": parent_descriptive_question}
+    ]  # Include the parent name in the result
     for child in children:
         all_children.append(child)
-        child_children = get_all_children(parent_doctype, child["name"])
+        child_children = get_all_children(
+            parent_doctype, child["name"], child["parent_descriptive_question"]
+        )
         all_children.extend(child_children)
     return all_children
 

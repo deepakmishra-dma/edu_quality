@@ -654,7 +654,6 @@ def append_assessment_criteria(assessment_details, criteria, is_descriptive=None
     all_criterias = [
         gen_desc_assessment_key(i, is_descriptive) for i in assessment_details
     ]
-    print(assessment_details, criteria, "allo")
     if gen_desc_assessment_key(criteria, is_descriptive) in all_criterias:
         index = all_criterias.index(gen_desc_assessment_key(criteria, is_descriptive))
         assessment_details[index] = criteria
