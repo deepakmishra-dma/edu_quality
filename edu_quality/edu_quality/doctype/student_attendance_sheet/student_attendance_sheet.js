@@ -154,7 +154,7 @@ function changeHandler(e) {
       );
       if (existingDayIndex !== -1) {
         updatedAttendance[dataset.id][existingDayIndex][dataset.day] =
-        enteredValue;
+          enteredValue;
       } else {
         updatedAttendance[dataset.id].push({ [dataset.day]: enteredValue });
       }
@@ -162,7 +162,7 @@ function changeHandler(e) {
       updatedAttendance[dataset.id] = [{ [dataset.day]: enteredValue }];
     }
     addSaveButton();
-  }else {
+  } else {
     globalFrm.page.remove_inner_button(__("Save"));
   }
 }
@@ -204,10 +204,10 @@ async function setupDataTable(frm, division) {
   });
 
   const headers = [
-    {textContent: "S.No"},
-    { textContent: "Ref No" },
-    { textContent: "First Name" },
-    { textContent: "Last Name" },
+    { textContent: "S.No", },
+    { textContent: "Ref No", columnStyle: "position:sticky;left:0px;background:#3B84C3", cellStyle: "position:sticky;left:0px;background:var(--bg-color)" },
+    { textContent: "First Name", columnStyle: "position:sticky;left:80px;background:#3B84C3", cellStyle: "position:sticky;left:80px;background:var(--bg-color)" },
+    { textContent: "Last Name", columnStyle: "position:sticky;left:160px;background:#3B84C3", cellStyle: "position:sticky;left:160px;background:var(--bg-color)" },
     { textContent: "Roll No" },
     ...days.message,
   ];
@@ -245,10 +245,16 @@ function createTable(headers, studentsList, days, data, division) {
   const curTableData = { columns: [], rows: [] };
 
   headers.forEach((header) => {
+    console.log(header, 'hh')
     const headerCell = document.createElement("th");
     headerCell.textContent = header.textContent;
     if (header.className) {
       headerCell.className = header.className;
+
+    }
+    if (header.columnStyle) {
+      console.log(headerCell, headerCell.columnStyle)
+      headerCell.style = header.columnStyle || undefined
     }
     if (header.colSpan) {
       headerCell.colSpan = header.colSpan;
@@ -259,7 +265,7 @@ function createTable(headers, studentsList, days, data, division) {
       curTableData.columns.push(header);
     }
   });
-
+  const styles = headers.map((header) => (header.cellStyle))
   if (studentsList.length != 0) {
     studentsList.forEach((row, index) => {
       const row_html = createRow(
@@ -270,7 +276,8 @@ function createTable(headers, studentsList, days, data, division) {
         row.roll_no,
         days,
         data,
-        row.name
+        row.name,
+        styles
       );
       tbody.innerHTML += row_html;
       curTableData.rows.push(row_html);
@@ -293,23 +300,20 @@ function createTable(headers, studentsList, days, data, division) {
   return table;
 }
 
-function createRow(s_no,ref_no, first_name, last_name, roll_no, days, data,name) {
+function createRow(s_no, ref_no, first_name, last_name, roll_no, days, data, name, styles) {
   let rowHtml = `<tr>
-  <td style='white-space: nowrap; min-width: fit-content !important;'>${s_no}</td>
-  <td style='white-space: nowrap; min-width: fit-content !important;'>${ref_no}</td>
-     <td style='text-wrap:nowrap;min-width: fit-content'><p class="name-column">${first_name?.toUpperCase() ?? ''}</p></td>
-    <td style='text-wrap:nowrap;min-width: fit-content'><p class="name-column">${last_name?.toUpperCase() ?? ''}</p></td>
-    <td style='white-space: nowrap; min-width: fit-content !important;'>${roll_no}</td>`;
+  <td style='white-space: nowrap; min-width: fit-content !important;${styles[0] || ""}'>${s_no}</td>
+  <td style='white-space: nowrap; min-width: fit-content !important;${styles[1] || ""}'>${ref_no}</td>
+     <td style='text-wrap:nowrap;min-width: fit-content;${styles[2] || ""}'><p class="name-column">${first_name?.toUpperCase() ?? ''}</p></td>
+    <td style='text-wrap:nowrap;min-width: fit-content;${styles[3] || ""}'><p class="name-column">${last_name?.toUpperCase() ?? ''}</p></td>
+    <td style='white-space: nowrap; min-width: fit-content !important;${styles[4] || ""}'>${roll_no}</td>`;
 
   // Generate empty <td> elements for each day
   for (let i = 0; i < days.length; i++) {
-    rowHtml += `<td  class='empty-td ${
-      holidays.includes(i + 1) ? "holiday" : ""
-    }' style='width: 42px; min-width: 42px;'><input type='text' class='empty-input' data-day=${
-      i + 1
-    } data-ref=${ref_no} data-id=${name} style='width: 25px;' value=${
-      data[ref_no][i][i + 1]
-    } ></input></td>`;
+    rowHtml += `<td  class='empty-td ${holidays.includes(i + 1) ? "holiday" : ""
+      }' style='width: 42px; min-width: 42px;'><input type='text' class='empty-input' data-day=${i + 1
+      } data-ref=${ref_no} data-id=${name} style='width: 25px;' value=${data[ref_no][i][i + 1]
+      } ></input></td>`;
   }
 
   rowHtml += `</tr>`;
@@ -328,7 +332,7 @@ function saveAttendance() {
       attendance_data: JSON.stringify(updatedAttendance),
     },
     callback: function (response) {
-      
+
       if (!response.message.error) {
         saveButtonAdded = false;
         globalFrm.page.remove_inner_button(__("Save"));
@@ -338,7 +342,7 @@ function saveAttendance() {
           indicator: "green",
         });
       }
-      else{
+      else {
         frappe.show_alert({
           message: __(response.message.msg),
           indicator: "red",
@@ -367,7 +371,7 @@ function checkAttendance() {
             submitAttendance();
           }
         );
-      }else{
+      } else {
         submitAttendance();
       }
 
@@ -393,13 +397,13 @@ function submitAttendance() {
           indicator: "green",
         });
       }
-      else{
+      else {
         frappe.show_alert({
           message: __("Attendance already submitted"),
           indicator: "red",
         });
       }
-      
+
     },
   });
 }

@@ -18,11 +18,6 @@
  ],
  "fields": [
   {
-   "fieldname": "photo_taken",
-   "fieldtype": "Attach Image",
-   "label": "Photo Taken"
-  },
-  {
    "fieldname": "status",
    "fieldtype": "Select",
    "label": "Status",
@@ -61,12 +56,18 @@
    "fieldtype": "Table",
    "label": "Events",
    "options": "ID Card Event"
+  },
+  {
+   "fieldname": "photo_taken",
+   "fieldtype": "Attach Image",
+   "is_virtual": 1,
+   "label": "Photo Taken"
   }
  ],
  "image_field": "photo_taken",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-04-29 18:03:15.260011",
+ "modified": "2024-07-22 08:34:21.490623",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Student ID Card",

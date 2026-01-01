@@ -2,7 +2,7 @@ import frappe
 from frappe.query_builder import Field
 from frappe.query_builder.functions import Count, GROUP_CONCAT, Sum
 from edu_quality.public.py.utils import get_div_students as get_div_stud
-
+from nextai.funnel.custom_trigger import trigger_event
 
 def get_div_students(division):
     data = get_div_stud(division)
@@ -204,12 +204,13 @@ def process_atomic_exam(assessment_group, academic_year, program, div=None):
         )
 
         frappe.db.set_value("Assessment Result", parent, "docstatus", 1)
-
+    
     for assess_plan in assessment_plans:
         plan = assess_plan.get("name")
         calculate_ranking = assess_plan.get("custom_calculate_ranks")
         if calculate_ranking:
             calculate_ordering(plan)
+    send_processed_emails_async(assessment_group,academic_year,program,div)
     frappe.msgprint(
         "Successfully Processed all the results matching the criteria provided"
     )
@@ -385,6 +386,7 @@ def process_composite_result(assessment_group, academic_year, program, div=None)
                 assess_result.submit()
 
         calculate_ranking_composite(assess_group)
+        send_processed_emails_async(assess_group)
 
 
 def calculate_ranking_composite(assessment_group):
@@ -417,3 +419,15 @@ def cancel_existing_composite_results(results, assessment_group):
             "docstatus",
             2,
         )
+
+
+def send_processed_emails_async(assessment_group,academic_year,program,div):
+    frappe.enqueue(send_processed_emails, assess_group=assessment_group,academic_year=academic_year,program=program,div=div, queue="long")
+
+# def get_all_grouped_assessment_plans():
+
+def send_processed_emails(assessment_group,academic_year,program,div):
+    assess_group_doc =frappe.get_doc("Assessment Group",assessment_group)
+
+    # trigger_event(doc=)
+    pass

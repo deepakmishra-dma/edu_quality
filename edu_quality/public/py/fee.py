@@ -42,7 +42,7 @@ from edu_quality.public.py.utils import (
 )
 import qrcode
 from edu_quality.public.py.discount import remove_discount
-
+from nextai.funnel.custom_trigger import trigger_event
 
 def after_insert(doc, method=None):
     payment_plan(doc)
@@ -886,5 +886,18 @@ def component_wise(
     return component_wise_split
 
 
-def create_birthday_card(self,method=None):
-    frappe.get_doc({"doctype":"Birthday Card","program_enrollment":self.name}).insert(ignore_permissions=True)
+def create_birthday_card(self, method=None):
+    if frappe.db.exists("Birthday Card", {"program_enrollment": self.name}):
+        name = frappe.db.get_value("Birthday Card",{"program_enrollment": self.name},"name")
+        return frappe.get_doc("Birthday Card",name)
+    
+    return frappe.get_doc(
+        {"doctype": "Birthday Card", "program_enrollment": self.name}
+    ).insert(ignore_permissions=True)
+
+def collect_birthday_details_on_submit(self,method=None):
+    try:
+        birthday_card = create_birthday_card(self,None)
+        trigger_event(doc=birthday_card, event_name="collect_birthday_details")
+    except Exception as e:
+         frappe.logger("Collect Birthday Card Details Email").exception(e)

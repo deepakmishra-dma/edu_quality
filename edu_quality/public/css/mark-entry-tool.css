@@ -37,6 +37,25 @@
 .mark-entry-tool-report .absent-input {
   background-color: var(--red-300);
 }
+.mark-entry-tool-report .assess-input {
+  background-color: var(--amber-400);
+}
+
 .mark-entry-tool-report .submitted-input {
   background-color: var(--blue-300);
+}
+
+.mark-entry-tool-report .legend,
+.mark-entry-tool-report .legend-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+}
+.mark-entry-tool-report .legend-container {
+  margin-bottom: 16px;
+}
+.mark-entry-tool-report .legend > div:first-child {
+  width: 18px;
+  height: 18px;
 }

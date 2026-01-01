@@ -181,6 +181,7 @@ doc_events = {
     "Program Enrollment": {
         "on_submit": [
             "edu_quality.public.py.fee.create_fees",
+            "edu_quality.public.py.fee.collect_birthday_details_on_submit",
         ],
         "before_insert": "edu_quality.public.py.fee.sync_student_data",
         "after_insert": [
