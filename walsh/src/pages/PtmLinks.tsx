@@ -130,7 +130,6 @@ export const PtmLinks = () => {
     data: onlinePTM,
     refetch: onlinePTMRefetch,
     isLoading,
-    error,
   } = usePTMLinksQuery(selectedStudent);
   const {
     data: offlinePTM,

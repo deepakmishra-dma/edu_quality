@@ -207,7 +207,7 @@ doc_events = {
     },
     "Student": {
         "after_insert": "edu_quality.public.py.student.after_insert",
-        "before_save": "edu_quality.public.py.student.before_save"
+        "before_save": "edu_quality.public.py.student.before_save",
     },
     "Payment Entry": {
         "validate": "edu_quality.edu_quality.server_scripts.payment_entry.validate"
@@ -376,8 +376,5 @@ after_migrate = [
 
 website_route_rules = [
     {"from_route": "/walsh/<path:app_path>", "to_route": "walsh"},
-]
-
-website_route_rules = [
     {"from_route": "/ui/<path:app_path>", "to_route": "ui"},
 ]
