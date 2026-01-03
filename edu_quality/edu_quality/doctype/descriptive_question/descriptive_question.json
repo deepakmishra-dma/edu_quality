@@ -2,6 +2,7 @@
  "actions": [],
  "allow_import": 1,
  "allow_rename": 1,
+ "autoname": "format:{academic_year}-{subject}-{class_type}-{#####}",
  "creation": "2024-07-04 17:36:17.313238",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -17,7 +18,8 @@
   "max_marks",
   "subject",
   "subject_short_code",
-  "question"
+  "question",
+  "class_type"
  ],
  "fields": [
   {
@@ -97,15 +99,22 @@
    "ignore_user_permissions": 1,
    "label": "Parent Descriptive Question",
    "options": "Descriptive Question"
+  },
+  {
+   "fieldname": "class_type",
+   "fieldtype": "Link",
+   "label": "Class Type",
+   "options": "Class Type"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_tree": 1,
  "links": [],
- "modified": "2024-07-25 08:58:02.509931",
+ "modified": "2024-07-29 10:13:24.487701",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Descriptive Question",
+ "naming_rule": "Expression",
  "nsm_parent_field": "parent_descriptive_question",
  "owner": "Administrator",
  "permissions": [
@@ -124,5 +133,6 @@
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": []
+ "states": [],
+ "title_field": "question"
 }

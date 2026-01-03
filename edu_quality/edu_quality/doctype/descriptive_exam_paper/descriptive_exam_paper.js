@@ -46,7 +46,7 @@ function addQuestionButton(frm) {
 
                         frappe.model.set_value(child_row.doctype, child_row.name, 'question', data.name);
                         frappe.model.set_value(child_row.doctype, child_row.name, 'parent_question', data.parent_descriptive_question);
-                        
+
                     });
                     frm.refresh_field('questions');
                 }
