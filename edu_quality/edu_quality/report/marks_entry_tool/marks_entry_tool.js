@@ -387,7 +387,6 @@ frappe.query_reports["Marks Entry Tool"] = {
 			"label": __("Online Mode"),
 			"fieldtype": "Link",
 			"options": "Student",
-			"hidden": true,
 		}
 	],
 	"formatter": formatter,

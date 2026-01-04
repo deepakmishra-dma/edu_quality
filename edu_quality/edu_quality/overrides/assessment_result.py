@@ -10,9 +10,9 @@ import education.education
 
 class CustomAssessmentResult(AssessmentResult):
     def validate(self):
-        education.education.validate_student_belongs_to_group(
-            self.student, self.student_group
-        )
+        # education.education.validate_student_belongs_to_group(
+        #     self.student, self.student_group
+        # )
         self.validate_maximum_score()
         if self.custom_scoring_type == "Marks":
             self.validate_grade()
