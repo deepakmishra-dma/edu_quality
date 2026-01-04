@@ -77,7 +77,8 @@ function writeMarks(rowIndex, columnId, value, columnIndex) {
 		student_name,
 		assessment_criteria,
 		assessment_plan,
-		question
+		question,
+		feature,
 	} = frappe.query_report.data[rowIndex]
 
 	const payload = {
@@ -87,6 +88,7 @@ function writeMarks(rowIndex, columnId, value, columnIndex) {
 		assessment_criteria: assessment_criteria,
 		assessment_plan: assessment_plan,
 		question: question,
+		feature: feature,
 		[columnId]: frappe.query_report.data[rowIndex][columnId]
 	}
 
@@ -409,11 +411,11 @@ frappe.query_reports["Marks Entry Tool"] = {
 			"fieldtype": "Check",
 			"hidden": true
 		},
-		// {
-		// 	"fieldname": "Remarks",
-		// 	"label": __("Remarks"),
-		// 	"fieldtype": "Check",
-		// },
+		{
+			"fieldname": "remarks",
+			"label": __("Remarks"),
+			"fieldtype": "Check",
+		},
 		{
 			"fieldname": "ref_no",
 			"label": __("Online Mode"),
