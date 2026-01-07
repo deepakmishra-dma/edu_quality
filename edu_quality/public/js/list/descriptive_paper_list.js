@@ -1,4 +1,4 @@
-frappe.listview_settings['Descriptive Question'] = {
+frappe.listview_settings['Descriptive Exam Paper'] = {
     onload: function (listview) {
         listview.page.add_menu_item(__('Import CSV'), function () {
             var dialog = new frappe.ui.Dialog({
@@ -51,7 +51,7 @@ function checkFilePermission(file) {
 
 function importCSVData(file) {
     frappe.call({
-        method: 'edu_quality.edu_quality.doctype.descriptive_question.descriptive_question.',
+        method: 'edu_quality.edu_quality.doctype.descriptive_exam_paper.descriptive_exam_paper.import_exam_paper',
         args: { 'url': file },
         callback: function (response) {
             if (response.message.status === 'success') {

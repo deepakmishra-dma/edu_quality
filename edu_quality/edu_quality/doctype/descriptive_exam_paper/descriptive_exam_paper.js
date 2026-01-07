@@ -1,5 +1,6 @@
 // Copyright (c) 2024, Hybrowlabs Technologies and contributors
 // For license information, please see license.txt
+var sd;
 function addQuestionButton(frm) {
     frm.add_custom_button("Add Question", () => {
 
@@ -7,10 +8,22 @@ function addQuestionButton(frm) {
             doctype: "Descriptive Question",
             target: frm,
             date_field: undefined,
-            setters: {
-                // class_type: "1",
+            setters: [{
+                fieldname: "class_type",
+                default: frm.doc.class_type,
+                label: "Class Type",
+                fieldtype: "Link",
+                "options": "Class Type"
                 // parent_question: ""
             },
+            {
+                fieldname: "parent_descriptive_question",
+
+                label: "Parent Question",
+                fieldtype: "Link",
+                "options": "Descriptive Question"
+                // parent_question: ""
+            }],
             // data_fields: data_fields,
             get_query: () => {
                 return {
@@ -46,12 +59,22 @@ function addQuestionButton(frm) {
 
                         frappe.model.set_value(child_row.doctype, child_row.name, 'question', data.name);
                         frappe.model.set_value(child_row.doctype, child_row.name, 'parent_question', data.parent_descriptive_question);
-
+                        frappe.model.set_value(child_row.doctype, child_row.name, 'selected', 1)
                     });
                     frm.refresh_field('questions');
                 }
             },
         });
+        setTimeout(() => {
+            d.filter_group.add_filter("Descriptive Question", "parent_descriptive_question", "is", "not set");
+            setTimeout(() => {
+                if (d.is_child_selection_enabled()) {
+                    d.show_child_results();
+                } else {
+                    d.get_results();
+                }
+            }, 1000)
+        }, 1000)
 
     })
 }

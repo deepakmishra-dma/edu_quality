@@ -4,6 +4,9 @@ import json
 from edu_quality.edu_quality.server_scripts.utils import current_academic_year
 from edu_quality.public.py.utils import extract_year_from_academic_year_name
 from frappe.model.mapper import get_mapped_doc
+import requests
+import csv
+from io import StringIO
 
 
 class DescriptiveExamPaper(Document):
@@ -94,3 +97,172 @@ def deduplicate_dicts(dicts):
             deduped_list.append(d)
 
     return deduped_list
+
+
+@frappe.whitelist()
+def import_exam_paper(url):
+    try:
+        origin = frappe.request.headers.get("Origin")
+        full_url = origin + url
+        response = requests.get(full_url)
+        response.raise_for_status()
+        return import_exam_paper_in_bg(response.text)
+
+    except Exception as e:
+        print(e, "except")
+        frappe.log_error(
+            f"Error importing Question Paper: {str(e)}", "Question Paper Import"
+        )
+        return {"status": "failed", "message": str(e)}
+    finally:
+        # Disconnect database connection
+        print("db closed")
+        # frappe.db.close()
+
+
+def gen_bulk_rows(csv_reader, row_no=2):
+    bulk_rows = []
+    for idx, row in enumerate(csv_reader, start=1):
+        name = row[1]
+        if name:
+            bulk_rows.append([row])
+
+        else:
+            bulk_rows[-1].append(row)
+    return bulk_rows
+
+
+def import_exam_paper_in_bg(csv_content):
+    errors = []
+    try:
+        csv_reader = csv.reader(StringIO(csv_content))
+        total_rows = sum(1 for _ in csv_reader) - 1  # Excluding header row
+        csv_reader = csv.reader(StringIO(csv_content))
+        headers = next(csv_reader)  # Skip header row
+        bulk_rows = gen_bulk_rows(csv_reader)
+        errors = insert_paper_in_db(bulk_rows, headers, total_rows)
+
+        if errors:
+            frappe.db.rollback()
+            error_message = "Error importing Question Paper background:<br>"
+            error_message += "<table>"
+            error_message += "<tr><th>Row No</th><th>Error Message</th></tr>"
+            for err in errors:
+                error_message += f"<tr><td>{err[0]}</td><td>{err[1]}</td></tr>"
+            error_message += "</table>"
+            frappe.log_error("Error importing Question Papers", str(errors))
+            return {"status": "failed", "message": error_message}
+        frappe.db.commit()
+        return {
+            "status": "success",
+            "message": ("Question Paper imported successfully"),
+        }
+    except Exception as e:
+        frappe.log_error(
+            message=f"Error importing Question Paper background: {str(frappe.get_traceback())}",
+            title="Question Paper Import Background",
+        )
+        return {"status": "failed", "message": str(e)}
+
+
+def insert_paper_in_db(bulk_data, headers, total_rows):
+    errors = []
+    try:
+        for index, parent_row in enumerate(bulk_data, start=1):
+            try:
+                current_paper = None
+                current_question = None
+                current_subject = None
+                current_class_type = None
+                current_academic_year = None
+                for idx, row in enumerate(parent_row, start=1):
+
+                    try:
+                        (
+                            subject,
+                            name,
+                            class_type,
+                            acad_year,
+                            question,
+                            sub_question,
+                        ) = row[:6]
+                        if name:
+                            current_subject = subject
+                            current_class_type = class_type
+                            current_academic_year = acad_year
+                            current_paper = frappe.new_doc("Descriptive Exam Paper")
+                            current_paper.name = name
+                            current_paper.academic_year = current_academic_year
+
+                        if question:
+
+                            insert_question(
+                                current_paper,
+                                sub_question,
+                                question,
+                                current_subject,
+                                current_class_type,
+                            )
+                            current_question = question
+
+                        else:
+                            if (
+                                current_question
+                                and current_subject
+                                and current_class_type
+                            ):
+                                insert_question(
+                                    current_paper,
+                                    sub_question,
+                                    current_question,
+                                    current_subject,
+                                    current_class_type,
+                                )
+
+                        progress = idx * 100 // total_rows
+                        frappe.realtime.publish_progress(
+                            progress,
+                            title="Import Exams",
+                            description=f"{idx}/{total_rows} rows processed",
+                        )
+
+                    except Exception as e:
+                        err = [idx, str(e)]
+                        errors.append(err)
+
+            except Exception as e:
+                err = [idx, str(e)]
+                errors.append(err)
+        return errors
+    except Exception as e:
+        err = [f"Group {index}", str(e)]
+        errors.append(err)
+        return errors
+
+
+def insert_question(current_paper, sub_question, question, subject, class_type):
+    if sub_question not in current_paper.questions:
+        parent_question_name = frappe.db.get_value(
+            "Descriptive Question",
+            {"question": question, "subject": subject, "class_type": class_type},
+        )
+        sub_question_name = frappe.db.get_value(
+            "Descriptive Question",
+            {
+                "question": sub_question,
+                "subject": subject,
+                "class_type": class_type,
+                "parent_descriptive_question": parent_question_name,
+            },
+        )
+        if not parent_question_name or not sub_question_name:
+            frappe.throw(f"{question} {sub_question} Not found")
+
+        current_paper.append(
+            "questions",
+            {
+                "selected": 1,
+                "question": sub_question_name,
+                "parent_question": parent_question_name,
+            },
+        )
