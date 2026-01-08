@@ -11,14 +11,7 @@ from io import StringIO
 
 
 class DescriptiveQuestion(NestedSet):
-    def autoname(self, method=None):
-        academic_year = extract_year_from_academic_year_name(
-            self.get("academic_year") or current_academic_year()
-        )
-        subject_short_code = self.get("subject_short_code")
-        name = f"{academic_year} {subject_short_code} {self.class_type} "
-        self.name = name
-        return name
+    pass
 
 
 @frappe.whitelist()
@@ -34,10 +27,6 @@ def import_descriptive_ques(url):
         print(e, "except")
         frappe.log_error(f"Error importing Exam Config: {str(e)}", "Exam Config Import")
         return {"status": "failed", "message": str(e)}
-    finally:
-        # Disconnect database connection
-        print("db closed")
-        # frappe.db.close()
 
 
 def import_descriptive_question_schedule_background(csv_content):
@@ -76,21 +65,31 @@ def import_descriptive_question_schedule_background(csv_content):
             error_message += "</table>"
             return {"status": "failed", "message": error_message}
         frappe.db.commit()
-        return {"status": "success", "message": _("Questions imported successfully")}
+        return {"status": "success", "message": ("Questions imported successfully")}
     except Exception as e:
         frappe.log_error(
             message=f"Error importing Questions background: {str(e)}",
             title="Questions Import Background",
         )
-    return {"status": "failed", "message": str(e)}
+        return {"status": "failed", "message": str(e)}
 
 
 def check_and_generate_ques(acad_year, parent_ques, ques, subject, class_type):
+    parent_ques_name = frappe.db.get_value(
+        "Descriptive Question",
+        {
+            "academic_year": acad_year,
+            "question": parent_ques,
+            "subject": subject,
+            "class_type": class_type,
+        },
+    )
+
     if not frappe.db.exists(
         "Descriptive Question",
         {
             "academic_year": acad_year,
-            "parent_descriptive_question": parent_ques,
+            "parent_descriptive_question": parent_ques_name,
             "question": ques,
             "subject": subject,
             "class_type": class_type,
@@ -98,7 +97,7 @@ def check_and_generate_ques(acad_year, parent_ques, ques, subject, class_type):
     ):
         doc = frappe.new_doc("Descriptive Question")
         doc.academic_year = acad_year
-        doc.parent_descriptive_question = parent_ques
+        doc.parent_descriptive_question = parent_ques_name
         doc.question = ques
         doc.subject = subject
         doc.class_type = class_type

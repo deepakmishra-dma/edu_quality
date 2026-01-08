@@ -51,7 +51,7 @@ function checkFilePermission(file) {
 
 function importCSVData(file) {
     frappe.call({
-        method: 'edu_quality.edu_quality.doctype.descriptive_question.descriptive_question.',
+        method: 'edu_quality.edu_quality.doctype.descriptive_question.descriptive_question.import_descriptive_ques',
         args: { 'url': file },
         callback: function (response) {
             if (response.message.status === 'success') {
