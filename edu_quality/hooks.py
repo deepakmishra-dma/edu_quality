@@ -63,6 +63,8 @@ doctype_list_js = {
     "Fees": "public/js/list/fees_list.js",
     "Purchase Order": "public/js/list/purchase_order_list.js",
     "Assessment Group": "public/js/list/assessment_group_list.js",
+    "Descriptive Exam Paper": "public/js/list/descriptive_paper_list.js",
+    "Descriptive Question": "public/js/list/descriptive_ques_list.js",
     "Carnival Event": [
         # "public/js/list/list_view.js",
         "public/js/list/carnival_event_list.js",
