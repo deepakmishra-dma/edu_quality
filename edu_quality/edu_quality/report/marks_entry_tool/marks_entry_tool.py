@@ -726,20 +726,47 @@ def send_marks(**kwargs):
         assessment_group: str: assessment group name
         division: str: division name optional
     """
+    assessment_group = kwargs.get("assessment_group")
+    division = kwargs.get("division")
+    if assessment_group:
+        frappe.enqueue(
+            send_marks_async,
+            assessment_group=assessment_group,
+            division=division,
+            queue="long",
+        )
+        return True
+    return False
+
+
+def send_marks_async(assessment_group, division=None):
+    """
+    This function is used to send marks to students for a particular assessment group
+    Args:
+        assessment_group: str: assessment group name
+        division: str: division name optional
+    """
     try:
-        assessment_group = kwargs.get("assessment_group")
-        school = frappe.get_value("Assessment Group", assessment_group , ["custom_school"])
-        program = frappe.get_value("Assessment Group", assessment_group , ["custom_program"])
-        students = frappe.get_all("Student", {"school": school, "program": program, "enabled": 1}, pluck="name")
+        school = frappe.get_value(
+            "Assessment Group", assessment_group, ["custom_school"]
+        )
+        program = frappe.get_value(
+            "Assessment Group", assessment_group, ["custom_program"]
+        )
+        students = frappe.get_all(
+            "Student",
+            {"school": school, "program": program, "enabled": 1},
+            pluck="name",
+        )
         for student in students:
-            send_student_marks(student, assessment_group)
+            send_student_marks(student, assessment_group, division)
         return True
     except:
-        frappe.log_error("Failed to send marks to student", frappe.get_traceback())
+        frappe.log_error(f"Failed to send marks for {assessment_group}", frappe.get_traceback())
         return False
 
 
-def send_student_marks(student, assessment_group):
+def send_student_marks(student, assessment_group, division=None):
     """
     This function is used to send marks to students for a particular assessment group
     Args:
@@ -748,18 +775,41 @@ def send_student_marks(student, assessment_group):
     """
     student_doc = frappe.get_doc("Student", student)
 
-    current_academic_year = frappe.get_value("Academic Year", {"custom_current_academic_year": 1}, "name")
-    student_group = frappe.get_value(
-        "Program Enrollment", {"student":  student_doc.name, "academic_year": current_academic_year }, "student_group"
+    current_academic_year = frappe.get_value(
+        "Academic Year", {"custom_current_academic_year": 1}, "name"
     )
+    if not division:
+        division = frappe.get_value(
+            "Program Enrollment",
+            {"student": student_doc.name, "academic_year": current_academic_year},
+            "student_group",
+        )
 
-    assessment_plan = frappe.get_all("Assessment Plan", {"student_group": student_group, "assessment_group": assessment_group, "docstatus": 1}, pluck="name")
-    assessment_result_name  = frappe.get_value("Assessment Result", {"assessment_plan": ["in", assessment_plan], "student": student_doc.name, "docstatus": 1})
+    assessment_plan = frappe.get_all(
+        "Assessment Plan",
+        {
+            "student_group": division,
+            "assessment_group": assessment_group,
+            "docstatus": 1,
+        },
+        pluck="name",
+    )
+    assessment_result_name = frappe.get_value(
+        "Assessment Result",
+        {
+            "assessment_plan": ["in", assessment_plan],
+            "student": student_doc.name,
+            "docstatus": 1,
+        },
+    )
 
     if assessment_result_name:
         try:
             from nextai.funnel.custom_trigger import trigger_event
-            assessment_result = frappe.get_doc("Assessment Result", assessment_result_name, "name")
+
+            assessment_result = frappe.get_doc(
+                "Assessment Result", assessment_result_name, "name"
+            )
             trigger_event(doc=assessment_result, event_name="send_processed_result")
         except:
             frappe.log_error("Failed to send marks to student", frappe.get_traceback())
