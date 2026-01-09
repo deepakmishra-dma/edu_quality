@@ -210,7 +210,6 @@ def process_atomic_exam(assessment_group, academic_year, program, div=None):
         calculate_ranking = assess_plan.get("custom_calculate_ranks")
         if calculate_ranking:
             calculate_ordering(plan)
-    send_processed_emails_async(assessment_group,academic_year,program,div)
     frappe.msgprint(
         "Successfully Processed all the results matching the criteria provided"
     )
@@ -386,7 +385,7 @@ def process_composite_result(assessment_group, academic_year, program, div=None)
                 assess_result.submit()
 
         calculate_ranking_composite(assess_group)
-        send_processed_emails_async(assess_group)
+
 
 
 def calculate_ranking_composite(assessment_group):
@@ -420,14 +419,3 @@ def cancel_existing_composite_results(results, assessment_group):
             2,
         )
 
-
-def send_processed_emails_async(assessment_group,academic_year,program,div):
-    frappe.enqueue(send_processed_emails, assess_group=assessment_group,academic_year=academic_year,program=program,div=div, queue="long")
-
-# def get_all_grouped_assessment_plans():
-
-def send_processed_emails(assessment_group,academic_year,program,div):
-    assess_group_doc =frappe.get_doc("Assessment Group",assessment_group)
-
-    # trigger_event(doc=)
-    pass

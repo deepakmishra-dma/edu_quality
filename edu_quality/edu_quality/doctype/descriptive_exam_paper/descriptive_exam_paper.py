@@ -191,8 +191,10 @@ def insert_paper_in_db(bulk_data, headers, total_rows):
                             current_class_type = class_type
                             current_academic_year = acad_year
                             current_paper = frappe.new_doc("Descriptive Exam Paper")
-                            current_paper.name = name
+                            current_paper.name1 = name
                             current_paper.academic_year = current_academic_year
+                            current_paper.subject = subject
+                            current_paper.class_type = class_type
 
                         if question:
 
@@ -229,7 +231,8 @@ def insert_paper_in_db(bulk_data, headers, total_rows):
                     except Exception as e:
                         err = [idx, str(e)]
                         errors.append(err)
-
+                if current_paper:
+                    current_paper.insert()
             except Exception as e:
                 err = [idx, str(e)]
                 errors.append(err)
