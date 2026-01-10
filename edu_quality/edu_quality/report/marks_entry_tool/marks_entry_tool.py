@@ -70,8 +70,7 @@ def get_subject_criteria_columns(assess_group, filters):
             .where(
                 (assess_plan_qb.assessment_group == assess_group.get("name"))
                 & (assess_plan_qb.student_group == division)
-                & (assess_plan_qb.docstatus == 1)
-                & (assess_plan_cr_qb.custom_remark.isnull())
+                & (assess_plan_qb.docstatus == 1)           
             )
         )
         .orderby(
@@ -231,14 +230,9 @@ def get_desc_questions(asess_plans_query):
         .on(asess_plans_query.name == assess_plan_cr_qb.parent)
         .inner_join(desc_exam_ques_qb)
         .on(desc_exam_ques_qb.name == assess_plan_cr_qb.custom_question)
-        .where(
-            (assess_plan_cr_qb.custom_is_remark == 0)
-            & (assess_plan_cr_qb.custom_remark.isnull())
-        )
         .select(
             asess_plans_query.name.as_("assessment_plan"),
             desc_exam_ques_qb.name.as_("question"),
-            assess_plan_cr_qb.custom_remark.as_("remark"),
             desc_exam_ques_qb.max_marks,
             desc_exam_ques_qb.min_marks,
             assess_plan_cr_qb.assessment_criteria,
