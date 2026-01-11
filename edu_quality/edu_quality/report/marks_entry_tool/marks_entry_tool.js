@@ -237,50 +237,6 @@ function onload(report) {
 	frappe.require(["/assets/edu_quality/css/mark-entry-tool.css"]);
 	report.page.parent.classList.add("mark-entry-tool-report");
 	addNote()
-	report.page.add_inner_button(__('Cancel Result'), () => {
-		let indexes = frappe.query_report.datatable.rowmanager.getCheckedRows();
-		let selected_rows = indexes.map(i => frappe.query_report.data[i]);
-
-		if (selected_rows.length == 0) {
-			frappe.msgprint(__("Select a row before cancelling a result"))
-			return
-		}
-		const ref_nos = selected_rows.map((selected_row) => selected_row.ref_no)
-		let message = `
-			<div>
-				
-				<p>Are you sure you want to cancel result for selected row ? this will cancel all the results in a row irrespective of subject</p>
-			</div>`;
-
-
-		frappe.confirm(__(message), async () => {
-			await cancelResult(ref_nos)
-		})
-	})
-	report.page.add_inner_button(__('Process Result'), () => {
-		const message = `
-        <div>    
-            <p>Are you sure you want to Leave this page and go to exam processing?</p>
-        </div>`;
-
-		frappe.confirm(__(message), async () => {
-			goToProcessing()
-
-		});
-
-
-	});
-	report.page.add_inner_button(__('Save Marks Entry'), () => {
-		const message = `
-        <div>    
-            <p>Are you sure you want to Save Marks Entered?</p>
-        </div>`;
-
-		frappe.confirm(__(message), async () => {
-			await saveCall()
-
-		});
-	});
 
 	report.page.add_inner_button(__('Send Marks'), () => {
 		let assessment_group = report.get_filter_value("assessment_group");
@@ -363,6 +319,52 @@ function onload(report) {
 			division: report.get_filter_value("division")
 		});
 	});
+	
+	report.page.add_inner_button(__('Cancel Result'), () => {
+		let indexes = frappe.query_report.datatable.rowmanager.getCheckedRows();
+		let selected_rows = indexes.map(i => frappe.query_report.data[i]);
+
+		if (selected_rows.length == 0) {
+			frappe.msgprint(__("Select a row before cancelling a result"))
+			return
+		}
+		const ref_nos = selected_rows.map((selected_row) => selected_row.ref_no)
+		let message = `
+			<div>
+				
+				<p>Are you sure you want to cancel result for selected row ? this will cancel all the results in a row irrespective of subject</p>
+			</div>`;
+
+
+		frappe.confirm(__(message), async () => {
+			await cancelResult(ref_nos)
+		})
+	})
+	report.page.add_inner_button(__('Process Result'), () => {
+		const message = `
+        <div>    
+            <p>Are you sure you want to Leave this page and go to exam processing?</p>
+        </div>`;
+
+		frappe.confirm(__(message), async () => {
+			goToProcessing()
+
+		});
+	});
+
+
+	report.page.add_inner_button(__('Save Marks Entry'), () => {
+		const message = `
+        <div>    
+            <p>Are you sure you want to Save Marks Entered?</p>
+        </div>`;
+
+		frappe.confirm(__(message), async () => {
+			await saveCall()
+
+		});
+	});
+
 
 	if (frappe.query_report.get_filter_value("mode")) {
 		report.page.add_inner_button(__('Switch to Marks Entry'), () => {
