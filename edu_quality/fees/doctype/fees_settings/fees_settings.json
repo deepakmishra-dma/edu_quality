@@ -18,7 +18,9 @@
   "surcharge",
   "application_fees",
   "fee_receipt_section",
-  "print_format"
+  "print_format",
+  "reminders_tab",
+  "payment_reminder"
  ],
  "fields": [
   {
@@ -88,12 +90,23 @@
    "in_list_view": 1,
    "label": "Combine Deposit and Due Fees",
    "reqd": 1
+  },
+  {
+   "fieldname": "reminders_tab",
+   "fieldtype": "Tab Break",
+   "label": "Reminders"
+  },
+  {
+   "fieldname": "payment_reminder",
+   "fieldtype": "Table",
+   "label": "Payment Reminder",
+   "options": "Payment Reminder"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-02-07 14:16:18.117598",
+ "modified": "2024-07-25 18:02:18.488933",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Fees Settings",
