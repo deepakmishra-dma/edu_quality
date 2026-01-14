@@ -1,0 +1,114 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-08-02 02:15:36.199578",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "academic_year",
+  "program",
+  "student",
+  "assessment_group",
+  "class_rank",
+  "division_rank",
+  "results",
+  "combined_total_score",
+  "combined_maximum_score",
+  "combined_percentage",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "student",
+   "fieldtype": "Link",
+   "label": "Student",
+   "options": "Student"
+  },
+  {
+   "fieldname": "assessment_group",
+   "fieldtype": "Link",
+   "label": "Assessment Group",
+   "options": "Assessment Group"
+  },
+  {
+   "fieldname": "class_rank",
+   "fieldtype": "Int",
+   "label": "Class Rank"
+  },
+  {
+   "fieldname": "division_rank",
+   "fieldtype": "Int",
+   "label": "Division Rank"
+  },
+  {
+   "fieldname": "results",
+   "fieldtype": "Table",
+   "label": "Results",
+   "options": "Assessment Group Result Detail"
+  },
+  {
+   "fieldname": "combined_total_score",
+   "fieldtype": "Float",
+   "label": "Combined Total Score"
+  },
+  {
+   "fieldname": "combined_maximum_score",
+   "fieldtype": "Float",
+   "label": "Combined Maximum Score"
+  },
+  {
+   "fieldname": "combined_percentage",
+   "fieldtype": "Float",
+   "label": "Combined Percentage"
+  },
+  {
+   "fetch_from": "assessment_group.custom_academic_year",
+   "fieldname": "academic_year",
+   "fieldtype": "Link",
+   "label": "Academic Year",
+   "options": "Academic Year"
+  },
+  {
+   "fetch_from": "assessment_group.custom_program",
+   "fieldname": "program",
+   "fieldtype": "Link",
+   "label": "Program",
+   "options": "Program"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Assessment Group Result",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2024-08-05 09:17:04.601457",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "Assessment Group Result",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -23,8 +23,11 @@ def get_default_columns(assessment_group, filters):
             {"fieldname": "ref_no", "label": "Ref No"},
             {"fieldname": "student_name", "label": "Name"},
         ]
-
-    if assess_group.custom_is_kg_exam:
+    if filters.get("remarks", None):
+          default_columns = [
+            {"fieldname": "feature", "label": "Feature"},
+        ]
+    if assess_group.custom_is_kg_exam or filters.get("remarks", None):
         default_columns = [
             {"fieldname": "question", "label": "Question"},
         ]

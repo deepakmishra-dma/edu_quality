@@ -4,6 +4,7 @@ from frappe.query_builder.functions import Count, GROUP_CONCAT, Sum
 from edu_quality.public.py.utils import get_div_students as get_div_stud
 from nextai.funnel.custom_trigger import trigger_event
 
+
 def get_div_students(division):
     data = get_div_stud(division)
     return [student.get("student") for student in data]
@@ -126,9 +127,24 @@ def diff_students_and_results(students, results, assessment_plan):
 @frappe.whitelist()
 def process_result(assessment_group, academic_year, program, div=None):
     if frappe.db.get_value("Assessment Group", assessment_group, "custom_is_composite"):
-        process_composite_result(assessment_group, academic_year, program, div=None)
+        frappe.enqueue(
+            process_composite_result,
+            assessment_group=assessment_group,
+            academic_year=academic_year,
+            program=program,
+            div=div,
+            queue="long",
+        )
     else:
-        process_atomic_exam(assessment_group, academic_year, program, div=None)
+        frappe.enqueue(
+            process_atomic_exam,
+            assessment_group=assessment_group,
+            academic_year=academic_year,
+            program=program,
+            div=div,
+            queue="long",
+        )
+
     frappe.db.commit()
 
 
@@ -143,74 +159,64 @@ def process_atomic_exam(assessment_group, academic_year, program, div=None):
 
     cancel_submitted_atomic_exams(submitted_docs)
     non_submitted_docs = get_result_from_plans(assessment_plans, False, [0])
-
-    modified_result = {}
-    total_processed_result = 0
-    total_scaled_max_score = 0
-    for result in non_submitted_docs:
-        (
-            score,
-            scale,
-            parent,
-            docstatus,
-            is_absent,
-            maximum_score,
-            custom_scoring_type,
-        ) = (
-            result.get("score"),
-            result.get("custom_scale"),
-            result.get("parent"),
-            result.get("docstatus"),
-            result.get("custom_is_absent"),
-            result.get("maximum_score"),
-            result.get("custom_scoring_type"),
-        )
-        if not is_absent and docstatus == 0:
-            frappe.db.set_value(
-                "Assessment Result Detail",
-                result.get("name"),
-                "custom_processed_result",
-                score * (scale),
-            )
-            modified_result[parent] = 1
-            total_processed_result += score * (scale)
-        total_scaled_max_score += maximum_score * scale
-
-    for parent in modified_result:
-        frappe.db.set_value(
-            "Assessment Result",
-            parent,
-            "custom_total_processed_score",
-            total_processed_result,
-        )
-        processed_percentage = (total_processed_result / total_scaled_max_score) * 100
-        if (
-            assessment_group_doc.custom_process_passing
-            and processed_percentage >= assessment_group_doc.custom_passing_percentage
-        ):
-
-            frappe.db.set_value(
-                "Assessment Result",
-                parent,
-                "custom_passed",
-                1,
-            )
-
-        frappe.db.set_value(
-            "Assessment Result",
-            parent,
-            "custom_processed_percentage",
-            0 if total_scaled_max_score == 0 else processed_percentage,
+    student_list = []
+    total_res_rows = len(non_submitted_docs)
+    for idx in range(0, total_res_rows):
+        result = non_submitted_docs[idx]
+        assess_result = frappe.get_doc("Assessment Result", result.get("name"))
+        if assess_result:
+            assess_result.submit()
+            student_list.append(assess_result.student)
+        progress = idx * 100 // total_res_rows
+        frappe.realtime.publish_progress(
+            progress,
+            title="Submitting Result",
+            description=f"{idx}/{total_res_rows} rows processed",
         )
 
-        frappe.db.set_value("Assessment Result", parent, "docstatus", 1)
-    
-    for assess_plan in assessment_plans:
-        plan = assess_plan.get("name")
-        calculate_ranking = assess_plan.get("custom_calculate_ranks")
-        if calculate_ranking:
-            calculate_ordering(plan)
-    send_processed_emails_async(assessment_group,academic_year,program,div)
+    assess_g_res_docs = []
+    total_students = len(student_list)
+    cancel_assessment_group_result(assessment_group, student_list)
+
+    for idx in range(0, total_students):
+        student = student_list[idx]
+        existing_doc = frappe.db.exists(
+            "Assessment Group Result",
+            {
+                "assessment_group": assessment_group,
+                "student": student,
+                "docstatus": ["in", [0, 1]],
+            },
+        )
+        if existing_doc:
+            assess_g_res_docs.append(existing_doc)
+            continue
+
+        assess_g_res = frappe.new_doc("Assessment Group Result")
+        assess_g_res.student = student
+        assess_g_res.assessment_group = assessment_group
+        doc = assess_g_res.insert()
+        assess_g_res_docs.append(doc.name)
+        progress = idx * 100 // total_students
+        frappe.realtime.publish_progress(
+            progress,
+            title="Creating Group Result",
+            description=f"{idx}/{total_students} rows processed",
+        )
+
+    total_assess_g_res = len(assess_g_res_docs)
+    for idx in range(0, total_assess_g_res):
+        assess_g_res = assess_g_res_docs[idx]
+
+        doc = frappe.get_doc("Assessment Group Result", assess_g_res)
+        frappe.realtime.publish_progress(
+            progress,
+            title="Submitting Assessment Group Result",
+            description=f"{idx}/{total_assess_g_res} rows processed",
+        )
+        if doc:
+            doc.submit()
+
     frappe.msgprint(
         "Successfully Processed all the results matching the criteria provided"
     )
@@ -228,6 +234,23 @@ def cancel_submitted_atomic_exams(result_data):
         amended_doc = frappe.copy_doc(assess_result)
         amended_doc.amended_from = assess_result.name
         amended_doc.save()
+
+
+def cancel_assessment_group_result(assessment_group, students_list):
+    submitted_results = frappe.db.get_all(
+        "Assessment Group Result",
+        filters={
+            "assessment_group": assessment_group,
+            "student": ["in", students_list],
+            "docstatus": ["in", [0, 1]],
+        },
+        fields=["name"],
+    )
+
+    submitted_results_name = [res.get("name") for res in submitted_results]
+    for result in submitted_results_name:
+        assess_result = frappe.get_doc("Assessment Group Result", result)
+        assess_result.cancel()
 
 
 def get_result_from_plans(assessment_plans, group_by=False, docstatus=[0, 1]):
@@ -282,6 +305,7 @@ def get_result_from_plans(assessment_plans, group_by=False, docstatus=[0, 1]):
         assess_res_de_qb.parent,
         assess_res_qb.course,
         assess_res_de_qb.maximum_score,
+        assess_res_qb.maximum_score.as_("total_maximum_score"),
         assess_res_qb.custom_scoring_type,
     )
 
@@ -388,7 +412,6 @@ def process_composite_result(assessment_group, academic_year, program, div=None)
         calculate_ranking_composite(assess_group)
         send_processed_emails_async(assess_group)
 
-
 def calculate_ranking_composite(assessment_group):
     frappe.db.sql(
         """
@@ -419,15 +442,3 @@ def cancel_existing_composite_results(results, assessment_group):
             "docstatus",
             2,
         )
-
-
-def send_processed_emails_async(assessment_group,academic_year,program,div):
-    frappe.enqueue(send_processed_emails, assess_group=assessment_group,academic_year=academic_year,program=program,div=div, queue="long")
-
-# def get_all_grouped_assessment_plans():
-
-def send_processed_emails(assessment_group,academic_year,program,div):
-    assess_group_doc =frappe.get_doc("Assessment Group",assessment_group)
-
-    # trigger_event(doc=)
-    pass
