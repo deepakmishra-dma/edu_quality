@@ -438,13 +438,17 @@ class CustomFees(Fees):
     def remove_discount_entry(self,company,amount):
         receivable_account, discount_account = frappe.db.get_value("Company", company,["default_receivable_account","default_discount_account"])
         entries = []
-        debit_filter = {'voucher_type':self.doctype,'voucher_no':self.name,'account':receivable_account,'debit':amount}
-        credit_filter = {'voucher_type':self.doctype,'voucher_no':self.name,'account':discount_account,'credit':amount}
+        debit_filter = {'voucher_type':self.doctype,'voucher_no':self.name,'account':receivable_account,'credit':amount}
+        credit_filter = {'voucher_type':self.doctype,'voucher_no':self.name,'account':discount_account,'debit':amount}
         if frappe.db.exists("GL Entry",debit_filter):
             entries.append(frappe.get_doc("GL Entry",debit_filter).as_dict())
         if frappe.db.exists("GL Entry",credit_filter):
             entries.append(frappe.get_doc("GL Entry",credit_filter).as_dict())
-        make_reverse_gl_entries(entries)
+        if entries:
+            make_reverse_gl_entries(entries)
+        # else:
+        #     self.removal_discount_entry(company,amount)
+    
          
     def add_discount_entry(self,company,amount):
         receivable_account, discount_account, cost_center = frappe.db.get_value("Company", company,["default_receivable_account","default_discount_account","cost_center"])
@@ -466,6 +470,42 @@ class CustomFees(Fees):
                         {
                             "company": company,
                             "account": receivable_account,
+                            "against": self.student,
+                            "credit": amount,
+                            "credit_in_account_currency":amount,
+                            "cost_center": cost_center
+                        },
+                        item=self,
+                    ))
+        make_gl_entries(
+        [debit_entry,credit_entry],
+        cancel=(self.docstatus == 2),
+        update_outstanding="No",
+        merge_entries=False,
+    )
+
+
+
+    def removal_discount_entry(self,company,amount):
+        receivable_account, discount_account, cost_center = frappe.db.get_value("Company", company,["default_receivable_account","default_discount_account","cost_center"])
+        debit_entry = (self.get_gl_dict(
+                {
+                    "company": company,
+                    "account": receivable_account,
+                    "party_type": "Student",
+                    "party": self.student,
+                    "against": discount_account ,
+                    "debit": amount,
+                    "debit_in_account_currency": amount,
+                    "against_voucher": self.name,
+                    "against_voucher_type": self.doctype
+                },
+                item=self,
+            ))
+        credit_entry = (self.get_gl_dict(
+                        {
+                            "company": company,
+                            "account": discount_account,
                             "against": self.student,
                             "credit": amount,
                             "credit_in_account_currency":amount,

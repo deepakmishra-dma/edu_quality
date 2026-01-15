@@ -63,6 +63,8 @@ doctype_list_js = {
     "Fees": "public/js/list/fees_list.js",
     "Purchase Order": "public/js/list/purchase_order_list.js",
     "Assessment Group": "public/js/list/assessment_group_list.js",
+    "Descriptive Exam Paper": "public/js/list/descriptive_paper_list.js",
+    "Descriptive Question": "public/js/list/descriptive_ques_list.js",
     "Carnival Event": [
         # "public/js/list/list_view.js",
         "public/js/list/carnival_event_list.js",
@@ -108,13 +110,13 @@ jinja = {
 # ------------
 
 # before_install = "edu_quality.install.before_install"
-# after_install = "edu_quality.install.after_install"
+after_install = "edu_quality.common.install.after_install"
 
 # Uninstallation
 # ------------
 
 # before_uninstall = "edu_quality.uninstall.before_uninstall"
-# after_uninstall = "edu_quality.uninstall.after_uninstall"
+after_uninstall = "edu_quality.common.uninstall.after_uninstall"
 
 # Desk Notifications
 # ------------------
@@ -159,6 +161,7 @@ override_doctype_class = {
     "Assessment Plan": "edu_quality.edu_quality.overrides.assessment_plan.CustomAssessmentPlan",
     "Assessment Result": "edu_quality.edu_quality.overrides.assessment_result.CustomAssessmentResult",
     "Event": "edu_quality.edu_quality.overrides.event.CustomEvent",
+    "Company": "edu_quality.edu_quality.overrides.company.CustomCompany",
 }
 
 # Document Events
@@ -207,8 +210,7 @@ doc_events = {
     },
     "Student": {
         "after_insert": "edu_quality.public.py.student.after_insert",
-        "before_save": "edu_quality.public.py.student.before_save",
-        "on_update": "edu_quality.public.py.student.on_update",
+        "before_save": "edu_quality.public.py.student.before_save"
     },
     "Payment Entry": {
         "validate": "edu_quality.edu_quality.server_scripts.payment_entry.validate"
@@ -265,7 +267,7 @@ scheduler_events = {
         "0 6 * * *": ["edu_quality.tasks.schedule_birthday_greeting"],
         "* * * * *": [
             "edu_quality.cmap_jobs.send_ptm_notifications_to_students",
-            "edu_quality.cmap_jobs.notify_teacher_before_half_hour_job",
+            "edu_quality.cmap_jobs.notify_teacher_before_one_hour_job",
         ],
     },
     "daily": [

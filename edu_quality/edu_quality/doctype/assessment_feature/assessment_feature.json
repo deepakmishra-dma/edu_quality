@@ -1,0 +1,50 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:{feature_category}{feature}",
+ "creation": "2024-07-26 08:49:37.080566",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "feature",
+  "feature_category"
+ ],
+ "fields": [
+  {
+   "fieldname": "feature",
+   "fieldtype": "Data",
+   "label": "Feature"
+  },
+  {
+   "fieldname": "feature_category",
+   "fieldtype": "Link",
+   "label": "Feature Category",
+   "options": "Assessment Remark Category"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-07-26 09:20:16.173720",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "Assessment Feature",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -217,6 +217,7 @@ def process_atomic_exam(assessment_group, academic_year, program, div=None):
         if doc:
             doc.submit()
 
+
     frappe.msgprint(
         "Successfully Processed all the results matching the criteria provided"
     )
@@ -410,7 +411,7 @@ def process_composite_result(assessment_group, academic_year, program, div=None)
                 assess_result.submit()
 
         calculate_ranking_composite(assess_group)
-        send_processed_emails_async(assess_group)
+
 
 def calculate_ranking_composite(assessment_group):
     frappe.db.sql(
@@ -442,3 +443,7 @@ def cancel_existing_composite_results(results, assessment_group):
             "docstatus",
             2,
         )
+
+
+
+

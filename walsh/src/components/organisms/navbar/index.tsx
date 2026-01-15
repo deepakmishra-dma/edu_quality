@@ -16,13 +16,15 @@ import {
   IconStack2,
   IconStar,
   IconCalendar,
-  // IconFileDescription,
+  IconFileDescription,
+  IconReport,
   IconUser,
-  IconCreditCard,
+  // IconCreditCard,
   IconLink,
   IconPrinter,
 } from "@tabler/icons";
 import { IconClock } from "@tabler/icons-react";
+// import { IconReport } from "@tabler/icons-react";
 import { useLogout } from "@refinedev/core";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -163,11 +165,18 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
             icon: IconUser,
             location: "/student-profile",
           },
+          // {
+          //   label: "Fee",
+          //   icon: IconCreditCard,
+          //   location: "/fee",
+          // },
+
           {
-            label: "Fee",
-            icon: IconCreditCard,
-            location: "/fee",
+            label: "Result",
+            icon: IconReport,
+            location: "/result",
           },
+
           {
             label: "School Calendar",
             icon: IconCalendar,
@@ -179,11 +188,11 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
             icon: IconArchive,
             location: "/archived",
           },
-          // {
-          //   label: "Result",
-          //   icon: IconFileDescription,
-          //   location: "/result",
-          // },
+          {
+            label: "Result",
+            icon: IconFileDescription,
+            location: "/result",
+          },
 
           {
             label: "Bonafide Certificate",

@@ -85,26 +85,13 @@ def before_save(doc, method=None):
         if prev_doc and prev_doc.student_status != doc.student_status:
             if doc.student_status == "Defaulter":
                 suspend_google_user(doc.student_email_id)
+                doc.enabled = 0
             else:
                 unsuspend_google_user(doc.student_email_id)
+                doc.enabled = 1
         comment_on_possible_dropout(doc, prev_doc)
     except Exception as e:
         frappe.logger("google_user").exception(e)
-
-
-def on_update(doc, method=None):
-    to_update = {
-        "custom_status": doc.student_status,
-        "has_allergies": doc.has_allergies,
-        "allergies": doc.allergies,
-        "is_handicap": doc.is_handicap,
-        "handicap": doc.handicap,
-    }
-    program_enrollment = frappe.get_all(
-        "Program Enrollment", {"student": doc.name, "docstatus": ["!=", 2]}, ["name"]
-    )
-    for pe in program_enrollment:
-        frappe.set_value("Program Enrollment", pe.name, to_update)
 
 
 def comment_on_possible_dropout(doc, old_doc):

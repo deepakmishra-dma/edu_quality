@@ -1,24 +1,27 @@
-import {AuthBindings} from "@refinedev/core";
+import { AuthBindings } from "@refinedev/core";
 
 export const authProvider: AuthBindings = {
-  login: async ({phone, otp}) => {
+  login: async ({ phone, otp }) => {
     // @ts-expect-error undefined
     const pushToken = window.getPushNotificationToken?.();
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
 
-    const response = await fetch("/api/method/edu_quality.public.py.walsh.login.verify_otp", {
-      method: 'POST',
-      headers: myHeaders,
-      body: JSON.stringify({
-        phone_no: phone,
-        otp: otp,
-        push_token: pushToken || undefined
-      }),
-      redirect: 'follow'
-    })
-    const data = await response.json()
-    const message = data?.message
+    const response = await fetch(
+      "/api/method/edu_quality.public.py.walsh.login.verify_otp",
+      {
+        method: "POST",
+        headers: myHeaders,
+        body: JSON.stringify({
+          phone_no: phone,
+          otp: otp,
+          push_token: pushToken || undefined,
+        }),
+        redirect: "follow",
+      }
+    );
+    const data = await response.json();
+    const message = data?.message;
 
     if (message?.success) {
       return {
@@ -42,16 +45,19 @@ export const authProvider: AuthBindings = {
     // @ts-expect-error undefined
     const pushToken = window.getPushNotificationToken?.();
 
-    const response = await fetch("/api/method/edu_quality.public.py.walsh.login.logout", {
-      method: 'POST',
-      headers: myHeaders,
-      body: JSON.stringify({
-        push_token: pushToken || undefined
-      }),
-      redirect: 'follow'
-    })
-    const data = await response.json()
-    const message = data?.message
+    const response = await fetch(
+      "/api/method/edu_quality.public.py.walsh.login.logout",
+      {
+        method: "POST",
+        headers: myHeaders,
+        body: JSON.stringify({
+          push_token: pushToken || undefined,
+        }),
+        redirect: "follow",
+      }
+    );
+    const data = await response.json();
+    const message = data?.message;
     if (message.success) {
       return {
         success: true,
@@ -74,10 +80,15 @@ export const authProvider: AuthBindings = {
     };
   },
   getPermissions: async () => null,
-  getIdentity: async () => {
-  },
+  getIdentity: async () => {},
   onError: async (error) => {
-    console.error(error);
-    return {error};
+    if (error.statusCode === 401 || error.statusCode === 403) {
+      return {
+        logout: true,
+        redirectTo: "/walsh",
+        error,
+      };
+    }
+    return { error };
   },
 };
