@@ -6,6 +6,8 @@ from edu_quality.public.py.utils import extract_year_from_academic_year_name
 from education.education.api import get_assessment_details, get_grade as inner_get_grade
 from frappe.utils import flt
 import education.education
+from pypika.analytics import Rank
+from frappe.query_builder import Order
 
 
 class CustomAssessmentResult(AssessmentResult):
@@ -15,7 +17,7 @@ class CustomAssessmentResult(AssessmentResult):
         # )
         if not self.custom_is_descriptive:
             self.validate_maximum_score()
-            
+
         if self.custom_scoring_type == "Marks":
             self.validate_grade()
             self.validate_processed_result()
@@ -77,24 +79,37 @@ class CustomAssessmentResult(AssessmentResult):
         self.process_result()
 
     def calculate_ordering(self):
-        frappe.db.sql(
-            """
-        Update `tabAssessment Result` 
-    INNER JOIN (SELECT 
-        RANK() OVER (ORDER BY custom_total_processed_score DESC) AS ranking,
-        name
-    FROM 
-        `tabAssessment Result`
-    WHERE 
-        assessment_plan = %(id)s
-        AND docstatus = 1 AND custom_scoring_type=%(scoring_type)s) AS ranked_table ON  `tabAssessment Result`.name = ranked_table.name
-SET  `tabAssessment Result`.custom_rank = ranked_table.ranking;
-""",
-            values={"id": self.assessment_plan, "scoring_type": "Marks"},
-            as_dict=True,
+        assess_res_qb = frappe.qb.DocType("Assessment Result")
+        subquery = (
+            assess_res_qb.select(
+                Rank()
+                .over()
+                .orderby(assess_res_qb.custom_total_processed_score, order=Order.desc)
+                .as_("ranking"),
+                assess_res_qb.name,
+            )
+            .where(
+                (assess_res_qb.assessment_plan == self.assessment_plan)
+                & (assess_res_qb.docstatus == 1)
+                & (assess_res_qb.custom_scoring_type == "Marks")
+            )
+            .as_("ranked_table")
         )
+        query = (
+            frappe.qb.from_(assess_res_qb)
+            .inner_join(subquery)
+            .on(self.name == assess_res_qb.name)
+        ).select(subquery.ranking)
+
+        data = query.run(as_dict=True)
+        if data:
+            self.custom_rank = data[0].get("ranking")
+            return self.custom_rank
+        else:
+            None
 
     def before_submit(self, method=None):
+
         if self.custom_scoring_type == "Marks":
             self.process_result()
             assessment_group_doc = frappe.get_doc(
@@ -106,6 +121,8 @@ SET  `tabAssessment Result`.custom_rank = ranked_table.ranking;
                 >= assessment_group_doc.custom_passing_percentage
             ):
                 self.custom_passed = 1
+
+            self.calculate_ordering()
 
 
 def get_grade(grading_scale, percentage, score):

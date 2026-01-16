@@ -629,9 +629,14 @@ def render_template_with_exception(template, data):
 
 
 def get_div_students(division, ref_no=None):
+    if isinstance(division, list):
+        cond = ["in", division]
+    else:
+        cond = division
+
     if ref_no:
         filters = {
-            "student_group": division,
+            "student_group": cond,
             "docstatus": 1,
             "student": ref_no,
             "custom_status": ["in", ["Current student", "Defaulter"]],
@@ -639,7 +644,7 @@ def get_div_students(division, ref_no=None):
 
     else:
         filters = {
-            "student_group": division,
+            "student_group": cond,
             "docstatus": 1,
             "custom_status": ["in", ["Current student", "Defaulter"]],
         }
@@ -647,7 +652,7 @@ def get_div_students(division, ref_no=None):
     data = frappe.db.get_list(
         "Program Enrollment",
         filters=filters,
-        fields=["student_name", "name", "student", "roll_no"],
+        fields=["student_name", "name", "student", "roll_no", "student_group"],
         order_by="CAST(roll_no AS UNSIGNED)",
     )
 
