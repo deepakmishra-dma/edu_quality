@@ -1,8 +1,9 @@
 import frappe
 
 from edu_quality.public.py.walsh.admin import render_jinja
-from edu_quality.public.py.walsh.login import is_defaulter
+
 from edu_quality.public.py.walsh.login import logout
+from edu_quality.public.py.walsh.login import is_disabled
 
 
 @frappe.whitelist()
@@ -10,16 +11,19 @@ def get_students():
     user = frappe.session.user
     guardian = frappe.get_cached_doc("Guardian", {"user": user})
     students = frappe.get_all(
-        "Student", filters={"guardian": guardian.name}, fields=["*"]
+        "Student", filters={"guardian": guardian.name}, fields=["enabled"]
     )
-    student_disabled = any(student.get("enabled") == 0 for student in students)
-    # if any one of student disabled log out the parent
+    student_disabled = all(student.get("enabled") == 0 for student in students)
+    # if all of student disabled log out the parent
     if student_disabled:
         logout()
-        
+
         frappe.throw(("Not permitted"), frappe.PermissionError)
         return []
 
+    students = frappe.get_all(
+        "Student", filters={"guardian": guardian.name, "enabled": 1}, fields=["*"]
+    )
     return students
 
 
@@ -36,7 +40,7 @@ def get_all_notices(page=1, limit=0, stared_only=False, archived_only=False):
     user = frappe.session.user
 
     guardian = frappe.get_cached_doc("Guardian", {"user": user})
-    if is_defaulter(guardian.name, True):
+    if is_disabled(guardian.name, True):
         return {
             "success": False,
             "data": [],
