@@ -11,13 +11,16 @@ def get_students():
     students = frappe.get_all(
         "Student", filters={"guardian": guardian.name}, fields=["*"]
     )
-    student_disabled = any(student.get("enabled") == 0 for student in students)
-    # if any one of student disabled log out the parent
+    student_disabled = all(student.get("enabled") == 0 for student in students)
+    # if all of student disabled log out the parent
     if student_disabled:
         logout()
         frappe.throw(("Not permitted"), frappe.PermissionError)
         return []
 
+    students = frappe.get_all(
+        "Student", filters={"guardian": guardian.name, "enabled": 1}, fields=["*"]
+    )
     return students
 
 
