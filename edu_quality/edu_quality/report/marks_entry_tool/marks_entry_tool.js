@@ -67,10 +67,10 @@ function updateCell(value, columnId, rowIndex, maximumScore, scoring_type, colum
 
 function writeMarks(rowIndex, columnId, value, columnIndex) {
 	if (frappe.query_report.data[rowIndex][columnId]) {
-		frappe.query_report.data[rowIndex][columnId]["content"] = value;
+		frappe.query_report.data[rowIndex][columnId] = value;
 	}
 	else {
-		frappe.query_report.data[rowIndex][columnId] = { "content": value }
+		frappe.query_report.data[rowIndex][columnId] = value
 	}
 	const { ref_no,
 		roll_no,
@@ -171,16 +171,19 @@ function createInputElement(value, column, row, docstatus, onlineAssess) {
 }
 
 function formatter(value, row, column, data, defaultFormatter) {
+
 	value = defaultFormatter(value, row, column, data);
-	const values = data[column.fieldname]
+	const values = data[column.fieldname + "_is_extra"]
 	const docstatus = values && values.docstatus
 	const onlineAssess = values && values.online_assess
+
 	if (column.is_criteria) {
 		value = createInputElement(value, column, row, docstatus, onlineAssess);
 	}
 
 	return value;
 }
+
 function switchToNormal() {
 
 	const filters = frappe.query_report.get_filter_values();
@@ -234,7 +237,7 @@ function sendMarks(assessment_group, division) {
 					message: __('Marks Sending Queued Successfully'),
 					indicator: 'green'
 				}, 2);
-			}else{
+			} else {
 				frappe.show_alert({
 					message: __('Marks Sending Failed'),
 					indicator: 'red'
@@ -379,12 +382,12 @@ function onload(report) {
 							if (!values) return;
 							sendMarks(values.assessment_group, values.division)
 						},
-							() => {
-								frappe.show_alert({
-									message: __('Marks Sending Cancelled'),
-									indicator: 'orange'
-								});
-							}
+						() => {
+							frappe.show_alert({
+								message: __('Marks Sending Cancelled'),
+								indicator: 'orange'
+							});
+						}
 					);
 				}
 			},

@@ -25,7 +25,7 @@ def get_default_columns(assessment_group, filters):
         ]
 
     if filters.get("remarks", None):
-          default_columns = [
+        default_columns = [
             {"fieldname": "feature", "label": "Feature"},
         ]
 
@@ -75,7 +75,7 @@ def get_subject_criteria_columns(assess_group, filters):
             .where(
                 (assess_plan_qb.assessment_group == assess_group.get("name"))
                 & (assess_plan_qb.student_group == division)
-                & (assess_plan_qb.docstatus == 1)           
+                & (assess_plan_qb.docstatus == 1)
             )
         )
         .orderby(
@@ -188,7 +188,10 @@ def gen_desc_ques_field(data):
     return f"{data.get('assessment-plan')} {data.get('question')} {data.get('assessment_criteria')}"
 
 
-def gen_field_name(assess_plan):
+def gen_field_name(assess_plan, is_extra=False):
+    if is_extra:
+        return f"{to_snake_case(assess_plan.get('name'))} - ({assess_plan.get('course')}-{assess_plan.get('assessment_criteria')})_is_extra"
+
     return f"{to_snake_case(assess_plan.get('name'))} - ({assess_plan.get('course')}-{assess_plan.get('assessment_criteria')})"
 
 
@@ -313,7 +316,7 @@ def get_remarks_earlier_marks(filters, students):
             questions_hash[remark_name] = {
                 **questions_hash[remark_name],
                 "feature": remark_name,
-                student: {"content": parse_score(is_absent, "Marks", score, grade)},
+                student: parse_score(is_absent, "Marks", score, grade),
             }
     return [question for question in questions_hash.values()]
 
@@ -394,9 +397,7 @@ def get_desc_earlier_marks(filters, students):
                 "question": question_name,
                 "assessment_plan": assess_plan,
                 "assessment_criteria": criteria,
-                student: {
-                    "content": parse_score(is_absent, scoring_type, score, grade)
-                },
+                student: parse_score(is_absent, scoring_type, score, grade),
             }
 
     return [question for question in questions_hash.values()]
@@ -458,8 +459,11 @@ def get_earlier_marks(filters, students, criterias):
                 "course": course,
                 "assessment_criteria": criteria,
             }
-            student[gen_field_name(assess_plan)] = {
-                "content": parse_score(is_absent, scoring_type, score, grade),
+            student[gen_field_name(assess_plan)] = parse_score(
+                is_absent, scoring_type, score, grade
+            )
+
+            student[gen_field_name(assess_plan, True)] = {
                 "docstatus": docstatus,
                 "online_assess": online_assess,
             }
@@ -879,9 +883,17 @@ def send_marks(**kwargs):
     """
     try:
         assessment_group = kwargs.get("assessment_group")
-        school = frappe.get_value("Assessment Group", assessment_group , ["custom_school"])
-        program = frappe.get_value("Assessment Group", assessment_group , ["custom_program"])
-        students = frappe.get_all("Student", {"school": school, "program": program, "enabled": 1}, pluck="name")
+        school = frappe.get_value(
+            "Assessment Group", assessment_group, ["custom_school"]
+        )
+        program = frappe.get_value(
+            "Assessment Group", assessment_group, ["custom_program"]
+        )
+        students = frappe.get_all(
+            "Student",
+            {"school": school, "program": program, "enabled": 1},
+            pluck="name",
+        )
         for student in students:
             send_student_marks(student, assessment_group)
         return True
@@ -899,18 +911,40 @@ def send_student_marks(student, assessment_group):
     """
     student_doc = frappe.get_doc("Student", student)
 
-    current_academic_year = frappe.get_value("Academic Year", {"custom_current_academic_year": 1}, "name")
+    current_academic_year = frappe.get_value(
+        "Academic Year", {"custom_current_academic_year": 1}, "name"
+    )
     student_group = frappe.get_value(
-        "Program Enrollment", {"student":  student_doc.name, "academic_year": current_academic_year }, "student_group"
+        "Program Enrollment",
+        {"student": student_doc.name, "academic_year": current_academic_year},
+        "student_group",
     )
 
-    assessment_plan = frappe.get_all("Assessment Plan", {"student_group": student_group, "assessment_group": assessment_group, "docstatus": 1}, pluck="name")
-    assessment_result_name  = frappe.get_value("Assessment Result", {"assessment_plan": ["in", assessment_plan], "student": student_doc.name, "docstatus": 1})
+    assessment_plan = frappe.get_all(
+        "Assessment Plan",
+        {
+            "student_group": student_group,
+            "assessment_group": assessment_group,
+            "docstatus": 1,
+        },
+        pluck="name",
+    )
+    assessment_result_name = frappe.get_value(
+        "Assessment Result",
+        {
+            "assessment_plan": ["in", assessment_plan],
+            "student": student_doc.name,
+            "docstatus": 1,
+        },
+    )
 
     if assessment_result_name:
         try:
             from nextai.funnel.custom_trigger import trigger_event
-            assessment_result = frappe.get_doc("Assessment Result", assessment_result_name, "name")
+
+            assessment_result = frappe.get_doc(
+                "Assessment Result", assessment_result_name, "name"
+            )
             trigger_event(doc=assessment_result, event_name="send_processed_result")
         except:
             frappe.log_error("Failed to send marks to student", frappe.get_traceback())
