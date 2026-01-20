@@ -1,6 +1,6 @@
 // Copyright (c) 2024, Hybrowlabs Technologies and contributors
 // For license information, please see license.txt
-let criteriasChanged = []
+let criteriasChanged = {}
 
 function throttle(func, limit) {
 	let lastFunc;
@@ -67,13 +67,44 @@ function updateCell(value, columnId, rowIndex, maximumScore, scoring_type, colum
 
 function writeMarks(rowIndex, columnId, value, columnIndex) {
 	if (frappe.query_report.data[rowIndex][columnId]) {
-		frappe.query_report.data[rowIndex][columnId]["content"] = value;
+		frappe.query_report.data[rowIndex][columnId] = value;
 	}
 	else {
-		frappe.query_report.data[rowIndex][columnId] = { "content": value }
+		frappe.query_report.data[rowIndex][columnId] = value
+	}
+	const { ref_no,
+		roll_no,
+		student_name,
+		assessment_criteria,
+		assessment_plan,
+		question,
+		feature,
+	} = frappe.query_report.data[rowIndex]
+
+	const payload = {
+		ref_no: ref_no,
+		roll_no: roll_no,
+		student_name: student_name,
+		assessment_criteria: assessment_criteria,
+		assessment_plan: assessment_plan,
+		question: question,
+		feature: feature,
+		[columnId]: frappe.query_report.data[rowIndex][columnId]
 	}
 
-	criteriasChanged.push(frappe.query_report.data[rowIndex])
+	if (!ref_no && !student_name) {
+		if (!criteriasChanged[`${question} ${assessment_plan}`])
+			criteriasChanged[`${question} ${assessment_plan}`] = {};
+
+		Object.assign(criteriasChanged[`${question} ${assessment_plan}`], payload);
+	}
+
+	else if (ref_no && student_name) {
+		if (!criteriasChanged[ref_no])
+			criteriasChanged[ref_no] = {};
+
+		Object.assign(criteriasChanged[ref_no], payload);
+	}
 
 }
 
@@ -140,16 +171,19 @@ function createInputElement(value, column, row, docstatus, onlineAssess) {
 }
 
 function formatter(value, row, column, data, defaultFormatter) {
+
 	value = defaultFormatter(value, row, column, data);
-	const values = data[column.fieldname]
+	const values = data[column.fieldname + "_is_extra"]
 	const docstatus = values && values.docstatus
 	const onlineAssess = values && values.online_assess
+
 	if (column.is_criteria) {
 		value = createInputElement(value, column, row, docstatus, onlineAssess);
 	}
 
 	return value;
 }
+
 function switchToNormal() {
 
 	const filters = frappe.query_report.get_filter_values();
@@ -172,19 +206,47 @@ async function saveCall(autoSave = false) {
 	if (autoSave) {
 		data = criteriasChanged
 	}
+	console.log(criteriasChanged)
 	await frappe.call({
 		"method": "edu_quality.edu_quality.report.marks_entry_tool.marks_entry_tool.do_mark_entry",
 		args: {
-			data: data,
+			data: Object.keys(criteriasChanged).map((key) => {
+				return criteriasChanged[key]
+			}),
 			filters: filters,
 		}
 	});
-	criteriasChanged = []
+	criteriasChanged = {}
 	frappe.show_alert({
 		message: __('<i class="fa fa-save"></i>'),
 		indicator: 'green'
 	}, 2);
 }
+
+function sendMarks(assessment_group, division) {
+
+	frappe.call({
+		method: "edu_quality.edu_quality.report.marks_entry_tool.marks_entry_tool.send_marks",
+		args: {
+			assessment_group: assessment_group,
+			division: division
+		},
+		callback: function (r) {
+			if (r.message) {
+				frappe.show_alert({
+					message: __('Marks Sending Queued Successfully'),
+					indicator: 'green'
+				}, 2);
+			} else {
+				frappe.show_alert({
+					message: __('Marks Sending Failed'),
+					indicator: 'red'
+				}, 2);
+			}
+		}
+	});
+}
+
 const cancelResult = debounce(async (ref_nos) => {
 	const filters = {};
 
@@ -212,30 +274,6 @@ function onload(report) {
 	frappe.require(["/assets/edu_quality/css/mark-entry-tool.css"]);
 	report.page.parent.classList.add("mark-entry-tool-report");
 	addNote()
-	report.page.add_inner_button(__('Save Marks Entry'), () => {
-		const message = `
-        <div>    
-            <p>Are you sure you want to Save Marks Entered?</p>
-        </div>`;
-
-		frappe.confirm(__(message), async () => {
-			await saveCall()
-
-		});
-	});
-	report.page.add_inner_button(__('Process Result'), () => {
-		const message = `
-        <div>    
-            <p>Are you sure you want to Leave this page and go to exam processing?</p>
-        </div>`;
-
-		frappe.confirm(__(message), async () => {
-			goToProcessing()
-
-		});
-
-
-	});
 	report.page.add_inner_button(__('Cancel Result'), () => {
 		let indexes = frappe.query_report.datatable.rowmanager.getCheckedRows();
 		let selected_rows = indexes.map(i => frappe.query_report.data[i]);
@@ -255,9 +293,114 @@ function onload(report) {
 		frappe.confirm(__(message), async () => {
 			await cancelResult(ref_nos)
 		})
-
-
 	})
+	report.page.add_inner_button(__('Process Result'), () => {
+		const message = `
+        <div>    
+            <p>Are you sure you want to Leave this page and go to exam processing?</p>
+        </div>`;
+
+		frappe.confirm(__(message), async () => {
+			goToProcessing()
+
+		});
+
+
+	});
+	report.page.add_inner_button(__('Save Marks Entry'), () => {
+		const message = `
+        <div>    
+            <p>Are you sure you want to Save Marks Entered?</p>
+        </div>`;
+
+		frappe.confirm(__(message), async () => {
+			await saveCall()
+
+		});
+	});
+
+	report.page.add_inner_button(__('Send Marks'), () => {
+		let assessment_group = report.get_filter_value("assessment_group");
+		let division = report.get_filter_value("division");
+		if (!assessment_group) {
+			frappe.msgprint({
+				title: __('Assessment Group Required'),
+				message: __('Please select Assessment Group'),
+				indicator: 'orange',
+				primary_action: {
+					label: 'Okay',
+					action: () => {
+						cur_dialog.hide();
+					}
+				}
+			})
+			return
+		}
+		let dialog = new frappe.ui.Dialog({
+			title: __("Send Marks"),
+			fields: [
+				{
+					fieldname: "assessment_group",
+					label: __("Assessment Group"),
+					fieldtype: "Link",
+					options: "Assessment Group",
+					read_only: 1,
+				},
+				{
+					fieldname: "all_division",
+					label: __("All Division"),
+					fieldtype: "Check",
+				},
+				{
+					fieldname: "division",
+					label: __("Division"),
+					fieldtype: "Link",
+					options: "Student Group",
+					depends_on: "eval: !doc.all_division",
+					read_only: 1,
+				}
+			],
+			primary_action: async function () {
+				dialog.hide();
+				let print_format = await frappe.db.get_value("Assessment Group", assessment_group, "result_print_format");
+				if (!print_format.message.result_print_format) {
+					frappe.msgprint({
+						title: __('Result Print Format Required'),
+						message: __('Result Print Format must be present in Assessment Group'),
+						indicator: 'orange',
+						primary_action: {
+							label: 'Okay',
+							action: () => {
+								cur_dialog.hide();
+							}
+						}
+					})
+				} else {
+					frappe.confirm(__("Are you sure you want to send marks?"),
+						() => {
+							let values = dialog.get_values();
+							if (!values) return;
+							sendMarks(values.assessment_group, values.division)
+						},
+						() => {
+							frappe.show_alert({
+								message: __('Marks Sending Cancelled'),
+								indicator: 'orange'
+							});
+						}
+					);
+				}
+			},
+			primary_action_label: __("Send")
+		});
+		dialog.show();
+		dialog.set_values({
+			assessment_group: report.get_filter_value("assessment_group"),
+			all_division: division.length == 0,
+			division: report.get_filter_value("division")
+		});
+	});
+
 	if (frappe.query_report.get_filter_value("mode")) {
 		report.page.add_inner_button(__('Switch to Marks Entry'), () => {
 
@@ -378,7 +521,7 @@ frappe.query_reports["Marks Entry Tool"] = {
 			"hidden": true
 		},
 		// {
-		// 	"fieldname": "Remarks",
+		// 	"fieldname": "remarks",
 		// 	"label": __("Remarks"),
 		// 	"fieldtype": "Check",
 		// },
@@ -398,4 +541,3 @@ frappe.query_reports["Marks Entry Tool"] = {
 		});
 	}
 };
-

@@ -18,10 +18,15 @@ def get_default_columns(assessment_group, filters):
 
     assess_group = frappe.get_cached_doc("Assessment Group", assessment_group)
 
-    if not assess_group.custom_is_kg_exam:
+    if not assess_group.custom_is_kg_exam and not filters.get("remarks", None):
         default_columns = [
             {"fieldname": "ref_no", "label": "Ref No"},
             {"fieldname": "student_name", "label": "Name"},
+        ]
+
+    if filters.get("remarks", None):
+        default_columns = [
+            {"fieldname": "feature", "label": "Feature"},
         ]
 
     if assess_group.custom_is_kg_exam:
@@ -46,8 +51,8 @@ def get_columns(assessment_group, filters):
 
     if assess_group.custom_is_composite:
         columns = get_composite_exam_columns(assess_group, filters)
-    elif assess_group.custom_is_kg_exam:
-        columns = get_kg_columns(assess_group, filters)
+    elif assess_group.custom_is_kg_exam or filters.get("remarks", None):
+        columns = get_stud_wise_columns(assess_group, filters)
     else:
         columns = get_subject_criteria_columns(assess_group, filters)
 
@@ -102,8 +107,7 @@ def get_subject_criteria_columns(assess_group, filters):
     return [generate_column_dict(assess_plan) for assess_plan in data]
 
 
-def get_kg_columns(assessment_group, filters):
-
+def get_stud_wise_columns(assessment_group, filters):
     division = filters.get("division")
     mode = filters.get("mode")
     ref_no = filters.get("ref_no")
@@ -184,7 +188,10 @@ def gen_desc_ques_field(data):
     return f"{data.get('assessment-plan')} {data.get('question')} {data.get('assessment_criteria')}"
 
 
-def gen_field_name(assess_plan):
+def gen_field_name(assess_plan, is_extra=False):
+    if is_extra:
+        return f"{to_snake_case(assess_plan.get('name'))} - ({assess_plan.get('course')}-{assess_plan.get('assessment_criteria')})_is_extra"
+
     return f"{to_snake_case(assess_plan.get('name'))} - ({assess_plan.get('course')}-{assess_plan.get('assessment_criteria')})"
 
 
@@ -211,12 +218,107 @@ def get_data(filters, criterias, assessment_group_doc):
     division = filters.get("division")
     students = get_div_students(division, mode, ref_no)
 
-    if not assessment_group_doc.custom_is_kg_exam:
+    if not assessment_group_doc.custom_is_kg_exam and not filters.get("remarks"):
         get_earlier_marks(filters, students, criterias)
+    elif filters.get("remarks"):
+        return get_remarks_earlier_marks(filters, students)
     else:
         return get_desc_earlier_marks(filters, students)
 
     return students
+
+
+def get_desc_questions(asess_plans_query):
+    assess_plan_cr_qb = frappe.qb.DocType("Assessment Plan Criteria")
+    desc_exam_ques_qb = frappe.qb.DocType("Descriptive Question")
+
+    paper_query = (
+        frappe.qb.from_(asess_plans_query)
+        .inner_join(assess_plan_cr_qb)
+        .on(asess_plans_query.name == assess_plan_cr_qb.parent)
+        .inner_join(desc_exam_ques_qb)
+        .on(desc_exam_ques_qb.name == assess_plan_cr_qb.custom_question)
+        .select(
+            asess_plans_query.name.as_("assessment_plan"),
+            desc_exam_ques_qb.name.as_("question"),
+            desc_exam_ques_qb.max_marks,
+            desc_exam_ques_qb.min_marks,
+            assess_plan_cr_qb.assessment_criteria,
+            desc_exam_ques_qb.parent_descriptive_question,
+        )
+    )
+    return paper_query.run(as_dict=True)
+
+
+def get_remark_questions(assess_group):
+    assess_group = frappe.get_doc("Assessment Group", assess_group)
+    remark_template = assess_group.custom_remarks_template_id
+    template_qb = frappe.qb.DocType("Assessment Remarks Template")
+    scoring_qb = frappe.qb.DocType("Assessment Remarks Scoring")
+
+    query = (
+        frappe.qb.from_(template_qb)
+        .inner_join(scoring_qb)
+        .on(template_qb.name == scoring_qb.parent)
+        .where(template_qb.name == remark_template)
+        .groupby(scoring_qb.feature)
+        .select(scoring_qb.feature)
+    )
+
+    data = query.run(as_dict=True)
+    return data
+
+
+def get_remarks_earlier_marks(filters, students):
+    assessment_group = filters.get("assessment_group")
+    students_list = [student.get("ref_no") for student in students]
+    assess_res_qb = frappe.qb.DocType("Remark Result")
+
+    assess_res_de_qb = frappe.qb.DocType("Assessment Result Remark")
+    remark_questions = get_remark_questions(assessment_group)
+
+    query = (
+        frappe.qb.from_(assess_res_qb)
+        .inner_join(assess_res_de_qb)
+        .on(assess_res_qb.name == assess_res_de_qb.parent)
+        .where(
+            (assess_res_qb.student.isin(students_list or [None]))
+            & (assess_res_qb.assessment_group == assessment_group)
+            & (assess_res_qb.docstatus.isin([0, 1]))
+        )
+        .select(
+            assess_res_qb.assessment_group,
+            assess_res_qb.student,
+            assess_res_de_qb.score,
+            assess_res_de_qb.remark.as_("feature"),
+        )
+    )
+
+    questions_hash = {}
+    data = query.run(as_dict=True)
+
+    for remark in remark_questions:
+        remark_name = remark.get("feature")
+        if remark_name not in questions_hash:
+            questions_hash[remark_name] = {
+                "feature": remark_name,
+            }
+
+    for remark in data:
+        remark_name = remark.get("feature")
+
+        student = remark.get("student")
+        score = remark.get("score")
+        is_absent = remark.get("custom_is_absent")
+        grade = None
+
+        if remark_name in questions_hash:
+            questions_hash[remark_name] = {
+                **questions_hash[remark_name],
+                "feature": remark_name,
+                student: parse_score(is_absent, "Marks", score, grade),
+            }
+    return [question for question in questions_hash.values()]
 
 
 def get_desc_earlier_marks(filters, students):
@@ -241,24 +343,8 @@ def get_desc_earlier_marks(filters, students):
         .select(assess_plan_qb.star)
     )
 
-    paper_query = (
-        frappe.qb.from_(asess_plans_query)
-        .inner_join(assess_plan_cr_qb)
-        .on(asess_plans_query.name == assess_plan_cr_qb.parent)
-        .inner_join(desc_exam_ques_qb)
-        .on(desc_exam_ques_qb.name == assess_plan_cr_qb.custom_question)
-        .select(
-            asess_plans_query.name.as_("assessment_plan"),
-            desc_exam_ques_qb.name.as_("question"),
-            desc_exam_ques_qb.max_marks,
-            desc_exam_ques_qb.min_marks,
-            assess_plan_cr_qb.assessment_criteria,
-            desc_exam_ques_qb.parent_descriptive_question,
-        )
-    )
-    questions_data = paper_query.run(as_dict=True)
+    questions_data = get_desc_questions(asess_plans_query)
     all_plans = [plan.get("assessment_plan") for plan in questions_data]
-
     query = (
         frappe.qb.from_(assess_res_qb)
         .inner_join(assess_res_de_qb)
@@ -280,7 +366,6 @@ def get_desc_earlier_marks(filters, students):
         )
     )
 
-    earlier_marks_hash = {}
     questions_hash = {}
     data = query.run(as_dict=True)
 
@@ -308,12 +393,11 @@ def get_desc_earlier_marks(filters, students):
 
         if gen_desc_ques_field(question) in questions_hash:
             questions_hash[gen_desc_ques_field(question)] = {
+                **questions_hash[gen_desc_ques_field(question)],
                 "question": question_name,
                 "assessment_plan": assess_plan,
                 "assessment_criteria": criteria,
-                student: {
-                    "content": parse_score(is_absent, scoring_type, score, grade)
-                },
+                student: parse_score(is_absent, scoring_type, score, grade),
             }
 
     return [question for question in questions_hash.values()]
@@ -375,8 +459,11 @@ def get_earlier_marks(filters, students, criterias):
                 "course": course,
                 "assessment_criteria": criteria,
             }
-            student[gen_field_name(assess_plan)] = {
-                "content": parse_score(is_absent, scoring_type, score, grade),
+            student[gen_field_name(assess_plan)] = parse_score(
+                is_absent, scoring_type, score, grade
+            )
+
+            student[gen_field_name(assess_plan, True)] = {
                 "docstatus": docstatus,
                 "online_assess": online_assess,
             }
@@ -437,7 +524,55 @@ def assessment_mark_entry(data, hashed_columns, mode):
         enter_marks(ref_no, assessment_details)
 
 
-def enter_kg_mark(data, hashed_columns):
+def enter_remark(data, hashed_columns, filters):
+    student_data = {}
+    assessment_group = filters.get("assessment_group")
+    for datum in data:
+        feature = datum.get("feature")
+
+    for student in hashed_columns:
+        if student in datum:
+            payload = {
+                "assessment_criteria": {
+                    "name": "Remark",
+                    "value": get_field_value(datum, student),
+                    "feature": feature,
+                },
+                "assessment_group": assessment_group,
+            }
+            if student not in student_data:
+                student_data[student] = {}
+                student_data[student] = [payload]
+            else:
+                student_data[student].append(payload)
+
+    for student in student_data:
+        enter_remark_mark(student, assessment_group, student_data[student])
+
+
+def enter_remark_mark(ref_no, assessment_group, remark_data):
+    assessment_details = []
+    remark_result = get_remark_result_doc(ref_no, assessment_group)
+
+    if not remark_result:
+        return
+
+    assessment_details = [i for i in remark_result.remarks]
+
+    for remark in remark_data:
+        add_assessment_criteria(assessment_details, remark, None, True)
+
+    remark_result.update(
+        {
+            "student": ref_no,
+            "assessment_group": assessment_group,
+            "remarks": assessment_details,
+        }
+    )
+    remark_result.save()
+
+
+def enter_column_wise_mark(data, hashed_columns):
     student_data = {}
 
     for datum in data:
@@ -446,43 +581,23 @@ def enter_kg_mark(data, hashed_columns):
         parent_question = datum.get("descriptive_parent_question")
         for student in hashed_columns:
             if student in datum:
+                criteria = {
+                    "assessment_criteria": {
+                        "name": "Descriptive Question",
+                        "value": get_field_value(datum, student),
+                        "custom_question": question,
+                        "parent_question": parent_question,
+                    },
+                    "assessment_plan": assessment_plan,
+                }
+
                 if student not in student_data:
                     student_data[student] = {}
-                    student_data[student][assessment_plan] = [
-                        {
-                            "assessment_criteria": {
-                                "name": "Descriptive Question",
-                                "value": get_field_value(datum, student),
-                                "custom_question": question,
-                                "parent_question": parent_question,
-                            },
-                            "assessment_plan": assessment_plan,
-                        }
-                    ]
+                    student_data[student][assessment_plan] = [criteria]
                 elif assessment_plan not in student_data[student]:
-                    student_data[student][assessment_plan] = [
-                        {
-                            "assessment_criteria": {
-                                "name": "Descriptive Question",
-                                "value": get_field_value(datum, student),
-                                "custom_question": question,
-                                "parent_question": parent_question,
-                            },
-                            "assessment_plan": assessment_plan,
-                        }
-                    ]
+                    student_data[student][assessment_plan] = [criteria]
                 else:
-                    student_data[student][assessment_plan].append(
-                        {
-                            "assessment_criteria": {
-                                "name": "Descriptive Question",
-                                "value": get_field_value(datum, student),
-                                "custom_question": question,
-                                "parent_question": parent_question,
-                            },
-                            "assessment_plan": assessment_plan,
-                        }
-                    )
+                    student_data[student][assessment_plan].append(criteria)
 
     for student in student_data:
         for plan in student_data[student]:
@@ -505,10 +620,12 @@ def do_mark_entry(data, filters):
         "Assessment Group", filters.get("assessment_group")
     )
 
-    if not assessment_group_doc.custom_is_kg_exam:
+    if not assessment_group_doc.custom_is_kg_exam and not filters.get("remarks"):
         assessment_mark_entry(data, hashed_columns, mode)
+    elif filters.get("remarks"):
+        enter_remark(data, hashed_columns, filters)
     else:
-        enter_kg_mark(data, hashed_columns)
+        enter_column_wise_mark(data, hashed_columns)
 
 
 def enter_marks(ref_no, criterias):
@@ -539,11 +656,7 @@ def enter_criteria_marks(
 ):
     assessment_details = []
     assessment_result = get_assessment_result_doc(ref_no, assessment_plan)
-    print(
-        "criterias",
-        criterias,
-        "_------------------",
-    )
+
     if not assessment_result:
         return
 
@@ -584,12 +697,37 @@ def get_assessment_result_doc(ref_no, assessment_plan):
         return frappe.new_doc("Assessment Result")
 
 
-def add_assessment_criteria(assessment_details, criteria, is_descriptive):
+def get_remark_result_doc(ref_no, assessment_group):
+    """Gets existing Remark Result doc if doesnt exist create new, if subitted returns None"""
+
+    remark_result = frappe.get_all(
+        "Remark Result",
+        filters={
+            "student": ref_no,
+            "assessment_group": assessment_group,
+            "docstatus": ["not in", [2]],
+        },
+    )
+
+    if remark_result:
+        doc = frappe.get_doc("Remark Result", remark_result[0])
+        if doc.docstatus == 0:
+            return doc
+        elif doc.docstatus == 1:
+            return None
+    else:
+        return frappe.new_doc("Remark Result")
+
+
+def add_assessment_criteria(
+    assessment_details, criteria, is_descriptive, is_remarks=None
+):
     """Adds a criteria in the criteria list in a assessment result"""
-    print(criteria, "yololool")
+
     is_absent = 0
     assessment_criteria = criteria.get("assessment_criteria")
     name = assessment_criteria.get("name")
+    remark = assessment_criteria.get("feature")
     score = assessment_criteria.get("value")
     scale = assessment_criteria.get("custom_scale")
     scoring_type = assessment_criteria.get("scoring_type")
@@ -601,7 +739,17 @@ def add_assessment_criteria(assessment_details, criteria, is_descriptive):
         score = 0
         is_absent = 1
 
-    if is_descriptive:
+    if is_remarks:
+        append_assessment_criteria(
+            assessment_details,
+            {
+                "remark": remark,
+                "score": flt(score) or 0,
+            },
+            False,
+            is_remarks,
+        )
+    elif is_descriptive:
         append_assessment_criteria(
             assessment_details,
             {
@@ -641,22 +789,29 @@ def add_assessment_criteria(assessment_details, criteria, is_descriptive):
         )
 
 
-def gen_desc_assessment_key(criteria, is_descriptive=None):
+def gen_desc_assessment_key(criteria, is_descriptive=None, is_remarks=None):
+    if is_remarks:
+        return criteria.get("remark")
     if not is_descriptive:
         return criteria.get("assessment_criteria")
 
     return f"{criteria.get('assessment_criteria')}{criteria.get('custom_question')}"
 
 
-def append_assessment_criteria(assessment_details, criteria, is_descriptive=None):
+def append_assessment_criteria(
+    assessment_details, criteria, is_descriptive=None, is_remarks=None
+):
     """Dedupes similar assessment criteria and modifies instead of adding if it already exists"""
 
     all_criterias = [
-        gen_desc_assessment_key(i, is_descriptive) for i in assessment_details
+        gen_desc_assessment_key(i, is_descriptive, is_remarks)
+        for i in assessment_details
     ]
-    print(assessment_details, criteria, "allo")
+
     if gen_desc_assessment_key(criteria, is_descriptive) in all_criterias:
-        index = all_criterias.index(gen_desc_assessment_key(criteria, is_descriptive))
+        index = all_criterias.index(
+            gen_desc_assessment_key(criteria, is_descriptive, is_remarks)
+        )
         assessment_details[index] = criteria
     else:
         assessment_details.append(criteria)
@@ -716,3 +871,80 @@ def cancel_result_rows(ref_nos, filters):
     for ref_no in ref_nos:
         for assess_plan in assess_plans:
             cancel_result(assess_plan, ref_no, filters)
+
+
+@frappe.whitelist()
+def send_marks(**kwargs):
+    """
+    This function is used to send marks to students for a particular assessment group
+    Args:
+        assessment_group: str: assessment group name
+        division: str: division name optional
+    """
+    try:
+        assessment_group = kwargs.get("assessment_group")
+        school = frappe.get_value(
+            "Assessment Group", assessment_group, ["custom_school"]
+        )
+        program = frappe.get_value(
+            "Assessment Group", assessment_group, ["custom_program"]
+        )
+        students = frappe.get_all(
+            "Student",
+            {"school": school, "program": program, "enabled": 1},
+            pluck="name",
+        )
+        for student in students:
+            send_student_marks(student, assessment_group)
+        return True
+    except:
+        frappe.log_error("Failed to send marks to student", frappe.get_traceback())
+        return False
+
+
+def send_student_marks(student, assessment_group):
+    """
+    This function is used to send marks to students for a particular assessment group
+    Args:
+        student: str: student name
+        assessment_group: str: assessment group name
+    """
+    student_doc = frappe.get_doc("Student", student)
+
+    current_academic_year = frappe.get_value(
+        "Academic Year", {"custom_current_academic_year": 1}, "name"
+    )
+    student_group = frappe.get_value(
+        "Program Enrollment",
+        {"student": student_doc.name, "academic_year": current_academic_year},
+        "student_group",
+    )
+
+    assessment_plan = frappe.get_all(
+        "Assessment Plan",
+        {
+            "student_group": student_group,
+            "assessment_group": assessment_group,
+            "docstatus": 1,
+        },
+        pluck="name",
+    )
+    assessment_result_name = frappe.get_value(
+        "Assessment Result",
+        {
+            "assessment_plan": ["in", assessment_plan],
+            "student": student_doc.name,
+            "docstatus": 1,
+        },
+    )
+
+    if assessment_result_name:
+        try:
+            from nextai.funnel.custom_trigger import trigger_event
+
+            assessment_result = frappe.get_doc(
+                "Assessment Result", assessment_result_name, "name"
+            )
+            trigger_event(doc=assessment_result, event_name="send_processed_result")
+        except:
+            frappe.log_error("Failed to send marks to student", frappe.get_traceback())
