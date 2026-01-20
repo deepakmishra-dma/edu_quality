@@ -27,12 +27,25 @@ class CustomAssessmentResult(AssessmentResult):
 
         self.validate_duplicate()
 
+    def validate_grade(self):
+        self.total_score = 0.0
+        if self.maximum_score:
+            for d in self.details:
+                d.grade = get_grade(
+                    self.grading_scale, (flt(d.score) / (d.maximum_score or 1)) * 100
+                )
+                self.total_score += d.score
+            self.grade = get_grade(
+                self.grading_scale, (self.total_score / (self.maximum_score or 1)) * 100
+            )
+
     def calculate_scaled_maximum_score(self):
 
         total_scaled_max_score = 0
         for d in self.details:
             d.custom_scale = d.custom_scale or 1
-            total_scaled_max_score += d.maximum_score * d.custom_scale
+            if d.maximum_score:
+                total_scaled_max_score += d.maximum_score * d.custom_scale
         self.custom_scaled_maximum_score = total_scaled_max_score
 
     def duplicate_grades(self):
@@ -48,29 +61,52 @@ class CustomAssessmentResult(AssessmentResult):
         for d in self.details:
             d.custom_scale = d.custom_scale or 1
             d.custom_processed_result = d.score * d.custom_scale
-            d.custom_scaled_maximum_score = d.maximum_score * d.custom_scale
-            d.custom_processed_grade = get_grade(
-                self.grading_scale,
-                (flt(d.custom_processed_result) / d.maximum_score) * 100,
-                self.custom_total_processed_score,
-            )
+            d.custom_scaled_maximum_score = (d.maximum_score or 0) * d.custom_scale
+            if d.maximum_score:
+                d.custom_processed_grade = get_grade(
+                    self.grading_scale,
+                    (flt(d.custom_processed_result) / d.maximum_score) * 100,
+                    self.custom_total_processed_score,
+                )
+            else:
+                d.custom_processed_grade = get_grade(
+                    self.grading_scale,
+                    flt(d.custom_processed_result),
+                    self.custom_total_processed_score,
+                )
             self.total_score += d.score
             self.custom_total_processed_score += d.custom_processed_result
             self.custom_scaled_maximum_score += d.custom_scaled_maximum_score
 
-        self.custom_processed_grade = get_grade(
-            self.grading_scale,
-            (self.custom_total_processed_score / self.maximum_score) * 100,
-            self.custom_total_processed_score,
-        )
-        self.grade = get_grade(
-            self.grading_scale,
-            (self.total_score / self.maximum_score) * 100,
-            self.total_score,
-        )
-        self.custom_processed_percentage = (
-            self.custom_total_processed_score / self.maximum_score
-        ) * 100
+        if self.maximum_score:
+            self.custom_processed_grade = get_grade(
+                self.grading_scale,
+                (self.custom_total_processed_score / self.maximum_score) * 100,
+                self.custom_total_processed_score,
+            )
+            self.grade = get_grade(
+                self.grading_scale,
+                (self.total_score / self.maximum_score) * 100,
+                self.total_score,
+            )
+
+            self.custom_processed_percentage = (
+                self.custom_total_processed_score / self.maximum_score
+            ) * 100
+
+        else:
+            self.custom_processed_grade = get_grade(
+                self.grading_scale,
+                self.custom_total_processed_score,
+                self.custom_total_processed_score,
+            )
+
+            self.grade = get_grade(
+                self.grading_scale,
+                self.total_score,
+                self.total_score,
+            )
+
         return self
 
     def validate_processed_result(self):
