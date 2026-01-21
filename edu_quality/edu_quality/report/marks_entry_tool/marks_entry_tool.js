@@ -1,6 +1,6 @@
 // Copyright (c) 2024, Hybrowlabs Technologies and contributors
 // For license information, please see license.txt
-let criteriasChanged = []
+let criteriasChanged = {}
 
 function throttle(func, limit) {
 	let lastFunc;
@@ -67,13 +67,44 @@ function updateCell(value, columnId, rowIndex, maximumScore, scoring_type, colum
 
 function writeMarks(rowIndex, columnId, value, columnIndex) {
 	if (frappe.query_report.data[rowIndex][columnId]) {
-		frappe.query_report.data[rowIndex][columnId]["content"] = value;
+		frappe.query_report.data[rowIndex][columnId] = value;
 	}
 	else {
-		frappe.query_report.data[rowIndex][columnId] = { "content": value }
+		frappe.query_report.data[rowIndex][columnId] = value
+	}
+	const { ref_no,
+		roll_no,
+		student_name,
+		assessment_criteria,
+		assessment_plan,
+		question,
+		feature,
+	} = frappe.query_report.data[rowIndex]
+
+	const payload = {
+		ref_no: ref_no,
+		roll_no: roll_no,
+		student_name: student_name,
+		assessment_criteria: assessment_criteria,
+		assessment_plan: assessment_plan,
+		question: question,
+		feature: feature,
+		[columnId]: frappe.query_report.data[rowIndex][columnId]
 	}
 
-	criteriasChanged.push(frappe.query_report.data[rowIndex])
+	if (!ref_no && !student_name) {
+		if (!criteriasChanged[`${question} ${assessment_plan}`])
+			criteriasChanged[`${question} ${assessment_plan}`] = {};
+
+		Object.assign(criteriasChanged[`${question} ${assessment_plan}`], payload);
+	}
+
+	else if (ref_no && student_name) {
+		if (!criteriasChanged[ref_no])
+			criteriasChanged[ref_no] = {};
+
+		Object.assign(criteriasChanged[ref_no], payload);
+	}
 
 }
 
@@ -140,16 +171,19 @@ function createInputElement(value, column, row, docstatus, onlineAssess) {
 }
 
 function formatter(value, row, column, data, defaultFormatter) {
+
 	value = defaultFormatter(value, row, column, data);
-	const values = data[column.fieldname]
+	const values = data[column.fieldname + "_is_extra"]
 	const docstatus = values && values.docstatus
 	const onlineAssess = values && values.online_assess
+
 	if (column.is_criteria) {
 		value = createInputElement(value, column, row, docstatus, onlineAssess);
 	}
 
 	return value;
 }
+
 function switchToNormal() {
 
 	const filters = frappe.query_report.get_filter_values();
@@ -172,14 +206,17 @@ async function saveCall(autoSave = false) {
 	if (autoSave) {
 		data = criteriasChanged
 	}
+	console.log(criteriasChanged)
 	await frappe.call({
 		"method": "edu_quality.edu_quality.report.marks_entry_tool.marks_entry_tool.do_mark_entry",
 		args: {
-			data: data,
+			data: Object.keys(criteriasChanged).map((key) => {
+				return criteriasChanged[key]
+			}),
 			filters: filters,
 		}
 	});
-	criteriasChanged = []
+	criteriasChanged = {}
 	frappe.show_alert({
 		message: __('<i class="fa fa-save"></i>'),
 		indicator: 'green'
@@ -486,7 +523,7 @@ frappe.query_reports["Marks Entry Tool"] = {
 			"hidden": true
 		},
 		// {
-		// 	"fieldname": "Remarks",
+		// 	"fieldname": "remarks",
 		// 	"label": __("Remarks"),
 		// 	"fieldtype": "Check",
 		// },
@@ -506,4 +543,3 @@ frappe.query_reports["Marks Entry Tool"] = {
 		});
 	}
 };
-
