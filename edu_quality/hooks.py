@@ -108,13 +108,13 @@ jinja = {
 # ------------
 
 # before_install = "edu_quality.install.before_install"
-# after_install = "edu_quality.install.after_install"
+after_install = "edu_quality.common.install.after_install"
 
 # Uninstallation
 # ------------
 
 # before_uninstall = "edu_quality.uninstall.before_uninstall"
-# after_uninstall = "edu_quality.uninstall.after_uninstall"
+after_uninstall = "edu_quality.common.uninstall.after_uninstall"
 
 # Desk Notifications
 # ------------------
@@ -159,6 +159,7 @@ override_doctype_class = {
     "Assessment Plan": "edu_quality.edu_quality.overrides.assessment_plan.CustomAssessmentPlan",
     "Assessment Result": "edu_quality.edu_quality.overrides.assessment_result.CustomAssessmentResult",
     "Event": "edu_quality.edu_quality.overrides.event.CustomEvent",
+    "Company": "edu_quality.edu_quality.overrides.company.CustomCompany",
 }
 
 # Document Events
