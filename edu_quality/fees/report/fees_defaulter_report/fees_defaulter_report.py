@@ -257,18 +257,17 @@ def mark_student_as_defaulter(data):
             try:
 
                 suspend_google_user(student_email)
-                frappe.db.set_value(
-                    "Student",
-                    {"reference_number": row.get("refno"), "school": row.get("school")},
-                    "student_status",
-                    "Defaulter",
-                )
+                # Define the filters once
+                filters = {"reference_number": row.get("refno"), "school": row.get("school")}
 
-                student = frappe.db.get_value(
-                    "Student",
-                    {"reference_number": row.get("refno"), "school": row.get("school")},
-                    "name",
-                )
+                # Update student_status and enabled fields in a single query
+                frappe.db.set_value("Student", filters, {
+                    "student_status": "Defaulter",
+                    "enabled": 0
+                })
+
+                # Get the student name
+                student = frappe.db.get_value("Student", filters, "name")
 
                 frappe.db.set_value(
                     "Program Enrollment",
