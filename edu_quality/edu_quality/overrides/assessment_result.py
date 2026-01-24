@@ -66,13 +66,13 @@ class CustomAssessmentResult(AssessmentResult):
                 d.custom_processed_grade = get_grade(
                     self.grading_scale,
                     (flt(d.custom_processed_result) / d.maximum_score) * 100,
-                    self.custom_total_processed_score,
+                    d.custom_processed_result,
                 )
             else:
                 d.custom_processed_grade = get_grade(
                     self.grading_scale,
                     flt(d.custom_processed_result),
-                    self.custom_total_processed_score,
+                    d.custom_processed_result,
                 )
             self.total_score += d.score
             self.custom_total_processed_score += d.custom_processed_result
