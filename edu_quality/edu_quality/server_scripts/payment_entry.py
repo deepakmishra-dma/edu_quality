@@ -12,15 +12,8 @@ def validate(doc, method=None):
         "name": doc.party,
         "student_status": "Defaulter"
     }
-    if frappe.db.exists("Student",filters):
-        stud_doc = frappe.get_value("Student",doc.party,"student_email_id")
-        frappe.db.set_value(
-                "Student",
-                doc.party,
-                "student_status",
-                "Current student",
-            )
-        unsuspend_google_user(stud_doc)
-        # stud_doc = frappe.get_doc("Student", filters)
-        # stud_doc.student_status = "Current student"
-        # stud_doc.save(ignore_permissions=True)
+    student = frappe.get_value("Student", filters)
+    if student:
+        student_email_id = frappe.get_value("Student", doc.party, "student_email_id")
+        frappe.set_value("Student", doc.party, "student_status", "Current student")
+        unsuspend_google_user(student_email_id)

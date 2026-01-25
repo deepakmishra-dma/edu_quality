@@ -136,16 +136,26 @@ def remove_user_from_group(email, group_email):
 
 
 def suspend_google_user(email):
-    user_service = get_google_admin_object()
-    user_service.users().update(
-        userKey=email,
-        body={"suspended": True},
-    ).execute()
+    try:
+        user_service = get_google_admin_object()
+        user_service.users().update(
+            userKey=email,
+            body={"suspended": True},
+        ).execute()
+    except:
+        frappe.log_error(
+            f"suspend_google_user failed: {email}", frappe.get_traceback()
+        )
 
 
 def unsuspend_google_user(email):
-    user_service = get_google_admin_object()
-    user_service.users().update(
-        userKey=email,
-        body={"suspended": False},
-    ).execute()
+    try:
+        user_service = get_google_admin_object()
+        user_service.users().update(
+            userKey=email,
+            body={"suspended": False},
+        ).execute()
+    except:
+        frappe.log_error(
+            f"unsuspend_google_user failed: {email}", frappe.get_traceback()
+        )

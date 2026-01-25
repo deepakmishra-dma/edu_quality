@@ -83,7 +83,7 @@ def before_save(doc, method=None):
     try:
         prev_doc = doc.get_doc_before_save()
         if prev_doc and prev_doc.student_status != doc.student_status:
-            if doc.student_status == "Defaulter":
+            if doc.student_status in ["Defaulter", "Cancelled", "Alumni"]:
                 suspend_google_user(doc.student_email_id)
                 doc.enabled = 0
             else:
@@ -91,6 +91,7 @@ def before_save(doc, method=None):
                 doc.enabled = 1
         comment_on_possible_dropout(doc, prev_doc)
     except Exception as e:
+        frappe.log_error("Error in before save of Student", frappe.get_traceback())
         frappe.logger("google_user").exception(e)
 
 
