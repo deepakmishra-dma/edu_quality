@@ -92,8 +92,8 @@ frappe.ui.form.on('Fees', {
                             return {
                                 doctype: 'Discount Configuration',
                                 filters: {
-                                    fee_structure: frm.doc.fee_structure,
-                                    type: "One Time"
+                                    program: frm.doc.program,
+                                    academic_year: frm.doc.academic_year
                                 },
                             };
                         }
