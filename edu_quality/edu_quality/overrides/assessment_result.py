@@ -32,11 +32,15 @@ class CustomAssessmentResult(AssessmentResult):
         if self.maximum_score:
             for d in self.details:
                 d.grade = get_grade(
-                    self.grading_scale, (flt(d.score) / (d.maximum_score or 1)) * 100
+                    self.grading_scale,
+                    (flt(d.score) / (d.maximum_score or 1)) * 100,
+                    d.score,
                 )
                 self.total_score += d.score
             self.grade = get_grade(
-                self.grading_scale, (self.total_score / (self.maximum_score or 1)) * 100
+                self.grading_scale,
+                (self.total_score / (self.maximum_score or 1)) * 100,
+                self.total_score,
             )
 
     def calculate_scaled_maximum_score(self):

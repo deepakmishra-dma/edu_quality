@@ -266,11 +266,88 @@ const cancelResult = debounce(async (ref_nos) => {
 		indicator: 'green'
 	}, 2);
 }, 1000)
+function checkFilePermission(file) {
+	frappe.call({
+		method: 'edu_quality.edu_quality.doctype.ptm_scheduler.ptm_scheduler.check_file_permission',
+		args: { 'file_url': file },
+		callback: function (response) {
+			if (response.message.status === 'success') {
+				importCSVData(file);
+			} else {
+				frappe.msgprint(__('Only public files are allowed for upload.'));
+
+			}
+		}
+	});
+}
+
+function importCSVData(file) {
+	let filters = frappe.query_report.get_filter_values(true);
+	frappe.call({
+		method: 'edu_quality.edu_quality.report.marks_entry_tool.marks_entry_tool.import_mark_entry_csv',
+		args: { 'url': file, filters: filters },
+		callback: function (response) {
+			if (response.message.status === 'success') {
+				// Display success message with green indicator
+				frappe.msgprint('<div style="color: green;">Success: ' + response.message.message + '</div>');
+			} else {
+				// Display failure message with red indicator
+				frappe.msgprint('<div style="color: red;">Import failed: <br>' + response.message.message + '</div>');
+			}
+		},
+		error: function (xhr, textStatus, error) {
+			// Handle error in making the AJAX call
+			frappe.msgprint('<div style="color: red;">Error occurred while importing data: <br>' + error + '</div>');
+		}
+	});
+}
+
+function addImportExportTemplate(report) {
+	report.page.add_custom_menu_item(report.page.menu_btn_group, "Export Template", () => {
+		let filters = report.get_filter_values(true);
+		let reportName = "Marks Entry Tool"
+		open_url_post(frappe.request.url, {
+			cmd: "edu_quality.edu_quality.report.marks_entry_tool.marks_entry_tool.export_custom_csv",
+			report_name: reportName,
+			filters: filters
+		})
+
+
+
+	})
+	report.page.add_custom_menu_item(report.page.menu_btn_group, "Import Template", () => {
+		var dialog = new frappe.ui.Dialog({
+			title: __('Upload CSV File'),
+			fields: [
+				{
+					fieldname: 'file',
+					label: __('CSV File'),
+					fieldtype: 'Attach',
+					reqd: 1
+				}
+			],
+			primary_action_label: __('Import'),
+			primary_action: function () {
+				var file = dialog.get_value('file');
+				if (file) {
+					let res = checkFilePermission(file);
+					if (res != false) {
+						dialog.hide();
+					}
+
+				} else {
+					frappe.msgprint(__('Please select a file.'));
+				}
+			}
+		});
+		dialog.show();
+	})
+}
 
 function onload(report) {
 	initializeKeyListener();
 	var queryParams = frappe.utils.get_query_params();
-
+	addImportExportTemplate(report)
 	frappe.require(["/assets/edu_quality/css/mark-entry-tool.css"]);
 	report.page.parent.classList.add("mark-entry-tool-report");
 	addNote()

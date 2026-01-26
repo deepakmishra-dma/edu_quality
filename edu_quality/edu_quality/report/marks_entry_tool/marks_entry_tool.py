@@ -8,6 +8,11 @@ import json
 from frappe.utils import flt
 from edu_quality.public.py.utils import get_div_students as get_div_stud
 from frappe.model.mapper import get_mapped_doc
+from io import StringIO
+import requests
+import csv
+from frappe.desk.query_report import run, build_xlsx_data
+from frappe.desk.utils import get_csv_bytes, provide_binary_file
 
 
 def get_default_columns(assessment_group, filters):
@@ -29,9 +34,10 @@ def get_default_columns(assessment_group, filters):
             {"fieldname": "feature", "label": "Feature"},
         ]
 
-    if assess_group.custom_is_kg_exam or filters.get("remarks", None):
+    if assess_group.custom_is_kg_exam:
         default_columns = [
             {"fieldname": "question", "label": "Question"},
+            {"fieldname": "subject", "label": "Subject"},
         ]
     return default_columns
 
@@ -240,6 +246,7 @@ def get_desc_questions(asess_plans_query):
         .on(desc_exam_ques_qb.name == assess_plan_cr_qb.custom_question)
         .select(
             asess_plans_query.name.as_("assessment_plan"),
+            asess_plans_query.course,
             desc_exam_ques_qb.name.as_("question"),
             desc_exam_ques_qb.max_marks,
             desc_exam_ques_qb.min_marks,
@@ -373,11 +380,12 @@ def get_desc_earlier_marks(filters, students):
         question_name = question.get("question")
         criteria = question.get("assessment_criteria")
         assess_plan = question.get("assessment_plan")
-
+        subject = question.get("course")
         if gen_desc_ques_field(question) not in questions_hash:
             questions_hash[gen_desc_ques_field(question)] = {
                 "question": question_name,
                 "assessment_plan": assess_plan,
+                "subject": subject,
                 "assessment_criteria": criteria,
             }
 
@@ -871,6 +879,63 @@ def cancel_result_rows(ref_nos, filters):
     for ref_no in ref_nos:
         for assess_plan in assess_plans:
             cancel_result(assess_plan, ref_no, filters)
+
+
+@frappe.whitelist()
+def export_custom_csv(report_name="Marks Entry Tool", filters=[]):
+    data = run(report_name, filters, [])
+    data = frappe._dict(data)
+    data.filters = filters
+
+    if not data.columns:
+        frappe.respond_as_web_page(
+            ("No data to export"),
+            ("You can try changing the filters of your report."),
+        )
+        return
+    data.columns = [
+        {**datum, "label": datum.get("fieldname")} for datum in data.columns
+    ]
+    xlsx_data, column_widths = build_xlsx_data(
+        data, [], False, include_filters=False, ignore_visible_idx=True
+    )
+    file_extension = "csv"
+    content = get_csv_bytes(xlsx_data, {})
+    provide_binary_file(report_name, file_extension, content)
+
+
+@frappe.whitelist()
+def import_mark_entry_csv(url, filters):
+    try:
+        origin = frappe.request.headers.get("Origin")
+        full_url = origin + url
+        response = requests.get(full_url)
+        response.raise_for_status()
+        return import_csv_background(response.text, filters)
+    except Exception as e:
+        frappe.log_error(
+            f"Error importing PTM schedule: {str(e)}", "PTM Schedule Import"
+        )
+        return {"status": "failed", "message": str(e)}
+
+
+def import_csv_background(csv_content, filters):
+    errors = []
+    try:
+        dict_reader = csv.DictReader(StringIO(csv_content))
+        total_rows = sum(1 for _ in dict_reader)
+
+        # Second pass to read the data
+        dict_reader = csv.DictReader(StringIO(csv_content))
+        data = list(dict_reader)
+        do_mark_entry(data, filters)
+
+    except Exception as e:
+        frappe.log_error(
+            message=f"Error importing PTM schedule background: {str(e)}",
+            title="PTM Schedule Import Background",
+        )
+        return {"status": "failed", "message": str(e)}
 
 
 @frappe.whitelist()
