@@ -156,8 +156,10 @@ def insert_groups_into_db(bulk_data, headers, total_rows):
                             current_group.parent_assessment_group = (
                                 "All Assessment Groups"
                             )
-                            current_group.custom_remarks_template_id = remarks_template_id
-                            
+                            current_group.custom_remarks_template_id = (
+                                remarks_template_id
+                            )
+
                             current_group.assessment_group_name = name
                             current_group.custom_school = school
                             current_group.custom_program = program
@@ -208,7 +210,7 @@ def insert_groups_into_db(bulk_data, headers, total_rows):
                                 grading_scale,
                                 marking_mode,
                                 kg_exam_paper,
-                                is_kg_exam,
+                                current_group.custom_is_kg_exam,
                             )
                         progress = idx * 100 // total_rows
                         frappe.realtime.publish_progress(

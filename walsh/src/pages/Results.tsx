@@ -1,4 +1,4 @@
-import { Box, Stack, Text, Button, Select } from "@mantine/core";
+import { Box, Stack, Text, Button, Select, Tabs } from "@mantine/core";
 import useStudentList from "../components/queries/useStudentList";
 import { useEffect, useMemo, useState } from "react";
 import useStudentProfileColor from "../components/hooks/useStudentProfileColor";
@@ -11,6 +11,7 @@ import {
   useAcademicCurrentYear,
   useAcademicNextYear,
 } from "../components/queries/useFeeDetailsList";
+import usePrintFormat from "../components/queries/usePrintFormat";
 
 interface PrintFormat {
   html: string;
@@ -28,6 +29,10 @@ export const Results = () => {
   const [selectedUnit, setSelectedUnit] = useState<string>("unit 1");
   const [years, setYears] = useState<string[]>([]);
   const [examResult, setExamResult] = useState<string[]>([]);
+  const [printFormatMode, setPrintFormatMode] = useState<"result" | "marks">(
+    "result"
+  );
+
   const [examOptions, setExamOptions] = useState<
     { value: string; label: string }[]
   >([]);
@@ -45,6 +50,7 @@ export const Results = () => {
   const [searchParams] = useSearchParams();
   const searchedStudent = searchParams.get("student");
   const [selectedSubject, setSelectedSubject] = useState<string>("");
+  const { data: assessmentGroupData } = usePrintFormat(selectedExam);
   const examName = examResult?.map?.((i: any) => i?.name);
   const assessmentGroupFilter = async (
     selected_year: string,
@@ -157,11 +163,21 @@ export const Results = () => {
       console.log("error", error);
     }
   };
-
+  console.log(assessmentGroupData?.data?.data, "hh");
   const printFormatView = async (exam_name: any, class_name: any) => {
     setLoading(true);
     setError("");
     try {
+      const printFormat =
+        printFormatMode == "result"
+          ? assessmentGroupData?.data?.data.custom_print_configuration
+          : assessmentGroupData?.data?.data.result_print_format;
+      console.log(printFormat, "aas");
+      if (!printFormat) {
+        setError("No Result Format");
+        throw new Error("No Result Format");
+      }
+
       const response = await fetch(
         `/api/method/frappe.www.printview.get_html_and_style?`,
         {
@@ -173,7 +189,7 @@ export const Results = () => {
             doc: "Assessment Result",
             name: `${exam_name}`,
             program: class_name,
-            print_format: "walsh_exam_print_format",
+            print_format: printFormat,
             no_letterhead: 0,
             letterhead: "Default letter head",
             _lang: "en",
@@ -219,6 +235,8 @@ export const Results = () => {
     }
   }, [
     examName[0],
+    assessmentGroupData,
+    printFormatMode,
     classDetails?.data?.message?.division?.program,
     selectedStudent,
     setError,
@@ -441,6 +459,38 @@ export const Results = () => {
               />
             </div>
           </div>
+          {selectedExam ? (
+            <Tabs
+              value={printFormatMode}
+              onTabChange={(value) => {
+                if (value == "marks" || value == "result")
+                  setPrintFormatMode(value);
+              }}
+              defaultValue="create"
+              styles={{
+                tabsList: {
+                  borderBottom: "1px solid " + studentProfileColor + "77",
+                  margin: "10px 20px",
+                  marginTop: 20,
+                  // borderTopLeftRadius: "10px",
+                  // borderTopRightRadius: "10px",
+                  backgroundColor: studentProfileColor + "22",
+                  color: studentProfileColor,
+                },
+                tab: {
+                  "&[data-active]": {
+                    borderColor: studentProfileColor,
+                    color: studentProfileColor,
+                  },
+                },
+              }}
+            >
+              <Tabs.List>
+                <Tabs.Tab value="result">Marks</Tabs.Tab>
+                <Tabs.Tab value="marks">Results</Tabs.Tab>
+              </Tabs.List>
+            </Tabs>
+          ) : null}
           {errorMessage && (
             <div
               className="error-message"
