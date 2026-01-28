@@ -54,10 +54,34 @@ def check_assessment_plan_in_group(assessment_plans):
         frappe.throw("<br/>".join(all_errors))
     return all_errors
 
+def get_assessment_result_of_plans(assessment_plans,docstatus=[0,1]):
+    assess_res_qb = frappe.qb.DocType("Assessment Result")
+    assess_res_de_qb = frappe.qb.DocType("Assessment Result Detail")
 
+    plans = [plan.get("name") for plan in assessment_plans]
+
+    query = (
+        frappe.qb.from_(assess_res_qb)
+     
+        .where(
+            (
+                (assess_res_qb.docstatus.isin(docstatus))
+                & assess_res_qb.assessment_plan.isin(plans or [None])
+           
+            )
+        )
+    ).select(assess_res_qb.star,assess_res_qb.name.as_("result_name"))
+    return query.run(as_dict=True)
 def get_assessment_plan_in_div(assessment_plan, division, students):
     assess_res_qb = frappe.qb.DocType("Assessment Result")
     assess_res_de_qb = frappe.qb.DocType("Assessment Result Detail")
+    div_con = assess_res_qb.student_group.isnotnull()
+
+    if division:
+        if isinstance(division,list):
+            div_con = assess_res_qb.student_group.isin(division)
+        else:
+            div_con = assess_res_qb.student_group == division
 
     query = (
         frappe.qb.from_(assess_res_qb)
@@ -68,7 +92,7 @@ def get_assessment_plan_in_div(assessment_plan, division, students):
                 assess_res_qb.student.isin(students or [None])
                 & (assess_res_qb.assessment_plan == assessment_plan)
                 & (assess_res_de_qb.score.isnotnull())
-                & (assess_res_qb.docstatus.isin([1, 0]))
+                & (assess_res_qb.docstatus.isin([1, 0])) &(div_con)
             )
         )
         .select(
@@ -125,14 +149,14 @@ def diff_students_and_results(students, results, assessment_plan):
 
 
 @frappe.whitelist()
-def process_result(assessment_group, academic_year, program, div=None):
+def process_result(assessment_group, academic_year, program, division=None):
     if frappe.db.get_value("Assessment Group", assessment_group, "custom_is_composite"):
         frappe.enqueue(
             process_composite_result,
             assessment_group=assessment_group,
             academic_year=academic_year,
             program=program,
-            div=div,
+            div=division,
             queue="long",
         )
     else:
@@ -141,7 +165,7 @@ def process_result(assessment_group, academic_year, program, div=None):
             assessment_group=assessment_group,
             academic_year=academic_year,
             program=program,
-            div=div,
+            div=division,
             queue="long",
         )
 
@@ -155,11 +179,12 @@ def process_atomic_exam(assessment_group, academic_year, program, div=None):
     if errors:
         return errors
 
-    submitted_docs = get_result_from_plans(assessment_plans, False, [1])
+    submitted_docs = get_assessment_result_of_plans(assessment_plans,[1])
 
     cancel_submitted_atomic_exams(submitted_docs)
-    non_submitted_docs = get_result_from_plans(assessment_plans, False, [0])
+    non_submitted_docs = get_assessment_result_of_plans(assessment_plans,[0])
     student_list = []
+
     total_res_rows = len(non_submitted_docs)
     for idx in range(0, total_res_rows):
         result = non_submitted_docs[idx]
@@ -209,6 +234,7 @@ def process_atomic_exam(assessment_group, academic_year, program, div=None):
         assess_g_res = assess_g_res_docs[idx]
 
         doc = frappe.get_doc("Assessment Group Result", assess_g_res)
+        doc.results =[]
         frappe.realtime.publish_progress(
             progress,
             title="Submitting Assessment Group Result",
@@ -297,6 +323,7 @@ def get_result_from_plans(assessment_plans, group_by=False, docstatus=[0, 1]):
 
     query = query.select(
         assess_res_qb.student,
+        assess_res_qb.name.as_("result_name"),
         assess_res_qb.docstatus,
         assess_res_qb.assessment_plan,
         assess_res_de_qb.assessment_criteria,
