@@ -108,10 +108,10 @@ class AssessmentGroupResult(Document):
         self.calculate_total_score()
 
     def before_submit(self, method=None):
-        self.results = []
         self.class_rank = self.calculate_class_rank() or 0
         self.division_rank = self.calculate_div_rank() or 0
         self.calculate_total_score()
+        self.results = []
 
     def validate(self):
         self.results = []

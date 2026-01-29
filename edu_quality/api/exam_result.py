@@ -233,8 +233,7 @@ def process_atomic_exam(assessment_group, academic_year, program, div=None):
     for idx in range(0, total_assess_g_res):
         assess_g_res = assess_g_res_docs[idx]
 
-        doc = frappe.get_doc("Assessment Group Result", assess_g_res)
-        doc.results =[]
+        doc = frappe.get_doc("Assessment Group Result", assess_g_res)    
         frappe.realtime.publish_progress(
             progress,
             title="Submitting Assessment Group Result",
@@ -251,7 +250,7 @@ def process_atomic_exam(assessment_group, academic_year, program, div=None):
 
 def cancel_submitted_atomic_exams(result_data):
     submitted_results = [
-        result.get("parent") for result in result_data if result.get("docstatus") == 1
+        result.get("name") for result in result_data if result.get("docstatus") == 1
     ]
     unique_submitted_results = set(submitted_results)
 
