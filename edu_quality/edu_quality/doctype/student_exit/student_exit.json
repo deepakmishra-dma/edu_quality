@@ -1,365 +1,365 @@
 {
- "actions": [],
- "autoname": "field:student",
- "creation": "2024-05-20 14:20:55.637922",
- "doctype": "DocType",
- "engine": "InnoDB",
- "field_order": [
-  "section_break_jlkr",
-  "student",
-  "academic_year",
-  "column_break_ufyi",
-  "fees_status",
-  "amended_from",
-  "cancellation_details_section",
-  "requested_on",
-  "date_of_leaving",
-  "cancellation_letter",
-  "column_break_axrs",
-  "cancellation_type",
-  "date_of_issue",
-  "remark",
-  "column_break_lrhn",
-  "cancellation_status",
-  "leaving_certificate",
-  "reason",
-  "refund_details_section",
-  "deposit_amount",
-  "column_break_edui",
-  "pending_fees",
-  "column_break_nmiz",
-  "refund_amount",
-  "other_details_section",
-  "school",
-  "letter_head",
-  "last_class_studied",
-  "failed",
-  "dob_in_words",
-  "fees_paid_upto",
-  "total_working_days",
-  "extra_curricular",
-  "attendance_percentage",
-  "column_break_tmke",
-  "signature",
-  "father_name",
-  "mother_name",
-  "promotion_class",
-  "promotion_in_words",
-  "discount_details",
-  "days_present",
-  "general_conduct",
-  "subjects_section",
-  "subject_1",
-  "subject_2",
-  "subject_3",
-  "column_break_seca",
-  "subject_4",
-  "subject_5",
-  "subject_6"
- ],
- "fields": [
-  {
-   "fieldname": "section_break_jlkr",
-   "fieldtype": "Section Break",
-   "label": "Student Details"
-  },
-  {
-   "fieldname": "amended_from",
-   "fieldtype": "Link",
-   "label": "Amended From",
-   "no_copy": 1,
-   "options": "Student Exit",
-   "print_hide": 1,
-   "read_only": 1,
-   "search_index": 1
-  },
-  {
-   "fieldname": "student",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Student",
-   "options": "Student",
-   "reqd": 1,
-   "unique": 1
-  },
-  {
-   "fieldname": "fees_status",
-   "fieldtype": "Select",
-   "label": "Fees Status",
-   "options": "\nPaid\nUnpaid",
-   "read_only": 1
-  },
-  {
-   "fieldname": "column_break_ufyi",
-   "fieldtype": "Column Break",
-   "read_only": 1
-  },
-  {
-   "fieldname": "academic_year",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Academic Year",
-   "options": "Academic Year",
-   "reqd": 1
-  },
-  {
-   "fieldname": "cancellation_details_section",
-   "fieldtype": "Section Break",
-   "label": "Cancellation Details"
-  },
-  {
-   "fieldname": "requested_on",
-   "fieldtype": "Date",
-   "label": "Requested On",
-   "read_only": 1
-  },
-  {
-   "fieldname": "date_of_leaving",
-   "fieldtype": "Date",
-   "label": "Date of Leaving"
-  },
-  {
-   "fieldname": "cancellation_letter",
-   "fieldtype": "Attach",
-   "label": "Cancellation Letter"
-  },
-  {
-   "fieldname": "column_break_axrs",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "cancellation_type",
-   "fieldtype": "Select",
-   "label": "Cancellation Type",
-   "options": "Ignore Pending Fee\nCollect Full Fee\nCollect Partial Fee\nDeduct from Deposit\nDeposit Refund"
-  },
-  {
-   "fieldname": "column_break_lrhn",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "cancellation_status",
-   "fieldtype": "Select",
-   "label": "Cancellation Status",
-   "options": "Pending\nProcessed\nRefund Initiated\nRefund Processed",
-   "read_only": 1
-  },
-  {
-   "fieldname": "leaving_certificate",
-   "fieldtype": "Attach",
-   "label": "Leaving Certificate"
-  },
-  {
-   "fieldname": "refund_details_section",
-   "fieldtype": "Section Break",
-   "label": "Refund Details"
-  },
-  {
-   "fieldname": "deposit_amount",
-   "fieldtype": "Currency",
-   "label": "Deposit Amount",
-   "read_only": 1
-  },
-  {
-   "fieldname": "column_break_edui",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "pending_fees",
-   "fieldtype": "Currency",
-   "label": "Pending Fees",
-   "read_only": 1
-  },
-  {
-   "fieldname": "column_break_nmiz",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "refund_amount",
-   "fieldtype": "Currency",
-   "label": "Refund Amount",
-   "read_only": 1
-  },
-  {
-   "fieldname": "other_details_section",
-   "fieldtype": "Section Break",
-   "label": "Other Details"
-  },
-  {
-   "fetch_from": "student.school",
-   "fieldname": "school",
-   "fieldtype": "Link",
-   "label": "School",
-   "options": "School"
-  },
-  {
-   "fetch_from": "school.letter_head",
-   "fieldname": "letter_head",
-   "fieldtype": "Link",
-   "label": "Letter Head",
-   "options": "Letter Head"
-  },
-  {
-   "fetch_from": "school.signature",
-   "fieldname": "signature",
-   "fieldtype": "Attach Image",
-   "label": "Signature"
-  },
-  {
-   "fieldname": "last_class_studied",
-   "fieldtype": "Data",
-   "label": "Last Class Studied"
-  },
-  {
-   "fieldname": "column_break_tmke",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "father_name",
-   "fieldtype": "Data",
-   "label": "Father Name"
-  },
-  {
-   "fieldname": "mother_name",
-   "fieldtype": "Data",
-   "label": "Mother Name"
-  },
-  {
-   "fieldname": "subjects_section",
-   "fieldtype": "Section Break",
-   "label": "Subjects"
-  },
-  {
-   "fieldname": "subject_1",
-   "fieldtype": "Data",
-   "label": "Subject 1"
-  },
-  {
-   "fieldname": "subject_2",
-   "fieldtype": "Data",
-   "label": "Subject 2"
-  },
-  {
-   "fieldname": "subject_3",
-   "fieldtype": "Data",
-   "label": "Subject 3"
-  },
-  {
-   "fieldname": "column_break_seca",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "subject_4",
-   "fieldtype": "Data",
-   "label": "Subject 4"
-  },
-  {
-   "fieldname": "subject_5",
-   "fieldtype": "Data",
-   "label": "Subject 5"
-  },
-  {
-   "fieldname": "subject_6",
-   "fieldtype": "Data",
-   "label": "Subject 6"
-  },
-  {
-   "fieldname": "failed",
-   "fieldtype": "Data",
-   "label": "Failed"
-  },
-  {
-   "fieldname": "dob_in_words",
-   "fieldtype": "Data",
-   "label": "DOB in Words"
-  },
-  {
-   "fieldname": "promotion_class",
-   "fieldtype": "Data",
-   "label": "Promotion Class"
-  },
-  {
-   "fieldname": "promotion_in_words",
-   "fieldtype": "Data",
-   "label": "Promotion in words"
-  },
-  {
-   "fieldname": "fees_paid_upto",
-   "fieldtype": "Data",
-   "label": "Fees Paid Upto"
-  },
-  {
-   "fieldname": "date_of_issue",
-   "fieldtype": "Date",
-   "label": "Date of Issue"
-  },
-  {
-   "fieldname": "total_working_days",
-   "fieldtype": "Int",
-   "label": "Total working days"
-  },
-  {
-   "fieldname": "extra_curricular",
-   "fieldtype": "Data",
-   "label": "Extra Curricular"
-  },
-  {
-   "fieldname": "discount_details",
-   "fieldtype": "Code",
-   "label": "Discount details"
-  },
-  {
-   "fieldname": "days_present",
-   "fieldtype": "Int",
-   "label": "Days Present"
-  },
-  {
-   "fieldname": "general_conduct",
-   "fieldtype": "Data",
-   "label": "General Conduct"
-  },
-  {
-   "fieldname": "remark",
-   "fieldtype": "Data",
-   "label": "Remark"
-  },
-  {
-   "fieldname": "reason",
-   "fieldtype": "Data",
-   "label": "Reason"
-  },
-  {
-   "fieldname": "attendance_percentage",
-   "fieldtype": "Float",
-   "label": "Attendance Percentage"
-  }
- ],
- "index_web_pages_for_search": 1,
- "is_submittable": 1,
- "links": [],
- "modified": "2024-05-28 14:56:11.561349",
- "modified_by": "Administrator",
- "module": "Edu Quality",
- "name": "Student Exit",
- "naming_rule": "By fieldname",
- "owner": "Administrator",
- "permissions": [
-  {
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "System Manager",
-   "share": 1,
-   "submit": 1,
-   "write": 1
-  }
- ],
- "sort_field": "modified",
- "sort_order": "DESC",
- "states": [],
- "track_changes": 1
+    "actions": [],
+    "autoname": "field:student",
+    "creation": "2024-05-20 14:20:55.637922",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "section_break_jlkr",
+        "student",
+        "academic_year",
+        "column_break_ufyi",
+        "fees_status",
+        "amended_from",
+        "cancellation_details_section",
+        "requested_on",
+        "date_of_leaving",
+        "cancellation_letter",
+        "column_break_axrs",
+        "cancellation_type",
+        "date_of_issue",
+        "remark",
+        "column_break_lrhn",
+        "cancellation_status",
+        "leaving_certificate",
+        "reason",
+        "refund_details_section",
+        "deposit_amount",
+        "column_break_edui",
+        "pending_fees",
+        "column_break_nmiz",
+        "refund_amount",
+        "other_details_section",
+        "school",
+        "letter_head",
+        "last_class_studied",
+        "failed",
+        "dob_in_words",
+        "fees_paid_upto",
+        "total_working_days",
+        "extra_curricular",
+        "attendance_percentage",
+        "column_break_tmke",
+        "signature",
+        "father_name",
+        "mother_name",
+        "promotion_class",
+        "promotion_in_words",
+        "discount_details",
+        "days_present",
+        "general_conduct",
+        "subjects_section",
+        "subject_1",
+        "subject_2",
+        "subject_3",
+        "column_break_seca",
+        "subject_4",
+        "subject_5",
+        "subject_6"
+    ],
+    "fields": [
+        {
+            "fieldname": "section_break_jlkr",
+            "fieldtype": "Section Break",
+            "label": "Student Details"
+        },
+        {
+            "fieldname": "amended_from",
+            "fieldtype": "Link",
+            "label": "Amended From",
+            "no_copy": 1,
+            "options": "Student Exit",
+            "print_hide": 1,
+            "read_only": 1,
+            "search_index": 1
+        },
+        {
+            "fieldname": "student",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "Student",
+            "options": "Student",
+            "reqd": 1,
+            "unique": 1
+        },
+        {
+            "fieldname": "fees_status",
+            "fieldtype": "Select",
+            "label": "Fees Status",
+            "options": "\nPaid\nUnpaid",
+            "read_only": 1
+        },
+        {
+            "fieldname": "column_break_ufyi",
+            "fieldtype": "Column Break",
+            "read_only": 1
+        },
+        {
+            "fieldname": "academic_year",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "Academic Year",
+            "options": "Academic Year",
+            "reqd": 1
+        },
+        {
+            "fieldname": "cancellation_details_section",
+            "fieldtype": "Section Break",
+            "label": "Cancellation Details"
+        },
+        {
+            "fieldname": "requested_on",
+            "fieldtype": "Date",
+            "label": "Requested On",
+            "read_only": 1
+        },
+        {
+            "fieldname": "date_of_leaving",
+            "fieldtype": "Date",
+            "label": "Date of Leaving"
+        },
+        {
+            "fieldname": "cancellation_letter",
+            "fieldtype": "Attach",
+            "label": "Cancellation Letter"
+        },
+        {
+            "fieldname": "column_break_axrs",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "cancellation_type",
+            "fieldtype": "Select",
+            "label": "Cancellation Type",
+            "options": "Ignore Pending Fee\nCollect Full Fee\nCollect Partial Fee\nDeduct from Deposit\nDeposit Refund"
+        },
+        {
+            "fieldname": "column_break_lrhn",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "cancellation_status",
+            "fieldtype": "Select",
+            "label": "Cancellation Status",
+            "options": "Pending\nProcessed\nRefund Initiated\nRefund Processed",
+            "read_only": 1
+        },
+        {
+            "fieldname": "leaving_certificate",
+            "fieldtype": "Attach",
+            "label": "Leaving Certificate"
+        },
+        {
+            "fieldname": "refund_details_section",
+            "fieldtype": "Section Break",
+            "label": "Refund Details"
+        },
+        {
+            "fieldname": "deposit_amount",
+            "fieldtype": "Currency",
+            "label": "Deposit Amount",
+            "read_only": 1
+        },
+        {
+            "fieldname": "column_break_edui",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "pending_fees",
+            "fieldtype": "Currency",
+            "label": "Pending Fees",
+            "read_only": 1
+        },
+        {
+            "fieldname": "column_break_nmiz",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "refund_amount",
+            "fieldtype": "Currency",
+            "label": "Refund Amount",
+            "read_only": 1
+        },
+        {
+            "fieldname": "other_details_section",
+            "fieldtype": "Section Break",
+            "label": "Other Details"
+        },
+        {
+            "fetch_from": "student.school",
+            "fieldname": "school",
+            "fieldtype": "Link",
+            "label": "School",
+            "options": "School"
+        },
+        {
+            "fetch_from": "school.letter_head",
+            "fieldname": "letter_head",
+            "fieldtype": "Link",
+            "label": "Letter Head",
+            "options": "Letter Head"
+        },
+        {
+            "fetch_from": "school.signature",
+            "fieldname": "signature",
+            "fieldtype": "Attach Image",
+            "label": "Signature"
+        },
+        {
+            "fieldname": "last_class_studied",
+            "fieldtype": "Data",
+            "label": "Last Class Studied"
+        },
+        {
+            "fieldname": "column_break_tmke",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "father_name",
+            "fieldtype": "Data",
+            "label": "Father Name"
+        },
+        {
+            "fieldname": "mother_name",
+            "fieldtype": "Data",
+            "label": "Mother Name"
+        },
+        {
+            "fieldname": "subjects_section",
+            "fieldtype": "Section Break",
+            "label": "Subjects"
+        },
+        {
+            "fieldname": "subject_1",
+            "fieldtype": "Data",
+            "label": "Subject 1"
+        },
+        {
+            "fieldname": "subject_2",
+            "fieldtype": "Data",
+            "label": "Subject 2"
+        },
+        {
+            "fieldname": "subject_3",
+            "fieldtype": "Data",
+            "label": "Subject 3"
+        },
+        {
+            "fieldname": "column_break_seca",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "subject_4",
+            "fieldtype": "Data",
+            "label": "Subject 4"
+        },
+        {
+            "fieldname": "subject_5",
+            "fieldtype": "Data",
+            "label": "Subject 5"
+        },
+        {
+            "fieldname": "subject_6",
+            "fieldtype": "Data",
+            "label": "Subject 6"
+        },
+        {
+            "fieldname": "failed",
+            "fieldtype": "Data",
+            "label": "Failed"
+        },
+        {
+            "fieldname": "dob_in_words",
+            "fieldtype": "Data",
+            "label": "DOB in Words"
+        },
+        {
+            "fieldname": "promotion_class",
+            "fieldtype": "Data",
+            "label": "Promotion Class"
+        },
+        {
+            "fieldname": "promotion_in_words",
+            "fieldtype": "Data",
+            "label": "Promotion in words"
+        },
+        {
+            "fieldname": "fees_paid_upto",
+            "fieldtype": "Data",
+            "label": "Fees Paid Upto"
+        },
+        {
+            "fieldname": "date_of_issue",
+            "fieldtype": "Date",
+            "label": "Date of Issue"
+        },
+        {
+            "fieldname": "total_working_days",
+            "fieldtype": "Int",
+            "label": "Total working days"
+        },
+        {
+            "fieldname": "extra_curricular",
+            "fieldtype": "Data",
+            "label": "Extra Curricular"
+        },
+        {
+            "fieldname": "discount_details",
+            "fieldtype": "Code",
+            "label": "Discount details"
+        },
+        {
+            "fieldname": "days_present",
+            "fieldtype": "Int",
+            "label": "Days Present"
+        },
+        {
+            "fieldname": "general_conduct",
+            "fieldtype": "Data",
+            "label": "General Conduct"
+        },
+        {
+            "fieldname": "remark",
+            "fieldtype": "Data",
+            "label": "Remark"
+        },
+        {
+            "fieldname": "reason",
+            "fieldtype": "Data",
+            "label": "Reason"
+        },
+        {
+            "fieldname": "attendance_percentage",
+            "fieldtype": "Float",
+            "label": "Attendance Percentage"
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "is_submittable": 1,
+    "links": [],
+    "modified": "2024-05-28 14:56:11.561349",
+    "modified_by": "Administrator",
+    "module": "Edu Quality",
+    "name": "Student Exit",
+    "naming_rule": "By fieldname",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "submit": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
 }
