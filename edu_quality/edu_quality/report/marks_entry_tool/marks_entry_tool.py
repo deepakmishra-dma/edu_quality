@@ -36,7 +36,7 @@ def get_default_columns(assessment_group, filters):
 
     if assess_group.custom_is_kg_exam:
         default_columns = [
-            {"fieldname": "question", "label": "Question"},
+            {"fieldname": "question", "label": "Question", "width": 200},
             {"fieldname": "subject", "label": "Subject"},
         ]
     return default_columns
@@ -149,6 +149,7 @@ def generate_desc_column_dict(student):
         # "subject": desc_exam.get("subject"),
         # "assessment_criteria": desc_exam.get("question"),
         "is_criteria": 1,
+        "width": 75,
         # "scoring_type": "Grades",
     }
 
@@ -175,6 +176,7 @@ def generate_column_dict(assess_plan):
         "is_criteria": 1,
         "scoring_type": assess_plan.get("custom_scoring_type"),
         "custom_scale": assess_plan.get("custom_scale"),
+        "width": 75,
     }
 
 
