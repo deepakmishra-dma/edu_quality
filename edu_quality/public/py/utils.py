@@ -677,7 +677,7 @@ def get_descriptive_result(assessment_group, student):
             .inner_join(assess_ques_res_qb)
             .on(assess_res_de_qb.custom_question == assess_ques_res_qb.name)
         )
-        .orderby(assess_ques_res_qb.question)
+        .orderby(assess_res_de_qb.custom_order)
         .select(
             assess_res_de_qb.name.as_("criteria_name"),
             assess_res_qb.name,
