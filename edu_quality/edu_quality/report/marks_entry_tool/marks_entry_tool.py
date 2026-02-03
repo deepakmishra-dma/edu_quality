@@ -253,7 +253,7 @@ def get_desc_questions(asess_plans_query):
             desc_exam_ques_qb.max_marks,
             desc_exam_ques_qb.min_marks,
             assess_plan_cr_qb.assessment_criteria,
-            desc_exam_ques_qb.parent_descriptive_question,
+            assess_plan_cr_qb.custom_parent_question.as_("parent_question"),
         )
     )
     return paper_query.run(as_dict=True)
@@ -370,6 +370,7 @@ def get_desc_earlier_marks(filters, students):
             assess_res_de_qb.score,
             assess_res_de_qb.custom_question.as_("question"),
             assess_res_de_qb.assessment_criteria,
+            assess_res_de_qb.custom_parent_question.as_("parent_question"),
             assess_res_de_qb.custom_is_absent,
             assess_res_de_qb.grade,
         )
@@ -382,11 +383,13 @@ def get_desc_earlier_marks(filters, students):
         question_name = question.get("question")
         criteria = question.get("assessment_criteria")
         assess_plan = question.get("assessment_plan")
+        parent_question = question.get("parent_question")
         subject = question.get("course")
         if gen_desc_ques_field(question) not in questions_hash:
             questions_hash[gen_desc_ques_field(question)] = {
                 "question": question_name,
                 "assessment_plan": assess_plan,
+                "parent_question": parent_question,
                 "subject": subject,
                 "assessment_criteria": criteria,
             }
@@ -400,12 +403,14 @@ def get_desc_earlier_marks(filters, students):
         is_absent = question.get("custom_is_absent")
         scoring_type = question.get("custom_scoring_type")
         grade = question.get("grade")
+        parent_question = question.get("parent_question")
 
         if gen_desc_ques_field(question) in questions_hash:
             questions_hash[gen_desc_ques_field(question)] = {
                 **questions_hash[gen_desc_ques_field(question)],
                 "question": question_name,
                 "assessment_plan": assess_plan,
+                "parent_question": parent_question,
                 "assessment_criteria": criteria,
                 student: parse_score(is_absent, scoring_type, score, grade),
             }
@@ -588,7 +593,7 @@ def enter_column_wise_mark(data, hashed_columns):
     for datum in data:
         assessment_plan = datum.get("assessment_plan")
         question = datum.get("question")
-        parent_question = datum.get("descriptive_parent_question")
+        parent_question = datum.get("parent_question")
         for student in hashed_columns:
             if student in datum:
                 criteria = {
@@ -596,7 +601,7 @@ def enter_column_wise_mark(data, hashed_columns):
                         "name": "Descriptive Question",
                         "value": get_field_value(datum, student),
                         "custom_question": question,
-                        "parent_question": parent_question,
+                        "custom_parent_question": parent_question,
                     },
                     "assessment_plan": assessment_plan,
                 }
@@ -679,6 +684,7 @@ def enter_criteria_marks(
         {
             "student": ref_no,
             "assessment_plan": assessment_plan,
+            "custom_is_descriptive":is_descriptive or 0,
             "details": assessment_details,
         }
     )
