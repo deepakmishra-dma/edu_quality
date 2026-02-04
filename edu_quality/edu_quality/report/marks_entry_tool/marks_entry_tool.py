@@ -36,8 +36,10 @@ def get_default_columns(assessment_group, filters):
 
     if assess_group.custom_is_kg_exam:
         default_columns = [
-            {"fieldname": "question", "label": "Question", "width": 200},
+            {"fieldname": "question", "label": "Question", "width": 25},
             {"fieldname": "subject", "label": "Subject"},
+            {"fieldname": "assessment_plan", "label": "Assessment Plan"},
+            {"fieldname": "question_name", "label": "Question", "width": 200},
         ]
     return default_columns
 
@@ -250,6 +252,7 @@ def get_desc_questions(asess_plans_query):
             asess_plans_query.name.as_("assessment_plan"),
             asess_plans_query.course,
             desc_exam_ques_qb.name.as_("question"),
+            desc_exam_ques_qb.name.as_("question_name"),
             desc_exam_ques_qb.max_marks,
             desc_exam_ques_qb.min_marks,
             assess_plan_cr_qb.assessment_criteria,
@@ -358,6 +361,8 @@ def get_desc_earlier_marks(filters, students):
         frappe.qb.from_(assess_res_qb)
         .inner_join(assess_res_de_qb)
         .on(assess_res_qb.name == assess_res_de_qb.parent)
+        .inner_join(desc_exam_ques_qb)
+        .on(desc_exam_ques_qb.name == assess_res_de_qb.custom_question)
         .where(
             (assess_res_qb.student.isin(students_list or [None]))
             & (assess_res_qb.assessment_plan.isin(all_plans or [None]))
@@ -369,6 +374,7 @@ def get_desc_earlier_marks(filters, students):
             assess_res_qb.custom_scoring_type,
             assess_res_de_qb.score,
             assess_res_de_qb.custom_question.as_("question"),
+            desc_exam_ques_qb.question.as_("question_name"),
             assess_res_de_qb.assessment_criteria,
             assess_res_de_qb.custom_parent_question.as_("parent_question"),
             assess_res_de_qb.custom_is_absent,
@@ -384,11 +390,13 @@ def get_desc_earlier_marks(filters, students):
         criteria = question.get("assessment_criteria")
         assess_plan = question.get("assessment_plan")
         parent_question = question.get("parent_question")
+        question_name = question.get("question_name")
         subject = question.get("course")
         if gen_desc_ques_field(question) not in questions_hash:
             questions_hash[gen_desc_ques_field(question)] = {
                 "question": question_name,
                 "assessment_plan": assess_plan,
+                "question_name": question_name,
                 "parent_question": parent_question,
                 "subject": subject,
                 "assessment_criteria": criteria,
@@ -399,6 +407,7 @@ def get_desc_earlier_marks(filters, students):
         criteria = question.get("assessment_criteria")
         assess_plan = question.get("assessment_plan")
         student = question.get("student")
+        question_name = question.get("question_name")
         score = question.get("score")
         is_absent = question.get("custom_is_absent")
         scoring_type = question.get("custom_scoring_type")
@@ -412,6 +421,7 @@ def get_desc_earlier_marks(filters, students):
                 "assessment_plan": assess_plan,
                 "parent_question": parent_question,
                 "assessment_criteria": criteria,
+                "question_name": question_name,
                 student: parse_score(is_absent, scoring_type, score, grade),
             }
 
@@ -684,7 +694,7 @@ def enter_criteria_marks(
         {
             "student": ref_no,
             "assessment_plan": assessment_plan,
-            "custom_is_descriptive":is_descriptive or 0,
+            "custom_is_descriptive": is_descriptive or 0,
             "details": assessment_details,
         }
     )
