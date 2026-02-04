@@ -79,6 +79,7 @@ function writeMarks(rowIndex, columnId, value, columnIndex) {
 		assessment_plan,
 		question,
 		feature,
+		parent_question
 	} = frappe.query_report.data[rowIndex]
 
 	const payload = {
@@ -88,6 +89,7 @@ function writeMarks(rowIndex, columnId, value, columnIndex) {
 		assessment_criteria: assessment_criteria,
 		assessment_plan: assessment_plan,
 		question: question,
+		parent_question: parent_question,
 		feature: feature,
 		[columnId]: frappe.query_report.data[rowIndex][columnId]
 	}
