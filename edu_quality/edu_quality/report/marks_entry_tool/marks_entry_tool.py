@@ -386,7 +386,7 @@ def get_desc_earlier_marks(filters, students):
     data = query.run(as_dict=True)
 
     for question in questions_data:
-        question_name = question.get("question")
+        question_id = question.get("question")
         criteria = question.get("assessment_criteria")
         assess_plan = question.get("assessment_plan")
         parent_question = question.get("parent_question")
@@ -394,7 +394,7 @@ def get_desc_earlier_marks(filters, students):
         subject = question.get("course")
         if gen_desc_ques_field(question) not in questions_hash:
             questions_hash[gen_desc_ques_field(question)] = {
-                "question": question_name,
+                "question": question_id,
                 "assessment_plan": assess_plan,
                 "question_name": question_name,
                 "parent_question": parent_question,
@@ -403,7 +403,7 @@ def get_desc_earlier_marks(filters, students):
             }
 
     for question in data:
-        question_name = question.get("question")
+        question_id = question.get("question")
         criteria = question.get("assessment_criteria")
         assess_plan = question.get("assessment_plan")
         student = question.get("student")
@@ -417,7 +417,7 @@ def get_desc_earlier_marks(filters, students):
         if gen_desc_ques_field(question) in questions_hash:
             questions_hash[gen_desc_ques_field(question)] = {
                 **questions_hash[gen_desc_ques_field(question)],
-                "question": question_name,
+                "question": question_id,
                 "assessment_plan": assess_plan,
                 "parent_question": parent_question,
                 "assessment_criteria": criteria,
@@ -946,7 +946,9 @@ def import_csv_background(csv_content, filters):
         # Second pass to read the data
         dict_reader = csv.DictReader(StringIO(csv_content))
         data = list(dict_reader)
-        do_mark_entry(data, filters)
+        frappe.enqueue(
+            do_mark_entry, data=data, filters=filters, queue="long", timeout=1800
+        )
 
     except Exception as e:
         frappe.log_error(
