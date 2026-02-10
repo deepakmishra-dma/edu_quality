@@ -79,16 +79,17 @@ class CustomPaymentRequest(PaymentRequest):
             company_split = json.loads(fees.company_split)[self.payment_term]
             for company in company_split:
                 paid_amount += company_split[company]["amount"]
-                payment_entry(
-                    self,
-                    fees,
-                    company_split[company]["amount"],
-                    company_split[company]["paid_from"],
-                    company_split[company]["paid_to"],
-                    company,
-                    company_split[company]["cost_center"],
-                    company_split[company].get("fee_categories")
-                )
+                if company_split[company]["amount"] >0:
+                    payment_entry(
+                        self,
+                        fees,
+                        company_split[company]["amount"],
+                        company_split[company]["paid_from"],
+                        company_split[company]["paid_to"],
+                        company,
+                        company_split[company]["cost_center"],
+                        company_split[company].get("fee_categories")
+                    )
             mark_payment_term_paid(fees, self.payment_term, self.grand_total)
         else:
             company_split = json.loads(fees.company_split).get("Deposit")

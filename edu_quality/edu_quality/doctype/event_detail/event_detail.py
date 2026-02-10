@@ -202,6 +202,8 @@ class EventDetail(Document):
             )
             if students:
                 filters["name"] = ["in", students]
+            else:
+                return []
         else:
             filters = {"school": self.school, "enabled": 1}
             classes = frappe.get_all("Classes", {"parent": self.name}, pluck="class")

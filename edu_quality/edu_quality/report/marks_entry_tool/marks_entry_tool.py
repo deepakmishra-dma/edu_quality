@@ -23,7 +23,7 @@ def get_default_columns(assessment_group, filters):
 
     assess_group = frappe.get_cached_doc("Assessment Group", assessment_group)
 
-    if not assess_group.custom_is_kg_exam:
+    if not assess_group.custom_is_kg_exam and not filters.get("remarks", None):
         default_columns = [
             {"fieldname": "ref_no", "label": "Ref No"},
             {"fieldname": "student_name", "label": "Name"},

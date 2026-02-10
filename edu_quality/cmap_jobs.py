@@ -7,7 +7,6 @@ import requests
 import json
 from edu_quality.edu_quality.server_scripts.utils import current_academic_year
 
-
 def generate_mention_html(base_url, user_id, message, name):
     mention_html = f'<div class="ql-editor read-mode"><p>'
     mention_html += (
@@ -184,7 +183,7 @@ def get_upcoming_online_ptm_links(student_id):
             "gmeet_link": ["is", "set"],
             "division": student_division,
         }
-        if student_is_grp and (isinstance(student_group, int) or student_group):
+        if student_is_grp and student_group:
             filterss["group"] = str(student_group)
         else:
             frappe.throw("No Student Group Allocated to Student")

@@ -116,7 +116,7 @@ class EventParticipant(Document):
         else:
             return {"status": "error", "message": "Payment data not found"}
         
-    def create_payment_entry(self):
+    def create_payment_entry(self, posting_date=None, reference_date=None):
         try:
             user = frappe.session.user
             frappe.set_user("Administrator")
@@ -130,8 +130,8 @@ class EventParticipant(Document):
                     "payment_type": "Receive",
                     "company": company,
                     "cost_center": cost_center,
-                    "posting_date": frappe.utils.nowdate(),
-                    "reference_date": frappe.utils.nowdate(),
+                    "posting_date": posting_date or frappe.utils.nowdate(),
+                    "reference_date": reference_date or frappe.utils.nowdate(),
                     "party_type": "Student",
                     "party": self.student,
                     "party_name": self.student_name,

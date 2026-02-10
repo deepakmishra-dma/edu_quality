@@ -9,7 +9,6 @@
   "section_break_cfmz",
   "reference_number",
   "student",
-  "academic_year",
   "first_name",
   "last_name",
   "column_break_phwd",
@@ -20,12 +19,9 @@
   "test_details_section",
   "unit",
   "exam_type",
-  "select_unit",
   "test_details",
   "column_break_pkvj",
   "subject",
-  "select_subject",
-  "type",
   "date",
   "amended_from",
   "attachment"
@@ -47,6 +43,7 @@
   {
    "fieldname": "student",
    "fieldtype": "Link",
+   "hidden": 1,
    "in_list_view": 1,
    "label": "Student ",
    "options": "Student"
@@ -143,36 +140,12 @@
    "fieldname": "attachment",
    "fieldtype": "Attach",
    "label": "Attachment"
-  },
-  {
-   "fetch_from": "student.custom_academic_year",
-   "fieldname": "academic_year",
-   "fieldtype": "Link",
-   "label": "Academic Year",
-   "options": "Academic Year"
-  },
-  {
-   "fieldname": "select_unit",
-   "fieldtype": "Link",
-   "label": "Select Unit",
-   "options": "Assessment Group"
-  },
-  {
-   "fieldname": "select_subject",
-   "fieldtype": "Link",
-   "label": "Select Subject",
-   "options": "Assessment Plan"
-  },
-  {
-   "fieldname": "type",
-   "fieldtype": "Data",
-   "label": "Type"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-07-11 02:36:44.068735",
+ "modified": "2024-06-21 16:06:22.804595",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Online Exam Submission",
