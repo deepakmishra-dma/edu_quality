@@ -16,8 +16,8 @@ import {
   IconStack2,
   IconStar,
   IconCalendar,
-  IconFileDescription,
-  IconReport,
+  // IconFileDescription,
+  // IconReport,
   IconUser,
   // IconCreditCard,
   IconLink,
@@ -171,11 +171,11 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
           //   location: "/fee",
           // },
 
-          {
-            label: "Result",
-            icon: IconReport,
-            location: "/result",
-          },
+          // {
+          //   label: "Result",
+          //   icon: IconReport,
+          //   location: "/result",
+          // },
 
           {
             label: "School Calendar",
@@ -188,11 +188,11 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
             icon: IconArchive,
             location: "/archived",
           },
-          {
-            label: "Result",
-            icon: IconFileDescription,
-            location: "/result",
-          },
+          // {
+          //   label: "Result",
+          //   icon: IconFileDescription,
+          //   location: "/result",
+          // },
 
           {
             label: "Bonafide Certificate",
