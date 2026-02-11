@@ -629,9 +629,14 @@ def render_template_with_exception(template, data):
 
 
 def get_div_students(division, ref_no=None):
+    if isinstance(division, list):
+        cond = ["in", division]
+    else:
+        cond = division
+
     if ref_no:
         filters = {
-            "student_group": division,
+            "student_group": cond,
             "docstatus": 1,
             "student": ref_no,
             "custom_status": ["in", ["Current student", "Defaulter"]],
@@ -639,7 +644,7 @@ def get_div_students(division, ref_no=None):
 
     else:
         filters = {
-            "student_group": division,
+            "student_group": cond,
             "docstatus": 1,
             "custom_status": ["in", ["Current student", "Defaulter"]],
         }
@@ -647,7 +652,7 @@ def get_div_students(division, ref_no=None):
     data = frappe.db.get_list(
         "Program Enrollment",
         filters=filters,
-        fields=["student_name", "name", "student", "roll_no"],
+        fields=["student_name", "name", "student", "roll_no", "student_group"],
         order_by="CAST(roll_no AS UNSIGNED)",
     )
 
@@ -658,23 +663,34 @@ def get_descriptive_result(assessment_group, student):
 
     assess_res_qb = frappe.qb.DocType("Assessment Result")
     assess_res_de_qb = frappe.qb.DocType("Assessment Result Detail")
-
+    assess_ques_res_qb = frappe.qb.DocType("Descriptive Question")
     query = (
-        frappe.qb.from_(assess_res_qb)
-        .where(assess_res_qb.docstatus == 1)
-        .inner_join(assess_res_de_qb)
-        .on(assess_res_qb.name == assess_res_de_qb.parent)
-    ).select(
-        assess_res_de_qb.name.as_("criteria_name"),
-        assess_res_qb.name,
-        assess_res_qb.course,
-        assess_res_de_qb.custom_question,
-        assess_res_de_qb.custom_parent_question,
-        assess_res_de_qb.grade,
-        assess_res_de_qb.custom_processed_grade,
-        assess_res_qb.custom_processed_grade.as_("total_processed_grade"),
-        assess_res_qb.custom_total_processed_score,
-        assess_res_de_qb.custom_processed_result,
+        (
+            frappe.qb.from_(assess_res_qb)
+            .where(
+                (assess_res_qb.docstatus == 1)
+                & (assessment_group == assess_res_qb.assessment_group)
+                & (assess_res_qb.student == student)
+            )
+            .inner_join(assess_res_de_qb)
+            .on(assess_res_qb.name == assess_res_de_qb.parent)
+            .inner_join(assess_ques_res_qb)
+            .on(assess_res_de_qb.custom_question == assess_ques_res_qb.name)
+        )
+        .orderby(assess_res_de_qb.custom_order)
+        .select(
+            assess_res_de_qb.name.as_("criteria_name"),
+            assess_res_qb.name,
+            assess_res_qb.course,
+            assess_res_de_qb.custom_question,
+            assess_ques_res_qb.question.as_("question_name"),
+            assess_res_de_qb.custom_parent_question,
+            assess_res_de_qb.grade,
+            assess_res_de_qb.custom_processed_grade,
+            assess_res_qb.custom_processed_grade.as_("total_processed_grade"),
+            assess_res_qb.custom_total_processed_score,
+            assess_res_de_qb.custom_processed_result,
+        )
     )
 
     data = query.run(as_dict=True)

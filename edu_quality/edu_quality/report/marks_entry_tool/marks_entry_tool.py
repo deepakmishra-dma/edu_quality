@@ -8,6 +8,11 @@ import json
 from frappe.utils import flt
 from edu_quality.public.py.utils import get_div_students as get_div_stud
 from frappe.model.mapper import get_mapped_doc
+from io import StringIO
+import requests
+import csv
+from frappe.desk.query_report import run, build_xlsx_data
+from frappe.desk.utils import get_csv_bytes, provide_binary_file
 
 
 def get_default_columns(assessment_group, filters):
@@ -31,7 +36,10 @@ def get_default_columns(assessment_group, filters):
 
     if assess_group.custom_is_kg_exam:
         default_columns = [
-            {"fieldname": "question", "label": "Question"},
+            {"fieldname": "question", "label": "Question", "width": 25},
+            {"fieldname": "subject", "label": "Subject"},
+            {"fieldname": "assessment_plan", "label": "Assessment Plan"},
+            {"fieldname": "question_name", "label": "Question", "width": 200},
         ]
     return default_columns
 
@@ -143,6 +151,7 @@ def generate_desc_column_dict(student):
         # "subject": desc_exam.get("subject"),
         # "assessment_criteria": desc_exam.get("question"),
         "is_criteria": 1,
+        "width": 75,
         # "scoring_type": "Grades",
     }
 
@@ -169,6 +178,7 @@ def generate_column_dict(assess_plan):
         "is_criteria": 1,
         "scoring_type": assess_plan.get("custom_scoring_type"),
         "custom_scale": assess_plan.get("custom_scale"),
+        "width": 75,
     }
 
 
@@ -240,11 +250,13 @@ def get_desc_questions(asess_plans_query):
         .on(desc_exam_ques_qb.name == assess_plan_cr_qb.custom_question)
         .select(
             asess_plans_query.name.as_("assessment_plan"),
+            asess_plans_query.course,
             desc_exam_ques_qb.name.as_("question"),
+            desc_exam_ques_qb.name.as_("question_name"),
             desc_exam_ques_qb.max_marks,
             desc_exam_ques_qb.min_marks,
             assess_plan_cr_qb.assessment_criteria,
-            desc_exam_ques_qb.parent_descriptive_question,
+            assess_plan_cr_qb.custom_parent_question.as_("parent_question"),
         )
     )
     return paper_query.run(as_dict=True)
@@ -349,6 +361,8 @@ def get_desc_earlier_marks(filters, students):
         frappe.qb.from_(assess_res_qb)
         .inner_join(assess_res_de_qb)
         .on(assess_res_qb.name == assess_res_de_qb.parent)
+        .inner_join(desc_exam_ques_qb)
+        .on(desc_exam_ques_qb.name == assess_res_de_qb.custom_question)
         .where(
             (assess_res_qb.student.isin(students_list or [None]))
             & (assess_res_qb.assessment_plan.isin(all_plans or [None]))
@@ -360,7 +374,9 @@ def get_desc_earlier_marks(filters, students):
             assess_res_qb.custom_scoring_type,
             assess_res_de_qb.score,
             assess_res_de_qb.custom_question.as_("question"),
+            desc_exam_ques_qb.question.as_("question_name"),
             assess_res_de_qb.assessment_criteria,
+            assess_res_de_qb.custom_parent_question.as_("parent_question"),
             assess_res_de_qb.custom_is_absent,
             assess_res_de_qb.grade,
         )
@@ -370,33 +386,42 @@ def get_desc_earlier_marks(filters, students):
     data = query.run(as_dict=True)
 
     for question in questions_data:
-        question_name = question.get("question")
+        question_id = question.get("question")
         criteria = question.get("assessment_criteria")
         assess_plan = question.get("assessment_plan")
-
+        parent_question = question.get("parent_question")
+        question_name = question.get("question_name")
+        subject = question.get("course")
         if gen_desc_ques_field(question) not in questions_hash:
             questions_hash[gen_desc_ques_field(question)] = {
-                "question": question_name,
+                "question": question_id,
                 "assessment_plan": assess_plan,
+                "question_name": question_name,
+                "parent_question": parent_question,
+                "subject": subject,
                 "assessment_criteria": criteria,
             }
 
     for question in data:
-        question_name = question.get("question")
+        question_id = question.get("question")
         criteria = question.get("assessment_criteria")
         assess_plan = question.get("assessment_plan")
         student = question.get("student")
+        question_name = question.get("question_name")
         score = question.get("score")
         is_absent = question.get("custom_is_absent")
         scoring_type = question.get("custom_scoring_type")
         grade = question.get("grade")
+        parent_question = question.get("parent_question")
 
         if gen_desc_ques_field(question) in questions_hash:
             questions_hash[gen_desc_ques_field(question)] = {
                 **questions_hash[gen_desc_ques_field(question)],
-                "question": question_name,
+                "question": question_id,
                 "assessment_plan": assess_plan,
+                "parent_question": parent_question,
                 "assessment_criteria": criteria,
+                "question_name": question_name,
                 student: parse_score(is_absent, scoring_type, score, grade),
             }
 
@@ -578,7 +603,7 @@ def enter_column_wise_mark(data, hashed_columns):
     for datum in data:
         assessment_plan = datum.get("assessment_plan")
         question = datum.get("question")
-        parent_question = datum.get("descriptive_parent_question")
+        parent_question = datum.get("parent_question")
         for student in hashed_columns:
             if student in datum:
                 criteria = {
@@ -586,7 +611,7 @@ def enter_column_wise_mark(data, hashed_columns):
                         "name": "Descriptive Question",
                         "value": get_field_value(datum, student),
                         "custom_question": question,
-                        "parent_question": parent_question,
+                        "custom_parent_question": parent_question,
                     },
                     "assessment_plan": assessment_plan,
                 }
@@ -669,6 +694,7 @@ def enter_criteria_marks(
         {
             "student": ref_no,
             "assessment_plan": assessment_plan,
+            "custom_is_descriptive": is_descriptive or 0,
             "details": assessment_details,
         }
     )
@@ -874,6 +900,65 @@ def cancel_result_rows(ref_nos, filters):
 
 
 @frappe.whitelist()
+def export_custom_csv(report_name="Marks Entry Tool", filters=[]):
+    data = run(report_name, filters, [])
+    data = frappe._dict(data)
+    data.filters = filters
+
+    if not data.columns:
+        frappe.respond_as_web_page(
+            ("No data to export"),
+            ("You can try changing the filters of your report."),
+        )
+        return
+    data.columns = [
+        {**datum, "label": datum.get("fieldname")} for datum in data.columns
+    ]
+    xlsx_data, column_widths = build_xlsx_data(
+        data, [], False, include_filters=False, ignore_visible_idx=True
+    )
+    file_extension = "csv"
+    content = get_csv_bytes(xlsx_data, {})
+    provide_binary_file(report_name, file_extension, content)
+
+
+@frappe.whitelist()
+def import_mark_entry_csv(url, filters):
+    try:
+        origin = frappe.request.headers.get("Origin")
+        full_url = origin + url
+        response = requests.get(full_url)
+        response.raise_for_status()
+        return import_csv_background(response.text, filters)
+    except Exception as e:
+        frappe.log_error(
+            f"Error importing PTM schedule: {str(e)}", "PTM Schedule Import"
+        )
+        return {"status": "failed", "message": str(e)}
+
+
+def import_csv_background(csv_content, filters):
+    errors = []
+    try:
+        dict_reader = csv.DictReader(StringIO(csv_content))
+        total_rows = sum(1 for _ in dict_reader)
+
+        # Second pass to read the data
+        dict_reader = csv.DictReader(StringIO(csv_content))
+        data = list(dict_reader)
+        frappe.enqueue(
+            do_mark_entry, data=data, filters=filters, queue="long", timeout=1800
+        )
+
+    except Exception as e:
+        frappe.log_error(
+            message=f"Error importing PTM schedule background: {str(e)}",
+            title="PTM Schedule Import Background",
+        )
+        return {"status": "failed", "message": str(e)}
+
+
+@frappe.whitelist()
 def send_marks(**kwargs):
     """
     This function is used to send marks to students for a particular assessment group
@@ -881,27 +966,8 @@ def send_marks(**kwargs):
         assessment_group: str: assessment group name
         division: str: division name optional
     """
-    assessment_group = kwargs.get("assessment_group")
-    division = kwargs.get("division")
-    if assessment_group:
-        frappe.enqueue(
-            send_marks_async,
-            assessment_group=assessment_group,
-            division=division,
-            queue="long",
-        )
-        return True
-    return False
-
-
-def send_marks_async(assessment_group, division=None):
-    """
-    This function is used to send marks to students for a particular assessment group
-    Args:
-        assessment_group: str: assessment group name
-        division: str: division name optional
-    """
     try:
+        assessment_group = kwargs.get("assessment_group")
         school = frappe.get_value(
             "Assessment Group", assessment_group, ["custom_school"]
         )
@@ -914,14 +980,14 @@ def send_marks_async(assessment_group, division=None):
             pluck="name",
         )
         for student in students:
-            send_student_marks(student, assessment_group, division)
+            send_student_marks(student, assessment_group)
         return True
     except:
-        frappe.log_error(f"Failed to send marks for {assessment_group}", frappe.get_traceback())
+        frappe.log_error("Failed to send marks to student", frappe.get_traceback())
         return False
 
 
-def send_student_marks(student, assessment_group, division=None):
+def send_student_marks(student, assessment_group):
     """
     This function is used to send marks to students for a particular assessment group
     Args:
@@ -933,17 +999,16 @@ def send_student_marks(student, assessment_group, division=None):
     current_academic_year = frappe.get_value(
         "Academic Year", {"custom_current_academic_year": 1}, "name"
     )
-    if not division:
-        division = frappe.get_value(
-            "Program Enrollment",
-            {"student": student_doc.name, "academic_year": current_academic_year},
-            "student_group",
-        )
+    student_group = frappe.get_value(
+        "Program Enrollment",
+        {"student": student_doc.name, "academic_year": current_academic_year},
+        "student_group",
+    )
 
     assessment_plan = frappe.get_all(
         "Assessment Plan",
         {
-            "student_group": division,
+            "student_group": student_group,
             "assessment_group": assessment_group,
             "docstatus": 1,
         },

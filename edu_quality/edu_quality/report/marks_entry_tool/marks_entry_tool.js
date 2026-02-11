@@ -79,6 +79,7 @@ function writeMarks(rowIndex, columnId, value, columnIndex) {
 		assessment_plan,
 		question,
 		feature,
+		parent_question
 	} = frappe.query_report.data[rowIndex]
 
 	const payload = {
@@ -88,6 +89,7 @@ function writeMarks(rowIndex, columnId, value, columnIndex) {
 		assessment_criteria: assessment_criteria,
 		assessment_plan: assessment_plan,
 		question: question,
+		parent_question: parent_question,
 		feature: feature,
 		[columnId]: frappe.query_report.data[rowIndex][columnId]
 	}
@@ -237,7 +239,7 @@ function sendMarks(assessment_group, division) {
 					message: __('Marks Sending Queued Successfully'),
 					indicator: 'green'
 				}, 2);
-			}else{
+			} else {
 				frappe.show_alert({
 					message: __('Marks Sending Failed'),
 					indicator: 'red'
@@ -266,14 +268,135 @@ const cancelResult = debounce(async (ref_nos) => {
 		indicator: 'green'
 	}, 2);
 }, 1000)
+function checkFilePermission(file) {
+	frappe.call({
+		method: 'edu_quality.edu_quality.doctype.ptm_scheduler.ptm_scheduler.check_file_permission',
+		args: { 'file_url': file },
+		callback: function (response) {
+			if (response.message.status === 'success') {
+				importCSVData(file);
+			} else {
+				frappe.msgprint(__('Only public files are allowed for upload.'));
+
+			}
+		}
+	});
+}
+
+function importCSVData(file) {
+	let filters = frappe.query_report.get_filter_values(true);
+	frappe.call({
+		method: 'edu_quality.edu_quality.report.marks_entry_tool.marks_entry_tool.import_mark_entry_csv',
+		args: { 'url': file, filters: filters },
+		callback: function (response) {
+			if (response.message.status === 'success') {
+				// Display success message with green indicator
+				frappe.msgprint('<div style="color: green;">Success: ' + response.message.message + '</div>');
+			} else {
+				// Display failure message with red indicator
+				frappe.msgprint('<div style="color: red;">Import failed: <br>' + response.message.message + '</div>');
+			}
+		},
+		error: function (xhr, textStatus, error) {
+			// Handle error in making the AJAX call
+			frappe.msgprint('<div style="color: red;">Error occurred while importing data: <br>' + error + '</div>');
+		}
+	});
+}
+
+function addImportExportTemplate(report) {
+	report.page.add_custom_menu_item(report.page.menu_btn_group, "Export Template", () => {
+		let filters = report.get_filter_values(true);
+		let reportName = "Marks Entry Tool"
+		open_url_post(frappe.request.url, {
+			cmd: "edu_quality.edu_quality.report.marks_entry_tool.marks_entry_tool.export_custom_csv",
+			report_name: reportName,
+			filters: filters
+		})
+
+
+
+	})
+	report.page.add_custom_menu_item(report.page.menu_btn_group, "Import Template", () => {
+		var dialog = new frappe.ui.Dialog({
+			title: __('Upload CSV File'),
+			fields: [
+				{
+					fieldname: 'file',
+					label: __('CSV File'),
+					fieldtype: 'Attach',
+					reqd: 1
+				}
+			],
+			primary_action_label: __('Import'),
+			primary_action: function () {
+				var file = dialog.get_value('file');
+				if (file) {
+					let res = checkFilePermission(file);
+					if (res != false) {
+						dialog.hide();
+					}
+
+				} else {
+					frappe.msgprint(__('Please select a file.'));
+				}
+			}
+		});
+		dialog.show();
+	})
+}
 
 function onload(report) {
 	initializeKeyListener();
 	var queryParams = frappe.utils.get_query_params();
-
+	addImportExportTemplate(report)
 	frappe.require(["/assets/edu_quality/css/mark-entry-tool.css"]);
 	report.page.parent.classList.add("mark-entry-tool-report");
 	addNote()
+	report.page.add_inner_button(__('Cancel Result'), () => {
+		let indexes = frappe.query_report.datatable.rowmanager.getCheckedRows();
+		let selected_rows = indexes.map(i => frappe.query_report.data[i]);
+
+		if (selected_rows.length == 0) {
+			frappe.msgprint(__("Select a row before cancelling a result"))
+			return
+		}
+		const ref_nos = selected_rows.map((selected_row) => selected_row.ref_no)
+		let message = `
+			<div>
+				
+				<p>Are you sure you want to cancel result for selected row ? this will cancel all the results in a row irrespective of subject</p>
+			</div>`;
+
+
+		frappe.confirm(__(message), async () => {
+			await cancelResult(ref_nos)
+		})
+	})
+	report.page.add_inner_button(__('Process Result'), () => {
+		const message = `
+        <div>    
+            <p>Are you sure you want to Leave this page and go to exam processing?</p>
+        </div>`;
+
+		frappe.confirm(__(message), async () => {
+			goToProcessing()
+
+		});
+
+
+	});
+	report.page.add_inner_button(__('Save Marks Entry'), () => {
+		const message = `
+        <div>    
+            <p>Are you sure you want to Save Marks Entered?</p>
+        </div>`;
+
+		frappe.confirm(__(message), async () => {
+			await saveCall()
+
+		});
+	});
 
 	report.page.add_inner_button(__('Send Marks'), () => {
 		let assessment_group = report.get_filter_value("assessment_group");
@@ -338,12 +461,12 @@ function onload(report) {
 							if (!values) return;
 							sendMarks(values.assessment_group, values.division)
 						},
-							() => {
-								frappe.show_alert({
-									message: __('Marks Sending Cancelled'),
-									indicator: 'orange'
-								});
-							}
+						() => {
+							frappe.show_alert({
+								message: __('Marks Sending Cancelled'),
+								indicator: 'orange'
+							});
+						}
 					);
 				}
 			},
@@ -356,52 +479,6 @@ function onload(report) {
 			division: report.get_filter_value("division")
 		});
 	});
-	
-	report.page.add_inner_button(__('Cancel Result'), () => {
-		let indexes = frappe.query_report.datatable.rowmanager.getCheckedRows();
-		let selected_rows = indexes.map(i => frappe.query_report.data[i]);
-
-		if (selected_rows.length == 0) {
-			frappe.msgprint(__("Select a row before cancelling a result"))
-			return
-		}
-		const ref_nos = selected_rows.map((selected_row) => selected_row.ref_no)
-		let message = `
-			<div>
-				
-				<p>Are you sure you want to cancel result for selected row ? this will cancel all the results in a row irrespective of subject</p>
-			</div>`;
-
-
-		frappe.confirm(__(message), async () => {
-			await cancelResult(ref_nos)
-		})
-	})
-	report.page.add_inner_button(__('Process Result'), () => {
-		const message = `
-        <div>    
-            <p>Are you sure you want to Leave this page and go to exam processing?</p>
-        </div>`;
-
-		frappe.confirm(__(message), async () => {
-			goToProcessing()
-
-		});
-	});
-
-
-	report.page.add_inner_button(__('Save Marks Entry'), () => {
-		const message = `
-        <div>    
-            <p>Are you sure you want to Save Marks Entered?</p>
-        </div>`;
-
-		frappe.confirm(__(message), async () => {
-			await saveCall()
-
-		});
-	});
-
 
 	if (frappe.query_report.get_filter_value("mode")) {
 		report.page.add_inner_button(__('Switch to Marks Entry'), () => {
@@ -522,11 +599,11 @@ frappe.query_reports["Marks Entry Tool"] = {
 			"fieldtype": "Check",
 			"hidden": true
 		},
-		// {
-		// 	"fieldname": "remarks",
-		// 	"label": __("Remarks"),
-		// 	"fieldtype": "Check",
-		// },
+		{
+			"fieldname": "remarks",
+			"label": __("Remarks"),
+			"fieldtype": "Check",
+		},
 		{
 			"fieldname": "ref_no",
 			"label": __("Online Mode"),

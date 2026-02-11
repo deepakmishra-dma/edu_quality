@@ -1,0 +1,72 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-08-02 02:32:01.477022",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "assessment_result",
+  "total_score",
+  "total_grade",
+  "maximum_score",
+  "percentage",
+  "scoring_type"
+ ],
+ "fields": [
+  {
+   "fieldname": "assessment_result",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Assessment Result",
+   "options": "Assessment Result"
+  },
+  {
+   "fetch_from": "assessment_result.custom_total_processed_score",
+   "fieldname": "total_score",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Total Score"
+  },
+  {
+   "fetch_from": "assessment_result.custom_processed_grade",
+   "fieldname": "total_grade",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Total Grade"
+  },
+  {
+   "fetch_from": "assessment_result.maximum_score",
+   "fieldname": "maximum_score",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Maximum Score"
+  },
+  {
+   "fetch_from": "assessment_result.custom_processed_percentage",
+   "fieldname": "percentage",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Percentage"
+  },
+  {
+   "fetch_from": "assessment_result.custom_scoring_type",
+   "fieldname": "scoring_type",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Scoring Type"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-08-02 10:04:41.375442",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "Assessment Group Result Detail",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

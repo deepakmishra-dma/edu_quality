@@ -124,22 +124,24 @@ def remove_push_notification_token(push_token=None, remove_all=False):
         frappe.db.delete("Mobile Push Token", {"token": push_token, "user_id": user_id})
 
 
-def is_defaulter(guardian_name, logout_if_defaulter=False):
+def is_disabled(guardian_name, logout_if_defaulter=False):
     students = frappe.db.get_all(
         "Student Guardian",
         {"guardian": guardian_name, "parenttype": "Student"},
         "parent",
     )
-    for student in students:
-        if (
-            frappe.db.get_value("Student", {"name": student.parent}, "student_status")
-            == "Defaulter"
-        ):
-            if logout_if_defaulter:
-                remove_push_notification_token(remove_all=True)
-                login_manager = LoginManager()
-                login_manager.logout()
-            return True
+    student_names = [
+        frappe.db.get_value("Student", {"name": student.parent}, "enabled") == 0
+        for student in students
+    ]
+
+    if all(student_names):
+        if logout_if_defaulter:
+            remove_push_notification_token(remove_all=True)
+            login_manager = LoginManager()
+            login_manager.logout()
+        return True
+
     return False
 
 
@@ -172,14 +174,25 @@ def send_otp(phone_no):
         guardian_number = remove_indian_country_code(phone_with_country_code)
 
         guardian = get_guardian(guardian_number)
+        students = frappe.get_all(
+            "Student", filters={"guardian": guardian.name}, fields=["*"]
+        )
+        any_disabled = any(student["enabled"] == 0 for student in students)
+        if not students or any_disabled:
+            return {
+                "error": True,
+                "error_type": "student_disabled",
+                "error_message": "All students for this guardian are disabled.",
+            }
+
         if not guardian:
             return {
                 "error": True,
                 "error_type": "guardian_not_found",
                 "error_message": "Guardian Not Found",
             }
-        frappe.logger("otp").exception(is_defaulter(guardian.name))
-        if is_defaulter(guardian.name):
+        frappe.logger("otp").exception(is_disabled(guardian.name))
+        if is_disabled(guardian.name):
             return {
                 "error": True,
                 "error_type": "defaulter",
@@ -296,7 +309,7 @@ def register_push_notice(**kwargs):
     save_push_notification_token(push_token)
 
 
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=True)
 def logout(push_token=None):
     remove_push_notification_token(push_token, True)
     login_manager = LoginManager()

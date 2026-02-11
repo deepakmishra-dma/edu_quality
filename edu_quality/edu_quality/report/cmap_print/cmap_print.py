@@ -5,6 +5,7 @@ import frappe
 from frappe.query_builder.functions import Count, Max
 from frappe.utils import parse_json, today, getdate
 from edu_quality.edu_quality.server_scripts.utils import calculate_strength_previous
+import json
 
 
 def generate_school_fields(program=None):
@@ -16,10 +17,9 @@ def generate_school_fields(program=None):
             ignore_permissions=True,
         )
         schools_set = set([i.get("school") for i in programs])
-        frappe.errprint(programs)
+
         schools = [{"name": i} for i in schools_set]
-        frappe.errprint(schools_set)
-        frappe.errprint(schools)
+
     else:
         schools = frappe.get_list("School")
     school_array = []
@@ -44,10 +44,9 @@ def generate_extra_school_qty(program):
             ignore_permissions=True,
         )
         schools_set = set([i.get("school") for i in programs])
-        frappe.errprint(programs)
+
         schools = [{"name": i} for i in schools_set]
-        frappe.errprint(schools_set)
-        frappe.errprint(schools)
+
     else:
         schools = frappe.get_list("School")
     school_array = []
@@ -67,7 +66,7 @@ def generate_extra_school_qty(program):
 def get_school_fields_sum(row):
     school_fields = generate_school_fields()
     school_fields_to_sum = [school.get("fieldname") for school in school_fields]
-    frappe.errprint(row)
+
     return sum(
         [
             row.get(field, 0) + row.get(f"extra_{field}", 0)
@@ -76,9 +75,19 @@ def get_school_fields_sum(row):
     )
 
 
+@frappe.whitelist()
+def get_extra_fields(filters):
+    filters = json.loads(filters) if isinstance(filters, str) else filters
+    program = filters.get("class")
+    school_fields = generate_school_fields(program)
+    extra_fields = generate_extra_school_qty(program)
+
+    return [*school_fields, *extra_fields]
+
+
 def get_columns(filters):
-    school_fields = generate_school_fields(filters.get("class"))
-    extra_fields = generate_extra_school_qty(filters.get("class"))
+    extra_fields = get_extra_fields(filters)
+
     columns = [
         {
             "fieldname": "period",
@@ -112,7 +121,6 @@ def get_columns(filters):
         #     "fieldtype": "Data",
         #     "width": 50,
         # },
-        *school_fields,
         *extra_fields,
         # {
         #     "fieldname": "extra_qty_per_school",
@@ -262,7 +270,6 @@ def get_data_from_queries(filters=None):
         )
     )
     cmap_data = cmap_query.run(as_dict=True)
-    frappe.errprint(str(cmap_query))
 
     student = frappe.qb.DocType("Student")
     program_enrollment = frappe.qb.DocType("Program Enrollment")
@@ -332,7 +339,6 @@ def get_data_from_queries(filters=None):
     products_rec_data = products_rec_query.run(as_dict=True)
     qty_needed_for_schools = qty_needed_for_schools_query.run(as_dict=True)
 
-    frappe.errprint(qty_needed_for_schools)
     return transform_data(
         qty_needed_for_schools,
         cmap_data,
@@ -343,7 +349,7 @@ def get_data_from_queries(filters=None):
 
 
 def execute(filters=None):
-    frappe.errprint(filters)
+
     columns = get_columns(filters)
 
     data = get_data_from_queries(filters)

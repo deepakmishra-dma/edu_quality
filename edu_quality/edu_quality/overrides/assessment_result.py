@@ -6,6 +6,8 @@ from edu_quality.public.py.utils import extract_year_from_academic_year_name
 from education.education.api import get_assessment_details, get_grade as inner_get_grade
 from frappe.utils import flt
 import education.education
+from pypika.analytics import Rank
+from frappe.query_builder import Order
 
 
 class CustomAssessmentResult(AssessmentResult):
@@ -13,7 +15,9 @@ class CustomAssessmentResult(AssessmentResult):
         # education.education.validate_student_belongs_to_group(
         #     self.student, self.student_group
         # )
-        self.validate_maximum_score()
+        if not self.custom_is_descriptive:
+            self.validate_maximum_score()
+
         if self.custom_scoring_type == "Marks":
             self.validate_grade()
             self.validate_processed_result()
@@ -23,12 +27,29 @@ class CustomAssessmentResult(AssessmentResult):
 
         self.validate_duplicate()
 
+    def validate_grade(self):
+        self.total_score = 0.0
+        if self.maximum_score:
+            for d in self.details:
+                d.grade = get_grade(
+                    self.grading_scale,
+                    (flt(d.score) / (d.maximum_score or 1)) * 100,
+                    d.score,
+                )
+                self.total_score += d.score
+            self.grade = get_grade(
+                self.grading_scale,
+                (self.total_score / (self.maximum_score or 1)) * 100,
+                self.total_score,
+            )
+
     def calculate_scaled_maximum_score(self):
 
         total_scaled_max_score = 0
         for d in self.details:
             d.custom_scale = d.custom_scale or 1
-            total_scaled_max_score += d.maximum_score * d.custom_scale
+            if d.maximum_score:
+                total_scaled_max_score += d.maximum_score * d.custom_scale
         self.custom_scaled_maximum_score = total_scaled_max_score
 
     def duplicate_grades(self):
@@ -44,29 +65,52 @@ class CustomAssessmentResult(AssessmentResult):
         for d in self.details:
             d.custom_scale = d.custom_scale or 1
             d.custom_processed_result = d.score * d.custom_scale
-            d.custom_scaled_maximum_score = d.maximum_score * d.custom_scale
-            d.custom_processed_grade = get_grade(
-                self.grading_scale,
-                (flt(d.custom_processed_result) / d.maximum_score) * 100,
-                self.custom_total_processed_score,
-            )
+            d.custom_scaled_maximum_score = (d.maximum_score or 0) * d.custom_scale
+            if d.maximum_score:
+                d.custom_processed_grade = get_grade(
+                    self.grading_scale,
+                    (flt(d.custom_processed_result) / d.maximum_score) * 100,
+                    d.custom_processed_result,
+                )
+            else:
+                d.custom_processed_grade = get_grade(
+                    self.grading_scale,
+                    flt(d.custom_processed_result),
+                    d.custom_processed_result,
+                )
             self.total_score += d.score
             self.custom_total_processed_score += d.custom_processed_result
             self.custom_scaled_maximum_score += d.custom_scaled_maximum_score
 
-        self.custom_processed_grade = get_grade(
-            self.grading_scale,
-            (self.custom_total_processed_score / self.maximum_score) * 100,
-            self.custom_total_processed_score,
-        )
-        self.grade = get_grade(
-            self.grading_scale,
-            (self.total_score / self.maximum_score) * 100,
-            self.total_score,
-        )
-        self.custom_processed_percentage = (
-            self.custom_total_processed_score / self.maximum_score
-        ) * 100
+        if self.maximum_score:
+            self.custom_processed_grade = get_grade(
+                self.grading_scale,
+                (self.custom_total_processed_score / self.maximum_score) * 100,
+                self.custom_total_processed_score,
+            )
+            self.grade = get_grade(
+                self.grading_scale,
+                (self.total_score / self.maximum_score) * 100,
+                self.total_score,
+            )
+
+            self.custom_processed_percentage = (
+                self.custom_total_processed_score / self.maximum_score
+            ) * 100
+
+        else:
+            self.custom_processed_grade = get_grade(
+                self.grading_scale,
+                self.custom_total_processed_score,
+                self.custom_total_processed_score,
+            )
+
+            self.grade = get_grade(
+                self.grading_scale,
+                self.total_score,
+                self.total_score,
+            )
+
         return self
 
     def validate_processed_result(self):
@@ -75,24 +119,37 @@ class CustomAssessmentResult(AssessmentResult):
         self.process_result()
 
     def calculate_ordering(self):
-        frappe.db.sql(
-            """
-        Update `tabAssessment Result` 
-    INNER JOIN (SELECT 
-        RANK() OVER (ORDER BY custom_total_processed_score DESC) AS ranking,
-        name
-    FROM 
-        `tabAssessment Result`
-    WHERE 
-        assessment_plan = %(id)s
-        AND docstatus = 1 AND custom_scoring_type=%(scoring_type)s) AS ranked_table ON  `tabAssessment Result`.name = ranked_table.name
-SET  `tabAssessment Result`.custom_rank = ranked_table.ranking;
-""",
-            values={"id": self.assessment_plan, "scoring_type": "Marks"},
-            as_dict=True,
+        assess_res_qb = frappe.qb.DocType("Assessment Result")
+        subquery = (
+            assess_res_qb.select(
+                Rank()
+                .over()
+                .orderby(assess_res_qb.custom_total_processed_score, order=Order.desc)
+                .as_("ranking"),
+                assess_res_qb.name,
+            )
+            .where(
+                (assess_res_qb.assessment_plan == self.assessment_plan)
+                & (assess_res_qb.docstatus == 1)
+                & (assess_res_qb.custom_scoring_type == "Marks")
+            )
+            .as_("ranked_table")
         )
+        query = (
+            frappe.qb.from_(assess_res_qb)
+            .inner_join(subquery)
+            .on(self.name == assess_res_qb.name)
+        ).select(subquery.ranking)
+
+        data = query.run(as_dict=True)
+        if data:
+            self.custom_rank = data[0].get("ranking")
+            return self.custom_rank
+        else:
+            None
 
     def before_submit(self, method=None):
+
         if self.custom_scoring_type == "Marks":
             self.process_result()
             assessment_group_doc = frappe.get_doc(
@@ -104,6 +161,8 @@ SET  `tabAssessment Result`.custom_rank = ranked_table.ranking;
                 >= assessment_group_doc.custom_passing_percentage
             ):
                 self.custom_passed = 1
+
+            self.calculate_ordering()
 
 
 def get_grade(grading_scale, percentage, score):

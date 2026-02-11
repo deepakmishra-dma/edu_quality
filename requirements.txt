@@ -2,5 +2,5 @@
 mysql-connector-python
 qrcode
 pymupdf
-pydyf==0.10.0
 autocrop
+pydyf==0.10.0

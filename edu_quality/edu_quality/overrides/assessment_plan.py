@@ -6,8 +6,10 @@ import json
 
 
 class CustomAssessmentPlan(AssessmentPlan):
+
     def before_validate(self, method=None):
         self.assessment_name = name_func(self)
+
         if frappe.db.exists(
             "Assessment Plan",
             {
@@ -17,7 +19,6 @@ class CustomAssessmentPlan(AssessmentPlan):
                 "student_group": self.student_group,
                 "custom_type": self.custom_type,
                 "custom_is_descriptive": self.custom_is_descriptive,
-                "custom_is_remark": self.custom_is_remark,
                 "custom_textbook": ["in", ["ALL", "All", self.custom_textbook]],
                 "name": ["!=", self.name],
                 "docstatus": ["in", [0, 1]],
@@ -29,6 +30,24 @@ class CustomAssessmentPlan(AssessmentPlan):
 
         check_for_duplicates(self)
         check_for_empty_scale(self)
+
+    def validate(self, method=None):
+        self.validate_overlap()
+        if not self.custom_is_descriptive:
+            self.validate_max_score()
+        self.validate_assessment_criteria()
+
+    def validate_max_score(self):
+        max_score = 0
+        for d in self.assessment_criteria:
+            max_score += d.maximum_score
+
+        if self.maximum_assessment_score != max_score:
+            frappe.throw(
+                _("Sum of Scores of Assessment Criteria needs to be {0}.").format(
+                    self.maximum_assessment_score
+                )
+            )
 
     def autoname(self, method=None):
         self.name = name_func(self)
@@ -176,9 +195,11 @@ def get_questions(paper):
 
     exam_paper = frappe.get_doc("Descriptive Exam Paper", paper)
 
-    create_descriptive_criteria()
-    print(exam_paper.questions)
-    questions = [question.question for question in exam_paper.questions]
+    check_and_create_criteria("Descriptive Question")
+
+    questions = [
+        question.question for question in exam_paper.questions if question.selected
+    ]
 
     all_questions = frappe.db.get_all(
         "Descriptive Question",
@@ -196,13 +217,46 @@ def get_questions(paper):
                 "custom_scale": 1,
                 "assessment_criteria": "Descriptive Question",
                 "maximum_score": question.max_marks,
+                "custom_is_question": 1,
             }
         )
     return result
 
 
-def create_descriptive_criteria():
-    if not frappe.db.exists("Assessment Criteria", "Descriptive Question"):
+@frappe.whitelist()
+def get_remarks(template):
+    """Load `remarks` from the database"""
+
+    if not template:
+        return []
+    
+    check_and_create_criteria("Remark")
+
+    remarks = frappe.get_all(
+        "Assessment Remarks Scoring",
+        filters={
+            "parent": template,
+            "parenttype": "Assessment Remarks Template",
+        },
+        fields=["feature"],
+    )
+    result = []
+
+    for remark in remarks:
+        result.append(
+            {
+                "remark": remark.get("feature"),
+                "custom_scale": 1,
+                "assessment_criteria": "Remark",
+                "custom_is_remark": 1,
+                "maximum_score": 0,
+            }
+        )
+    return result
+
+
+def check_and_create_criteria(criteria):
+    if not frappe.db.exists("Assessment Criteria", criteria):
         doc = frappe.new_doc("Assessment Criteria")
-        doc.assessment_criteria = "Descriptive Question"
+        doc.assessment_criteria = criteria
         doc.insert(ignore_permissions=True)

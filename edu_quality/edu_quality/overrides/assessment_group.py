@@ -7,6 +7,7 @@ import csv
 import requests
 from io import StringIO
 from functools import reduce
+from edu_quality.edu_quality.overrides.assessment_plan import get_questions
 
 
 class CustomAssessmentGroup(AssessmentGroup):
@@ -120,17 +121,19 @@ def insert_groups_into_db(bulk_data, headers, total_rows):
                             acad_year,
                             process_pass_or_fail,
                             passing_percentage,
+                            is_kg_exam,
                             report_print_conf,
                             remarks_template_id,
                             composite_exam_id,
                             composite_exam_avg,
+                            kg_exam_paper,
                             config_subject_type,
                             config_subject_name,
                             config_subject_textbook_used,
                             config_subject_allow_reval,
                             marking_mode,
                             grading_scale,
-                        ) = row[:25]
+                        ) = row[:27]
 
                         if name:
                             program_flag = None
@@ -153,6 +156,10 @@ def insert_groups_into_db(bulk_data, headers, total_rows):
                             current_group.parent_assessment_group = (
                                 "All Assessment Groups"
                             )
+                            current_group.custom_remarks_template_id = (
+                                remarks_template_id
+                            )
+
                             current_group.assessment_group_name = name
                             current_group.custom_school = school
                             current_group.custom_program = program
@@ -165,6 +172,7 @@ def insert_groups_into_db(bulk_data, headers, total_rows):
                             current_group.custom_show_in_app = show_in_app
                             current_group.custom_is_composite = is_composite_exam
                             current_group.custom_publish_to_app = publish_to_app
+                            current_group.custom_is_kg_exam = is_kg_exam
                             current_group.custom_is_final_exam_class_photo_required = (
                                 is_final_photo_req
                             )
@@ -201,6 +209,8 @@ def insert_groups_into_db(bulk_data, headers, total_rows):
                                 subj_map,
                                 grading_scale,
                                 marking_mode,
+                                kg_exam_paper,
+                                current_group.custom_is_kg_exam,
                             )
                         progress = idx * 100 // total_rows
                         frappe.realtime.publish_progress(
@@ -248,8 +258,15 @@ def insert_assessment_plan(
     subj_map,
     grading_scale,
     marking_mode,
+    kg_exam_paper,
+    is_kg_exam,
 ):
-    criterias = [subj_map[i] for i in subj_map]
+    questions = []
+    if is_kg_exam:
+        questions = get_questions(kg_exam_paper)
+
+    data = [subj_map[i] for i in subj_map]
+    criterias = [*questions, *data]
 
     for div in divs:
         name = frappe.db.get_value(
@@ -260,6 +277,7 @@ def insert_assessment_plan(
                 "course": subject,
                 "assessment_group": current_group.name,
                 "custom_type": config_subject_type,
+                "custom_is_descriptive": is_kg_exam,
                 "custom_textbook": ["in", ["All", config_subject_textbook_used]],
             },
             "name",
@@ -270,6 +288,7 @@ def insert_assessment_plan(
             assess_plan.student_group = div
             assess_plan.program = program
             assess_plan.custom_scoring_type = marking_mode
+            assess_plan.custom_is_descriptive = is_kg_exam
             assess_plan.custom_type = config_subject_type
             assess_plan.custom_textbook = (
                 "ALL"
@@ -304,6 +323,10 @@ def insert_assessment_plan(
                 assess_plan_cr.custom_scale = float(criteria.get("custom_scale"))
                 assess_plan_cr.custom_include_in_ranking = int(
                     criteria.get("custom_include_in_ranking")
+                )
+                assess_plan_cr.custom_question = criteria.get("custom_question") or None
+                assess_plan_cr.custom_question = (
+                    criteria.get("custom_parent_question") or None
                 )
                 assess_plan_cr.save()
 

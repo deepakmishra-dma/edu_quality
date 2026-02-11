@@ -1,4 +1,13 @@
-import { Box, Button, Stack, Sx, Text, Textarea } from "@mantine/core";
+import {
+  Box,
+  Button,
+  Stack,
+  Sx,
+  Text,
+  Textarea,
+  Tabs,
+  Grid,
+} from "@mantine/core";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import useStudentList from "../components/queries/useStudentList.ts";
@@ -8,6 +17,7 @@ import { IconList } from "@tabler/icons";
 
 import { DatePicker } from "@mantine/dates";
 import useLeaveNote from "../components/queries/useLeaveNoteMutation.ts";
+import usePastLeaveNotes from "../components/queries/usePastLeaveNotes.ts";
 
 const styling: { [key: string]: (color: string) => Sx } = {
   dateSelect: (color: string) => ({
@@ -55,6 +65,12 @@ const LeaveNote = () => {
     error: classError,
     isFetching: classLoading,
   } = useClassDetails(selectedStudent);
+
+  const {
+    data: pastNotes,
+    error: noteError,
+    isFetching: noteLoading,
+  } = usePastLeaveNotes(selectedStudent);
 
   const students = useMemo(
     () => studentsList?.data?.message || [],
@@ -206,156 +222,271 @@ const LeaveNote = () => {
           {classLoading ? "Loading..." : "Not Enrolled in program"}
         </Text>
       ) : (
-        <Box
-          sx={{
-            border: "1px solid " + studentProfileColor + "77",
-            margin: 20,
-            borderRadius: 10,
-          }}
-        >
-          <Stack
-            sx={{
-              borderBottom: "1px solid " + studentProfileColor + "77",
-              padding: "5px 10px",
-              backgroundColor: studentProfileColor + "22",
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
+        <>
+          <Tabs
+            defaultValue="create"
+            styles={{
+              tabsList: {
+                borderBottom: "1px solid " + studentProfileColor + "77",
+                margin: "10px 20px",
+                marginTop: 20,
+                // borderTopLeftRadius: "10px",
+                // borderTopRightRadius: "10px",
+                backgroundColor: studentProfileColor + "22",
+                color: studentProfileColor,
+              },
+              tab: {
+                "&[data-active]": {
+                  borderColor: studentProfileColor,
+                  color: studentProfileColor,
+                },
+              },
             }}
           >
-            <Text
-              sx={{
-                color: studentProfileColor,
-                fontWeight: "bold",
-              }}
-            >
-              {classDetails?.data?.message?.program?.program_name} -{" "}
-              {classDetails?.data?.message?.division?.student_group_name}
-            </Text>
-            {students.find((student) => student.name === selectedStudent)
-              ?.reference_number && (
-              <Text
+            <Tabs.List>
+              <Tabs.Tab value="create">Create</Tabs.Tab>
+              <Tabs.Tab value="past">Past Notes</Tabs.Tab>
+            </Tabs.List>
+
+            <Tabs.Panel value="create">
+              <Box
                 sx={{
-                  borderRadius: 50,
-                  backgroundColor: studentProfileColor + "22",
-                  padding: "1px 5px",
-                  fontSize: 10,
-                  display: "inline-block",
-                  height: "1.4em",
-                  lineHeight: 1.4,
-                  color: studentProfileColor,
-                  fontWeight: "bold",
-                  letterSpacing: 0.5,
-                  textTransform: "uppercase",
+                  border: "1px solid " + studentProfileColor + "77",
+                  margin: 20,
+                  borderRadius: 10,
                 }}
               >
-                {
-                  students.find((student) => student.name === selectedStudent)
-                    ?.reference_number
-                }
-              </Text>
-            )}
-          </Stack>
-          <Box
-            sx={{
-              textAlign: "center",
-            }}
-          >
-            {success ? (
-              <>
-                <Text
+                <Stack
                   sx={{
-                    margin: "20px 0",
-                    color: studentProfileColor,
+                    borderBottom: "1px solid " + studentProfileColor + "77",
+                    padding: "5px 10px",
+                    backgroundColor: studentProfileColor + "22",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
                   }}
                 >
-                  Note is saved successfully
-                </Text>
-              </>
-            ) : (
-              <>
-                <DatePicker
-                  placeholder="Pick date"
-                  label="From"
-                  value={fromDate}
-                  onChange={(date) => {
-                    setFromDate(date);
-                  }}
-                  sx={styling.dateSelect(studentProfileColor)}
-                  icon={<IconList color={studentProfileColor} stroke={1} />}
-                />
-                <DatePicker
-                  placeholder="Pick date"
-                  label="To"
-                  value={toDate}
-                  minDate={fromDate || undefined}
-                  onChange={(date) => {
-                    setToDate(date);
-                  }}
-                  sx={styling.dateSelect(studentProfileColor)}
-                  icon={<IconList color={studentProfileColor} stroke={1} />}
-                />
-                <Textarea
-                  placeholder="Your Note (max 140 characters)"
-                  label="Your Note"
-                  maxLength={140}
-                  value={note}
-                  onChange={(event) => setNote(event.currentTarget.value)}
-                  withAsterisk
-                  sx={{
-                    margin: 10,
-                    textAlign: "left",
-                    ".mantine-Textarea-label": {
+                  <Text
+                    sx={{
                       color: studentProfileColor,
-                    },
-                    ".mantine-Input-input": {
-                      minHeight: 150,
-                      color: studentProfileColor,
-                      padding: 5,
-                      ":focus": {
-                        border: `1px solid ${studentProfileColor}`,
-                      },
-                    },
-                  }}
-                />
-                <Button
-                  loading={isLoading}
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {classDetails?.data?.message?.program?.program_name} -{" "}
+                    {classDetails?.data?.message?.division?.student_group_name}
+                  </Text>
+                  {students.find((student) => student.name === selectedStudent)
+                    ?.reference_number && (
+                    <Text
+                      sx={{
+                        borderRadius: 50,
+                        backgroundColor: studentProfileColor + "22",
+                        padding: "1px 5px",
+                        fontSize: 10,
+                        display: "inline-block",
+                        height: "1.4em",
+                        lineHeight: 1.4,
+                        color: studentProfileColor,
+                        fontWeight: "bold",
+                        letterSpacing: 0.5,
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      {
+                        students.find(
+                          (student) => student.name === selectedStudent
+                        )?.reference_number
+                      }
+                    </Text>
+                  )}
+                </Stack>
+                <Box
                   sx={{
-                    marginBottom: 10,
-                    marginTop: 10,
-                    borderRadius: 10,
-                    backgroundColor: studentProfileColor,
-                  }}
-                  onClick={() => {
-                    if (!fromDate || !toDate || !note || !sickLeave) return;
-                    const dates = [];
-                    const from = new Date(fromDate);
-                    const to = new Date(toDate);
-                    const delay = new Date().getTimezoneOffset();
-                    // to get local formatted string from iso string
-                    from.setMinutes(from.getMinutes() - delay);
-                    to.setMinutes(to.getMinutes() - delay);
-                    console.log();
-                    for (let i = from; i <= to; i.setDate(i.getDate() + 1)) {
-                      dates.push(i.toISOString().split("T")[0]);
-                    }
-                    mutateAsync({
-                      student: selectedStudent,
-                      dates: dates,
-                      note: note,
-                      status: sickLeave,
-                    }).then(() => {
-                      clearForm();
-                      setSuccess(true);
-                    });
+                    textAlign: "center",
                   }}
                 >
-                  Save
-                </Button>
-              </>
-            )}
-          </Box>
-        </Box>
+                  {success ? (
+                    <>
+                      <Text
+                        sx={{
+                          margin: "20px 0",
+                          color: studentProfileColor,
+                        }}
+                      >
+                        Note is saved successfully
+                      </Text>
+                    </>
+                  ) : (
+                    <>
+                      <DatePicker
+                        placeholder="Pick date"
+                        label="From"
+                        value={fromDate}
+                        onChange={(date) => {
+                          setFromDate(date);
+                        }}
+                        sx={styling.dateSelect(studentProfileColor)}
+                        icon={
+                          <IconList color={studentProfileColor} stroke={1} />
+                        }
+                      />
+                      <DatePicker
+                        placeholder="Pick date"
+                        label="To"
+                        value={toDate}
+                        minDate={fromDate || undefined}
+                        onChange={(date) => {
+                          setToDate(date);
+                        }}
+                        sx={styling.dateSelect(studentProfileColor)}
+                        icon={
+                          <IconList color={studentProfileColor} stroke={1} />
+                        }
+                      />
+                      <Textarea
+                        placeholder="Your Note (max 140 characters)"
+                        label="Your Note"
+                        maxLength={140}
+                        value={note}
+                        onChange={(event) => setNote(event.currentTarget.value)}
+                        withAsterisk
+                        sx={{
+                          margin: 10,
+                          textAlign: "left",
+                          ".mantine-Textarea-label": {
+                            color: studentProfileColor,
+                          },
+                          ".mantine-Input-input": {
+                            minHeight: 150,
+                            color: studentProfileColor,
+                            padding: 5,
+                            ":focus": {
+                              border: `1px solid ${studentProfileColor}`,
+                            },
+                          },
+                        }}
+                      />
+                      <Button
+                        loading={isLoading}
+                        sx={{
+                          marginBottom: 10,
+                          marginTop: 10,
+                          borderRadius: 10,
+                          backgroundColor: studentProfileColor,
+                        }}
+                        onClick={() => {
+                          if (!fromDate || !toDate || !note || !sickLeave)
+                            return;
+                          const dates = [];
+                          const from = new Date(fromDate);
+                          const to = new Date(toDate);
+                          const delay = new Date().getTimezoneOffset();
+                          // to get local formatted string from iso string
+                          from.setMinutes(from.getMinutes() - delay);
+                          to.setMinutes(to.getMinutes() - delay);
+                          console.log();
+                          for (
+                            let i = from;
+                            i <= to;
+                            i.setDate(i.getDate() + 1)
+                          ) {
+                            dates.push(i.toISOString().split("T")[0]);
+                          }
+                          mutateAsync({
+                            student: selectedStudent,
+                            dates: dates,
+                            note: note,
+                            status: sickLeave,
+                          }).then(() => {
+                            clearForm();
+                            setSuccess(true);
+                          });
+                        }}
+                      >
+                        Save
+                      </Button>
+                    </>
+                  )}
+                </Box>
+              </Box>
+            </Tabs.Panel>
+
+            <Tabs.Panel value="past">
+              <Box
+                sx={{
+                  border: "1px solid " + studentProfileColor + "77",
+                  margin: 20,
+                  borderRadius: 10,
+                }}
+              >
+                <Stack
+                  sx={{
+                    borderBottom: "1px solid " + studentProfileColor + "77",
+                    padding: "5px 10px",
+                    backgroundColor: studentProfileColor + "22",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Text
+                    sx={{
+                      color: studentProfileColor,
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {classDetails?.data?.message?.program?.program_name} -{" "}
+                    {classDetails?.data?.message?.division?.student_group_name}
+                  </Text>
+                  {students.find((student) => student.name === selectedStudent)
+                    ?.reference_number && (
+                    <Text
+                      sx={{
+                        borderRadius: 50,
+                        backgroundColor: studentProfileColor + "22",
+                        padding: "1px 5px",
+                        fontSize: 10,
+                        display: "inline-block",
+                        height: "1.4em",
+                        lineHeight: 1.4,
+                        color: studentProfileColor,
+                        fontWeight: "bold",
+                        letterSpacing: 0.5,
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      {
+                        students.find(
+                          (student) => student.name === selectedStudent
+                        )?.reference_number
+                      }
+                    </Text>
+                  )}
+                </Stack>
+                <Box
+                  sx={{
+                    textAlign: "center",
+                  }}
+                >
+                  {!noteError &&
+                    !noteLoading &&
+                    pastNotes &&
+                    pastNotes.data.message &&
+                    pastNotes.data.message.map((pastNote) => (
+                      <Grid>
+                        <Grid.Col span={6} py={12}>
+                          <Text size={"sm"}> {pastNote.date}</Text>
+                        </Grid.Col>
+                        <Grid.Col span={6} py={12}>
+                          <Text size={"sm"}>{pastNote.reason}</Text>
+                        </Grid.Col>
+                      </Grid>
+                    ))}
+                </Box>
+              </Box>
+            </Tabs.Panel>
+          </Tabs>
+        </>
       )}
     </Box>
   );
