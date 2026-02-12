@@ -220,7 +220,7 @@ def mark_as_read(notice, student, read=True):
 def get_notice_by_id(id, student=None):
     user = frappe.session.user
     guardian = frappe.get_cached_doc("Guardian", {"user": user})
-    if is_defaulter(guardian.name, True):
+    if is_disabled(guardian.name, True):
         return {
             "success": False,
             "data": [],
