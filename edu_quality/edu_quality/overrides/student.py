@@ -10,6 +10,8 @@ from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
 )
 from frappe.desk.query_report import run
 
+from edu_quality.edu_quality.server_scripts.utils import current_academic_year
+
 class CustomStudent(Student):
     def autoname(self):
         school_prefixes = {
@@ -142,7 +144,35 @@ class CustomStudent(Student):
     @frappe.whitelist()
     def validate_bank_account(self):
         return frappe.db.exists("Bank Account", {"party": self.name})
+    
 
+    @frappe.whitelist()
+    def update_student_name(self,student_name):
+        student_name = student_name.split()
+        if len(student_name)<2: 
+            frappe.throw("Student Last Name is Mandatory!")
+        if len(student_name)> 3:
+            frappe.throw("Student Name should be in the format : First Name Middle Name Last Name")
+        self.first_name = student_name[0]
+        if len(student_name)> 2:
+            self.middle_name = student_name[1]
+        self.last_name = student_name[-1]
+        self.student_name = student_name
+        self.save(ignore_permissions=True)
+        self.update_name_in_linked_docs()
+
+    def update_name_in_linked_docs(self):
+        ac_yr = current_academic_year()
+        #fees
+        if frappe.db.exists("Fees",{'academic_year':ac_yr,'student':self.name,'docstatus':1}):
+            frappe.db.set_value("Fees",{'academic_year':ac_yr,'student':self.name,'docstatus':1},'student_name',self.student_name)
+        #program_enrollment
+        if frappe.db.exists("Program Enrollment",{'student':self.name,'academic_year':ac_yr,'docstatus':1}):
+            frappe.db.set_value("Program Enrollment",{'student':self.name,'academic_year':ac_yr,'docstatus':1},'student_name',self.student_name)
+        #receipts
+        if frappe.db.exists("Payment Entry",{'party':self.name,'docstatus':1}):
+            frappe.db.set_value("Payment Entry",{'party':self.name,'docstatus':1},'party_name',self.student_name)
+    
 
     @frappe.whitelist()
     def cancel_student(self,academic_year,fee_collection):
