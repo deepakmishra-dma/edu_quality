@@ -1,0 +1,29 @@
+{% extends "templates/web.html" %}
+
+{% block title %}{{ _("Web Form Not Available") }}{% endblock %}
+
+{% block page_content %}
+<div class="page-card">
+    <div class="page-card-head">
+        <span class="indicator orange">
+            {{ _("Web Form Not Available") }}
+        </span>
+    </div>
+    <p>{{ _("The form is not available at the moment.") }}</p>
+    {% if starts_on > frappe.utils.now_datetime() %}
+        <p>
+            {{ _("The form will start on") }} 
+            {{ frappe.utils.format_datetime(starts_on, "dd-MM-yyyy hh:mm a") }} 
+        </p>
+    {% endif %}
+    {% if expires_on < frappe.utils.now_datetime() %}
+        <p>
+            {{ _("The form has expired on") }} 
+            {{ frappe.utils.format_datetime(expires_on, "dd-MM-yyyy hh:mm a") }}.
+        </p>
+    {% endif %}
+</div>
+<style>
+    {% include "templates/styles/card_style.css" %}
+</style>
+{% endblock %}
