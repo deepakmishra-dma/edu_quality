@@ -15,5 +15,5 @@ def validate(doc, method=None):
     student = frappe.get_value("Student", filters)
     if student:
         student_email_id = frappe.get_value("Student", doc.party, "student_email_id")
-        frappe.set_value("Student", doc.party, "student_status", "Current student")
+        frappe.db.set_value("Student", doc.party, "student_status", "Current student")
         unsuspend_google_user(student_email_id)
