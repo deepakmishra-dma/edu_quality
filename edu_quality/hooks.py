@@ -381,3 +381,8 @@ website_route_rules = [
     {"from_route": "/walsh/<path:app_path>", "to_route": "walsh"},
     {"from_route": "/ui/<path:app_path>", "to_route": "ui"},
 ]
+
+
+page_renderer = [
+    "edu_quality.edu_quality.page_renderers.web_form.WebFormPage",
+]
