@@ -1,5 +1,14 @@
 frappe.ui.form.on('Employee', {
     refresh: async function (frm) {
+        frm.set_query("school", function () {
+            return {
+                "filters": {
+                    "institution": frm.doc.company,
+
+
+                }
+            };
+        })
         if (frm.doc.status == "Active") {
             frm.add_custom_button(__('Mark Ex Employee'), function () {
                 frappe.confirm(
@@ -30,7 +39,7 @@ frappe.ui.form.on('Employee', {
             });
         }
         if (frm.doc.status == "Left" && frm.doc.is_migrated == 0) {
-            let school = await frappe.db.get_value('Instructor', {employee: frm.doc.name}, 'custom_school');
+            let school = await frappe.db.get_value('Instructor', { employee: frm.doc.name }, 'custom_school');
             frm.add_custom_button(__('Migrate Data'), function () {
                 let d = new frappe.ui.Dialog({
                     title: 'Migrate Instructor Data to Another Instructor',
