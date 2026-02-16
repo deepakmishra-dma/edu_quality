@@ -172,7 +172,7 @@ export const Results = () => {
         printFormatMode == "result"
           ? assessmentGroupData?.data?.data.custom_print_configuration
           : assessmentGroupData?.data?.data.result_print_format;
-      console.log(printFormat, "aas");
+ 
       if (!printFormat) {
         setError("No Result Format");
         throw new Error("No Result Format");
@@ -486,8 +486,8 @@ export const Results = () => {
               }}
             >
               <Tabs.List>
-                <Tabs.Tab value="result">Marks</Tabs.Tab>
-                <Tabs.Tab value="marks">Results</Tabs.Tab>
+                <Tabs.Tab value="marks">Marks</Tabs.Tab>
+                <Tabs.Tab value="result">Results</Tabs.Tab>
               </Tabs.List>
             </Tabs>
           ) : null}
