@@ -122,6 +122,7 @@ def on_update(doc, method=None):
     old_doc = doc.get_doc_before_save()
     if (
         doc.custom_is_cmap
+        and old_doc
         and doc.is_test
         and doc.custom_product_url
         and old_doc.custom_product_url != doc.custom_product_url
