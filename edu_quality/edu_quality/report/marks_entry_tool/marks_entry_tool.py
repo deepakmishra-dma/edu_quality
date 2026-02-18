@@ -195,7 +195,7 @@ def gen_desc_field_name(student):
 
 
 def gen_desc_ques_field(data):
-    return f"{data.get('assessment-plan')} {data.get('question')} {data.get('assessment_criteria')}"
+    return f"{data.get('assessment_plan')} {data.get('question')}"
 
 
 def gen_field_name(assess_plan, is_extra=False):
@@ -256,6 +256,7 @@ def get_desc_questions(asess_plans_query):
             desc_exam_ques_qb.max_marks,
             desc_exam_ques_qb.min_marks,
             assess_plan_cr_qb.assessment_criteria,
+            assess_plan_cr_qb.custom_order,
             assess_plan_cr_qb.custom_parent_question.as_("parent_question"),
         )
     )
@@ -333,7 +334,7 @@ def get_remarks_earlier_marks(filters, students):
     return [question for question in questions_hash.values()]
 
 
-def get_desc_earlier_marks(filters, students):
+def get_desc_earlier_marks(filters, students, return_hash=False):
     assessment_group = filters.get("assessment_group")
 
     assess_plan_qb = frappe.qb.DocType("Assessment Plan")
@@ -378,6 +379,9 @@ def get_desc_earlier_marks(filters, students):
             assess_res_de_qb.assessment_criteria,
             assess_res_de_qb.custom_parent_question.as_("parent_question"),
             assess_res_de_qb.custom_is_absent,
+            assess_res_de_qb.custom_order,
+            assess_res_de_qb.custom_online_assessment,
+            assess_res_qb.docstatus,
             assess_res_de_qb.grade,
         )
     )
@@ -391,15 +395,22 @@ def get_desc_earlier_marks(filters, students):
         assess_plan = question.get("assessment_plan")
         parent_question = question.get("parent_question")
         question_name = question.get("question_name")
+        order = question.get("custom_order")
         subject = question.get("course")
-        if gen_desc_ques_field(question) not in questions_hash:
-            questions_hash[gen_desc_ques_field(question)] = {
+        question_field_id = gen_desc_ques_field(question)
+        docstatus = question.get("docstatus")
+        oa = question.get("custom_online_assessment")
+        if question_field_id not in questions_hash:
+            questions_hash[question_field_id] = {
                 "question": question_id,
                 "assessment_plan": assess_plan,
                 "question_name": question_name,
                 "parent_question": parent_question,
+                "order": order,
                 "subject": subject,
                 "assessment_criteria": criteria,
+                "docstatus": docstatus or 0,
+                "online_assess": oa or 0,
             }
 
     for question in data:
@@ -408,22 +419,32 @@ def get_desc_earlier_marks(filters, students):
         assess_plan = question.get("assessment_plan")
         student = question.get("student")
         question_name = question.get("question_name")
+        order = question.get("custom_order")
         score = question.get("score")
         is_absent = question.get("custom_is_absent")
         scoring_type = question.get("custom_scoring_type")
         grade = question.get("grade")
         parent_question = question.get("parent_question")
 
-        if gen_desc_ques_field(question) in questions_hash:
-            questions_hash[gen_desc_ques_field(question)] = {
-                **questions_hash[gen_desc_ques_field(question)],
+        question_field_id = gen_desc_ques_field(question)
+        docstatus = question.get("docstatus")
+        oa = question.get("custom_online_assessment")
+        if question_field_id in questions_hash:
+            questions_hash[question_field_id] = {
+                **questions_hash[question_field_id],
                 "question": question_id,
                 "assessment_plan": assess_plan,
                 "parent_question": parent_question,
                 "assessment_criteria": criteria,
+                "order": order,
+                "question_field_id": question_field_id,
                 "question_name": question_name,
                 student: parse_score(is_absent, scoring_type, score, grade),
+                "docstatus": docstatus or 0,
+                "online_assess": oa or 0,
             }
+    if return_hash:
+        return questions_hash
 
     return [question for question in questions_hash.values()]
 
@@ -597,13 +618,24 @@ def enter_remark_mark(ref_no, assessment_group, remark_data):
     remark_result.save()
 
 
-def enter_column_wise_mark(data, hashed_columns):
+def enter_column_wise_mark(data, hashed_columns, filters):
     student_data = {}
+    student_list = hashed_columns.keys() or []
+    students = [{"ref_no": student for student in student_list}]
 
+    earlier_questions = get_desc_earlier_marks(filters, students, return_hash=True)
+    print(earlier_questions)
     for datum in data:
         assessment_plan = datum.get("assessment_plan")
         question = datum.get("question")
         parent_question = datum.get("parent_question")
+        ques_field_id = gen_desc_ques_field(
+            {
+                "question": question,
+                "parent_question": parent_question,
+                "assessment_plan": assessment_plan,
+            }
+        )
         for student in hashed_columns:
             if student in datum:
                 criteria = {
@@ -612,6 +644,9 @@ def enter_column_wise_mark(data, hashed_columns):
                         "value": get_field_value(datum, student),
                         "custom_question": question,
                         "custom_parent_question": parent_question,
+                        "custom_order": earlier_questions.get(ques_field_id, {}).get(
+                            "order", 0
+                        ),
                     },
                     "assessment_plan": assessment_plan,
                 }
@@ -650,7 +685,7 @@ def do_mark_entry(data, filters):
     elif filters.get("remarks"):
         enter_remark(data, hashed_columns, filters)
     else:
-        enter_column_wise_mark(data, hashed_columns)
+        enter_column_wise_mark(data, hashed_columns, filters)
 
 
 def enter_marks(ref_no, criterias):
@@ -760,6 +795,7 @@ def add_assessment_criteria(
     online_assessment = assessment_criteria.get("custom_online_assessment")
     question = assessment_criteria.get("custom_question")
     parent_question = assessment_criteria.get("custom_parent_question")
+    order = assessment_criteria.get("custom_order") or 0
 
     if str(score).lower() == "-" or score == None:
         score = 0
@@ -771,6 +807,7 @@ def add_assessment_criteria(
             {
                 "remark": remark,
                 "score": flt(score) or 0,
+                "custom_order": order,
             },
             False,
             is_remarks,
@@ -784,6 +821,7 @@ def add_assessment_criteria(
                 "custom_question": question,
                 "custom_parent_question": parent_question,
                 "custom_is_absent": is_absent,
+                "custom_order": order,
             },
             is_descriptive,
         )
@@ -797,6 +835,7 @@ def add_assessment_criteria(
                 "custom_scale": scale,
                 "custom_is_absent": is_absent,
                 "custom_online_assessment": online_assessment,
+                "custom_order": order,
             },
         )
 
@@ -811,6 +850,7 @@ def add_assessment_criteria(
                 "grade": str(score).upper(),
                 "custom_processed_grade": str(score).upper(),
                 "custom_online_assessment": online_assessment,
+                "custom_order": order,
             },
         )
 

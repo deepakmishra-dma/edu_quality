@@ -176,8 +176,9 @@ function formatter(value, row, column, data, defaultFormatter) {
 
 	value = defaultFormatter(value, row, column, data);
 	const values = data[column.fieldname + "_is_extra"]
-	const docstatus = values && values.docstatus
-	const onlineAssess = values && values.online_assess
+	
+	const docstatus = (values && values.docstatus) || data.docstatus
+	const onlineAssess = (values && values.online_assess) || data.online_assess
 
 	if (column.is_criteria) {
 		value = createInputElement(value, column, row, docstatus, onlineAssess);

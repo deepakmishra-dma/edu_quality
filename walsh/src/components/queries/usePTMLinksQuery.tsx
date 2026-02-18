@@ -35,6 +35,7 @@ export const useofflinePTMLinksQuery = (custom_school: string | undefined) => {
         errorNotification: undefined,
         method: "get",
         queryOptions: {
+            enabled:!!custom_school,
             queryKey: ["offlinePTMList", custom_school],
         },
         successNotification: undefined,

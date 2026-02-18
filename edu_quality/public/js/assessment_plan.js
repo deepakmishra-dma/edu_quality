@@ -3,6 +3,12 @@ frappe.ui.form.on('Assessment Plan', {
         get_textbooks(frm)
     },
     refresh: function (frm) {
+        frm.set_intro(`
+            <p class="text-dark my-0">
+            Please cancel and create a new plan to be able to add new questions or change order
+                </p>
+          
+          `, 'blue')
         frm.set_df_property('custom_remarks', 'cannot_add_rows', true);
         frm.set_df_property('custom_remarks', 'cannot_delete_rows', true);
         addFromDescriptiveExam(frm)
@@ -98,7 +104,7 @@ frappe.ui.form.on("Assessment Plan Criteria", {
 })
 
 function addFromDescriptiveExam(frm) {
-    if (!frm.doc.custom_is_descriptive) { return }
+    if (!frm.doc.custom_is_descriptive || frm.doc.docstatus !== 0) { return }
 
     const title = "Select an Exam Paper";
     const dialogFields = [
