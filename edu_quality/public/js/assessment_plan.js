@@ -109,7 +109,7 @@ function addFromDescriptiveExam(frm) {
     const title = "Select an Exam Paper";
     const dialogFields = [
         {
-            "fieldname": "exam",
+            "fieldname": "paper",
             "label": __("Exam"),
             "fieldtype": "Link",
             "reqd": 1,
@@ -173,6 +173,7 @@ function addFromTemplate(frm, title, dialogFields, method, fieldName, buttonLabe
                                 }
                             });
                             frm.refresh_field('assessment_criteria');
+                            d.hide()
                         }
                     }
                 },

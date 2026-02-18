@@ -200,7 +200,11 @@ def get_questions(paper):
     questions = [
         question.question for question in exam_paper.questions if question.selected
     ]
-
+    question_order_hash = {
+        question.question: question.order
+        for question in exam_paper.questions
+        if question.selected
+    }
     all_questions = frappe.db.get_all(
         "Descriptive Question",
         filters={"name": ["in", questions]},
@@ -218,6 +222,7 @@ def get_questions(paper):
                 "assessment_criteria": "Descriptive Question",
                 "maximum_score": question.max_marks,
                 "custom_is_question": 1,
+                "custom_order": question_order_hash.get(question.name, 0),
             }
         )
     return result
@@ -229,7 +234,7 @@ def get_remarks(template):
 
     if not template:
         return []
-    
+
     check_and_create_criteria("Remark")
 
     remarks = frappe.get_all(
