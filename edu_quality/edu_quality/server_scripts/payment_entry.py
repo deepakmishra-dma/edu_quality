@@ -12,8 +12,11 @@ def validate(doc, method=None):
         "name": doc.party,
         "student_status": "Defaulter"
     }
-    student = frappe.get_value("Student", filters)
+    student = frappe.get_value("Student", filters, ["name", "student_email_id"], as_dict=True)
     if student:
-        student_email_id = frappe.get_value("Student", doc.party, "student_email_id")
-        frappe.db.set_value("Student", doc.party, "student_status", "Current student")
-        unsuspend_google_user(student_email_id)
+        to_update = {
+            "student_status": "Current student",
+            "enabled": 1
+        }
+        frappe.db.set_value("Student", student.name, to_update)
+        unsuspend_google_user(student.student_email_id)
