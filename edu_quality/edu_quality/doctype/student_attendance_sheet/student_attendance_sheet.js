@@ -25,6 +25,7 @@ frappe.ui.form.on("Student Attendance Sheet", {
   },
   refresh(frm) {
     frm.disable_save();
+    showSubmitBtn()
     const currentYear = new Date().getFullYear().toString();
     const nextYear = (parseInt(currentYear) + 1).toString();
     const academicYear = `${currentYear}-${nextYear}`;
@@ -414,11 +415,11 @@ function getCurrentMonthName() {
 }
 
 function showSubmitBtn(showSubmitBtn) {
-  if (showSubmitBtn) {
-    globalFrm.page.add_inner_button(__("Submit"), checkAttendance);
-  } else {
-    globalFrm.page.remove_inner_button(__("Submit"));
-  }
+
+  globalFrm.page.add_inner_button(__("Submit"), checkAttendance);
+
+
+
 }
 
 function infoTable() {

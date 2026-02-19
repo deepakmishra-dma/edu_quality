@@ -51,7 +51,7 @@ def get_students(
         filters={
             "student_group": division,
             "program": program,
-            "docstatus":1,
+            "docstatus": 1,
             "custom_status": ["in", ["Current student", "Defaulter"]],
         },
         fields=[
@@ -106,12 +106,12 @@ def get_data(month_name, academic_year, program, division):
 
         student_days = [{day: "H" if day in holidays else ""} for day in day_numbers]
         result[student["reference_number"]] = student_days
-    first_letter_division = division[0].upper() if division else ''
+    first_letter_division = division[0].upper() if division else ""
     attendance_data = frappe.get_all(
         "Attendance Entry",
         filters={
             "class": program,
-            "division": ["in",[division,first_letter_division]],
+            "division": ["in", [division, first_letter_division]],
             "date": ["between", [start_date, end_date]],
             "status": ["!=", "Holiday"],
             "docstatus": ["in", [0, 1]],
@@ -241,7 +241,23 @@ def submit_attendance(**data):
         },
         fields=["date", "name", "student"],
     )
-
+    frappe.logger("Testerr").exception(
+        Exception(
+            str(
+                [
+                    month_name,
+                    academic_year,
+                    month,
+                    year,
+                    program,
+                    division,
+                    start_date,
+                    end_date,
+                    attendance_entries,
+                ]
+            )
+        )
+    )
     for entry in attendance_entries:
         attendance_entry = frappe.get_doc(
             "Attendance Entry",
@@ -284,10 +300,17 @@ def submit_attendance(**data):
                 filters={
                     "student": student,
                     "date": date,
-                    "docstatus": 1,  # Check for already submitted entries
+                    "docstatus": ["in", [0, 1]],  # Check for already submitted entries
                 },
                 fields=["name"],
             )
+            for exist in existing_entry:
+                doc = frappe.get_doc("Attendance Entry", exist)
+                if doc.docstatus == 1:
+                    continue
+                doc.status = "Present"
+                doc.save()
+                doc.submit()
 
             if not existing_entry:
                 new_entry = frappe.get_doc(
@@ -410,9 +433,7 @@ def generate(**kwargs):
             elif "value=S" in row:
                 rows[index] = row.replace("value=S", "value= ")
 
-
         update_tables_with_qr_code(tables)
-
 
         template = frappe.render_template(
             "edu_quality/templates/pdf/student_attendance_sheet.html",
