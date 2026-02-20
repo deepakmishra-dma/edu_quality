@@ -15,5 +15,12 @@ frappe.query_reports["Portion Circular"] = {
 			"options": [1, 2, 3, 4],
 			"reqd": 1,
 		},
+		, {
+			"fieldname": "subject",
+			"label": __("Subject"),
+			"fieldtype": "Link",
+			"options": "Course",
+
+		},
 	]
 };

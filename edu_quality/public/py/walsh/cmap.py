@@ -172,7 +172,6 @@ def get_portion_circulars(unit, division):
     payload = {"unit": unit, "division": division}
     data = get_data(payload)
     subject_hash = {}
-    item_hash = item_url_hash_from_portion_data(data)
     for i in data:
         subject = i["subject"]
         textbook = i["textbook"]
@@ -180,11 +179,7 @@ def get_portion_circulars(unit, division):
         item_names = i["item_names"].split(",") or []
         item_urls = i["item_urls"].split(",") or []
         products = i["products"]
-        for j in range(len(products)):
-            product = products[j].get("name")
-            url = products[j].get("url")
-            if url and item_hash[product] != url:
-                products[j]["url"] = url
+
 
         if subject not in subject_hash:
             subject_hash[subject] = {textbook: {chapter: [i]}}
@@ -203,25 +198,4 @@ def get_portion_circulars(unit, division):
     return subject_hash
 
 
-def item_url_hash_from_portion_data(data):
-    all_item_names = []
-    for i in data:
-        item_names = i["item_names"].split(",") or []
-        all_item_names.extend(item_names)
-    item_qb = frappe.qb.DocType("Item")
-    query = (
-        frappe.qb.from_(item_qb)
-        .where((item_qb.name.isin(all_item_names or [None])))
-        .select("name", "custom_product_url")
-    )
 
-    result = query.run(as_dict=True)
-    result_hash = {}
-    for item in result:
-        name = item.get("name")
-        custom_product_url = item.get("custom_product_url")
-        if name not in result_hash:
-            result_hash[name] = custom_product_url
-        else:
-            continue
-    return result_hash

@@ -87,7 +87,7 @@ class CMAP(Document):
         )
 
         self.item_code_field = ", ".join(
-            str(item.get("item", "")) or "" for item in self.products or [""]
+            (str(item.get("item", "")) or "" for item in self.products) or [""]
         )
 
     def validate(self, method=None):
@@ -105,7 +105,9 @@ class CMAP(Document):
 
     def after_insert(self, method=None):
         # self.name_func()
-        insert_cmap_assignees(self)
+        if self.reserved_for_portion_circular:
+            insert_cmap_assignees(self)
+        insert_cmap_instructor_assignees(self)
 
     def on_update(self, method=None):
         # old_doc = self.get_doc_before_save()
@@ -118,6 +120,29 @@ class CMAP(Document):
 
 
 def insert_cmap_assignees(self):
+    program_name = self.get("class")
+
+    program_names = frappe.db.get_all("Program", filters={"program_name": program_name})
+    program_list = [program.get("name") for program in program_names]
+
+    divisions = frappe.db.get_all(
+        "Student Group",
+        filters={"academic_year": self.academic_year, "program": ["in", program_list]},
+        fields=["name", "custom_school"],
+    )
+    for i in divisions:
+        self.append(
+            "table_vwbr",
+            {
+                "school": i.get("custom_school"),
+                "division": i.get("name"),
+            },
+        )
+
+        self.table_vwbr = get_unique_cmap_assignees(self.table_vwbr)
+
+
+def insert_cmap_instructor_assignees(self):
     instructors = frappe.db.get_list(
         "Instructor Log",
         filters=[
@@ -195,7 +220,7 @@ def get_unique_cmap_assignees(data_list):
     unique_items = []
 
     for item in data_list:
-        combination = (item.get("school"), item.get("division"), item.get("teacher"))
+        combination = (item.get("school"), item.get("division"))
 
         if combination not in unique_combinations:
             unique_combinations.add(combination)
