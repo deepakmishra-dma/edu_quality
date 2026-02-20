@@ -103,11 +103,11 @@ class CMAP(Document):
                     frappe.throw(f"{mandate} is required for product at row {idx}")
             idx += 1
 
-    def after_insert(self, method=None):
-        # self.name_func()
-        if self.reserved_for_portion_circular:
-            insert_cmap_assignees(self)
-        insert_cmap_instructor_assignees(self)
+    def before_validate(self, method=None):
+        if self.get("__islocal"):
+            if self.reserved_for_portion_circular:
+                insert_cmap_assignees(self)
+            insert_cmap_instructor_assignees(self)
 
     def on_update(self, method=None):
         # old_doc = self.get_doc_before_save()
