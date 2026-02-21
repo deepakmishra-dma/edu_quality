@@ -5,6 +5,7 @@
 import frappe
 from edu_quality.public.py.utils import to_snake_case
 import json
+import frappe.realtime
 from frappe.utils import flt
 from edu_quality.public.py.utils import get_div_students as get_div_stud
 from frappe.model.mapper import get_mapped_doc
@@ -541,10 +542,13 @@ def execute(filters=None):
     return all_columns, data
 
 
-def assessment_mark_entry(data, hashed_columns, mode):
+def assessment_mark_entry(data, hashed_columns, mode, ref_no_dict={}):
     for row in data:
         assessment_details = []
         ref_no = row.get("ref_no")
+
+        if ref_no not in ref_no_dict:
+            frappe.throw(f"Ref No {ref_no} not in the specified division")
 
         for column in hashed_columns:
             column_data = hashed_columns[column]
@@ -671,7 +675,12 @@ def do_mark_entry(data, filters):
     data = json.loads(data) if isinstance(data, str) else data
     filters = json.loads(filters) if isinstance(filters, str) else filters
     mode = filters.get("mode")
+    single_ref_no = filters.get("ref_no")
+    division = filters.get("division")
     columns = get_columns(filters.get("assessment_group"), filters)
+
+    students = get_div_students(division, mode, single_ref_no)
+    ref_no_set = {student.get("ref_no") for student in students}
 
     # get all the columns which should belong to the report with specified filter
     hashed_columns = gen_hash(columns)
@@ -681,7 +690,7 @@ def do_mark_entry(data, filters):
     )
 
     if not assessment_group_doc.custom_is_kg_exam and not filters.get("remarks"):
-        assessment_mark_entry(data, hashed_columns, mode)
+        assessment_mark_entry(data, hashed_columns, mode, ref_no_set)
     elif filters.get("remarks"):
         enter_remark(data, hashed_columns, filters)
     else:
@@ -896,6 +905,19 @@ def gen_hash(columns):
 
 def cancel_result(assess_plan, ref_no, filters):
     """Cancel an existing result document and amend and create new one and put in draft state"""
+    asses_group_res = frappe.db.exists(
+        "Assessment Group Result",
+        {
+            "assessment_group": filters.get("assessment_group"),
+            "student": ref_no,
+            "docstatus": 1,
+        },
+    )
+
+    if asses_group_res:
+        res_g_doc = frappe.get_doc("Assessment Group Result", asses_group_res)
+        if res_g_doc:
+            res_g_doc.cancel()
 
     program = filters.get("program")
     academic_year = filters.get("academic_year")
@@ -926,17 +948,28 @@ def cancel_result(assess_plan, ref_no, filters):
         amended_doc.save()
 
 
-@frappe.whitelist()
-def cancel_result_rows(ref_nos, filters):
+def cancel_result_rows_async(ref_nos, filters):
     ref_nos = json.loads(ref_nos) if isinstance(ref_nos, str) else ref_nos
     filters = json.loads(filters) if isinstance(filters, str) else filters
     columns = get_columns(filters.get("assessment_group"), filters)
 
     assess_plans = set([i.get("assessment_plan") for i in columns])
-
-    for ref_no in ref_nos:
+    total_length = len(ref_nos)
+    for index in range(total_length):
+        ref_no = ref_nos[index]
         for assess_plan in assess_plans:
             cancel_result(assess_plan, ref_no, filters)
+            frappe.realtime.publish_progress(
+                (index / total_length) * 100,
+                title="Submitting Result",
+                description=f"processing {ref_no}",
+            )
+
+
+@frappe.whitelist()
+def cancel_result_rows(ref_nos, filters):
+    cancel_result_rows_async(filters=filters, ref_nos=ref_nos)
+    # frappe.enqueue(cancel_result_rows_async, filters=filters, ref_nos=ref_nos)
 
 
 @frappe.whitelist()

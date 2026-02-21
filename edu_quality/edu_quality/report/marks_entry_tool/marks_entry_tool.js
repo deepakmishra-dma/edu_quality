@@ -1,6 +1,74 @@
 // Copyright (c) 2024, Hybrowlabs Technologies and contributors
 // For license information, please see license.txt
 let criteriasChanged = {}
+let filterTemplate = [
+
+	{
+		"fieldname": "academic_year",
+		"fieldtype": "Link",
+		"options": "Academic Year",
+		"label": "Academic Year",
+		"get_query": "edu_quality.public.py.utils.academic_year_query"
+	},
+	{
+		"fieldname": "school",
+		"fieldtype": "Link",
+		"options": "School",
+		"label": "School"
+	},
+	{
+		"fieldname": "program",
+		"label": __("Class"),
+		"fieldtype": "Link",
+		"options": "Program",
+		"reqd": 1,
+		"get_query": function (txt) {
+			const school = frappe.query_report.get_filter_value("school");
+			return { filters: { "school": school } };
+		}
+	},
+	{
+		"fieldname": "assessment_group",
+		"label": __("Assessment Group"),
+		"fieldtype": "Link",
+		"reqd": 1,
+		"options": "Assessment Group",
+		"get_query": function (txt) {
+			const school = frappe.query_report.get_filter_value("school");
+			const academic_year = frappe.query_report.get_filter_value("academic_year");
+			const program = frappe.query_report.get_filter_value("program");
+			return { filters: { "custom_is_composite": 0, "custom_academic_year": academic_year, "custom_school": school, "custom_program": program } };
+		}
+	},
+	{
+		"fieldname": "division",
+		"label": __("Division"),
+		"fieldtype": "Link",
+		"options": "Student Group",
+		"reqd": 1,
+		"get_query": function (txt) {
+			const program = frappe.query_report.get_filter_value("program");
+			const academic_year = frappe.query_report.get_filter_value("academic_year");
+			return { filters: { "program": program, academic_year: academic_year } };
+		}
+	}, {
+		"fieldname": "mode",
+		"label": __("Online Mode"),
+		"fieldtype": "Check",
+		"hidden": true
+	},
+	{
+		"fieldname": "remarks",
+		"label": __("Remarks"),
+		"fieldtype": "Check",
+	},
+	{
+		"fieldname": "ref_no",
+		"label": __("Online Mode"),
+		"fieldtype": "Link",
+		"options": "Student",
+	}
+]
 
 function throttle(func, limit) {
 	let lastFunc;
@@ -319,6 +387,7 @@ function addImportExportTemplate(report) {
 
 	})
 	report.page.add_custom_menu_item(report.page.menu_btn_group, "Import Template", () => {
+		var filterValues = report.get_filter_values()
 		var dialog = new frappe.ui.Dialog({
 			title: __('Upload CSV File'),
 			fields: [
@@ -343,7 +412,28 @@ function addImportExportTemplate(report) {
 				}
 			}
 		});
-		dialog.show();
+		var startDialogFields = [{
+			"fieldname": "HTML",
+			"fieldtype": "HTML",
+			"options": "Currently Applied Filters, These will be used for importing",
+			read_only: 1,
+
+		}]
+
+		filterTemplate.forEach((value) => {
+			startDialogFields.push({ ...value, default: filterValues[value.fieldname], read_only: 1 })
+		})
+
+		var startDialog = new frappe.ui.Dialog({
+			title: __('Import Template'),
+			fields: startDialogFields,
+			primary_action_label: __('Import'),
+			primary_action: function () {
+				startDialog.hide();
+				dialog.show();
+			}
+		})
+		startDialog.show()
 	})
 }
 
@@ -544,74 +634,7 @@ function addNote() {
 }
 
 frappe.query_reports["Marks Entry Tool"] = {
-	"filters": [
-
-		{
-			"fieldname": "academic_year",
-			"fieldtype": "Link",
-			"options": "Academic Year",
-			"label": "Academic Year",
-			"get_query": "edu_quality.public.py.utils.academic_year_query"
-		},
-		{
-			"fieldname": "school",
-			"fieldtype": "Link",
-			"options": "School",
-			"label": "School"
-		},
-		{
-			"fieldname": "program",
-			"label": __("Class"),
-			"fieldtype": "Link",
-			"options": "Program",
-			"reqd": 1,
-			"get_query": function (txt) {
-				const school = frappe.query_report.get_filter_value("school");
-				return { filters: { "school": school } };
-			}
-		},
-		{
-			"fieldname": "assessment_group",
-			"label": __("Assessment Group"),
-			"fieldtype": "Link",
-			"reqd": 1,
-			"options": "Assessment Group",
-			"get_query": function (txt) {
-				const school = frappe.query_report.get_filter_value("school");
-				const academic_year = frappe.query_report.get_filter_value("academic_year");
-				const program = frappe.query_report.get_filter_value("program");
-				return { filters: { "custom_is_composite": 0, "custom_academic_year": academic_year, "custom_school": school, "custom_program": program } };
-			}
-		},
-		{
-			"fieldname": "division",
-			"label": __("Division"),
-			"fieldtype": "Link",
-			"options": "Student Group",
-			"reqd": 1,
-			"get_query": function (txt) {
-				const program = frappe.query_report.get_filter_value("program");
-				const academic_year = frappe.query_report.get_filter_value("academic_year");
-				return { filters: { "program": program, academic_year: academic_year } };
-			}
-		}, {
-			"fieldname": "mode",
-			"label": __("Online Mode"),
-			"fieldtype": "Check",
-			"hidden": true
-		},
-		{
-			"fieldname": "remarks",
-			"label": __("Remarks"),
-			"fieldtype": "Check",
-		},
-		{
-			"fieldname": "ref_no",
-			"label": __("Online Mode"),
-			"fieldtype": "Link",
-			"options": "Student",
-		}
-	],
+	"filters": filterTemplate,
 	"formatter": formatter,
 	"onload": onload,
 

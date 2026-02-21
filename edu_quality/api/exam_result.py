@@ -241,6 +241,7 @@ def process_atomic_exam(assessment_group, academic_year, program, div=None):
             description=f"{idx}/{total_assess_g_res} rows processed",
         )
         if doc:
+            doc.results = []
             doc.submit()
 
     frappe.msgprint(
@@ -276,7 +277,7 @@ def cancel_assessment_group_result(assessment_group, students_list):
     submitted_results_name = [res.get("name") for res in submitted_results]
     for result in submitted_results_name:
         assess_result = frappe.get_doc("Assessment Group Result", result)
-        if assess_result.docstatus != 2:
+        if assess_result.docstatus == 1:
             assess_result.cancel()
 
 
