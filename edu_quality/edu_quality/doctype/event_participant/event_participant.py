@@ -7,6 +7,17 @@ from frappe.model.document import Document
 from edu_quality.common.utils.auth import set_user_permissions
 
 class EventParticipant(Document):
+    def on_update(self):
+        prev_doc = self.get_doc_before_save()
+        if not prev_doc:
+            return
+        if self.payment_required:
+            return
+        user = frappe.session.user
+        if "Guardian" in frappe.get_roles(user):
+            self.submit()
+
+            
     @frappe.whitelist()
     def get_participant_details(self):
         return frappe.json.loads(self.data)
