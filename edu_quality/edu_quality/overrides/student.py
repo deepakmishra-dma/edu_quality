@@ -172,6 +172,10 @@ class CustomStudent(Student):
         #receipts
         if frappe.db.exists("Payment Entry",{'party':self.name,'docstatus':1}):
             frappe.db.set_value("Payment Entry",{'party':self.name,'docstatus':1},'party_name',self.student_name)
+        #assessment results
+        results = frappe.db.get_all("Assessment Result", filters={'student': self.name}, fields=['name'])
+        for result in results:
+            frappe.db.set_value("Assessment Result", result.name, 'student_name', self.student_name)
     
 
     @frappe.whitelist()
