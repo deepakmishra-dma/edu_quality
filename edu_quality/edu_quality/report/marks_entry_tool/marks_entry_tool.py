@@ -253,7 +253,7 @@ def get_desc_questions(asess_plans_query):
             asess_plans_query.name.as_("assessment_plan"),
             asess_plans_query.course,
             desc_exam_ques_qb.name.as_("question"),
-            desc_exam_ques_qb.name.as_("question_name"),
+            desc_exam_ques_qb.question.as_("question_name"),
             desc_exam_ques_qb.max_marks,
             desc_exam_ques_qb.min_marks,
             assess_plan_cr_qb.assessment_criteria,
