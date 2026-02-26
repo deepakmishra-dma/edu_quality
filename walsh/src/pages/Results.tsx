@@ -1,11 +1,10 @@
-import { Box, Stack, Text, Button, Select, Tabs } from "@mantine/core";
+import { Box, Stack, Text, Select, Tabs } from "@mantine/core";
 import useStudentList from "../components/queries/useStudentList";
 import { useEffect, useMemo, useState } from "react";
 import useStudentProfileColor from "../components/hooks/useStudentProfileColor";
 import { useSearchParams } from "react-router-dom";
 import useClassDetails from "../components/queries/useClassDetails";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
+
 
 import {
   useAcademicCurrentYear,
@@ -46,7 +45,7 @@ export const Results = () => {
   const { data: current_year } = useAcademicCurrentYear();
   const { data: next_year } = useAcademicNextYear();
   const studentProfileColor = useStudentProfileColor(selectedStudent);
-  const [selectedUnitExam, setSelectedUnitExam] = useState("");
+  const [, setSelectedUnitExam] = useState("");
   const [searchParams] = useSearchParams();
   const searchedStudent = searchParams.get("student");
   const [selectedSubject, setSelectedSubject] = useState<string>("");
@@ -85,6 +84,25 @@ export const Results = () => {
     }
   };
 
+const params ={
+  doctype: "Assessment Result",
+  name:  examName[0],
+  program:  classDetails?.data?.message?.division?.program,
+  format: printFormatMode == "result"
+  ? assessmentGroupData?.data?.data.custom_print_configuration
+  : assessmentGroupData?.data?.data.result_print_format,
+  no_letterhead: 0,
+  letterhead: "Default letter head",
+  _lang: "en",
+
+}
+
+const generateQueryString = (params:any) => {
+  return Object.keys(params)
+    .map(key => encodeURIComponent(key) + '=' + encodeURIComponent(params[key]))
+    .join('&');
+};
+
   const assessmentGroupName = async (exam_options: any) => {
     const examnames: any[] = [];
     try {
@@ -109,33 +127,33 @@ export const Results = () => {
     }
   };
 
-  const handleDownloadPdf = () => {
-    const input = document.getElementById("print-format-container");
-    if (input) {
-      const scale = 8;
-      html2canvas(input, { scale }).then((canvas) => {
-        const imgData = canvas.toDataURL("image/png", 1.0);
-        const pdf = new jsPDF("p", "mm", "a4");
-        const imgWidth = 210; // A4 width in mm
-        const pageHeight = 297; // A4 height in mm
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        let heightLeft = imgHeight;
-        let position = 0;
+  // const handleDownloadPdf = () => {
+  //   const input = document.getElementById("print-format-container");
+  //   if (input) {
+  //     const scale = 8;
+  //     html2canvas(input, { scale }).then((canvas) => {
+  //       const imgData = canvas.toDataURL("image/png", 1.0);
+  //       const pdf = new jsPDF("p", "mm", "a4");
+  //       const imgWidth = 210; // A4 width in mm
+  //       const pageHeight = 297; // A4 height in mm
+  //       const imgHeight = (canvas.height * imgWidth) / canvas.width;
+  //       let heightLeft = imgHeight;
+  //       let position = 0;
 
-        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+  //       pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+  //       heightLeft -= pageHeight;
 
-        while (heightLeft >= 0) {
-          position = heightLeft - imgHeight;
-          pdf.addPage();
-          pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-          heightLeft -= pageHeight;
-        }
-        const download_name = `${selectedStudent} ${selectedUnitExam}`;
-        pdf.save(download_name);
-      });
-    }
-  };
+  //       while (heightLeft >= 0) {
+  //         position = heightLeft - imgHeight;
+  //         pdf.addPage();
+  //         pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+  //         heightLeft -= pageHeight;
+  //       }
+  //       const download_name = `${selectedStudent} ${selectedUnitExam}`;
+  //       pdf.save(download_name);
+  //     });
+  //   }
+  // };
   const assessmentResuktFilter = async (
     selected_year: string,
     selected_exam: string
@@ -189,7 +207,7 @@ export const Results = () => {
             doc: "Assessment Result",
             name: `${exam_name}`,
             program: class_name,
-            print_format: printFormat,
+            format: printFormat,
             no_letterhead: 0,
             letterhead: "Default letter head",
             _lang: "en",
@@ -541,9 +559,10 @@ export const Results = () => {
                   dangerouslySetInnerHTML={{ __html: combinedHtml }}
                   className="print-format-gutter print-format"
                 />
-                <Button
-                  onClick={handleDownloadPdf}
-                  sx={{
+                <a
+                  href={`/api/method/frappe.utils.print_format.download_pdf?${generateQueryString(params)}`}
+                 
+                  style={{
                     margin: "0px auto",
                     display: "flex",
                     alignItems: "center",
@@ -551,14 +570,17 @@ export const Results = () => {
                     borderRadius: 10,
                     position: "relative",
                     bottom: "16rem",
-
+                    color:"white",
+                    maxWidth:"75%",
+                    textDecoration:"none",
+                    padding:"8px 4px",
                     backgroundColor: studentProfileColor,
                     textAlign: "center",
                     marginTop: "1rem",
                   }}
                 >
                   Download
-                </Button>
+                </a>
               </div>
             </>
           )}
