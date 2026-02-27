@@ -16,6 +16,7 @@ from frappe.desk.query_report import run, build_xlsx_data
 from frappe.desk.utils import get_csv_bytes, provide_binary_file
 
 
+
 def get_default_columns(assessment_group, filters):
     """Get default Columns which are to be shown and not computed like ref no, question etc."""
 
@@ -446,9 +447,25 @@ def get_desc_earlier_marks(filters, students, return_hash=False):
             }
     if return_hash:
         return questions_hash
+    final_data =  [question for question in questions_hash.values()]
 
-    return [question for question in questions_hash.values()]
+    sorted_data = sorted(final_data, key=lambda x:x.get("order"))
 
+    # Group by parent_question
+    parent_question_hash ={}
+    for question in sorted_data:
+        question_id = question.get("question")
+        parent_ques = question.get("parent_question")
+        if question_id not in parent_question_hash and not parent_ques:
+            parent_question_hash[question_id] = [question]
+    
+    for question in sorted_data:
+        parent_ques = question.get("parent_question")
+        if parent_ques in parent_question_hash:
+            parent_question_hash[parent_ques].append(question)
+
+    flattened_list = [value for values in parent_question_hash.values() for value in values]
+    return flattened_list
 
 def get_earlier_marks(filters, students, criterias):
     assess_res_qb = frappe.qb.DocType("Assessment Result")
