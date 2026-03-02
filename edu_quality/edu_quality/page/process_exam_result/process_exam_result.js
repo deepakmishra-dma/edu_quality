@@ -68,7 +68,14 @@ function onLoad() {
 				const academic_year = filtersRef.get_value("acad_year");
 				return { filters: { "program": program, academic_year: academic_year } };
 			}
-		}
+		},
+		{
+			label: "Ref Numbers",
+			fieldname: "ref_nos",
+			fieldtype: "Text",
+			options: "",
+			description: "Enter Ref Nos Separated by , to process only the specified ones"
+		},
 	])
 	if (frappe.route_options) {
 		updateFilters()
@@ -100,7 +107,7 @@ async function processResult() {
 	const program = filtersRef.get_value("program")
 	const division = filtersRef.get_value("division")
 	const assess_group = filtersRef.get_value("exam_name")
-
+	const ref_nos = filtersRef.get_value("ref_nos")
 	if (!acad_year || !school || !program || !assess_group) {
 		frappe.throw(__('Academic Year or School or Program or Exam Group is required'))
 		return
@@ -113,7 +120,8 @@ async function processResult() {
 				school: school,
 				program: program,
 				division: division,
-				assessment_group: assess_group
+				assessment_group: assess_group,
+				ref_nos: ref_nos
 			}
 		})
 

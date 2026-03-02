@@ -12,8 +12,6 @@ def before_save(self, method=None):
     ):
         id_card_items = [item for item in self.items if item.item_code == "ID Card"]
 
-        if not len(id_card_items):
-            return
         for item in id_card_items:
             if not frappe.db.get_value(
                 "Purchase Order", item.purchase_order, "custom_is_id_card"
@@ -47,9 +45,6 @@ def before_save(self, method=None):
                     }
                 ).insert(ignore_permissions=True)
 
-        utc_now = datetime.now(pytz.UTC)
-        ist_now = utc_now.astimezone(pytz.timezone("Asia/Kolkata")).strftime(
-            "%Y-%m-%d %H:%M:%S"
-        )
-        self.custom_receiving_date = ist_now
+   
+        self.custom_receiving_date = frappe.utils.now_datetime()
         self.custom_received_by = frappe.session.user

@@ -17,6 +17,7 @@ def get_all_assessment_plans(assessment_group, program, div):
     div_query = assess_plan_qb.student_group.isnotnull()
     if div:
         div_query = assess_plan_qb.student_group == div
+
     query = (
         frappe.qb.from_(assess_group_qb)
         .inner_join(assess_plan_qb)
@@ -55,10 +56,19 @@ def check_assessment_plan_in_group(assessment_plans):
     return all_errors
 
 
-def get_assessment_result_of_plans(assessment_plans, docstatus=[0, 1]):
+def get_student_con(student_master=None, qb=None):
+    if student_master and len(student_master):
+        return qb.student.isin(student_master)
+    else:
+        return qb.student.isnotnull()
+
+
+def get_assessment_result_of_plans(
+    assessment_plans, docstatus=[0, 1], student_master=None
+):
     assess_res_qb = frappe.qb.DocType("Assessment Result")
     assess_res_de_qb = frappe.qb.DocType("Assessment Result Detail")
-
+    student_con = get_student_con(student_master, assess_res_qb)
     plans = [plan.get("name") for plan in assessment_plans]
 
     query = (
@@ -66,6 +76,7 @@ def get_assessment_result_of_plans(assessment_plans, docstatus=[0, 1]):
             (
                 (assess_res_qb.docstatus.isin(docstatus))
                 & assess_res_qb.assessment_plan.isin(plans or [None])
+                & (student_con)
             )
         )
     ).select(assess_res_qb.star, assess_res_qb.name.as_("result_name"))
@@ -150,14 +161,22 @@ def diff_students_and_results(students, results, assessment_plan):
 
 
 @frappe.whitelist()
-def process_result(assessment_group, academic_year, program, division=None):
-    if frappe.db.get_value("Assessment Group", assessment_group, "custom_is_composite"):
+def process_result(
+    assessment_group, academic_year, program, division=None, ref_nos=None
+):
+    is_composite, school = frappe.db.get_value(
+        "Assessment Group", assessment_group, ["custom_is_composite", "custom_school"]
+    )
+    student_list = get_ref_nos_from_string(ref_nos, school)
+
+    if is_composite:
         frappe.enqueue(
             process_composite_result,
             assessment_group=assessment_group,
             academic_year=academic_year,
             program=program,
             div=division,
+            student_master=student_list,
             queue="long",
         )
     else:
@@ -167,23 +186,30 @@ def process_result(assessment_group, academic_year, program, division=None):
             academic_year=academic_year,
             program=program,
             div=division,
+            student_master=student_list,
             queue="long",
         )
 
     frappe.db.commit()
 
 
-def process_atomic_exam(assessment_group, academic_year, program, div=None):
+def process_atomic_exam(
+    assessment_group, academic_year, program, div=None, student_master=None
+):
     assessment_plans = get_all_assessment_plans(assessment_group, program, div)
     assessment_group_doc = frappe.get_doc("Assessment Group", assessment_group)
     errors = check_assessment_plan_in_group(assessment_plans)
     if errors:
         return errors
 
-    submitted_docs = get_assessment_result_of_plans(assessment_plans, [1])
+    submitted_docs = get_assessment_result_of_plans(
+        assessment_plans, [1], student_master
+    )
 
     cancel_submitted_atomic_exams(submitted_docs)
-    non_submitted_docs = get_assessment_result_of_plans(assessment_plans, [0])
+    non_submitted_docs = get_assessment_result_of_plans(
+        assessment_plans, [0], student_master
+    )
     student_set = set()
 
     total_res_rows = len(non_submitted_docs)
@@ -203,7 +229,7 @@ def process_atomic_exam(assessment_group, academic_year, program, div=None):
     assess_g_res_docs_set = set()
     total_students = len(student_list)
     cancel_assessment_group_result(assessment_group, student_list)
-    
+
     for idx in range(0, total_students):
         student = student_list[idx]
         existing_doc = frappe.db.exists(
@@ -249,6 +275,29 @@ def process_atomic_exam(assessment_group, academic_year, program, div=None):
     )
 
 
+def get_ref_nos_from_string(data, school):
+    ref_nos = data.split(",")
+
+    student_doc_names = []
+    if not any(ref_nos):
+        return
+
+    for ref_no in ref_nos:
+        if not ref_no:
+            continue
+
+        student = frappe.db.exists("Student", {"name": ref_no}) or frappe.db.exists(
+            "Student", {"reference_number": ref_no, "school": school}
+        )
+        if not student:
+            frappe.throw(
+                f"Cannot find studenf for the specified reference number {ref_no} with school {school}"
+            )
+
+        student_doc_names.append(student)
+    return student_doc_names
+
+
 def cancel_submitted_atomic_exams(result_data):
     submitted_results = [
         result.get("name") for result in result_data if result.get("docstatus") == 1
@@ -281,10 +330,12 @@ def cancel_assessment_group_result(assessment_group, students_list):
             assess_result.cancel()
 
 
-def get_result_from_plans(assessment_plans, group_by=False, docstatus=[0, 1]):
+def get_result_from_plans(
+    assessment_plans, group_by=False, docstatus=[0, 1], student_master=None
+):
     assess_res_qb = frappe.qb.DocType("Assessment Result")
     assess_res_de_qb = frappe.qb.DocType("Assessment Result Detail")
-
+    student_con = get_student_con(student_master, assess_res_qb)
     plans = [plan.get("name") for plan in assessment_plans]
 
     query = (
@@ -296,6 +347,7 @@ def get_result_from_plans(assessment_plans, group_by=False, docstatus=[0, 1]):
                 (assess_res_qb.docstatus.isin(docstatus))
                 & assess_res_qb.assessment_plan.isin(plans or [None])
                 & (assess_res_de_qb.score.isnotnull())
+                & (student_con)
             )
         )
     )
@@ -360,7 +412,9 @@ SET  `tabAssessment Result`.custom_rank = ranked_table.ranking;
     )
 
 
-def process_composite_result(assessment_group, academic_year, program, div=None):
+def process_composite_result(
+    assessment_group, academic_year, program, div=None, student_master=None
+):
     assess_group = frappe.get_doc("Assessment Group", assessment_group)
     calc_exam_avg = assess_group.custom_exam_avg
 
@@ -370,14 +424,16 @@ def process_composite_result(assessment_group, academic_year, program, div=None)
     )
 
     for atomic_exam in composite_exams:
-        process_atomic_exam(atomic_exam.name, academic_year, program, div)
+        process_atomic_exam(
+            atomic_exam.name, academic_year, program, div, student_master
+        )
 
     plans = []
 
     for atomic_exam in composite_exams:
         plans.extend(get_all_assessment_plans(atomic_exam.name, program, div))
 
-    all_results = get_result_from_plans(plans, calc_exam_avg)
+    all_results = get_result_from_plans(plans, calc_exam_avg, student_master)
     cancel_existing_composite_results(all_results, assessment_group)
     modified_result = {}
     for result in all_results:

@@ -35,7 +35,7 @@ class CustomAssessmentPlan(AssessmentPlan):
         self.validate_overlap()
         if not self.custom_is_descriptive:
             self.validate_max_score()
-        self.validate_assessment_criteria()
+            self.validate_assessment_criteria()
 
     def validate_max_score(self):
         max_score = 0

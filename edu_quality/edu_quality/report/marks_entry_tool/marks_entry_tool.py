@@ -16,7 +16,6 @@ from frappe.desk.query_report import run, build_xlsx_data
 from frappe.desk.utils import get_csv_bytes, provide_binary_file
 
 
-
 def get_default_columns(assessment_group, filters):
     """Get default Columns which are to be shown and not computed like ref no, question etc."""
 
@@ -253,6 +252,7 @@ def get_desc_questions(asess_plans_query):
         .select(
             asess_plans_query.name.as_("assessment_plan"),
             asess_plans_query.course,
+            asess_plans_query.custom_order.as_("assess_plan_order"),
             desc_exam_ques_qb.name.as_("question"),
             desc_exam_ques_qb.question.as_("question_name"),
             desc_exam_ques_qb.max_marks,
@@ -359,18 +359,21 @@ def get_desc_earlier_marks(filters, students, return_hash=False):
     )
 
     questions_data = get_desc_questions(asess_plans_query)
+    print(questions_data, "ddd")
     all_plans = [plan.get("assessment_plan") for plan in questions_data]
     query = (
         frappe.qb.from_(assess_res_qb)
-        .inner_join(assess_res_de_qb)
-        .on(assess_res_qb.name == assess_res_de_qb.parent)
-        .inner_join(desc_exam_ques_qb)
-        .on(desc_exam_ques_qb.name == assess_res_de_qb.custom_question)
         .where(
             (assess_res_qb.student.isin(students_list or [None]))
             & (assess_res_qb.assessment_plan.isin(all_plans or [None]))
             & (assess_res_qb.docstatus.isin([0, 1]))
         )
+        .inner_join(assess_res_de_qb)
+        .on(assess_res_qb.name == assess_res_de_qb.parent)
+        .inner_join(desc_exam_ques_qb)
+        .on(desc_exam_ques_qb.name == assess_res_de_qb.custom_question)
+        .inner_join(assess_plan_qb)
+        .on(assess_res_qb.assessment_plan == assess_plan_qb.name)
         .select(
             assess_res_qb.assessment_plan,
             assess_res_qb.student,
@@ -385,6 +388,7 @@ def get_desc_earlier_marks(filters, students, return_hash=False):
             assess_res_de_qb.custom_online_assessment,
             assess_res_qb.docstatus,
             assess_res_de_qb.grade,
+            assess_plan_qb.custom_order.as_("assess_plan_order"),
         )
     )
 
@@ -401,6 +405,7 @@ def get_desc_earlier_marks(filters, students, return_hash=False):
         subject = question.get("course")
         question_field_id = gen_desc_ques_field(question)
         docstatus = question.get("docstatus")
+        assess_plan_order = question.get("assess_plan_order")
         oa = question.get("custom_online_assessment")
         if question_field_id not in questions_hash:
             questions_hash[question_field_id] = {
@@ -411,6 +416,7 @@ def get_desc_earlier_marks(filters, students, return_hash=False):
                 "order": order,
                 "subject": subject,
                 "assessment_criteria": criteria,
+                "assess_plan_order": assess_plan_order,
                 "docstatus": docstatus or 0,
                 "online_assess": oa or 0,
             }
@@ -427,18 +433,19 @@ def get_desc_earlier_marks(filters, students, return_hash=False):
         scoring_type = question.get("custom_scoring_type")
         grade = question.get("grade")
         parent_question = question.get("parent_question")
-
+        assess_plan_order = question.get("assess_plan_order")
         question_field_id = gen_desc_ques_field(question)
         docstatus = question.get("docstatus")
         oa = question.get("custom_online_assessment")
         if question_field_id in questions_hash:
             questions_hash[question_field_id] = {
-                **questions_hash[question_field_id],
                 "question": question_id,
                 "assessment_plan": assess_plan,
+                "assess_plan_order": assess_plan_order,
                 "parent_question": parent_question,
                 "assessment_criteria": criteria,
                 "order": order,
+                **questions_hash.get(question_field_id),
                 "question_field_id": question_field_id,
                 "question_name": question_name,
                 student: parse_score(is_absent, scoring_type, score, grade),
@@ -447,25 +454,31 @@ def get_desc_earlier_marks(filters, students, return_hash=False):
             }
     if return_hash:
         return questions_hash
-    final_data =  [question for question in questions_hash.values()]
+    final_data = [question for question in questions_hash.values()]
 
-    sorted_data = sorted(final_data, key=lambda x:x.get("order"))
+    sorted_data = sorted(
+        final_data, key=lambda x: (x.get("assess_plan_order"), x.get("order"))
+    )
 
     # Group by parent_question
-    parent_question_hash ={}
+    parent_question_hash = {}
     for question in sorted_data:
         question_id = question.get("question")
         parent_ques = question.get("parent_question")
         if question_id not in parent_question_hash and not parent_ques:
             parent_question_hash[question_id] = [question]
-    
+
     for question in sorted_data:
         parent_ques = question.get("parent_question")
         if parent_ques in parent_question_hash:
             parent_question_hash[parent_ques].append(question)
 
-    flattened_list = [value for values in parent_question_hash.values() for value in values]
+    flattened_list = [
+        value for values in parent_question_hash.values() for value in values
+    ]
+
     return flattened_list
+
 
 def get_earlier_marks(filters, students, criterias):
     assess_res_qb = frappe.qb.DocType("Assessment Result")
@@ -645,18 +658,21 @@ def enter_column_wise_mark(data, hashed_columns, filters):
     students = [{"ref_no": student for student in student_list}]
 
     earlier_questions = get_desc_earlier_marks(filters, students, return_hash=True)
-    print(earlier_questions)
+
     for datum in data:
         assessment_plan = datum.get("assessment_plan")
         question = datum.get("question")
-        parent_question = datum.get("parent_question")
+
         ques_field_id = gen_desc_ques_field(
             {
                 "question": question,
-                "parent_question": parent_question,
                 "assessment_plan": assessment_plan,
             }
         )
+        question_meta_data = earlier_questions.get(ques_field_id, {})
+        parent_question = question_meta_data.get("parent_question")
+        order = question_meta_data.get("order", 0)
+
         for student in hashed_columns:
             if student in datum:
                 criteria = {
@@ -665,9 +681,7 @@ def enter_column_wise_mark(data, hashed_columns, filters):
                         "value": get_field_value(datum, student),
                         "custom_question": question,
                         "custom_parent_question": parent_question,
-                        "custom_order": earlier_questions.get(ques_field_id, {}).get(
-                            "order", 0
-                        ),
+                        "custom_order": order,
                     },
                     "assessment_plan": assessment_plan,
                 }
@@ -820,6 +834,7 @@ def add_assessment_criteria(
     scoring_type = assessment_criteria.get("scoring_type")
     online_assessment = assessment_criteria.get("custom_online_assessment")
     question = assessment_criteria.get("custom_question")
+
     parent_question = assessment_criteria.get("custom_parent_question")
     order = assessment_criteria.get("custom_order") or 0
 
