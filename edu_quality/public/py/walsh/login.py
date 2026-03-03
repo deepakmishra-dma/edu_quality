@@ -177,8 +177,8 @@ def send_otp(phone_no):
         students = frappe.get_all(
             "Student", filters={"guardian": guardian.name}, fields=["*"]
         )
-        any_disabled = any(student["enabled"] == 0 for student in students)
-        if not students or any_disabled:
+        all_disabled = all(student["enabled"] == 0 for student in students)
+        if not students or all_disabled:
             return {
                 "error": True,
                 "error_type": "student_disabled",
