@@ -13,15 +13,11 @@ def petty_cash_submit(data):
     to_from = data.get("to_from")
     description = data.get("description")
     _type = data.get("type")
-    category = get_data(data, "category")
     file = data.get("file")
 
     to_account, entry_type = determine_accounts_and_entry_type(company, school, _type)
 
     remark_parts = []
-
-    if category:
-        remark_parts.append(f"Category: {category.capitalize()}")
 
     if description:
         remark_parts.append(f"Description: {description}")
@@ -29,7 +25,7 @@ def petty_cash_submit(data):
     remark = "\n".join(remark_parts) if remark_parts else None
 
     journal_entry = create_journal_entry(
-        account, to_account, amount, entry_type, to_from, category, remark
+        account, to_account, amount, entry_type, to_from, remark
     )
 
     # Save the file in the Journal Entry as an attachment
@@ -80,7 +76,7 @@ def handle_file(file_data, journal_entry):
     return None
 
 
-def create_journal_entry(from_account, to_account, amount, entry_type, to_from, category, remark):
+def create_journal_entry(from_account, to_account, amount, entry_type, to_from, remark):
     """
     Create a journal entry in the system.
 
@@ -105,7 +101,6 @@ def create_journal_entry(from_account, to_account, amount, entry_type, to_from, 
         ],
         "pay_to_recd_from": to_from,
         "user_remark": remark,
-        "category": category.capitalize() if category else None,
     }
 
     # Add cheque details only for 'Bank Entry'

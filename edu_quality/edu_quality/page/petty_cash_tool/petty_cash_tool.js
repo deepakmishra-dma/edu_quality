@@ -132,6 +132,8 @@ const getAccountAmount = async (company, account) => {
 }
 
 async function handleTypeChange(event, value) {
+	// Make upload field required if type is cashWithdrawal
+	toggleUploadField(value);
 	const companyValue = event?.data?.company?.name;
 	const schoolValue = event?.data?.school?.name;
 
@@ -167,6 +169,18 @@ async function handleTypeChange(event, value) {
 	updateFieldProperties('accountHead', 'disabled', !!accountHead);
 }
 
+function toggleUploadField(value) {
+	// make upload field required if type is cashWithdrawal else make it optional
+	if (value === 'payment') {
+		const fileElement = FormInstance.getComponent('file');
+		fileElement.component.validate.required = false;
+		fileElement.redraw();
+	}else if (value === 'cashWithdrawal') {
+		const fileElement = FormInstance.getComponent('file');
+		fileElement.component.validate.required = true;
+		fileElement.redraw();
+	}
+}
 
 async function handleCompanyChange(event, value) {
 	const { school } = event?.data || {};
@@ -337,28 +351,30 @@ formJson = {
 						{
 							"components": [
 								{
-									"label": "Category",
+									"label": "Account Head",
 									"widget": "choicesjs",
-									"placeholder": "Choose Category",
+									"placeholder": "Choose Account Head",
 									"tableView": true,
+									"dataSrc": "url",
 									"data": {
-										"values": [
+										"url": "/api/resource/Account?filters=[[\"allow_in_petty_cash\", \"=\", \"1\"]]&limit=0",
+										"headers": [
 											{
-												"label": "Primary",
-												"value": "primary"
-											},
-											{
-												"label": "KG",
-												"value": "kg"
+												"key": "",
+												"value": ""
 											}
 										]
 									},
+									"template": "<span>{{ item.name }}</span>",
 									"validate": {
 										"required": true
 									},
 									"validateWhenHidden": false,
-									"key": "category",
+									"key": "accountHead",
 									"type": "select",
+									"selectValues": "data",
+									"disableLimit": false,
+									"noRefreshOnScroll": false,
 									"input": true
 								}
 							],
@@ -374,33 +390,6 @@ formJson = {
 					"type": "columns",
 					"input": false,
 					"tableView": false
-				},
-				{
-					"label": "Account Head",
-					"widget": "choicesjs",
-					"placeholder": "Choose Account Head",
-					"tableView": true,
-					"dataSrc": "url",
-					"data": {
-						"url": "/api/resource/Account?filters=[[\"allow_in_petty_cash\", \"=\", \"1\"]]&limit=0",
-						"headers": [
-							{
-								"key": "",
-								"value": ""
-							}
-						]
-					},
-					"template": "<span>{{ item.name }}</span>",
-					"validate": {
-						"required": true
-					},
-					"validateWhenHidden": false,
-					"key": "accountHead",
-					"type": "select",
-					"selectValues": "data",
-					"disableLimit": false,
-					"noRefreshOnScroll": false,
-					"input": true
 				},
 				{
 					"label": "Columns",
