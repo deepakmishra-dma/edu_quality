@@ -347,6 +347,7 @@ def get_desc_earlier_marks(filters, students, return_hash=False):
 
     assess_res_de_qb = frappe.qb.DocType("Assessment Result Detail")
     students_list = [student.get("ref_no") for student in students]
+    division = filters.get("division")
 
     asess_plans_query = (
         frappe.qb.from_(assess_plan_qb)
@@ -354,12 +355,13 @@ def get_desc_earlier_marks(filters, students, return_hash=False):
             (assess_plan_qb.assessment_group == assessment_group)
             & (assess_plan_qb.docstatus == 1)
             & (assess_plan_qb.custom_is_descriptive)
+            & (assess_plan_qb.student_group == division)
         )
         .select(assess_plan_qb.star)
     )
 
     questions_data = get_desc_questions(asess_plans_query)
-    print(questions_data, "ddd")
+
     all_plans = [plan.get("assessment_plan") for plan in questions_data]
     query = (
         frappe.qb.from_(assess_res_qb)
