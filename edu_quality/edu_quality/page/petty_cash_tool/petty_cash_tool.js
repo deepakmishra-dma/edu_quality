@@ -53,6 +53,7 @@ const handleFormSubmit = (form, submission) => {
 
 const resetForm = (form) => {
 	form.submission = {};
+	form.redraw();
 };
 
 
@@ -132,8 +133,6 @@ const getAccountAmount = async (company, account) => {
 }
 
 async function handleTypeChange(event, value) {
-	// Make upload field required if type is cashWithdrawal
-	toggleUploadField(value);
 	const companyValue = event?.data?.company?.name;
 	const schoolValue = event?.data?.school?.name;
 
@@ -167,19 +166,6 @@ async function handleTypeChange(event, value) {
 	updateField('accountHead', accountHead);
 	// Make accountHead field disabled if accountHead is set and type is cashWithdrawal
 	updateFieldProperties('accountHead', 'disabled', !!accountHead);
-}
-
-function toggleUploadField(value) {
-	// make upload field required if type is cashWithdrawal else make it optional
-	if (value === 'payment') {
-		const fileElement = FormInstance.getComponent('file');
-		fileElement.component.validate.required = false;
-		fileElement.redraw();
-	}else if (value === 'cashWithdrawal') {
-		const fileElement = FormInstance.getComponent('file');
-		fileElement.component.validate.required = true;
-		fileElement.redraw();
-	}
 }
 
 async function handleCompanyChange(event, value) {
@@ -493,6 +479,9 @@ formJson = {
 											"value": ""
 										}
 									],
+									"validate": {
+										"required": true
+									},
 									"validateWhenHidden": false,
 									"key": "file",
 									"type": "file",
