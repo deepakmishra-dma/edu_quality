@@ -17,12 +17,15 @@ def petty_cash_submit(data):
 
     to_account, entry_type = determine_accounts_and_entry_type(company, school, _type)
 
-    remark_parts = []
+    remark_parts = {}
 
     if description:
-        remark_parts.append(f"Description: {description}")
+        remark_parts["Description"] = description
 
-    remark = "\n".join(remark_parts) if remark_parts else None
+    if school:
+        remark_parts["School"] = school
+
+    remark = frappe.as_json(remark_parts)
 
     journal_entry = create_journal_entry(
         account, to_account, amount, entry_type, to_from, remark
