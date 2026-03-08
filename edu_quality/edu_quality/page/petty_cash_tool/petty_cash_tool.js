@@ -23,7 +23,18 @@ frappe.pages['petty-cash-tool'].on_page_load = function (wrapper) {
 		form.on('change', (event) => {
 			handleOnChange(event)
 		});
+		autofilledForm(form);
 	});
+}
+
+const autofilledForm = async (form) => {
+	const { message: company } = await frappe.db.get_value('Company', { 'company_name': frappe.defaults.get_default('company') }, 'name');
+	updateField('company', { name: company.name });
+
+	const { message: school } = await frappe.db.get_value('School', { 'institution': company.name }, 'name');
+	updateField('school', { name: school.name });
+
+	form.redraw();
 }
 
 const handleFormSubmit = (form, submission) => {
