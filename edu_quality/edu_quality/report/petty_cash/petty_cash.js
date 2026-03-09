@@ -20,13 +20,18 @@ frappe.query_reports["Petty Cash"] = {
 			"fieldname": "type",
 			"label": __("Type"),
 			"fieldtype": "Select",
-			"options": ["Payment", "Cash Withdrawal"],
+			"options": ["", "Payment", "Cash Withdrawal"],
 		},
 		{
-			"fieldname": "date",
-			"label": __("Select Date"),
+			"fieldname": "start_date",
+			"label": __("Start Date"),
 			"fieldtype": "Date",
-			"default": frappe.datetime.get_today(),
-		}
+		},
+		{
+			"fieldname": "end_date",
+			"label": __("End Date"),
+			"fieldtype": "Date",
+		},
+
 	],
 };

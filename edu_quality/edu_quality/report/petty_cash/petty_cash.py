@@ -52,20 +52,42 @@ def get_data(filters) -> list[list]:
     data = [prepare_data_entry(entry, filters.get("type")) for entry in journal_entries]
 
     if account:
-        balance = get_balance_on(account, company=filters.get("company"))
+        company = filters.get("company")
+        start_date = filters.get("start_date")
+        end_date = filters.get("end_date")  # Assuming you have an end_date filter
+        opening_balance = get_opening_balance(account, start_date=start_date)
+        closing_balance = get_balance_on(account, company=company, start_date=end_date)  # Calculate closing balance
+    
+        
         new_data = [""] * len(get_columns())
         new_data[0] = frappe.utils.now()
         new_data[2] = filters.get("company")
         new_data[6] = "Opening Amount"
-        new_data[7] = balance
+        new_data[7] = opening_balance
+    
+        closing_data = [""] * len(get_columns())
+        closing_data[0] = frappe.utils.now()
+        closing_data[2] = filters.get("company")
+        closing_data[6] = "Closing Amount"
+        closing_data[7] = closing_balance
+    
         if data:
             data.insert(0, new_data)
+            data.append(closing_data)  # Append closing balance entry
 
     return data
 
+def get_opening_balance(account, start_date):
+    balance = frappe.db.sql(f"""
+        SELECT debit FROM `tabGL Entry`
+        WHERE account = '{account}' AND posting_date >= DATE_FORMAT('{start_date}', '%d-%m-%Y')
+        ORDER BY posting_date DESC LIMIT 1
+    """)
+    return balance[0][0] if balance else 0
+
 
 def get_base_filters(filters) -> dict:
-    base_filters = {"docstatus": 1}
+    base_filters = {}
 
     if filters.get("company"):
         base_filters["company"] = filters["company"]
@@ -77,8 +99,21 @@ def get_base_filters(filters) -> dict:
         base_filters["voucher_type"] = (
             "Cash Entry" if filters["type"] == "Payment" else "Bank Entry"
         )
-    if filters.get("date"):
-        base_filters["posting_date"] = ["=", filters["date"]]
+    if filters.get("start_date"):
+        base_filters["posting_date"] = [
+            ">=",
+            filters["start_date"],
+        ]
+    if filters.get("end_date"):
+        base_filters["posting_date"] = [
+            "<=",
+            filters["end_date"],
+        ]
+    if filters.get("start_date") and filters.get("end_date"):
+        base_filters["posting_date"] = [
+            "between",
+            [filters["start_date"], filters["end_date"]],
+        ]
 
     return base_filters
 
@@ -102,7 +137,7 @@ def fetch_journal_entries(base_filters) -> list:
             "user_remark",
             "total_debit",
             "pay_to_recd_from",
-            "docstatus",
+            "workflow_state",
             "creation",
         ],
         filters=base_filters,
@@ -125,6 +160,6 @@ def prepare_data_entry(entry, _type) -> list:
         entry.total_debit,
         entry.pay_to_recd_from,
         entry.owner,
-        entry.docstatus,
+        entry.workflow_state,
         user_remark.get("Description"),
     ]
