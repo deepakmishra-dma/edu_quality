@@ -5,12 +5,12 @@ import useStudentProfileColor from "../components/hooks/useStudentProfileColor";
 import { useSearchParams } from "react-router-dom";
 import useClassDetails from "../components/queries/useClassDetails";
 
-
 import {
   useAcademicCurrentYear,
   useAcademicNextYear,
 } from "../components/queries/useFeeDetailsList";
 import usePrintFormat from "../components/queries/usePrintFormat";
+import useSchoolLetterHead from "../components/queries/useSchoolLetterHead";
 
 interface PrintFormat {
   html: string;
@@ -50,6 +50,11 @@ export const Results = () => {
   const searchedStudent = searchParams.get("student");
   const [selectedSubject, setSelectedSubject] = useState<string>("");
   const { data: assessmentGroupData } = usePrintFormat(selectedExam);
+  const { data: letterHeadData } = useSchoolLetterHead(
+    assessmentGroupData?.data?.data?.custom_school
+  );
+  console.log(letterHeadData);
+
   const examName = examResult?.map?.((i: any) => i?.name);
   const assessmentGroupFilter = async (
     selected_year: string,
@@ -83,25 +88,28 @@ export const Results = () => {
       console.log("error", error);
     }
   };
+  console.log(letterHeadData?.data?.data?.letter_head, "eetr");
+  const params = {
+    doctype: "Assessment Result",
+    name: examName[0],
+    program: classDetails?.data?.message?.division?.program,
+    format:
+      printFormatMode == "result"
+        ? assessmentGroupData?.data?.data.custom_print_configuration
+        : assessmentGroupData?.data?.data.result_print_format,
+    no_letterhead: 0,
+    letterhead:
+      letterHeadData?.data?.data?.letter_head || "Default letter head",
+    _lang: "en",
+  };
 
-const params ={
-  doctype: "Assessment Result",
-  name:  examName[0],
-  program:  classDetails?.data?.message?.division?.program,
-  format: printFormatMode == "result"
-  ? assessmentGroupData?.data?.data.custom_print_configuration
-  : assessmentGroupData?.data?.data.result_print_format,
-  no_letterhead: 0,
-  letterhead: "Default letter head",
-  _lang: "en",
-
-}
-
-const generateQueryString = (params:any) => {
-  return Object.keys(params)
-    .map(key => encodeURIComponent(key) + '=' + encodeURIComponent(params[key]))
-    .join('&');
-};
+  const generateQueryString = (params: any) => {
+    return Object.keys(params)
+      .map(
+        (key) => encodeURIComponent(key) + "=" + encodeURIComponent(params[key])
+      )
+      .join("&");
+  };
 
   const assessmentGroupName = async (exam_options: any) => {
     const examnames: any[] = [];
@@ -181,7 +189,7 @@ const generateQueryString = (params:any) => {
       console.log("error", error);
     }
   };
-  console.log(assessmentGroupData?.data?.data, "hh");
+
   const printFormatView = async (exam_name: any, class_name: any) => {
     setLoading(true);
     setError("");
@@ -190,7 +198,7 @@ const generateQueryString = (params:any) => {
         printFormatMode == "result"
           ? assessmentGroupData?.data?.data.custom_print_configuration
           : assessmentGroupData?.data?.data.result_print_format;
- 
+
       if (!printFormat) {
         setError("No Result Format");
         throw new Error("No Result Format");
@@ -209,7 +217,8 @@ const generateQueryString = (params:any) => {
             program: class_name,
             format: printFormat,
             no_letterhead: 0,
-            letterhead: "Default letter head",
+            letterhead:
+              letterHeadData?.data?.data?.letter_head || "Default letter head",
             _lang: "en",
           }),
         }
@@ -560,8 +569,9 @@ const generateQueryString = (params:any) => {
                   className="print-format-gutter print-format"
                 />
                 <a
-                  href={`/api/method/frappe.utils.print_format.download_pdf?${generateQueryString(params)}`}
-                 
+                  href={`/api/method/frappe.utils.print_format.download_pdf?${generateQueryString(
+                    params
+                  )}`}
                   style={{
                     margin: "0px auto",
                     display: "flex",
@@ -570,10 +580,10 @@ const generateQueryString = (params:any) => {
                     borderRadius: 10,
                     position: "relative",
                     bottom: "16rem",
-                    color:"white",
-                    maxWidth:"75%",
-                    textDecoration:"none",
-                    padding:"8px 4px",
+                    color: "white",
+                    maxWidth: "75%",
+                    textDecoration: "none",
+                    padding: "8px 4px",
                     backgroundColor: studentProfileColor,
                     textAlign: "center",
                     marginTop: "1rem",
