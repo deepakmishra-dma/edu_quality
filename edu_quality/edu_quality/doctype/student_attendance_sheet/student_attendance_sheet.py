@@ -28,16 +28,18 @@ def get_months():
 
 
 @frappe.whitelist()
-def get_days_in_month(month_name, academic_year):
+def get_days_in_month(month_name, academic_year,as_date=False,month=1,year=None):
     year = int(academic_year.split("-")[0])
     month_number = list(calendar.month_name).index(month_name.capitalize())
 
     # Get the number of days in the month
     _, num_days = calendar.monthrange(year, month_number)
-
+  
+        
     # Generate a list of days
     days = [{"textContent": str(day)} for day in range(1, num_days + 1)]
-
+    if as_date:
+        days = {datetime(year, month, day).date() for day in range(1, num_days + 1)}
     return days
 
 
@@ -237,6 +239,7 @@ def submit_attendance(**data):
         else datetime(year, month, 31).strftime("%Y-%m-%d")
     )
     holidays = get_holidays(start_date, end_date, program, True)
+    unique_dates = get_days_in_month(month_name, academic_year,True,month,year)
 
     attendance_entries = frappe.get_all(
         "Attendance Entry",
@@ -266,7 +269,7 @@ def submit_attendance(**data):
             )
         attendance_entry.submit()
 
-    unique_dates = {entry["date"] for entry in attendance_entries}
+
 
     all_students = frappe.get_all(
         "Program Enrollment",
