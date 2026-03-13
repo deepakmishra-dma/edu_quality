@@ -36,4 +36,29 @@ frappe.ui.form.on("CBSE LOC", {
             d.show();
         }
     },
+    
+    refresh: function (frm) {
+        frm.add_custom_button(__('Check Updated Field'), function () {
+            frappe.call({
+                method: 'frappe.client.get_list',
+                args: {
+                    doctype: 'Version',
+                    filters: {
+                        ref_doctype: frm.doc.doctype,
+                        docname: frm.doc.name
+                    },
+                    order_by: 'creation desc',
+                    limit: 1
+                },
+                callback: function (r) {
+                    if (r.message && r.message.length > 0) {
+                        var version = r.message[0];
+                        frappe.set_route('Form', 'Version', version.name);
+                    } else {
+                        frappe.msgprint(__('No versions found'));
+                    }
+                }
+            });
+        });
+    }
 });
