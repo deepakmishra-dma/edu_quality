@@ -24,8 +24,55 @@ class CBSELOC(Document):
         old_doc = self.get_doc_before_save()
         if not old_doc:
             return
-        if old_doc.status == 'Not Filled' and self.status == 'Filled':
-            self.send_doc_after_filling()
+        self.handle_workflow(old_doc)
+    
+    
+    def handle_workflow(self, old_doc):
+        if "Guardian" in frappe.get_roles():
+            if old_doc.status == 'Not Filled':
+                self.status = 'Filled'
+                self.workflow_state = 'Received'
+            elif old_doc.status == 'Filled' and self.get_changed_fields:
+                self.workflow_state = 'Updated'    
+            elif old_doc.status == 'Rejected' and self.workflow_state == 'Rejected':
+                self.workflow_state = 'Updated'
+                self.status = 'Filled'
+
+    def on_submit(self):
+        if self.workflow_state == 'Approved':
+            self.update_student_details()
+
+
+    @property
+    def get_changed_fields(self):
+        changed_fields = []
+        for field in self.meta.fields:
+            if self.has_value_changed(field.fieldname):
+                changed_fields.append(field.fieldname)
+        return changed_fields
+
+    def on_trash(self):
+        user_permission = frappe.get_all(
+            "User Permission", {"allow": self.doctype, "for_value": self.name}, pluck="name"
+        )
+        if user_permission:
+            for perm in user_permission:
+                frappe.delete_doc("User Permission", perm, ignore_permissions=True)
+
+    @frappe.whitelist()
+    def reject(self, reason=None):
+        if reason:
+            make(
+                doctype="CBSE LOC",
+                name=self.name,
+                send_email=1,
+                recipients = self.get_recipients(),
+                print_format="Standard",
+                print_letterhead= 0,
+                read_receipt=1,
+                subject = "CBSE LOC Rejected",
+                content = f"Your CBSE LOC has been rejected with the following reason: {reason}"
+            )
 
     def validate(self):
         self.validate_aadhar_number()
@@ -128,9 +175,8 @@ class CBSELOC(Document):
         trigger_event(doc=self, event_name='send_cbse_form')
 
     @frappe.whitelist()
-    def send_doc_after_filling(self):
+    def send_doc_after_filling(self, subject=None, content=None):
         try:
-            template = frappe.get_doc("Email Template", "Confirm Student Details for  CBSE Board - Attachment")
             make(
                 doctype="CBSE LOC",
                 name=self.name,
@@ -139,9 +185,8 @@ class CBSELOC(Document):
                 print_format="Standard",
                 print_letterhead= 0,
                 read_receipt=1,
-                email_template="Confirm Student Details for  CBSE Board - Attachment",
-                subject = template.subject,
-                message = template.response
+                subject = subject,
+                content = content
             )
         except Exception as e:
             frappe.log_error(e)
@@ -181,6 +226,68 @@ class CBSELOC(Document):
         
         self.update(details)
 
+    def update_student_details(self):
+        """
+        Updates the student details in the 'Student' document based on the CBSE LOC form details.
+        """
+        try:
+            student = frappe.get_doc("Student", self.student)
+            updated_fields = {}
+        
+            # Compare and update student fields
+            fields_to_check = {
+                'first_name': self.first_name,
+                'middle_name': self.middle_name,
+                'last_name': self.last_name,
+                'gender': self.gender,
+                'date_of_birth': self.date_of_birth,
+                'category': self.category,
+                'caste': self.caste,
+                'other_caste': self.other_caste,
+                'aadhaar_card_number': self.aadhar_number,
+                'address_line_1': self.housebuildingapt,
+                'address_line_2': self.survey_nolaneroad,
+                'landmark': self.colonysocietyarea,
+                'city': self.city,
+                'pincode': self.pincode,
+                'student_status': self.student_status,
+                'category_cert': self.category_certificate,
+                'birth_certificate': self.birth_certificate,
+                'aadhaar_card_certificate': self.aadhar_card,
+            }
+        
+            for field, new_value in fields_to_check.items():
+                if student.get(field) != new_value:
+                    updated_fields[field] = new_value
+        
+            if updated_fields:
+                student.update(updated_fields)
+                student.save(ignore_permissions=True)
+        
+            # Update guardian details
+            for relation in ['Father', 'Mother']:
+                guardian_name = frappe.get_value("Student Guardian", {'parent': self.student, 'relation': relation}, 'guardian')
+                guardian = frappe.get_doc("Guardian", guardian_name)
+                updated_guardian_fields = {}
+        
+                guardian_fields_to_check = {
+                    'first_name': self.get(f'{relation}_first_name'),
+                    'middle_name': self.get(f'{relation}_middle_name'),
+                    'last_name': self.get(f'{relation}_last_name'),
+                    'mobile_number': self.get(f'{relation}_mobile_number'),
+                    'email_address': self.get(f'{relation}_email')
+                }
+        
+                for field, new_value in guardian_fields_to_check.items():
+                    if guardian.get(field) != new_value:
+                        updated_guardian_fields[field] = new_value
+        
+                if updated_guardian_fields:
+                    guardian.update(updated_guardian_fields)
+                    guardian.save(ignore_permissions=True)
+        except Exception as e:
+            frappe.log_error(f"CBSE LOC: {str(e)}", frappe.get_traceback()) 
+        
 @frappe.whitelist(allow_guest=True)
 def get_form_details(hash):
     """
