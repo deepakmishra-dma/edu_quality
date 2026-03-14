@@ -513,8 +513,22 @@ export const Results = () => {
               }}
             >
               <Tabs.List>
-                <Tabs.Tab value="marks">Marks</Tabs.Tab>
-                <Tabs.Tab value="result">Results</Tabs.Tab>
+                <Tabs.Tab
+                  value="marks"
+                  disabled={
+                    !assessmentGroupData?.data?.data.result_print_format
+                  }
+                >
+                  Marks
+                </Tabs.Tab>
+                <Tabs.Tab
+                  value="result"
+                  disabled={
+                    !assessmentGroupData?.data?.data.custom_print_configuration
+                  }
+                >
+                  Results
+                </Tabs.Tab>
               </Tabs.List>
             </Tabs>
           ) : null}
@@ -578,7 +592,7 @@ export const Results = () => {
                     alignItems: "center",
                     justifyContent: "center",
                     borderRadius: 10,
-                    position: "relative",
+
                     bottom: "16rem",
                     color: "white",
                     maxWidth: "75%",
