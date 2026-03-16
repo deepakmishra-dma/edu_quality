@@ -13,6 +13,7 @@
   "column_break_onhw",
   "status",
   "form_user",
+  "reject_reason",
   "section_break_paqf",
   "first_name",
   "full_name",
@@ -197,7 +198,8 @@
   {
    "fieldname": "category",
    "fieldtype": "Select",
-   "label": "Category"
+   "label": "Category",
+   "options": "General\nSC\nST\nOBC"
   },
   {
    "fieldname": "category_certificate",
@@ -383,12 +385,19 @@
    "fieldname": "subject_6",
    "fieldtype": "Data",
    "label": "Subject 6"
+  },
+  {
+   "depends_on": "eval: doc.status == \"Rejected\"",
+   "fieldname": "reject_reason",
+   "fieldtype": "Data",
+   "label": "Reject Reason",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-09-05 16:10:55.804416",
+ "modified": "2024-09-05 17:35:19.090547",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "CBSE LOC",
