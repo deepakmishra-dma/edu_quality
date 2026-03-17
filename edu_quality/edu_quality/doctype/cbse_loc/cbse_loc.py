@@ -62,17 +62,10 @@ class CBSELOC(Document):
     @frappe.whitelist()
     def reject(self, reason=None):
         if reason:
-            make(
-                doctype="CBSE LOC",
-                name=self.name,
-                send_email=1,
-                recipients = self.get_recipients(),
-                print_format="Standard",
-                print_letterhead= 0,
-                read_receipt=1,
-                subject = "CBSE LOC Rejected",
-                content = f"Your CBSE LOC has been rejected with the following reason: {reason}"
-            )
+            self.reject_reason = reason
+            self.save(ignore_permissions=True)
+            trigger_event(doc=self, event_name='reject_cbse_form')
+
 
     def validate(self):
         self.validate_aadhar_number()
@@ -119,7 +112,7 @@ class CBSELOC(Document):
             'full_name': full_name,
             'gender': student.gender,
             'date_of_birth': student.date_of_birth,
-            'category': student.category,
+            'category': student.category if student.category != "Open" else "General",
             'caste': student.caste,
             'other_caste': student.other_caste,
             'aadhar_number': student.aadhaar_card_number,
@@ -182,9 +175,6 @@ class CBSELOC(Document):
                 name=self.name,
                 send_email=1,
                 recipients = self.get_recipients(),
-                print_format="Standard",
-                print_letterhead= 0,
-                read_receipt=1,
                 subject = subject,
                 content = content
             )
@@ -241,7 +231,7 @@ class CBSELOC(Document):
                 'last_name': self.last_name,
                 'gender': self.gender,
                 'date_of_birth': self.date_of_birth,
-                'category': self.category,
+                'category': self.category if self.category != "General" else "Open",
                 'caste': self.caste,
                 'other_caste': self.other_caste,
                 'aadhaar_card_number': self.aadhar_number,
