@@ -64,7 +64,7 @@ class CBSELOC(Document):
         if reason:
             self.reject_reason = reason
             self.save(ignore_permissions=True)
-            trigger_event(doc=self, event_name='reject_cbse_form')
+            trigger_event(doc=self, event_name='send_cbse_form')
 
 
     def validate(self):
@@ -105,6 +105,8 @@ class CBSELOC(Document):
         student = frappe.get_doc("Student", self.student)
         
         full_name = self._construct_full_name(student.first_name, student.middle_name, student.last_name)
+        categories = {"general", "sc", "st", "obc"}
+        category = student.category if student.category and student.category.lower() in categories else "General"
         self.update({
             'first_name': student.first_name,
             'middle_name': student.middle_name,
@@ -112,7 +114,7 @@ class CBSELOC(Document):
             'full_name': full_name,
             'gender': student.gender,
             'date_of_birth': student.date_of_birth,
-            'category': student.category if student.category != "Open" else "General",
+            'category': category,
             'caste': student.caste,
             'other_caste': student.other_caste,
             'aadhar_number': student.aadhaar_card_number,
@@ -160,6 +162,7 @@ class CBSELOC(Document):
             parts.append(middle_name)
         if last_name:
             parts.append(last_name)
+        parts = [part for part in parts if part is not None]
         return ' '.join(parts)
     
     
@@ -210,7 +213,7 @@ class CBSELOC(Document):
             f'{relation}_middle_name': doc.middle_name,
             f'{relation}_last_name': doc.last_name,
             f'{relation}_full_name': full_name,
-            f'{relation}_mobile_number': format_mobile_number(doc.mobile_number),
+            f'{relation}_mobile_number': format_mobile_number(doc.mobile_number or ''),
             f'{relation}_email': doc.email_address
         }
         
@@ -333,4 +336,4 @@ def student_confirmation_generation(program,status="Current student"):
                 doc.student = student.student
                 doc.save(ignore_permissions=True)
         except Exception as e:
-            frappe.log_error("CBSE", e)
+            frappe.log_error(f"CBSE - {student.student} {str(e)}", frappe.get_traceback())
