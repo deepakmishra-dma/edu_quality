@@ -99,7 +99,7 @@ class CBSELOC(Document):
         for subject in program_enrollment.courses:
             if i<7:
                 self.update({
-                    f"subject_{i}": subject.course
+                    f"subject_{i}": subject.course + "["+ frappe.db.get_value("Course",subject.course,"custom_board_short_code") + "]"
                 })
             i=i+1
 
