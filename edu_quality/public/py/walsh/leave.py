@@ -4,10 +4,21 @@ from edu_quality.edu_quality.server_scripts.student import mark_entry
 from frappe.query_builder import Order
 from datetime import datetime
 
+from edu_quality.edu_quality.doctype.student_attendance_sheet.student_attendance_sheet import (
+    get_holidays,
+)
+
 
 @frappe.whitelist()
-def add_leave_note(note, status, student, dates):
+def add_leave_note(note, status, student, dates, program, start_date, end_date):
+
+    holidays = get_holidays(start_date, end_date, program, True)
+
     for date in dates:
+        date_obj = datetime.strptime(str(date), "%Y-%m-%d").date()
+        if date_obj in holidays:
+            continue
+
         mark_entry(student, "absent", note, date)
     return {
         "success": True,
@@ -16,9 +27,25 @@ def add_leave_note(note, status, student, dates):
 
 
 @frappe.whitelist()
-def add_early_pick_up(status, student, dates, time, note=None):
-    for date in dates:
-        mark_entry(student, status, note, date, time)
+def add_early_pick_up(
+    status,
+    student,
+    date,
+    time,
+    program,
+    note=None,
+):
+    date_obj = datetime.strptime(str(date), "%Y-%m-%d").date()
+
+    holidays = get_holidays(date, date, program, True)
+
+    if date_obj in holidays:
+        return {
+            "success": False,
+            "message": "Date Picked is an Holiday",
+        }
+    mark_entry(student, status, note, date, time)
+
     return {
         "success": True,
         "message": "Note Saved",

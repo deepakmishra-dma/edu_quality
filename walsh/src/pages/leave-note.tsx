@@ -396,6 +396,9 @@ const LeaveNote = () => {
                             student: selectedStudent,
                             dates: dates,
                             note: note,
+                            start_date: dates.at(0) as string,
+                            end_date: dates.at(-1) as string,
+                            program: classDetails?.data?.message?.program?.name,
                             status: sickLeave,
                           }).then(() => {
                             clearForm();

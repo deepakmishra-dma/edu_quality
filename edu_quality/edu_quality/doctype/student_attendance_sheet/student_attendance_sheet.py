@@ -28,16 +28,18 @@ def get_months():
 
 
 @frappe.whitelist()
-def get_days_in_month(month_name, academic_year):
+def get_days_in_month(month_name, academic_year,as_date=False,month=1,year=None):
     year = int(academic_year.split("-")[0])
     month_number = list(calendar.month_name).index(month_name.capitalize())
 
     # Get the number of days in the month
     _, num_days = calendar.monthrange(year, month_number)
-
+  
+        
     # Generate a list of days
     days = [{"textContent": str(day)} for day in range(1, num_days + 1)]
-
+    if as_date:
+        days = {datetime(year, month, day).date() for day in range(1, num_days + 1)}
     return days
 
 
@@ -67,6 +69,28 @@ def get_students(
     return sorted(students, key=sorting_key)
 
 
+def get_holidays(start_date, end_date, program, format_as_date=False):
+    holidays = []
+    
+    events = frappe.db.get_all(
+        "Event",
+        filters={
+            "class": program,
+            "starts_on": ["between", [start_date, end_date]],
+            "custom_holiday": 1,
+        },
+        fields=[
+            "starts_on",
+            "ends_on",
+        ],
+    )
+    if len(events) != 0:
+        for event in events:
+            days = get_included_days(event.starts_on, event.ends_on, format_as_date)
+            holidays.extend(days)
+    return holidays
+
+
 @frappe.whitelist()
 def get_data(month_name, academic_year, program, division):
     students = get_students(program, division)
@@ -83,23 +107,7 @@ def get_data(month_name, academic_year, program, division):
         else datetime(year, month, 31).strftime("%Y-%m-%d")
     )
 
-    events = frappe.db.get_list(
-        "Event",
-        filters={
-            "class": program,
-            "starts_on": ["between", [start_date, end_date]],
-            "custom_holiday": 1,
-        },
-        fields=[
-            "starts_on",
-            "ends_on",
-        ],
-    )
-
-    if len(events) != 0:
-        for event in events:
-            days = get_included_days(event.starts_on, event.ends_on)
-            holidays.extend(days)
+    holidays = get_holidays(start_date, end_date, program)
 
     result = {}
     for student in students:
@@ -230,6 +238,8 @@ def submit_attendance(**data):
         if month < 12
         else datetime(year, month, 31).strftime("%Y-%m-%d")
     )
+    holidays = get_holidays(start_date, end_date, program, True)
+    unique_dates = get_days_in_month(month_name, academic_year,True,month,year)
 
     attendance_entries = frappe.get_all(
         "Attendance Entry",
@@ -241,23 +251,7 @@ def submit_attendance(**data):
         },
         fields=["date", "name", "student"],
     )
-    frappe.logger("Testerr").exception(
-        Exception(
-            str(
-                [
-                    month_name,
-                    academic_year,
-                    month,
-                    year,
-                    program,
-                    division,
-                    start_date,
-                    end_date,
-                    attendance_entries,
-                ]
-            )
-        )
-    )
+
     for entry in attendance_entries:
         attendance_entry = frappe.get_doc(
             "Attendance Entry",
@@ -275,7 +269,7 @@ def submit_attendance(**data):
             )
         attendance_entry.submit()
 
-    unique_dates = {entry["date"] for entry in attendance_entries}
+
 
     all_students = frappe.get_all(
         "Program Enrollment",
@@ -289,6 +283,9 @@ def submit_attendance(**data):
 
     all_student_names = {student["student"] for student in all_students}
     for date in unique_dates:
+        if date in holidays:
+            continue
+
         marked_students = {
             entry["student"] for entry in attendance_entries if entry["date"] == date
         }
@@ -304,6 +301,7 @@ def submit_attendance(**data):
                 },
                 fields=["name"],
             )
+
             for exist in existing_entry:
                 doc = frappe.get_doc("Attendance Entry", exist)
                 if doc.docstatus == 1:
@@ -376,7 +374,7 @@ def get_divisions(academic_year, program):
     )
 
 
-def get_included_days(start_on, end_on):
+def get_included_days(start_on, end_on, format_as_date=False):
 
     if end_on is None or not isinstance(end_on, datetime):
         end_on = start_on
@@ -387,7 +385,10 @@ def get_included_days(start_on, end_on):
     days = []
     current_date = start_date
     while current_date <= end_date:
-        days.append(current_date.day)
+        if format_as_date:
+            days.append(current_date)
+        else:
+            days.append(current_date.day)
         current_date += timedelta(days=1)
 
     return days
@@ -451,6 +452,7 @@ def generate(**kwargs):
         frappe.local.response.type = "pdf"
     except Exception as e:
         return frappe.throw(e)
+
 
 def update_tables_with_qr_code(tables):
     for table in tables:

@@ -660,7 +660,7 @@ def get_div_students(division, ref_no=None):
 
 
 def get_descriptive_result(assessment_group, student):
-
+    assess_plan_qb = frappe.qb.DocType("Assessment Plan")
     assess_res_qb = frappe.qb.DocType("Assessment Result")
     assess_res_de_qb = frappe.qb.DocType("Assessment Result Detail")
     assess_ques_res_qb = frappe.qb.DocType("Descriptive Question")
@@ -672,12 +672,14 @@ def get_descriptive_result(assessment_group, student):
                 & (assessment_group == assess_res_qb.assessment_group)
                 & (assess_res_qb.student == student)
             )
+            .inner_join(assess_plan_qb)
+            .on(assess_plan_qb.name == assess_res_qb.assessment_plan)
             .inner_join(assess_res_de_qb)
             .on(assess_res_qb.name == assess_res_de_qb.parent)
             .inner_join(assess_ques_res_qb)
             .on(assess_res_de_qb.custom_question == assess_ques_res_qb.name)
         )
-        .orderby(assess_res_de_qb.custom_order)
+        .orderby(assess_plan_qb.custom_order, assess_res_de_qb.custom_order)
         .select(
             assess_res_de_qb.name.as_("criteria_name"),
             assess_res_qb.name,

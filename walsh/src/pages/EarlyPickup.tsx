@@ -7,7 +7,7 @@ import useStudentProfileColor from "../components/hooks/useStudentProfileColor.t
 import { IconList } from "@tabler/icons";
 import { DatePicker } from "@mantine/dates";
 import useEarlyPickUpMutation from "../components/queries/useEarlyPickUpMutation.ts";
-
+import { useNotification } from "@refinedev/core";
 const styling: { [key: string]: (color: string) => Sx } = {
   dateSelect: (color: string) => ({
     margin: 10,
@@ -46,7 +46,7 @@ const EarlyPickup = () => {
   const [success, setSuccess] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const searchedStudent = searchParams.get("student");
-
+  const { open } = useNotification();
   const { data: studentsList } = useStudentList();
   const {
     data: classDetails,
@@ -365,17 +365,27 @@ const EarlyPickup = () => {
 
                     from.setMinutes(from.getMinutes() - delay);
                     to.setMinutes(to.getMinutes() - delay);
-                    console.log();
+
                     for (let i = from; i <= to; i.setDate(i.getDate() + 1)) {
                       dates.push(i.toISOString().split("T")[0]);
                     }
                     mutateAsync({
                       student: selectedStudent,
                       dates: dates,
+                      date: dates.at(0) as string,
                       note: note,
                       status: "early_pickup",
                       time: selectedTime,
-                    }).then(() => {
+                      program: classDetails?.data?.message?.program?.name,
+                    }).then((data) => {
+                      if (!data.data.message.success) {
+                        open?.({
+                          type: "error",
+                          message: data.data.message.message,
+                        });
+                        return false;
+                      }
+
                       setSelectedTime("");
                       clearForm();
                       setSuccess(true);
