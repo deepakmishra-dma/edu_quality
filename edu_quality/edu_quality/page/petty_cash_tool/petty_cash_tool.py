@@ -115,6 +115,5 @@ def create_journal_entry(from_account, to_account, amount, entry_type, to_from, 
 
     journal_entry = frappe.get_doc(journal_entry_data)
     journal_entry.insert()
-    journal_entry.submit()
     return journal_entry
 
