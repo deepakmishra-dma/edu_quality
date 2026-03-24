@@ -277,6 +277,7 @@ def get_submitted_undertaking(payment_request):
     else:
         return False
 
+import json
 
 @frappe.whitelist(allow_guest=True)
 def handle_undertaking_submission(**kwargs):
@@ -343,8 +344,8 @@ def handle_undertaking_submission(**kwargs):
             new_doc.otp_entered = kwargs.get("otp")
             new_doc.otp_sent_to_contact_no = get_mobile_number(student_doc)
             new_doc.otp_sent_to_email_id = student_doc.student_email_id
-            new_doc.ip_address = kwargs.get("ip_address")
-            new_doc.user_info = kwargs.get("browser_info")
+            new_doc.ip_address = frappe.local.request_ip
+            # new_doc.user_info = kwargs.get("browser_info")
             new_doc.payment_term = payment_term
             new_doc.save(ignore_permissions=True)
     else:
