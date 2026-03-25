@@ -21,7 +21,8 @@ import EarlyPickup from "./EarlyPickup.tsx";
 
 import { StudentProfle } from "./StudentProfile.tsx";
 import { PtmLinks } from "./PtmLinks.tsx";
-import { Fee } from "./Fee.tsx";
+import Fees from "./fee/index.tsx";
+import { FeesList } from "./fee/List.tsx";
 import { Results } from "./Results.tsx";
 // import { Results } from "./Result.tsx";
 
@@ -84,7 +85,8 @@ const Pages = () => {
                 <Route path="/cmap" element={<Cmap />} />
                 <Route path="/cmap/list" element={<CmapList />} />
                 <Route path="/portion-circular" element={<PortionCircular />} />
-                <Route path="/fee" element={<Fee />} />
+                <Route path="/fee" element={<Fees />} />
+                <Route path="/fee/list" element={<FeesList />} />
                 <Route path="/result" element={<Results />} />
                 <Route
                   path="/portion-circular/list"

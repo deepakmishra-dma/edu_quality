@@ -667,6 +667,8 @@ def get_descriptive_result(assessment_group, student):
     assess_res_qb = frappe.qb.DocType("Assessment Result")
     assess_res_de_qb = frappe.qb.DocType("Assessment Result Detail")
     assess_ques_res_qb = frappe.qb.DocType("Descriptive Question")
+    assess_plan_qb = frappe.qb.DocType("Assessment Plan")
+
     query = (
         (
             frappe.qb.from_(assess_res_qb)
