@@ -367,8 +367,8 @@ def handle_undertaking_submission(**kwargs):
             new_doc.otp_entered = kwargs.get("otp")
             new_doc.otp_sent_to_contact_no = get_mobile_number(student_doc)
             new_doc.otp_sent_to_email_id = student_doc.student_email_id
-            new_doc.ip_address = kwargs.get("ip_address")
-            new_doc.user_info = kwargs.get("browser_info")
+            new_doc.ip_address = frappe.local.request_ip
+            new_doc.user_info = user_agent
             new_doc.save(ignore_permissions=True)
 
 
