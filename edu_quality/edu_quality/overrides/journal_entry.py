@@ -1,4 +1,6 @@
 import frappe 
+from frappe import _
+from erpnext.accounts.utils import cancel_exchange_gain_loss_journal
 from erpnext.accounts.doctype.journal_entry.journal_entry import JournalEntry
 
 
@@ -52,3 +54,8 @@ class customJournalEntry(JournalEntry):
             )
             if cancel:
                 cancel_exchange_gain_loss_journal(frappe._dict(doctype=self.doctype, name=self.name))
+
+    def on_submit(self):
+        super(customJournalEntry, self).on_submit()
+        if self.is_petty_cash and not self.petty_cash_approved:
+            frappe.throw(_("Petty Cash Journal Entry must be approved before submission"))
