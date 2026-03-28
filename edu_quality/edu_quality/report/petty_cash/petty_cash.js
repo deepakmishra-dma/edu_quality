@@ -15,6 +15,10 @@ frappe.query_reports["Petty Cash"] = {
 			"label": __("School"),
 			"fieldtype": "Link",
 			"options": "School",
+			"get_query": function (txt) {
+				const company = frappe.query_report.get_filter_value("company");
+				return { filters: { "institution": company } };
+			}
 		},
 		{
 			"fieldname": "type",
@@ -32,6 +36,67 @@ frappe.query_reports["Petty Cash"] = {
 			"label": __("End Date"),
 			"fieldtype": "Date",
 		},
-
+		{
+			"fieldname": "show_only_draft",
+			"label": __("Show Only Draft"),
+			"fieldtype": "Check",
+		}
 	],
+
+	get_datatable_options(options) {
+		return Object.assign(options, {
+			checkboxColumn: true
+		});
+	},
+	
+	onload: function (report) {
+		report.page.add_inner_button(__("Approve"), function () {
+			handleApproval(report, "approve");
+		});
+	
+		report.page.add_inner_button(__("Reject"), function () {
+			handleApproval(report, "reject");
+		});
+	},
 };
+
+
+function handleApproval(report, action) {
+	const indexes = report.datatable.rowmanager.getCheckedRows();
+	let selected_rows = indexes.map(i => frappe.query_report.data[i]);
+
+	if (selected_rows.length === 0) {
+		frappe.msgprint(__("Please select rows to " + action));
+		return;
+	}
+
+	const journal_entries = selected_rows
+		.map(row => row.voucher_no)
+		.filter(voucher_no => voucher_no !== '' && voucher_no !== null);
+
+	if (journal_entries.length === 0) {
+		frappe.msgprint(__("Please select rows with Voucher No"));
+		return;
+	}
+
+	frappe.confirm(__("Are you sure you want to " + action + " the selected rows?"), function () {
+		frappe.call({
+			method: "edu_quality.edu_quality.report.petty_cash.petty_cash.handle_approval",
+			args: { data: journal_entries, [action]: true },
+			callback: function (r) {
+				if (r.message) {
+					frappe.show_alert({
+						message: __(action.charAt(0).toUpperCase() + action.slice(1) + "d"),
+						indicator: "green"
+					});
+					report.refresh();
+				}else{
+					frappe.show_alert({
+						message: __("Failed to " + action),
+						indicator: "red"
+					});
+				}
+			}
+		});
+	});
+}
