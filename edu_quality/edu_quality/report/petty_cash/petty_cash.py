@@ -227,6 +227,12 @@ def handle_approval(data, approve: bool = False, reject: bool = False) -> bool:
                 je.save()
             elif reject:
                 if je.docstatus == 0:
+                    frappe.sendmail(
+                        recipients=frappe.get_cached_value("User", je.owner, "email"),
+                        subject=_("Petty Cash Entry Rejected"),
+                        message=_("Your petty cash entry has been rejected."),
+                        attachments=[frappe.attach_print("Journal Entry", je.name)],
+                    )
                     frappe.delete_doc("Journal Entry", je.name)
         frappe.db.commit()
         return True
