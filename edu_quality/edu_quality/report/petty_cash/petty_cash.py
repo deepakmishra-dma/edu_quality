@@ -31,7 +31,7 @@ def get_columns() -> list[dict]:
         create_column("Type", "type", "Data", 150),
         create_column("Amount", "amount", "Currency", 100),
         create_column("To/From", "to_from", "Data", 150),
-        create_column("Created By", "created_by", "Link", 100, "User"),
+        create_column("Created By", "created_by", "Link", 200, "User"),
         create_column("Voucher Status", "voucher_status", "Data", 150),
         create_column("Attachment", "attachment", "Data", 100),
         create_column("Description", "description", "Data", 200),
