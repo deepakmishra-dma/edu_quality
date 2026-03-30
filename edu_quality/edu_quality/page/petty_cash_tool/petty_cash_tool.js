@@ -57,16 +57,10 @@ const handleFormSubmit = (form, submission) => {
 			});
 
 			// reset the form after submission
-			resetForm(form);
+			form.resetValue(); 
 		}
 	});
 };
-
-const resetForm = (form) => {
-	form.submission = {};
-	form.redraw();
-};
-
 
 function updateField(key, value) {
 	try {
@@ -459,11 +453,14 @@ formJson = {
 									"applyMaskOn": "change",
 									"autoExpand": false,
 									"tableView": true,
+									"validate": {
+										"required": true
+									},
 									"validateWhenHidden": false,
 									"key": "description",
 									"type": "textarea",
-									"input": true,
-									"rows": 2
+									"rows": 2,
+									"input": true
 								}
 							],
 							"width": 6,
