@@ -50,16 +50,21 @@ frappe.query_reports["Petty Cash"] = {
 	},
 	
 	onload: function (report) {
-		report.page.add_inner_button(__("Approve"), function () {
-			handleApproval(report, "approve");
-		});
+		if (hasRole('Accounts Manager')) {
+			report.page.add_inner_button(__("Approve"), function () {
+				handleApproval(report, "approve");
+			});
 	
-		report.page.add_inner_button(__("Reject"), function () {
-			handleApproval(report, "reject");
-		});
-	},
+			report.page.add_inner_button(__("Reject"), function () {
+				handleApproval(report, "reject");
+			});
+		}
+	}
 };
-
+	// Define the custom hasRole function
+function hasRole(role) {
+	return frappe.user_roles && frappe.user_roles.includes(role);
+}
 
 function handleApproval(report, action) {
 	const indexes = report.datatable.rowmanager.getCheckedRows();

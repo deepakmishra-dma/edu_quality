@@ -10,7 +10,7 @@
  "is_standard": "Yes",
  "letter_head": "Default letter head",
  "letterhead": null,
- "modified": "2024-08-30 14:29:18.964049",
+ "modified": "2024-09-10 16:25:36.755108",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Petty Cash",
@@ -22,6 +22,10 @@
  "roles": [
   {
    "role": "Accounts Manager"
+  },
+  {
+   "role": "Petty Cash User"
   }
- ]
+ ],
+ "timeout": 0
 }
