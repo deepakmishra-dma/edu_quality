@@ -57,7 +57,7 @@ const handleFormSubmit = (form, submission) => {
 			});
 
 			// reset the form after submission
-			form.resetValue(); 
+			form.resetValue();
 		}
 	});
 };
@@ -474,26 +474,27 @@ formJson = {
 							"components": [
 								{
 									"label": "Upload",
+									"description": "Scan in 72 DPI For Upload",
 									"tableView": false,
 									"storage": "base64",
 									"dir": "Petty Cash",
-									"image": true,
 									"uploadOnly": true,
 									"webcam": false,
-									"capture": false,
+									"capture": "environment",
 									"fileTypes": [
 										{
 											"label": "",
 											"value": ""
 										}
 									],
+									"filePattern": ".png,.jpg,application/pdf",
+									"fileMaxSize": "500KB",
 									"validate": {
 										"required": true
 									},
 									"validateWhenHidden": false,
 									"key": "file",
 									"type": "file",
-									"imageSize": "300",
 									"input": true
 								}
 							],
