@@ -302,7 +302,7 @@ def get_form_details(hash):
 
 
 @frappe.whitelist()
-def generate_confirmations(program):
+def generate_confirmations(program, status):
     """
     Generates CBSE LOC documents for students enrolled in the given program.
     
@@ -313,7 +313,7 @@ def generate_confirmations(program):
         dict: A dictionary containing the status (success or failure) and an error message (if applicable).
     """
     try:
-        frappe.enqueue(student_confirmation_generation, program=program, queue='long')
+        frappe.enqueue(student_confirmation_generation, program=program, status=status, queue='long')
         return {'status': 1}
     except Exception as e:
         return {'status': 0, 'error': str(e)}
