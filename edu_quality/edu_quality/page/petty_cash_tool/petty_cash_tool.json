@@ -1,0 +1,23 @@
+{
+ "content": null,
+ "creation": "2024-08-20 17:59:22.998527",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2024-09-10 13:21:31.005355",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "petty-cash-tool",
+ "owner": "Administrator",
+ "page_name": "petty-cash-tool",
+ "roles": [
+  {
+   "role": "Petty Cash User"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "Petty Cash Tool"
+}

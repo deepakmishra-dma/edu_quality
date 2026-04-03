@@ -52,6 +52,8 @@ doctype_js = {
     "Assessment Plan": "public/js/assessment_plan.js",
     "Assessment Group": "public/js/assessment_group.js",
     "Event": "public/js/event.js",
+    "Company": "public/js/company.js",
+    "School": "public/js/school.js",
 }
 doctype_list_js = {
     "Student Applicant": "public/js/list/student_applicant_list.js",
