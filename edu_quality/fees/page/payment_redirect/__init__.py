@@ -92,6 +92,11 @@ def get_payment_details(**kwargs):
     fees = frappe.get_doc(payment_request.reference_doctype, payment_request.reference_name)
     breakup = []
     if payment_request.payment_term:
+        # redirect to previous request if present
+        previous_request = get_last_unpaid_request(payment_request)
+        if previous_request:
+            return {'redirect': frappe.utils.get_url()+"/payment?payment_request="+previous_request.payment_hash}
+        
         component = json.loads(fees.component_split)[payment_request.payment_term]
         breakup = get_breakup(fees,payment_request.payment_term)
         if fees.doctype == "Fees":
@@ -241,3 +246,31 @@ def get_letter_head(payment_request, category):
             if letter_head:
                 return letter_head
     return None
+
+
+def get_last_unpaid_request(payment_request):
+    """
+    Get Payment Request for Fee
+    """
+    filters = {"parent": payment_request.reference_name, "outstanding": (">", 0)}
+    fields = ["due_date", "payment_term", "outstanding"]
+    payment_schedule = frappe.get_all(
+        "Payment Schedule", filters, fields, order_by="idx"
+    )
+
+    # get previous payment request
+    request = None
+    for schedule in payment_schedule:
+        request = frappe.get_value(
+            "Payment Request",
+            {
+                "reference_name": payment_request.reference_name,
+                "docstatus": 1,
+                "status": "Initiated",
+                "payment_term": schedule.payment_term,
+            },
+        )
+        break
+
+    if request and request != payment_request.name:
+        return frappe.get_doc("Payment Request", request)
