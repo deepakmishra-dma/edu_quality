@@ -193,7 +193,7 @@ class EventDetail(Document):
         """
         Get the allowed students
         """
-        filters = {"school": self.school, "enabled": 1}
+        filters = {"school": self.school}
         if not self.all_students:
             students = frappe.get_all(
                 "Event Student",
@@ -205,7 +205,6 @@ class EventDetail(Document):
             else:
                 return []
         else:
-            filters = {"school": self.school, "enabled": 1}
             classes = frappe.get_all("Classes", {"parent": self.name}, pluck="class")
             if classes:
                 filters["program"] = ["in", classes]
