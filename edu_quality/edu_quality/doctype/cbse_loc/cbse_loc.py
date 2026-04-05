@@ -171,12 +171,12 @@ class CBSELOC(Document):
         trigger_event(doc=self, event_name='send_cbse_form')
 
     @frappe.whitelist()
-    def send_doc_after_filling(self, subject=None, content=None):
+    def send_doc_after_filling(self, subject=None, content=None, send_mail=1):
         try:
             make(
                 doctype="CBSE LOC",
                 name=self.name,
-                send_email=1,
+                send_email=send_mail,
                 recipients = self.get_recipients(),
                 subject = subject,
                 content = content
