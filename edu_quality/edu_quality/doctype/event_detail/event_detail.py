@@ -1,6 +1,6 @@
 # Copyright (c) 2024, Hybrowlabs Technologies and contributors
 # For license information, please see license.txt
-
+import re
 import frappe
 from frappe import _
 from frappe.utils.data import cstr
@@ -12,8 +12,15 @@ class EventDetail(Document):
 
     def autoname(self):
         prefix = frappe.get_value("School", self.school, "prefix")
-        starts_on = str(getdate(self.event_starts_on))
-        self.name = f"{self.event_name} - ({starts_on}) - {prefix}"
+        self.name = f"{self.event_name} - {prefix}"
+
+    def validate(self):
+        invalid_chars = re.findall(r"[^a-zA-Z\.0-9/\\,\s_#@\-=+&]", self.event_name)
+
+        if invalid_chars:
+            invalid_chars_str = "".join(invalid_chars)
+            message = f"Event Name contains invalid characters: {invalid_chars_str}. Only letters, numbers, spaces, and special characters: <b>. / \\ , _ # @ - = + & </b> are allowed."
+            frappe.throw(_(message))
 
     def before_save(self):
         self.update_classes()
