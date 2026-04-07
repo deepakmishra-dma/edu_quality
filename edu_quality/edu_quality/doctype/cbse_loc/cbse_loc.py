@@ -336,4 +336,4 @@ def student_confirmation_generation(program,status="Current student"):
                 doc.student = student.student
                 doc.save(ignore_permissions=True)
         except Exception as e:
-            frappe.log_error(f"CBSE - {student.student} {str(e)}", frappe.get_traceback())
+            frappe.log_error(f"CBSE - {student.student}", frappe.get_traceback())
