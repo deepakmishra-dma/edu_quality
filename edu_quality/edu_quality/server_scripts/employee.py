@@ -7,6 +7,7 @@ from edu_quality.api.google_admin import (
     suspend_google_user,
     get_google_user_with_key,
 )
+from edu_quality.common.utils.auth import set_user_permissions, remove_user_permissions
 
 def before_save(doc, method=None):
     email_pattern = re.compile(r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
@@ -95,37 +96,12 @@ def add_to_user_permission(doc, method=None):
     if not doc.user_id:
         return
 
-    # Get the school list
-    if not doc.school:
-        schools = frappe.get_all("School")
-        for s in schools:
-            add_user_permission(doc, s.name)
-    else:
-        # Remove existing user permissions if school is changed
-        remove_user_permission(doc)  # Remove existing user permissions
-        for s in doc.school:
-            add_user_permission(doc, s.school)
+    # Remove all the user permissions for the user for the School doctype
+    remove_user_permissions(doc.user_id, "School")
 
-
-def add_user_permission(doc, school):
-    """
-    add user permission for the employee to access the school
-    """
-    if frappe.db.exists("User Permission", {"user": doc.user_id, "allow": "School", "for_value": school}): return
-    perm = frappe.new_doc("User Permission")
-    perm.user = doc.user_id
-    perm.allow = "School"
-    perm.for_value = school
-    perm.insert(ignore_permissions=True)
-
-
-def remove_user_permission(doc, method=None):
-    """
-    Remove user permissions for the employee
-    """
-    user_permission = frappe.get_all("User Permission", filters={"user": doc.user_id, "allow": "School"})
-    for up in user_permission:
-        frappe.delete_doc("User Permission", up.name, ignore_permissions=True)
+    # Set user permissions if school is present
+    if doc.school:
+        set_user_permissions(doc.user_id, "School", doc.school)
 
 
 def get_google_group_info(doc, info_type="org_unit_path"):
