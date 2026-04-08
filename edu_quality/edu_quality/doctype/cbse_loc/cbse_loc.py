@@ -50,6 +50,10 @@ class CBSELOC(Document):
             if self.has_value_changed(field.fieldname):
                 changed_fields.append(field.fieldname)
         return changed_fields
+    
+    def get_program_enrollment(self):
+        ac_yr = frappe.db.get_value("Academic Year", {'custom_current_academic_year': 1}, 'name')
+        return frappe.get_doc("Program Enrollment", {'student': self.student, 'academic_year': ac_yr, 'docstatus': 1})
 
     def on_trash(self):
         user_permission = frappe.get_all(
@@ -107,6 +111,7 @@ class CBSELOC(Document):
         full_name = self._construct_full_name(student.first_name, student.middle_name, student.last_name)
         categories = {"general", "sc", "st", "obc"}
         category = student.category if student.category and student.category.lower() in categories else "General"
+        program_enrollment = self.get_program_enrollment()
         self.update({
             'first_name': student.first_name,
             'middle_name': student.middle_name,
@@ -123,7 +128,10 @@ class CBSELOC(Document):
             'colonysocietyarea': student.landmark,
             'city': student.city,
             'pincode': student.pincode,
-            'student_status': student.student_status
+            'student_status': student.student_status,
+            'school': program_enrollment.custom_school,
+            'program': program_enrollment.program,
+            'division': program_enrollment.student_group
         })
         
         for guard in student.guardians:
@@ -135,8 +143,7 @@ class CBSELOC(Document):
         self.save(ignore_permissions=True)
 
     def get_subject_details(self):
-        ac_yr = frappe.db.get_value("Academic Year", {'custom_current_academic_year': 1}, 'name')
-        program_enrollment = frappe.get_doc("Program Enrollment", {'student': self.student, 'academic_year': ac_yr, 'docstatus': 1})
+        program_enrollment = self.get_program_enrollment()
         i=1
         for subject in program_enrollment.courses:
             if i<7:

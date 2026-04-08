@@ -65,6 +65,11 @@
   "subject_4",
   "subject_5",
   "subject_6",
+  "office_use_section",
+  "school",
+  "column_break_pgpx",
+  "program",
+  "division",
   "section_break_kpgo",
   "amended_from"
  ],
@@ -387,6 +392,33 @@
    "label": "Subject 6"
   },
   {
+   "fieldname": "office_use_section",
+   "fieldtype": "Section Break",
+   "label": "Office Use"
+  },
+  {
+   "fieldname": "school",
+   "fieldtype": "Link",
+   "label": "School",
+   "options": "School"
+  },
+  {
+   "fieldname": "column_break_pgpx",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "division",
+   "fieldtype": "Link",
+   "label": "Division",
+   "options": "Student Group"
+  },
+  {
+   "fieldname": "program",
+   "fieldtype": "Link",
+   "label": "Class",
+   "options": "Program"
+  },
+  {
    "depends_on": "eval: doc.status == \"Rejected\"",
    "fieldname": "reject_reason",
    "fieldtype": "Data",
@@ -397,7 +429,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-09-05 17:35:19.090547",
+ "modified": "2024-09-18 17:00:34.917644",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "CBSE LOC",
