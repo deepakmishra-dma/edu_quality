@@ -267,7 +267,10 @@ scheduler_events = {
     "cron": {
         "0 * * * *": ["edu_quality.tasks.cron"],
         "0 19 * * *": ["edu_quality.tasks.send_bulk_notification_cmap_to_guardian"],
-        "0 6 * * *": ["edu_quality.tasks.schedule_birthday_greeting"],
+        "0 6 * * *": [
+            "edu_quality.tasks.schedule_birthday_greeting",
+            "edu_quality.tasks.event_reminder",
+        ],
         "* * * * *": [
             "edu_quality.cmap_jobs.send_ptm_notifications_to_students",
             "edu_quality.cmap_jobs.notify_teacher_before_one_hour_job",
@@ -275,7 +278,6 @@ scheduler_events = {
     },
     "daily": [
         "edu_quality.tasks.time_based",
-        "edu_quality.tasks.event_reminder",
         "edu_quality.tasks.create_payment_request_before_due_date",
         "edu_quality.tasks.create_payment_request_before_due_date_fee_advance",
         # "edu_quality.tasks.update_academic_year",
