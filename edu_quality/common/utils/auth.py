@@ -50,3 +50,15 @@ def set_user_permissions(user, doctype, value):
         perm.allow = doctype
         perm.for_value = value
         perm.insert(ignore_permissions=True)
+
+
+def remove_user_permissions(user, doctype, value=None):
+    """
+    Remove user permissions for the given user, doctype and value
+    """
+    filters = {"user": user, "allow": doctype}
+    if value:
+        filters["for_value"] = value
+    user_permissions = frappe.get_all("User Permission", filters=filters)
+    for up in user_permissions:
+        frappe.delete_doc("User Permission", up.name, ignore_permissions=True)
