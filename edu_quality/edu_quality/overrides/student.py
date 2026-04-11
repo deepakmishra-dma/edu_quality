@@ -10,8 +10,6 @@ from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
 )
 from frappe.desk.query_report import run
 
-from edu_quality.edu_quality.server_scripts.utils import current_academic_year
-
 class CustomStudent(Student):
     def autoname(self):
         school_prefixes = {
@@ -144,39 +142,7 @@ class CustomStudent(Student):
     @frappe.whitelist()
     def validate_bank_account(self):
         return frappe.db.exists("Bank Account", {"party": self.name})
-    
 
-    @frappe.whitelist()
-    def update_student_name(self,student_name):
-        student_name = student_name.split()
-        if len(student_name)<2: 
-            frappe.throw("Student Last Name is Mandatory!")
-        if len(student_name)> 3:
-            frappe.throw("Student Name should be in the format : First Name Middle Name Last Name")
-        self.first_name = student_name[0]
-        if len(student_name)> 2:
-            self.middle_name = student_name[1]
-        self.last_name = student_name[-1]
-        self.student_name = student_name
-        self.save(ignore_permissions=True)
-        self.update_name_in_linked_docs()
-
-    def update_name_in_linked_docs(self):
-        ac_yr = current_academic_year()
-        #fees
-        if frappe.db.exists("Fees",{'academic_year':ac_yr,'student':self.name,'docstatus':1}):
-            frappe.db.set_value("Fees",{'academic_year':ac_yr,'student':self.name,'docstatus':1},'student_name',self.student_name)
-        #program_enrollment
-        if frappe.db.exists("Program Enrollment",{'student':self.name,'academic_year':ac_yr,'docstatus':1}):
-            frappe.db.set_value("Program Enrollment",{'student':self.name,'academic_year':ac_yr,'docstatus':1},'student_name',self.student_name)
-        #receipts
-        if frappe.db.exists("Payment Entry",{'party':self.name,'docstatus':1}):
-            frappe.db.set_value("Payment Entry",{'party':self.name,'docstatus':1},'party_name',self.student_name)
-        #assessment results
-        results = frappe.db.get_all("Assessment Result", filters={'student': self.name}, fields=['name'])
-        for result in results:
-            frappe.db.set_value("Assessment Result", result.name, 'student_name', self.student_name)
-    
 
     @frappe.whitelist()
     def cancel_student(self,academic_year,fee_collection):
@@ -262,8 +228,15 @@ class CustomStudent(Student):
                 
         return self.check_previous_deposits(deduct)
 
+    
+    def get_deposit_company(self):
+        company_list = frappe.get_list("Company",filters=[['default_deposit_account',"is","set"]],fields=['name','default_deposit_account'])
+        if not company_list:
+            return frappe.throw("Please set default deposit account in Company")
+        return company_list[0]
+        
     def check_previous_deposits(self,deduct=0):
-        company = frappe.get_doc("Company",frappe.defaults.get_user_default("company"))
+        company = self.get_deposit_company()
         filters = {
                 "company": company.name,
                 "from_date": "2024-01-01",
@@ -300,7 +273,8 @@ class CustomStudent(Student):
             else:
                 return self.refund_deposit(None,balance,company.default_deposit_account)
         else:
-            return None,0,company.default_deposit_account
+            return frappe.throw("No Deposit Found!")
+        
 
     def refund_deposit(self,fee,amount,account):
         company = frappe.get_doc("Company",frappe.defaults.get_user_default("company"))
@@ -346,7 +320,7 @@ class CustomStudent(Student):
                 pe.update({dimension: ref_doc.get(dimension)})
 
         pe.update({
-            "reference_no": fee if fee else "Old Deposit",
+            "reference_no": fee if fee else "",
             "reference_date": frappe.utils.nowdate(),
         })
         try:
