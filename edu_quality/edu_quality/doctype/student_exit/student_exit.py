@@ -11,7 +11,7 @@ def date_to_words(date):
 
 
 class StudentExit(Document):
-	def before_insert(self):
+	def after_insert(self):
 		self.requested_on = frappe.utils.nowdate()
 		self.update_details()
 	
@@ -29,15 +29,16 @@ class StudentExit(Document):
 				self.fees_status = "Unpaid"
 			else:
 				self.fees_status = "Paid"
-			for guardian in student.guardians:
-				if guardian.relation == 'Father':
-					self.father_name = guardian.guardian_name
-				elif guardian.relation == 'Mother':
-					self.mother_name = guardian.guardian_name
-				else:
-					guardian_name = guardian.guardian_name
-			if not self.father_name:
-				self.father_name = guardian_name		
+			if student.guardians:
+				for guardian in student.guardians:
+					if guardian.relation == 'Father':
+						self.father_name = guardian.guardian_name
+					elif guardian.relation == 'Mother':
+						self.mother_name = guardian.guardian_name
+					else:
+						guardian_name = guardian.guardian_name
+				if not self.father_name:
+					self.father_name = guardian_name		
 			self.dob_in_words = date_to_words(student.date_of_birth)	
 			self.get_fee_details()
 			if self.cancellation_type!= "Deduct from Deposit":
