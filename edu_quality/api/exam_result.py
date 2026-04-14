@@ -275,6 +275,14 @@ def process_atomic_exam(
     )
 
 
+def process_toppers(assessment_group, assessment_plans, division_set=None):
+    assessment_group_doc = frappe.get_doc("Assessment Group", assessment_group)
+    assessment_group_doc.delete_topper_events()
+
+    assessment_group_doc.create_class_topper()
+    assessment_group_doc.create_division_toppers(division_set)
+    assessment_group_doc.create_subject_toppers()
+
 def get_ref_nos_from_string(data, school):
     ref_nos = data.split(",")
 

@@ -8,6 +8,7 @@ import requests
 from io import StringIO
 from functools import reduce
 from edu_quality.edu_quality.overrides.assessment_plan import get_questions
+from frappe.query_builder.functions import Sum
 
 
 class CustomAssessmentGroup(AssessmentGroup):
@@ -20,16 +21,445 @@ class CustomAssessmentGroup(AssessmentGroup):
         school_pref = frappe.db.get_value("School", self.custom_school, "prefix")
         self.name = f"{self.assessment_group_name} {short_acad_year} - {school_pref}{class_type.get('short_code')}"
 
-    # def before_validate(self):
-    #     if frappe.db.exists(
-    #         "Assessment Group",
-    #         {
-    #             "custom_order": self.custom_order,
-    #             "custom_academic_year": self.custom_academic_year,
-    #             "name": ["!=", self.name],
-    #         },
-    #     ):
-    #         frappe.throw(f"Order {self.custom_order} for the class already exists")
+    def can_create_toppers(self):
+        is_topper_event = self.get("custom_create_topper_event")
+        if is_topper_event:
+            return True
+
+        return frappe.throw("Topper Event is not enabled")
+
+    def create_class_topper(self):
+        if not self.custom_create_topper_for_class:
+            return
+
+        self.can_create_toppers()
+
+        assessment_group = self.name
+        topper_percentage = self.get("custom_topper_percentage")
+
+        all_group_results = frappe.db.get_all(
+            "Assessment Group Result",
+            filters={"assessment_group": assessment_group, "docstatus": 0},
+            order_by="class_rank asc",
+            fields=["*"],
+        )
+        top_3_toppers, rest_toppers = divide_toppers(
+            all_group_results, topper_percentage
+        )
+        program_hash = generate_program_hash()
+        school_hash = generate_school_hash()
+        division_hash = generate_group_hash()
+        self.create_event_for_toppers(
+            top_3_toppers, True, "class", program_hash, division_hash, school_hash
+        )
+        if rest_toppers:
+            self.create_event_for_toppers(
+                rest_toppers, False, "class", program_hash, division_hash, school_hash
+            )
+
+    def create_division_toppers(self, division_set):
+        if not self.custom_create_topper_for_division:
+            return
+
+        self.can_create_toppers()
+
+        assessment_group = self.name
+        topper_percentage = self.get("custom_topper_percentage")
+
+        all_group_results = frappe.db.get_all(
+            "Assessment Group Result",
+            filters={
+                "assessment_group": assessment_group,
+                "student_group": ["in", division_set],
+            },
+            order_by="class_rank",
+            fields=["*"],
+        )
+
+        group_by_division = {}
+
+        for result in all_group_results:
+            division = result.get("student_group")
+            if division not in group_by_division:
+                group_by_division[division] = [result]
+            else:
+                group_by_division[division].append(result)
+
+        program_hash = generate_program_hash()
+        school_hash = generate_school_hash()
+        division_hash = generate_group_hash()
+
+        for division in group_by_division:
+
+            top_3_toppers, rest_toppers = divide_toppers(
+                group_by_division[division], topper_percentage
+            )
+
+            self.create_event_for_toppers(
+                top_3_toppers,
+                True,
+                "division",
+                program_hash,
+                division_hash,
+                school_hash,
+            )
+            if rest_toppers:
+                self.create_event_for_toppers(
+                    rest_toppers,
+                    False,
+                    "division",
+                    program_hash,
+                    division_hash,
+                    school_hash,
+                )
+
+    def create_subject_toppers(self):
+        if not self.custom_create_topper_for_subject:
+            return
+
+        topper_percentage = self.get("custom_topper_percentage")
+        assessment_group = self.get("name")
+
+        all_group_results = frappe.db.get_all(
+            "Assessment Group Result",
+            filters={
+                "assessment_group": assessment_group,
+            },
+            fields=["name", "student"],
+        )
+
+        assessment_plans = frappe.db.get_all(
+            "Assessment Plan",
+            filters={
+                "assessment_group": assessment_group,
+                "docstatus": 1,
+                "custom_scoring_type": "Marks",
+            },
+        )
+        assess_res_qb = frappe.qb.DocType("Assessment Result")
+        assessment_plan_names = [plan.get("name") for plan in assessment_plans]
+        assess_group_res_qb = frappe.qb.DocType("Assessment Group Result")
+        program_qb = frappe.qb.DocType("Program")
+        query = (
+            frappe.qb.from_(assess_res_qb)
+            .inner_join(assess_group_res_qb)
+            .on(
+                (assess_res_qb.assessment_group == assess_group_res_qb.assessment_group)
+                & (assess_res_qb.student == assess_group_res_qb.student)
+            )
+            .where((assess_res_qb.assessment_plan.isin(assessment_plan_names)))
+            .groupby(assess_res_qb.student, assess_res_qb.course)
+            .inner_join(program_qb)
+            .on(assess_res_qb.program == program_qb.name)
+            .select(
+                Sum(assess_res_qb.custom_total_processed_score).as_("score"),
+                Sum(assess_res_qb.maximum_score).as_("max_score"),
+                assess_res_qb.student,
+                assess_group_res_qb.name,
+                assess_res_qb.course,
+                assess_res_qb.student_group,
+                assess_res_qb.program,
+                program_qb.school,
+            )
+        )
+
+        combined_result = query.run(as_dict=True)
+        subject_wise_result = {}
+
+        for result in combined_result:
+            subject = result.get("course")
+            if subject in subject_wise_result:
+                subject_wise_result[subject].append(result)
+            else:
+                subject_wise_result[subject] = [result]
+
+        for subject in subject_wise_result:
+            results = subject_wise_result[subject]
+            for result in results:
+                if result.get("max_score"):
+                    result["percentage"] = (
+                        result.get("score") / result.get("max_score")
+                    ) * 100
+                else:
+                    result["percentage"] = 0
+
+        program_hash = generate_program_hash()
+        school_hash = generate_school_hash()
+        division_hash = generate_group_hash()
+
+        for subject in subject_wise_result:
+            sorted_combined_result = sorted(
+                subject_wise_result[subject],
+                key=lambda x: x.get("percentage"),
+                reverse=True,
+            )
+            top_3_toppers, rest_toppers = divide_toppers(
+                sorted_combined_result, topper_percentage
+            )
+
+            self.create_event_for_toppers(
+                top_3_toppers, True, "subject", program_hash, division_hash, school_hash
+            )
+            if rest_toppers:
+                self.create_event_for_toppers(
+                    rest_toppers,
+                    False,
+                    "subject",
+                    program_hash,
+                    division_hash,
+                    school_hash,
+                )
+
+    def delete_topper_events(self):
+        assessment_group = self.get("name")
+        all_group_res = frappe.db.get_all(
+            "Assessment Group Result", {"assessment_group": assessment_group}
+        )
+        all_results = [result.get("name") for result in all_group_res]
+
+        event_participants = frappe.db.get_all(
+            "Event Participants",
+            filters={
+                "reference_doctype": "Assessment Group Result",
+                "reference_docname": ["in", all_results],
+                "parentfield": "event_participants",
+                "parenttype": "Event",
+            },
+            fields=["parent"],
+        )
+
+        unique_event = set(
+            event_participant.get("parent") for event_participant in event_participants
+        )
+
+        all_event_details = frappe.db.get_all(
+            "Event Detail", filters={"event": ["in", unique_event]}
+        )
+        for event_detail in all_event_details:
+            frappe.delete_doc("Event Detail", event_detail.get("name"))
+        for event in unique_event:
+            frappe.delete_doc("Event", event)
+
+    def create_event_for_toppers(
+        self,
+        topper_results,
+        top_3=True,
+        mode="class",
+        program_hash={},
+        division_hash={},
+        school_hash={},
+    ):
+        self.can_create_toppers()
+        assessment_group = self.name
+
+        if not topper_results:
+            return
+        result = topper_results[0]
+        event_name = get_event_subject_name(
+            result, top_3, mode, program_hash, division_hash, school_hash, self
+        )
+        event_doc = frappe.new_doc("Event")
+        event_doc.subject = event_name
+
+        event_doc.custom_branch = result.get("school")
+        event_doc.event_type = "Private"
+        event_doc.starts_on = frappe.utils.now_datetime()
+        event_doc.send_reminder = 0
+
+        for result in topper_results:
+            event_doc.append(
+                "event_participants",
+                {
+                    "reference_doctype": "Assessment Group Result",
+                    "reference_docname": result.get("name"),
+                },
+            )
+
+        event_doc.insert()
+
+        event_detail_doc = frappe.new_doc("Event Detail")
+        event_detail_doc.event_name = event_name
+        event_detail_doc.event = event_doc.name
+        event_detail_doc.event_starts_on = event_doc.starts_on
+        event_detail_doc.school = event_doc.custom_branch
+
+        for result in topper_results:
+            event_detail_doc.append(
+                "winning_students",
+                {
+                    "student": result.get("student"),
+                },
+            )
+
+        event_detail_doc.insert()
+        if top_3:
+            create_wiki_page_for_toppers(
+                assessment_group,
+                topper_results,
+                event_name,
+                mode,
+                get_wiki_template_title(result, mode),
+            )
+
+
+def get_wiki_template_title(result, mode):
+    if mode == "class":
+        return f"{result.get('program')}"
+    elif mode == "division":
+        return f"{result.get('student_group')}"
+    elif mode == "subject":
+        return f"{result.get('course') or result.get('subject')}"
+
+
+def generate_program_hash():
+    pr_qb = frappe.qb.DocType("Program")
+    class_qb = frappe.qb.DocType("Class Type")
+
+    query = (
+        frappe.qb.from_(pr_qb)
+        .inner_join(class_qb)
+        .on((pr_qb.program_name == class_qb.name))
+        .select(class_qb.short_code, pr_qb.program_name, pr_qb.name)
+    )
+    program_data = query.run(as_dict=True)
+    return {program.get("name"): program.get("short_code") for program in program_data}
+
+
+def generate_group_hash():
+    group_data = frappe.db.get_all(
+        "Student Group", fields=["name", "student_group_name"]
+    )
+    return {div.get("name"): div.get("student_group_name") for div in group_data}
+
+
+def generate_school_hash():
+    school_data = frappe.db.get_all("School", fields=["name", "prefix"])
+    return {school.get("name"): school.get("prefix") for school in school_data}
+
+
+def divide_toppers(all_group_results, topper_percentage):
+    toppers_count = round(len(all_group_results) * (topper_percentage / 100))
+
+    if toppers_count > 3:
+        top_3_toppers = all_group_results[:3]
+        rest_toppers = all_group_results[3:toppers_count]
+    else:
+        top_3_toppers = all_group_results
+        rest_toppers = False
+    return top_3_toppers, rest_toppers
+
+
+def create_wiki_page_for_toppers(
+    assessment_group, topper_results, page_name, mode="class", title=""
+):
+
+    students = [result.get("student") for result in topper_results]
+    students_data = frappe.db.get_all(
+        "Student",
+        filters={"name": ["in", students]},
+        fields=["first_name", "middle_name", "last_name", "image", "name"],
+    )
+    student_data_hash = {student.get("name"): student for student in students_data}
+
+    for i in range(len(topper_results)):
+        result = topper_results[i]
+        student = result.get("student")
+        student_data = student_data_hash[student]
+        if student_data:
+            topper_results[i] = {**topper_results[i], **student_data}
+
+    content = frappe.render_template(
+        "edu_quality/templates/components/topper_wiki.html",
+        {"students": topper_results, "mode": mode, "title": title},
+    )
+
+    wiki_space = frappe.db.get_value(
+        "Assessment Group", assessment_group, "custom_wiki_space"
+    )
+
+    new_page = create_wiki_page(
+        page_name, content, generate_wiki_route(wiki_space, page_name)
+    )
+    append_page_in_sidebar(wiki_space, new_page.name)
+
+
+def generate_wiki_route(wiki_space, page_name):
+    space_route = frappe.db.get_value("Wiki Space", wiki_space, "route")
+    return f"{space_route}/{page_name.lower().replace(' ','-')}"
+
+
+def append_page_in_sidebar(wiki_space, wiki_page):
+    page_exists = frappe.db.get_value(
+        "Wiki Group Item",
+        {
+            "parent": wiki_space,
+            "parenttype": "Wiki Space",
+            "parent_label": "Academic Toppers",
+            "wiki_page": wiki_page,
+        },
+    )
+    if page_exists:
+        return
+
+    new_page = frappe.new_doc("Wiki Group Item")
+    new_page.parent = wiki_space
+    new_page.parenttype = "Wiki Space"
+    new_page.parent_label = "Academic Toppers"
+    new_page.wiki_page = wiki_page
+    new_page.parentfield = "wiki_sidebars"
+    new_page.insert()
+
+
+def create_wiki_page(title, content, route):
+    # Create a new Wiki Page
+    wiki_page_name = frappe.db.exists("Wiki Page", {"route": route})
+
+    if wiki_page_name:
+        wiki_page_doc = frappe.get_doc("Wiki Page", wiki_page_name)
+        wiki_page_doc.content = content
+        wiki_page_doc.save()
+        return wiki_page_doc
+
+    wiki_page = frappe.get_doc(
+        {
+            "doctype": "Wiki Page",
+            "title": title,
+            "route": route,
+            "content": content,
+            "published": 1,
+        }
+    )
+
+    wiki_page.insert()
+    return wiki_page
+
+
+def get_event_subject_name(
+    result,
+    top_3=True,
+    mode="class",
+    program_hash={},
+    division_hash={},
+    school_hash={},
+    assessment_group_doc={},
+):
+    if top_3:
+        top_text = "Top_3"
+    else:
+        top_text = "Top_Rankers"
+    program_short_code = program_hash.get(result.get("program"))
+    division_short_code = division_hash.get(result.get("student_group"))
+    school_prefix = school_hash.get(result.get("school"))
+    short_acad_year = extract_year_from_academic_year_name(
+        assessment_group_doc.custom_academic_year
+    )
+
+    if mode == "class":
+        return f"{school_prefix}-{program_short_code}-{result.get('assessment_group')}-{top_text}"
+    elif mode == "division":
+        return f"{school_prefix}-{program_short_code}{division_short_code}-{assessment_group_doc.get('assessment_group_name')}-{short_acad_year}-{top_text}"
+    elif mode == "subject":
+        return f"{school_prefix}-{program_short_code}-{result.get('course')}-{assessment_group_doc.get('assessment_group_name')}-{top_text}"
 
 
 # edu_quality.edu_quality.overrides.assessment_group.import_assessment_group
