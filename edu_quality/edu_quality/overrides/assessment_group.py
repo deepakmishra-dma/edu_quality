@@ -49,12 +49,25 @@ class CustomAssessmentGroup(AssessmentGroup):
         program_hash = generate_program_hash()
         school_hash = generate_school_hash()
         division_hash = generate_group_hash()
+        subject_hash = generate_subject_hash()
         self.create_event_for_toppers(
-            top_3_toppers, True, "class", program_hash, division_hash, school_hash
+            top_3_toppers,
+            True,
+            "class",
+            program_hash,
+            division_hash,
+            school_hash,
+            subject_hash,
         )
         if rest_toppers:
             self.create_event_for_toppers(
-                rest_toppers, False, "class", program_hash, division_hash, school_hash
+                rest_toppers,
+                False,
+                "class",
+                program_hash,
+                division_hash,
+                school_hash,
+                subject_hash,
             )
 
     def create_division_toppers(self, division_set):
@@ -88,7 +101,7 @@ class CustomAssessmentGroup(AssessmentGroup):
         program_hash = generate_program_hash()
         school_hash = generate_school_hash()
         division_hash = generate_group_hash()
-
+        subject_hash = generate_subject_hash()
         for division in group_by_division:
 
             top_3_toppers, rest_toppers = divide_toppers(
@@ -102,6 +115,7 @@ class CustomAssessmentGroup(AssessmentGroup):
                 program_hash,
                 division_hash,
                 school_hash,
+                subject_hash,
             )
             if rest_toppers:
                 self.create_event_for_toppers(
@@ -111,6 +125,7 @@ class CustomAssessmentGroup(AssessmentGroup):
                     program_hash,
                     division_hash,
                     school_hash,
+                    subject_hash,
                 )
 
     def create_subject_toppers(self):
@@ -186,6 +201,7 @@ class CustomAssessmentGroup(AssessmentGroup):
         program_hash = generate_program_hash()
         school_hash = generate_school_hash()
         division_hash = generate_group_hash()
+        subject_hash = generate_subject_hash()
 
         for subject in subject_wise_result:
             sorted_combined_result = sorted(
@@ -198,7 +214,13 @@ class CustomAssessmentGroup(AssessmentGroup):
             )
 
             self.create_event_for_toppers(
-                top_3_toppers, True, "subject", program_hash, division_hash, school_hash
+                top_3_toppers,
+                True,
+                "subject",
+                program_hash,
+                division_hash,
+                school_hash,
+                subject_hash,
             )
             if rest_toppers:
                 self.create_event_for_toppers(
@@ -208,6 +230,7 @@ class CustomAssessmentGroup(AssessmentGroup):
                     program_hash,
                     division_hash,
                     school_hash,
+                    subject_hash,
                 )
 
     def delete_topper_events(self):
@@ -248,6 +271,7 @@ class CustomAssessmentGroup(AssessmentGroup):
         program_hash={},
         division_hash={},
         school_hash={},
+        subject_hash={},
     ):
         self.can_create_toppers()
         assessment_group = self.name
@@ -256,7 +280,14 @@ class CustomAssessmentGroup(AssessmentGroup):
             return
         result = topper_results[0]
         event_name = get_event_subject_name(
-            result, top_3, mode, program_hash, division_hash, school_hash, self
+            result,
+            top_3,
+            mode,
+            program_hash,
+            division_hash,
+            school_hash,
+            subject_hash,
+            self,
         )
         event_doc = frappe.new_doc("Event")
         event_doc.subject = event_name
@@ -282,13 +313,19 @@ class CustomAssessmentGroup(AssessmentGroup):
         event_detail_doc.event = event_doc.name
         event_detail_doc.event_starts_on = event_doc.starts_on
         event_detail_doc.school = event_doc.custom_branch
+        event_detail_doc.custom_is_topper_event = 1
+        if mode == "subject":
+            event_detail_doc.custom_is_subject_toppers = 1
+        elif mode == "class":
+            event_detail_doc.custom_is_program_toppers = 1
+        elif mode == "division":
+            event_detail_doc.custom_is_division_toppers = 1
 
-        for result in topper_results:
+        for index in range(len(topper_results)):
+            result = topper_results[index]
             event_detail_doc.append(
                 "winning_students",
-                {
-                    "student": result.get("student"),
-                },
+                {"student": result.get("student"), "position": index + 1},
             )
 
         event_detail_doc.insert()
@@ -330,6 +367,13 @@ def generate_group_hash():
         "Student Group", fields=["name", "student_group_name"]
     )
     return {div.get("name"): div.get("student_group_name") for div in group_data}
+
+
+def generate_subject_hash():
+    group_data = frappe.db.get_all("Course", fields=["name", "custom_short_code"])
+    return {
+        subject.get("name"): subject.get("custom_short_code") for subject in group_data
+    }
 
 
 def generate_school_hash():
@@ -417,6 +461,7 @@ def create_wiki_page(title, content, route):
     if wiki_page_name:
         wiki_page_doc = frappe.get_doc("Wiki Page", wiki_page_name)
         wiki_page_doc.content = content
+        wiki_page_doc.published = 0
         wiki_page_doc.save()
         return wiki_page_doc
 
@@ -426,6 +471,7 @@ def create_wiki_page(title, content, route):
             "title": title,
             "route": route,
             "content": content,
+            "published": 0,
             "published": 1,
         }
     )
@@ -441,25 +487,25 @@ def get_event_subject_name(
     program_hash={},
     division_hash={},
     school_hash={},
+    subject_hash={},
     assessment_group_doc={},
 ):
     if top_3:
         top_text = "Top_3"
     else:
-        top_text = "Top_Rankers"
+        top_text = "Toppers"
     program_short_code = program_hash.get(result.get("program"))
     division_short_code = division_hash.get(result.get("student_group"))
     school_prefix = school_hash.get(result.get("school"))
     short_acad_year = extract_year_from_academic_year_name(
         assessment_group_doc.custom_academic_year
     )
-
     if mode == "class":
-        return f"{school_prefix}-{program_short_code}-{result.get('assessment_group')}-{top_text}"
+        return f"{program_short_code}-{result.get('assessment_group')}-{top_text}"
     elif mode == "division":
-        return f"{school_prefix}-{program_short_code}{division_short_code}-{assessment_group_doc.get('assessment_group_name')}-{short_acad_year}-{top_text}"
+        return f"{program_short_code}{division_short_code}-{assessment_group_doc.get('assessment_group_name')}-{short_acad_year}-{top_text}"
     elif mode == "subject":
-        return f"{school_prefix}-{program_short_code}-{result.get('course')}-{assessment_group_doc.get('assessment_group_name')}-{top_text}"
+        return f"{program_short_code}-{subject_hash.get(result.get('course'))}-{assessment_group_doc.get('assessment_group_name')}-{top_text}"
 
 
 # edu_quality.edu_quality.overrides.assessment_group.import_assessment_group
