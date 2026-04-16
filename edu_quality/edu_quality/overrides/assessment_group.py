@@ -594,6 +594,12 @@ def insert_groups_into_db(bulk_data, headers, total_rows):
                             is_composite_exam,
                             is_final_exam,
                             is_final_photo_req,
+                            create_topper,
+                            create_topper_class,
+                            create_topper_division,
+                            create_topper_subject,
+                            topper_percentage,
+                            topper_wiki,
                             acad_year,
                             process_pass_or_fail,
                             passing_percentage,
@@ -609,7 +615,7 @@ def insert_groups_into_db(bulk_data, headers, total_rows):
                             config_subject_allow_reval,
                             marking_mode,
                             grading_scale,
-                        ) = row[:27]
+                        ) = row[:33]
 
                         if name:
                             program_flag = None
@@ -652,6 +658,33 @@ def insert_groups_into_db(bulk_data, headers, total_rows):
                             current_group.custom_is_final_exam_class_photo_required = (
                                 is_final_photo_req
                             )
+                            current_group.custom_create_topper_event = create_topper
+                            current_group.custom_create_topper_for_class = (
+                                create_topper_class
+                            )
+                            current_group.custom_create_topper_for_division = (
+                                create_topper_division
+                            )
+                            current_group.custom_create_topper_for_subject = (
+                                create_topper_subject
+                            )
+                            current_group.custom_topper_percentage = (
+                                topper_percentage or 0
+                            )
+                            current_group.custom_wiki_space = topper_wiki
+                            current_group.custom_composite_exam_id = composite_exam_id
+                            current_group.custom_composite_exam_avg = composite_exam_avg
+                            current_group.custom_kg_exam_paper = kg_exam_paper
+                            current_group.custom_config_subject_type = (
+                                config_subject_type
+                            )
+                            current_group.custom_config_subject_name = (
+                                config_subject_name
+                            )
+                            current_group.custom_config_subject_textbook_used = (
+                                config_subject_textbook_used
+                            )
+
                             current_group.custom_process_passing = (
                                 process_pass_or_fail or 0
                             )
@@ -738,7 +771,8 @@ def insert_assessment_plan(
     is_kg_exam,
 ):
     questions = []
-    if is_kg_exam:
+    print(is_kg_exam, type(is_kg_exam))
+    if int(is_kg_exam):
         questions = get_questions(kg_exam_paper)
 
     data = [subj_map[i] for i in subj_map]

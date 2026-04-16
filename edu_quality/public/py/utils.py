@@ -277,7 +277,9 @@ def get_submitted_undertaking(payment_request):
     else:
         return False
 
+
 import json
+
 
 @frappe.whitelist(allow_guest=True)
 def handle_undertaking_submission(**kwargs):
@@ -605,7 +607,15 @@ def extract_year_from_academic_year_name(year: str):
 
 @frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs
-def academic_year_query(doctype, txt, searchfield, start, page_len, filters):
+def academic_year_query(
+    doctype="",
+    txt="",
+    searchfield="",
+    start="",
+    page_len="",
+    filters=None,
+    as_dict=None,
+):
     acad_year_qb = frappe.qb.DocType("Academic Year")
     return (
         frappe.qb.from_(acad_year_qb)
@@ -614,7 +624,7 @@ def academic_year_query(doctype, txt, searchfield, start, page_len, filters):
             | (acad_year_qb.custom_next_academic_year == 1)
         )
         .select("name")
-    ).run()
+    ).run(as_dict=as_dict)
 
 
 def render_template_with_exception(template, data):

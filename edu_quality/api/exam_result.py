@@ -31,7 +31,10 @@ def get_all_assessment_plans(assessment_group, program, div):
         .select(
             assess_plan_qb.name,
             assess_plan_qb.student_group,
-            assess_plan_qb.custom_calculate_ranks,
+            # assess_plan_qb.custom_calculate_ranks,
+            assess_plan_qb.student_group,
+            assess_plan_qb.custom_scoring_type,
+            assess_plan_qb.course,
         )
     )
 

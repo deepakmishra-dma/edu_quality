@@ -413,22 +413,26 @@ def get_cmap_creation_headers():
     item_group_data = item_group_query.run(as_dict=True)
 
     item_group_headers = [
-        {"fieldname": to_snake_case(group.get("name")), "label": group.get("name")}
+        {
+            "fieldname": to_snake_case(group.get("name")),
+            "label": group.get("name"),
+            "type": "item_group",
+        }
         for group in item_group_data
     ]
     meta = frappe.get_meta("CMAP")
 
     columns = [
+        {"fieldname": "plan_date", "label": "Plan Date"},
         {"fieldname": "academic_year", "label": "Academic Year"},
         {"fieldname": "subject", "label": "Subject"},
         {"fieldname": "period", "label": "Period"},
-        {
-            "fieldname": "reserved_for_portion_circular",
-            "label": "Reserved For Portion Circular",
-        },
+        # {
+        #     "fieldname": "reserved_for_portion_circular",
+        #     "label": "Reserved For Portion Circular",
+        # },
         {"fieldname": "class", "label": "Class"},
         {"fieldname": "unit", "label": "Unit"},
-        {"fieldname": "plan_date", "label": "Plan Date"},
         {"fieldname": "last_period_of_the_unit", "label": "Last Period of the Unit"},
         {"fieldname": "textbook", "label": "Textbook"},
         {
@@ -492,8 +496,8 @@ def get_cmap_list(academic_year, program, subject, unit, from_date=None, end_dat
             cmap_qb.period,
             cmap_qb["class"],
             cmap_qb.last_period_of_the_unit,
-            cmap_qb.reserved_for_portion_circular,
-            GROUP_CONCAT(cmap_assignment_qb.real_date).as_("real_dates"),
+            # cmap_qb.reserved_for_portion_circular,
+            # GROUP_CONCAT(cmap_assignment_qb.real_date).as_("real_dates"),
         )
     )
 
@@ -544,6 +548,32 @@ def update_cmap(row):
 
     else:
         pass
+
+
+@frappe.whitelist()
+def reorder_cmap_period(changed_cmaps):
+
+    for cmap in changed_cmaps:
+        name = cmap.get("name")
+        new_period = cmap.get("new_period")
+
+        cmap_doc = frappe.get_doc("CMAP", name)
+        cmap_doc.period = new_period
+        cmap_doc.name_func()
+        cmap_doc.save()
+    # ordered_cmaps = frappe.db.get_all(
+    #     "CMAP",
+    #     filters={
+    #         "academic_year": academic_year,
+    #         "class": class_type,
+    #         "unit": unit,
+    #         "subject": subject,
+    #     },
+    #     fields=["period", "name"],
+    #     order_by="period",
+    # )
+
+    pass
 
 
 # def add_cmap():

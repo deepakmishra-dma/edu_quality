@@ -28,7 +28,9 @@ frappe.listview_settings['Assessment Group'] = {
             dialog.show();
         });
 
-
+        listview.page.add_menu_item(__('Download Sample Import CSV'), function () {
+            window.open("/assets/edu_quality/sample_assessment_group_temp.csv")
+        })
     }
 };
 
