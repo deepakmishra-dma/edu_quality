@@ -199,43 +199,119 @@ def process_result(
 def process_atomic_exam(
     assessment_group, academic_year, program, div=None, student_master=None
 ):
-    assessment_plans = get_all_assessment_plans(assessment_group, program, div)
-    assessment_group_doc = frappe.get_doc("Assessment Group", assessment_group)
-    errors = check_assessment_plan_in_group(assessment_plans)
-    if errors:
-        return errors
+    try:
+        assessment_plans = get_all_assessment_plans(assessment_group, program, div)
+        errors = check_assessment_plan_in_group(assessment_plans, student_master)
+        if errors:
+            return errors
 
+        process_assessment_results(assessment_plans, student_master)
+        student_list = create_assessment_group_results(
+            assessment_group, assessment_plans
+        )
+        calculate_and_save_group_results(assessment_group, student_list)
+        process_toppers(
+            assessment_group, assessment_plans, get_division_set(assessment_plans)
+        )
+
+        frappe.msgprint(
+            "Successfully Processed all the results matching the criteria provided"
+        )
+    except Exception as e:
+        handle_error()
+
+
+def get_division_set(assessment_plans):
+    return set(plan.get("student_group") for plan in assessment_plans)
+
+
+def get_subject_set(assessment_plans):
+    return set(
+        plan.get("course")
+        for plan in assessment_plans
+        if plan.get("custom_scoring_type").lower() == "marks"
+    )
+
+
+def process_assessment_results(assessment_plans, student_master):
     submitted_docs = get_assessment_result_of_plans(
         assessment_plans, [1], student_master
     )
-
     cancel_submitted_atomic_exams(submitted_docs)
     non_submitted_docs = get_assessment_result_of_plans(
         assessment_plans, [0], student_master
     )
-    student_set = set()
+    submit_assessment_results(non_submitted_docs)
 
+
+def submit_assessment_results(non_submitted_docs):
     total_res_rows = len(non_submitted_docs)
-    for idx in range(0, total_res_rows):
-        result = non_submitted_docs[idx]
+    for idx, result in enumerate(non_submitted_docs):
+        # frappe.db.begin()
         assess_result = frappe.get_doc("Assessment Result", result.get("name"))
         if assess_result:
             assess_result.submit()
-            student_set.add(assess_result.student)
         progress = idx * 100 // total_res_rows
         frappe.realtime.publish_progress(
             progress,
             title="Submitting Result",
             description=f"{idx}/{total_res_rows} rows processed",
         )
-    student_list = list(student_set)
-    assess_g_res_docs_set = set()
-    total_students = len(student_list)
-    cancel_assessment_group_result(assessment_group, student_list)
+        # frappe.db.commit()
 
-    for idx in range(0, total_students):
-        student = student_list[idx]
-        existing_doc = frappe.db.exists(
+
+def create_assessment_group_results(assessment_group, assessment_plans):
+    student_set = get_student_set(assessment_plans)
+    student_list = list(student_set)
+    total_students = len(student_list)
+    frappe.throw("THrowing")
+    for idx, student in enumerate(student_list):
+        # frappe.db.begin()
+        create_or_get_assessment_group_result(assessment_group, student)
+        progress = (idx // total_students) * 100
+        frappe.realtime.publish_progress(
+            progress,
+            title="Creating Group Result",
+            description=f"{idx}/{total_students} rows processed",
+        )
+        # frappe.db.commit()
+    return student_list
+
+
+def get_student_set(assessment_plans):
+    student_set = set()
+    for plan in assessment_plans:
+        results = frappe.get_all(
+            "Assessment Result",
+            filters={"assessment_plan": plan.get("name")},
+            fields=["student"],
+        )
+        student_set.update(result.student for result in results)
+    return student_set
+
+
+def create_or_get_assessment_group_result(assessment_group, student):
+    existing_doc = frappe.db.exists(
+        "Assessment Group Result",
+        {
+            "assessment_group": assessment_group,
+            "student": student,
+            "docstatus": ["in", [0]],
+        },
+    )
+    if existing_doc:
+        return existing_doc
+
+    assess_g_res = frappe.new_doc("Assessment Group Result")
+    assess_g_res.student = student
+    assess_g_res.assessment_group = assessment_group
+    doc = assess_g_res.insert()
+    return doc.name
+
+
+def calculate_and_save_group_results(assessment_group, student_list):
+    assess_g_res_docs = [
+        frappe.db.exists(
             "Assessment Group Result",
             {
                 "assessment_group": assessment_group,
@@ -243,38 +319,36 @@ def process_atomic_exam(
                 "docstatus": ["in", [0, 1]],
             },
         )
-        if existing_doc:
-            assess_g_res_docs_set.add(existing_doc)
-            continue
-
-        assess_g_res = frappe.new_doc("Assessment Group Result")
-        assess_g_res.student = student
-        assess_g_res.assessment_group = assessment_group
-        doc = assess_g_res.insert()
-        assess_g_res_docs_set.add(doc.name)
-        progress = (idx // total_students) * 100
-        frappe.realtime.publish_progress(
-            progress,
-            title="Creating Group Result",
-            description=f"{idx}/{total_students} rows processed",
-        )
-    assess_g_res_docs = list(assess_g_res_docs_set)
+        for student in student_list
+    ]
+    assess_g_res_docs = [doc for doc in assess_g_res_docs if doc]
     total_assess_g_res = len(assess_g_res_docs)
-    for idx in range(0, total_assess_g_res):
-        assess_g_res = assess_g_res_docs[idx]
+
+    for idx, assess_g_res in enumerate(assess_g_res_docs):
+        assess_g_r_doc = frappe.get_doc("Assessment Group Result", assess_g_res)
+        if assess_g_r_doc:
+            assess_g_r_doc.calculate_total_ranks_and_score()
+            assess_g_r_doc.save()
 
         doc = frappe.get_doc("Assessment Group Result", assess_g_res)
         frappe.realtime.publish_progress(
-            progress,
-            title="Submitting Assessment Group Result",
+            idx * 100 // total_assess_g_res,
+            title="Saving Assessment Group Result",
             description=f"{idx}/{total_assess_g_res} rows processed",
         )
         if doc:
             doc.results = []
             doc.submit()
 
+
+def handle_error():
+    frappe.db.rollback()
+    frappe.log_error(
+        title="Error in processing atomic exam",
+        message=frappe.get_traceback(),
+    )
     frappe.msgprint(
-        "Successfully Processed all the results matching the criteria provided"
+        "Error in processing atomic exam. Please check the logs for more details"
     )
 
 
@@ -285,6 +359,7 @@ def process_toppers(assessment_group, assessment_plans, division_set=None):
     assessment_group_doc.create_class_topper()
     assessment_group_doc.create_division_toppers(division_set)
     assessment_group_doc.create_subject_toppers()
+
 
 def get_ref_nos_from_string(data, school):
     ref_nos = data.split(",")
@@ -316,11 +391,15 @@ def cancel_submitted_atomic_exams(result_data):
     unique_submitted_results = set(submitted_results)
 
     for result in unique_submitted_results:
+        # frappe.db.begin()
         assess_result = frappe.get_doc("Assessment Result", result)
-        assess_result.cancel()
         amended_doc = frappe.copy_doc(assess_result)
+        amended_doc.docstatus = 0
         amended_doc.amended_from = assess_result.name
+        assess_result.cancel()
+
         amended_doc.save()
+        # frappe.db.commit()
 
 
 def cancel_assessment_group_result(assessment_group, students_list):
