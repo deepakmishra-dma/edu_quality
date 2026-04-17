@@ -68,6 +68,7 @@ class CustomAssessmentGroup(AssessmentGroup):
                 division_hash,
                 school_hash,
                 subject_hash,
+                4
             )
 
     def create_division_toppers(self, division_set):
@@ -126,6 +127,7 @@ class CustomAssessmentGroup(AssessmentGroup):
                     division_hash,
                     school_hash,
                     subject_hash,
+                    4
                 )
 
     def create_subject_toppers(self):
@@ -231,6 +233,7 @@ class CustomAssessmentGroup(AssessmentGroup):
                     division_hash,
                     school_hash,
                     subject_hash,
+                    4
                 )
 
     def delete_topper_events(self):
@@ -272,6 +275,7 @@ class CustomAssessmentGroup(AssessmentGroup):
         division_hash={},
         school_hash={},
         subject_hash={},
+        sum_no_position=1,
     ):
         self.can_create_toppers()
         assessment_group = self.name
@@ -325,7 +329,7 @@ class CustomAssessmentGroup(AssessmentGroup):
             result = topper_results[index]
             event_detail_doc.append(
                 "winning_students",
-                {"student": result.get("student"), "position": index + 1},
+                {"student": result.get("student"), "position": index + sum_no_position},
             )
 
         event_detail_doc.insert()
