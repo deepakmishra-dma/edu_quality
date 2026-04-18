@@ -12,6 +12,7 @@
   "refno",
   "student_status",
   "program",
+  "percentage",
   "column_break_hhgf",
   "position",
   "division",
@@ -96,12 +97,17 @@
    "fieldtype": "Data",
    "label": "Payment Status",
    "read_only": 1
+  },
+  {
+   "fieldname": "percentage",
+   "fieldtype": "Float",
+   "label": "Percentage"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-07-19 12:26:34.312423",
+ "modified": "2024-09-20 12:40:57.926082",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Student Data",

@@ -41,7 +41,7 @@ class CustomAssessmentGroup(AssessmentGroup):
             "Assessment Group Result",
             filters={"assessment_group": assessment_group, "docstatus": 0},
             order_by="class_rank asc",
-            fields=["*"],
+            fields=["*", "combined_percentage as percentage"],
         )
         top_3_toppers, rest_toppers = divide_toppers(
             all_group_results, topper_percentage
@@ -68,7 +68,7 @@ class CustomAssessmentGroup(AssessmentGroup):
                 division_hash,
                 school_hash,
                 subject_hash,
-                4
+                4,
             )
 
     def create_division_toppers(self, division_set):
@@ -87,7 +87,7 @@ class CustomAssessmentGroup(AssessmentGroup):
                 "student_group": ["in", division_set],
             },
             order_by="class_rank",
-            fields=["*"],
+            fields=["*", "combined_percentage as percentage"],
         )
 
         group_by_division = {}
@@ -127,7 +127,7 @@ class CustomAssessmentGroup(AssessmentGroup):
                     division_hash,
                     school_hash,
                     subject_hash,
-                    4
+                    4,
                 )
 
     def create_subject_toppers(self):
@@ -136,14 +136,6 @@ class CustomAssessmentGroup(AssessmentGroup):
 
         topper_percentage = self.get("custom_topper_percentage")
         assessment_group = self.get("name")
-
-        all_group_results = frappe.db.get_all(
-            "Assessment Group Result",
-            filters={
-                "assessment_group": assessment_group,
-            },
-            fields=["name", "student"],
-        )
 
         assessment_plans = frappe.db.get_all(
             "Assessment Plan",
@@ -157,6 +149,7 @@ class CustomAssessmentGroup(AssessmentGroup):
         assessment_plan_names = [plan.get("name") for plan in assessment_plans]
         assess_group_res_qb = frappe.qb.DocType("Assessment Group Result")
         program_qb = frappe.qb.DocType("Program")
+
         query = (
             frappe.qb.from_(assess_res_qb)
             .inner_join(assess_group_res_qb)
@@ -164,10 +157,18 @@ class CustomAssessmentGroup(AssessmentGroup):
                 (assess_res_qb.assessment_group == assess_group_res_qb.assessment_group)
                 & (assess_res_qb.student == assess_group_res_qb.student)
             )
-            .where((assess_res_qb.assessment_plan.isin(assessment_plan_names)))
-            .groupby(assess_res_qb.student, assess_res_qb.course)
+            .where(
+                (assess_res_qb.assessment_plan.isin(assessment_plan_names))
+                & (assess_group_res_qb.docstatus == 0)
+                & (assess_res_qb.docstatus == 1)
+            )
             .inner_join(program_qb)
             .on(assess_res_qb.program == program_qb.name)
+            .groupby(
+                assess_res_qb.student,
+                assess_res_qb.course,
+                assess_group_res_qb.name,
+            )
             .select(
                 Sum(assess_res_qb.custom_total_processed_score).as_("score"),
                 Sum(assess_res_qb.maximum_score).as_("max_score"),
@@ -176,11 +177,11 @@ class CustomAssessmentGroup(AssessmentGroup):
                 assess_res_qb.course,
                 assess_res_qb.student_group,
                 assess_res_qb.program,
-                program_qb.school,
+                assess_group_res_qb.school,
             )
         )
-
         combined_result = query.run(as_dict=True)
+        frappe.log_error("xd", combined_result)
         subject_wise_result = {}
 
         for result in combined_result:
@@ -233,7 +234,7 @@ class CustomAssessmentGroup(AssessmentGroup):
                     division_hash,
                     school_hash,
                     subject_hash,
-                    4
+                    4,
                 )
 
     def delete_topper_events(self):
@@ -329,7 +330,11 @@ class CustomAssessmentGroup(AssessmentGroup):
             result = topper_results[index]
             event_detail_doc.append(
                 "winning_students",
-                {"student": result.get("student"), "position": index + sum_no_position},
+                {
+                    "student": result.get("student"),
+                    "position": index + sum_no_position,
+                    "percentage": result.get("percentage"),
+                },
             )
 
         event_detail_doc.insert()
@@ -386,13 +391,16 @@ def generate_school_hash():
 
 
 def divide_toppers(all_group_results, topper_percentage):
-    toppers_count = round(len(all_group_results) * (topper_percentage / 100))
+    total_results = len(all_group_results)
+    toppers_count = round(total_results * (topper_percentage / 100))
+    if total_results < 3:
+        top_3_toppers = all_group_results[:total_results]
+    else:
+        top_3_toppers = all_group_results[:3]
 
     if toppers_count > 3:
-        top_3_toppers = all_group_results[:3]
         rest_toppers = all_group_results[3:toppers_count]
     else:
-        top_3_toppers = all_group_results
         rest_toppers = False
     return top_3_toppers, rest_toppers
 

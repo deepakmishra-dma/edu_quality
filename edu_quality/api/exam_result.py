@@ -264,7 +264,6 @@ def create_assessment_group_results(assessment_group, assessment_plans):
     student_set = get_student_set(assessment_plans)
     student_list = list(student_set)
     total_students = len(student_list)
-    frappe.throw("THrowing")
     for idx, student in enumerate(student_list):
         # frappe.db.begin()
         create_or_get_assessment_group_result(assessment_group, student)
