@@ -199,26 +199,24 @@ def process_result(
 def process_atomic_exam(
     assessment_group, academic_year, program, div=None, student_master=None
 ):
-    try:
-        assessment_plans = get_all_assessment_plans(assessment_group, program, div)
-        errors = check_assessment_plan_in_group(assessment_plans, student_master)
-        if errors:
-            return errors
+    # try:
+    assessment_plans = get_all_assessment_plans(assessment_group, program, div)
+    errors = check_assessment_plan_in_group(assessment_plans, student_master)
+    if errors:
+        return errors
 
-        process_assessment_results(assessment_plans, student_master)
-        student_list = create_assessment_group_results(
-            assessment_group, assessment_plans
-        )
-        calculate_and_save_group_results(assessment_group, student_list)
-        process_toppers(
-            assessment_group, assessment_plans, get_division_set(assessment_plans)
-        )
+    process_assessment_results(assessment_plans, student_master)
+    student_list = create_assessment_group_results(assessment_group, assessment_plans)
+    calculate_and_save_group_results(assessment_group, student_list)
+    process_toppers(
+        assessment_group, assessment_plans, get_division_set(assessment_plans)
+    )
 
-        frappe.msgprint(
-            "Successfully Processed all the results matching the criteria provided"
-        )
-    except Exception as e:
-        handle_error()
+    frappe.msgprint(
+        "Successfully Processed all the results matching the criteria provided"
+    )
+    # except Exception as e:
+    #     handle_error()
 
 
 def get_division_set(assessment_plans):
