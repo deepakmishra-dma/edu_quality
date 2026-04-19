@@ -76,6 +76,14 @@ function onLoad() {
 			options: "",
 			description: "Enter Ref Nos Separated by , to process only the specified ones"
 		},
+
+		{
+			label: "Create Group Result Only",
+			fieldname: "create_toppers_only",
+			fieldtype: "Check",
+			options: "",
+			description: "Doesn't cancel assessment result and  only recaclulate assessment group result"
+		},
 	])
 	if (frappe.route_options) {
 		updateFilters()
@@ -108,6 +116,8 @@ async function processResult() {
 	const division = filtersRef.get_value("division")
 	const assess_group = filtersRef.get_value("exam_name")
 	const ref_nos = filtersRef.get_value("ref_nos")
+	const create_toppers_only = filtersRef.get_value("create_toppers_only")
+
 	if (!acad_year || !school || !program || !assess_group) {
 		frappe.throw(__('Academic Year or School or Program or Exam Group is required'))
 		return
@@ -121,7 +131,8 @@ async function processResult() {
 				program: program,
 				division: division,
 				assessment_group: assess_group,
-				ref_nos: ref_nos
+				ref_nos: ref_nos,
+				create_toppers_only: create_toppers_only
 			}
 		})
 

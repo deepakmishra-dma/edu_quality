@@ -104,8 +104,8 @@ class AssessmentGroupResult(Document):
 
     def before_insert(self, method=None):
         self.calculate_total_score()
-        self.class_rank = self.calculate_class_rank() or 0
-        self.division_rank = self.calculate_div_rank() or 0
+        # self.class_rank = self.calculate_class_rank() or 0
+        # self.division_rank = self.calculate_div_rank() or 0
 
     def before_submit(self, method=None):
         self.calculate_total_score()

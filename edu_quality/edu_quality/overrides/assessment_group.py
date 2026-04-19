@@ -9,6 +9,8 @@ from io import StringIO
 from functools import reduce
 from edu_quality.edu_quality.overrides.assessment_plan import get_questions
 from frappe.query_builder.functions import Sum
+from pypika.analytics import Rank
+from frappe.query_builder import Order
 
 
 class CustomAssessmentGroup(AssessmentGroup):
@@ -37,12 +39,8 @@ class CustomAssessmentGroup(AssessmentGroup):
         assessment_group = self.name
         topper_percentage = self.get("custom_topper_percentage")
 
-        all_group_results = frappe.db.get_all(
-            "Assessment Group Result",
-            filters={"assessment_group": assessment_group, "docstatus": 0},
-            order_by="class_rank asc",
-            fields=["*", "combined_percentage as percentage"],
-        )
+        all_group_results = self.get_group_class_rank(as_map=False)
+
         top_3_toppers, rest_toppers = divide_toppers(
             all_group_results, topper_percentage
         )
@@ -50,6 +48,7 @@ class CustomAssessmentGroup(AssessmentGroup):
         school_hash = generate_school_hash()
         division_hash = generate_group_hash()
         subject_hash = generate_subject_hash()
+
         self.create_event_for_toppers(
             top_3_toppers,
             True,
@@ -59,6 +58,7 @@ class CustomAssessmentGroup(AssessmentGroup):
             school_hash,
             subject_hash,
         )
+
         if rest_toppers:
             self.create_event_for_toppers(
                 rest_toppers,
@@ -80,16 +80,7 @@ class CustomAssessmentGroup(AssessmentGroup):
         assessment_group = self.name
         topper_percentage = self.get("custom_topper_percentage")
 
-        all_group_results = frappe.db.get_all(
-            "Assessment Group Result",
-            filters={
-                "assessment_group": assessment_group,
-                "student_group": ["in", division_set],
-            },
-            order_by="class_rank",
-            fields=["*", "combined_percentage as percentage"],
-        )
-
+        all_group_results = self.get_group_div_rank(as_map=False)
         group_by_division = {}
 
         for result in all_group_results:
@@ -106,7 +97,12 @@ class CustomAssessmentGroup(AssessmentGroup):
         for division in group_by_division:
 
             top_3_toppers, rest_toppers = divide_toppers(
-                group_by_division[division], topper_percentage
+                sorted(
+                    group_by_division[division],
+                    key=lambda x: x.get("percentage"),
+                    reverse=True,
+                ),
+                topper_percentage,
             )
 
             self.create_event_for_toppers(
@@ -181,7 +177,7 @@ class CustomAssessmentGroup(AssessmentGroup):
             )
         )
         combined_result = query.run(as_dict=True)
-        frappe.log_error("xd", combined_result)
+
         subject_wise_result = {}
 
         for result in combined_result:
@@ -347,6 +343,71 @@ class CustomAssessmentGroup(AssessmentGroup):
                 get_wiki_template_title(result, mode),
             )
 
+    def get_group_class_rank(self, as_map=True):
+        assess_gr_qb = frappe.qb.DocType("Assessment Group Result")
+        query = (
+            frappe.qb.from_(assess_gr_qb)
+            .where(
+                (assess_gr_qb.docstatus.isin([0, 1]))
+                & (assess_gr_qb.assessment_group == self.name)
+                & (assess_gr_qb.program == self.custom_program)
+            )
+            .select(
+                assess_gr_qb.name,
+                assess_gr_qb.academic_year,
+                assess_gr_qb.school,
+                assess_gr_qb.student_group,
+                assess_gr_qb.program,
+                assess_gr_qb.combined_total_score,
+                assess_gr_qb.combined_maximum_score,
+                assess_gr_qb.student,
+                assess_gr_qb.assessment_group,
+                assess_gr_qb.combined_percentage.as_("percentage"),
+                Rank()
+                .over()
+                .orderby(assess_gr_qb.combined_percentage, order=Order.desc)
+                .as_("rank"),
+            )
+        )
+
+        data = query.run(as_dict=True)
+        if as_map:
+            data = {item["name"]: item["rank"] for item in data}
+        return data
+
+    def get_group_div_rank(self, as_map=True):
+        assess_gr_qb = frappe.qb.DocType("Assessment Group Result")
+        query = (
+            frappe.qb.from_(assess_gr_qb)
+            .where(
+                (assess_gr_qb.docstatus.isin([0, 1]))
+                & (assess_gr_qb.assessment_group == self.name)
+                & (assess_gr_qb.program == self.custom_program)
+            )
+            .select(
+                assess_gr_qb.name,
+                assess_gr_qb.academic_year,
+                assess_gr_qb.school,
+                assess_gr_qb.student_group,
+                assess_gr_qb.student,
+                assess_gr_qb.assessment_group,
+                assess_gr_qb.program,
+                assess_gr_qb.combined_total_score,
+                assess_gr_qb.combined_maximum_score,
+                assess_gr_qb.combined_percentage.as_("percentage"),
+                Rank()
+                .over(assess_gr_qb.student_group)
+                .orderby(assess_gr_qb.combined_percentage, order=Order.desc)
+                .as_("rank"),
+            )
+        )
+
+        data = query.run(as_dict=True)
+        if as_map:
+            data = {item["name"]: item["rank"] for item in data}
+        frappe.log_error("ee", data)
+        return data
+
 
 def get_wiki_template_title(result, mode):
     if mode == "class":
@@ -393,15 +454,28 @@ def generate_school_hash():
 def divide_toppers(all_group_results, topper_percentage):
     total_results = len(all_group_results)
     toppers_count = round(total_results * (topper_percentage / 100))
-    if total_results < 3:
-        top_3_toppers = all_group_results[:total_results]
-    else:
-        top_3_toppers = all_group_results[:3]
 
-    if toppers_count > 3:
-        rest_toppers = all_group_results[3:toppers_count]
+    top_3_toppers = []
+    unique_percentages = set()
+    i = 0
+
+    while len(unique_percentages) < 3 and i < total_results and i < toppers_count:
+        current_result = all_group_results[i]
+        current_percentage = current_result.get(
+            "percentage", 0
+        )  # Assuming percentage is stored in the result
+
+        if current_percentage not in unique_percentages:
+            unique_percentages.add(current_percentage)
+
+        top_3_toppers.append(current_result)
+        i += 1
+
+    if toppers_count > len(top_3_toppers):
+        rest_toppers = all_group_results[len(top_3_toppers) : toppers_count]
     else:
         rest_toppers = False
+
     return top_3_toppers, rest_toppers
 
 
@@ -423,6 +497,7 @@ def create_wiki_page_for_toppers(
         student_data = student_data_hash[student]
         if student_data:
             topper_results[i] = {**topper_results[i], **student_data}
+            student_data_hash[student]["percentage"] = result.get("percentage", 0)
 
     content = frappe.render_template(
         "edu_quality/templates/components/topper_wiki.html",
@@ -437,7 +512,6 @@ def create_wiki_page_for_toppers(
         page_name, content, generate_wiki_route(wiki_space, page_name)
     )
     append_page_in_sidebar(wiki_space, new_page.name)
-
 
 def generate_wiki_route(wiki_space, page_name):
     space_route = frappe.db.get_value("Wiki Space", wiki_space, "route")
@@ -861,5 +935,4 @@ def check_and_create_assessment_criteria(criteria):
 
 
 def sum_criterias(criterias):
-    print(criterias)
     return reduce(lambda x, y: x + float(y.get("maximum_score")), criterias, 0)

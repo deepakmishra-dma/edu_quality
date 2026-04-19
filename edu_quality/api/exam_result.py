@@ -2,7 +2,10 @@ import frappe
 from frappe.query_builder import Field
 from frappe.query_builder.functions import Count, GROUP_CONCAT, Sum
 from edu_quality.public.py.utils import get_div_students as get_div_stud
-from nextai.funnel.custom_trigger import trigger_event
+
+
+# from nextai.funnel.custom_trigger import trigger_event
+from edu_quality.edu_quality.server_scripts.utils import current_academic_year
 
 
 def get_div_students(division):
@@ -165,7 +168,12 @@ def diff_students_and_results(students, results, assessment_plan):
 
 @frappe.whitelist()
 def process_result(
-    assessment_group, academic_year, program, division=None, ref_nos=None
+    assessment_group,
+    academic_year,
+    program,
+    division=None,
+    ref_nos=None,
+    create_toppers_only=False,
 ):
     is_composite, school = frappe.db.get_value(
         "Assessment Group", assessment_group, ["custom_is_composite", "custom_school"]
@@ -180,9 +188,11 @@ def process_result(
             program=program,
             div=division,
             student_master=student_list,
+            create_toppers_only=create_toppers_only,
             queue="long",
         )
     else:
+
         frappe.enqueue(
             process_atomic_exam,
             assessment_group=assessment_group,
@@ -190,22 +200,30 @@ def process_result(
             program=program,
             div=division,
             student_master=student_list,
+            create_toppers_only=create_toppers_only,
             queue="long",
+            timeout=15000,
         )
 
     frappe.db.commit()
 
 
 def process_atomic_exam(
-    assessment_group, academic_year, program, div=None, student_master=None
+    assessment_group,
+    academic_year,
+    program,
+    div=None,
+    student_master=None,
+    create_toppers_only=False,
 ):
     # try:
     assessment_plans = get_all_assessment_plans(assessment_group, program, div)
     errors = check_assessment_plan_in_group(assessment_plans, student_master)
     if errors:
         return errors
+    if not create_toppers_only:
+        process_assessment_results(assessment_plans, student_master)
 
-    process_assessment_results(assessment_plans, student_master)
     student_list = create_assessment_group_results(assessment_group, assessment_plans)
     calculate_and_save_group_results(assessment_group, student_list)
     process_toppers(
@@ -246,7 +264,7 @@ def submit_assessment_results(non_submitted_docs):
     total_res_rows = len(non_submitted_docs)
     for idx, result in enumerate(non_submitted_docs):
         # frappe.db.begin()
-        assess_result = frappe.get_doc("Assessment Result", result.get("name"))
+        assess_result = frappe.get_cached_doc("Assessment Result", result.get("name"))
         if assess_result:
             assess_result.submit()
         progress = idx * 100 // total_res_rows
@@ -298,9 +316,10 @@ def create_or_get_assessment_group_result(assessment_group, student):
     )
     if existing_doc:
         return existing_doc
-
+    assessment_group_doc = frappe.get_cached_doc("Assessment Group", assessment_group)
     assess_g_res = frappe.new_doc("Assessment Group Result")
     assess_g_res.student = student
+    assess_g_res.program = assessment_group_doc.custom_program
     assess_g_res.assessment_group = assessment_group
     doc = assess_g_res.insert()
     return doc.name
@@ -318,16 +337,37 @@ def calculate_and_save_group_results(assessment_group, student_list):
         )
         for student in student_list
     ]
+    asses_g_doc = frappe.get_cached_doc("Assessment Group", assessment_group)
     assess_g_res_docs = [doc for doc in assess_g_res_docs if doc]
     total_assess_g_res = len(assess_g_res_docs)
 
     for idx, assess_g_res in enumerate(assess_g_res_docs):
-        assess_g_r_doc = frappe.get_doc("Assessment Group Result", assess_g_res)
+        assess_g_r_doc = frappe.get_cached_doc("Assessment Group Result", assess_g_res)
         if assess_g_r_doc:
-            assess_g_r_doc.calculate_total_ranks_and_score()
+            assess_g_r_doc.calculate_total_score()
             assess_g_r_doc.save()
 
-        doc = frappe.get_doc("Assessment Group Result", assess_g_res)
+    group_class_ranks = asses_g_doc.get_group_class_rank()
+    group_div_ranks = asses_g_doc.get_group_div_rank()
+
+    for idx, assess_g_res in enumerate(assess_g_res_docs):
+        assess_g_r_doc = frappe.get_cached_doc("Assessment Group Result", assess_g_res)
+        if assess_g_r_doc:
+            if assess_g_res in group_class_ranks:
+                frappe.db.set_value(
+                    "Assessment Group Result",
+                    assess_g_res,
+                    "class_rank",
+                    group_class_ranks[assess_g_res],
+                )
+            if assess_g_res in group_div_ranks:
+                frappe.db.set_value(
+                    "Assessment Group Result",
+                    assess_g_res,
+                    "division_rank",
+                    group_div_ranks[assess_g_res],
+                )
+
         frappe.realtime.publish_progress(
             idx * 100 // total_assess_g_res,
             title="Saving Assessment Group Result",
@@ -350,7 +390,7 @@ def handle_error():
 
 
 def process_toppers(assessment_group, assessment_plans, division_set=None):
-    assessment_group_doc = frappe.get_doc("Assessment Group", assessment_group)
+    assessment_group_doc = frappe.get_cached_doc("Assessment Group", assessment_group)
     assessment_group_doc.delete_topper_events()
 
     assessment_group_doc.create_class_topper()
@@ -389,7 +429,7 @@ def cancel_submitted_atomic_exams(result_data):
 
     for result in unique_submitted_results:
         # frappe.db.begin()
-        assess_result = frappe.get_doc("Assessment Result", result)
+        assess_result = frappe.get_cached_doc("Assessment Result", result)
         amended_doc = frappe.copy_doc(assess_result)
         amended_doc.docstatus = 0
         amended_doc.amended_from = assess_result.name
@@ -412,7 +452,7 @@ def cancel_assessment_group_result(assessment_group, students_list):
 
     submitted_results_name = [res.get("name") for res in submitted_results]
     for result in submitted_results_name:
-        assess_result = frappe.get_doc("Assessment Group Result", result)
+        assess_result = frappe.get_cached_doc("Assessment Group Result", result)
         if assess_result.docstatus == 1:
             assess_result.cancel()
 
@@ -502,7 +542,7 @@ SET  `tabAssessment Result`.custom_rank = ranked_table.ranking;
 def process_composite_result(
     assessment_group, academic_year, program, div=None, student_master=None
 ):
-    assess_group = frappe.get_doc("Assessment Group", assessment_group)
+    assess_group = frappe.get_cached_doc("Assessment Group", assessment_group)
     calc_exam_avg = assess_group.custom_exam_avg
 
     composite_exams = frappe.db.get_all(
@@ -574,7 +614,9 @@ def process_composite_result(
         for parent in modified_result:
 
             if modified_result[parent]:
-                assess_result = frappe.get_doc("Composite Assessment Result", parent)
+                assess_result = frappe.get_cached_doc(
+                    "Composite Assessment Result", parent
+                )
                 combined_marks_or_grade = 0
                 for exam in assess_result.exams:
                     combined_marks_or_grade += exam.score
