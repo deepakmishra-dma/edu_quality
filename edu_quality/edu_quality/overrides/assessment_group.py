@@ -68,7 +68,7 @@ class CustomAssessmentGroup(AssessmentGroup):
                 division_hash,
                 school_hash,
                 subject_hash,
-                4,
+                len(top_3_toppers) + 1,
             )
 
     def create_division_toppers(self, division_set):
@@ -123,7 +123,7 @@ class CustomAssessmentGroup(AssessmentGroup):
                     division_hash,
                     school_hash,
                     subject_hash,
-                    4,
+                    len(top_3_toppers) + 1,
                 )
 
     def create_subject_toppers(self):
@@ -230,7 +230,7 @@ class CustomAssessmentGroup(AssessmentGroup):
                     division_hash,
                     school_hash,
                     subject_hash,
-                    4,
+                    len(top_3_toppers) + 1,
                 )
 
     def delete_topper_events(self):
@@ -468,8 +468,10 @@ def divide_toppers(all_group_results, topper_percentage):
         if current_percentage not in unique_percentages:
             unique_percentages.add(current_percentage)
 
-        top_3_toppers.append(current_result)
-        i += 1
+            top_3_toppers.append(current_result)
+            i += 1
+        else:
+            top_3_toppers.append(current_result)
 
     if toppers_count > len(top_3_toppers):
         rest_toppers = all_group_results[len(top_3_toppers) : toppers_count]
@@ -512,6 +514,7 @@ def create_wiki_page_for_toppers(
         page_name, content, generate_wiki_route(wiki_space, page_name)
     )
     append_page_in_sidebar(wiki_space, new_page.name)
+
 
 def generate_wiki_route(wiki_space, page_name):
     space_route = frappe.db.get_value("Wiki Space", wiki_space, "route")
