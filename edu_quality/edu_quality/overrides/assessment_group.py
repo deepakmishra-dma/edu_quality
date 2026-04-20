@@ -70,7 +70,7 @@ class CustomAssessmentGroup(AssessmentGroup):
                 subject_hash,
                 len(top_3_toppers) + 1,
             )
-
+    
     def create_division_toppers(self, division_set):
         if not self.custom_create_topper_for_division:
             return
@@ -230,7 +230,7 @@ class CustomAssessmentGroup(AssessmentGroup):
                     division_hash,
                     school_hash,
                     subject_hash,
-                    len(top_3_toppers) + 1,
+                   
                 )
 
     def delete_topper_events(self):
@@ -328,7 +328,7 @@ class CustomAssessmentGroup(AssessmentGroup):
                 "winning_students",
                 {
                     "student": result.get("student"),
-                    "position": index + sum_no_position,
+                    "position": result.get("calculated_position"),
                     "percentage": result.get("percentage"),
                 },
             )
@@ -458,28 +458,39 @@ def divide_toppers(all_group_results, topper_percentage):
     top_3_toppers = []
     unique_percentages = set()
     i = 0
+    rank = 1
+    prev_percentage = None
 
     while len(unique_percentages) < 3 and i < total_results and i < toppers_count:
         current_result = all_group_results[i]
         current_percentage = current_result.get(
             "percentage", 0
         )  # Assuming percentage is stored in the result
+        
+        if current_percentage != prev_percentage:
+            rank = len(unique_percentages) + 1
+        
+        current_result['calculated_position'] = rank
 
         if current_percentage not in unique_percentages:
             unique_percentages.add(current_percentage)
 
-            top_3_toppers.append(current_result)
-            i += 1
-        else:
-            top_3_toppers.append(current_result)
+        top_3_toppers.append(current_result)
+        prev_percentage = current_percentage
+        i += 1
 
     if toppers_count > len(top_3_toppers):
         rest_toppers = all_group_results[len(top_3_toppers) : toppers_count]
+        for j, result in enumerate(rest_toppers, start=i):
+            current_percentage = result.get("percentage", 0)
+            if current_percentage != prev_percentage:
+                rank = j + 1
+            result['calculated_position'] = rank
+            prev_percentage = current_percentage
     else:
         rest_toppers = False
 
     return top_3_toppers, rest_toppers
-
 
 def create_wiki_page_for_toppers(
     assessment_group, topper_results, page_name, mode="class", title=""
@@ -583,18 +594,20 @@ def get_event_subject_name(
         top_text = "Top_3"
     else:
         top_text = "Toppers"
+
     program_short_code = program_hash.get(result.get("program"))
     division_short_code = division_hash.get(result.get("student_group"))
     school_prefix = school_hash.get(result.get("school"))
     short_acad_year = extract_year_from_academic_year_name(
         assessment_group_doc.custom_academic_year
     )
+    
     if mode == "class":
         return f"{program_short_code}-{result.get('assessment_group')}-{top_text}"
     elif mode == "division":
-        return f"{program_short_code}{division_short_code}-{assessment_group_doc.get('assessment_group_name')}-{short_acad_year}-{top_text}"
+        return f"{school_prefix}{program_short_code}{division_short_code}-{assessment_group_doc.get('assessment_group_name')}-{short_acad_year}-{top_text}"
     elif mode == "subject":
-        return f"{program_short_code}-{subject_hash.get(result.get('course'))}-{assessment_group_doc.get('assessment_group_name')}-{top_text}"
+        return f"{school_prefix}{program_short_code}-{subject_hash.get(result.get('course'))}-{assessment_group_doc.get('assessment_group_name')}-{top_text}"
 
 
 # edu_quality.edu_quality.overrides.assessment_group.import_assessment_group

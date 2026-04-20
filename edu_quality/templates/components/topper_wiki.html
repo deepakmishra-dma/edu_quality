@@ -20,25 +20,50 @@
     <th style="text-align: center">Rank {{rank}}</th>
     {% endfor %}
   </tr>
+  {% set current_rank = 1 %}
+  {% set current_percentage = students[0]['percentage'] %}
+  {% set rank_students = [] %}
+  {% for student in students %}
+    {% if student['percentage'] != current_percentage %}
+      <tr>
+        {% for rank_student in rank_students %}
+          <td style="text-align: center">
+            <img
+              src="{{rank_student['image']}}"
+              width="100"
+              height="100"
+              alt="Rank {{current_rank}} Image"
+            />
+            <br />
+            {{rank_student['first_name']}} {{rank_student['middle_name']}}
+            {{rank_student['last_name']}}
+            <br />
+            Rank: {{current_rank}}
+          </td>
+        {% endfor %}
+      </tr>
+      {% set current_rank = loop.index %}
+      {% set current_percentage = student['percentage'] %}
+      {% set rank_students = [student] %}
+    {% else %}
+      {% set rank_students = rank_students + [student] %}
+    {% endif %}
+  {% endfor %}
   <tr>
-    {% set current_rank = 1 %} {% set current_percentage =
-    students[0]['percentage'] %} {% for student in students %} {% if
-    student['percentage'] != current_percentage %} {% set current_rank =
-    loop.index %} {% set current_percentage = student['percentage'] %} {% endif
-    %}
-    <td style="text-align: center">
-      <img
-        src="{{student['image']}}"
-        width="100"
-        height="100"
-        alt="Rank {{current_rank}} Image"
-      />
-      <br />
-      {{student['first_name']}} {{student['middle_name']}}
-      {{student['last_name']}}
-      <br />
-      Rank: {{current_rank}}
-    </td>
+    {% for rank_student in rank_students %}
+      <td style="text-align: center">
+        <img
+          src="{{rank_student['image']}}"
+          width="100"
+          height="100"
+          alt="Rank {{current_rank}} Image"
+        />
+        <br />
+        {{rank_student['first_name']}} {{rank_student['middle_name']}}
+        {{rank_student['last_name']}}
+        <br />
+        Rank: {{current_rank}}
+      </td>
     {% endfor %}
   </tr>
 </table>
