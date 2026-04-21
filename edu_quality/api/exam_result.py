@@ -268,7 +268,7 @@ def submit_assessment_results(non_submitted_docs):
         if assess_result:
             assess_result.submit()
         progress = idx * 100 // total_res_rows
-        frappe.realtime.publish_progress(
+        frappe.publish_progress(
             progress,
             title="Submitting Result",
             description=f"{idx}/{total_res_rows} rows processed",
@@ -284,12 +284,12 @@ def create_assessment_group_results(assessment_group, assessment_plans):
         # frappe.db.begin()
         create_or_get_assessment_group_result(assessment_group, student)
         progress = (idx // total_students) * 100
-        frappe.realtime.publish_progress(
+        frappe.publish_progress(
             progress,
             title="Creating Group Result",
             description=f"{idx}/{total_students} rows processed",
         )
-        # frappe.db.commit()
+        frappe.db.commit()
     return student_list
 
 
@@ -340,11 +340,13 @@ def calculate_and_save_group_results(assessment_group, student_list):
     asses_g_doc = frappe.get_cached_doc("Assessment Group", assessment_group)
     assess_g_res_docs = [doc for doc in assess_g_res_docs if doc]
     total_assess_g_res = len(assess_g_res_docs)
-
+    students_to_ignore = asses_g_doc.get_student_with_online_submission()
     for idx, assess_g_res in enumerate(assess_g_res_docs):
         assess_g_r_doc = frappe.get_cached_doc("Assessment Group Result", assess_g_res)
         if assess_g_r_doc:
             assess_g_r_doc.calculate_total_score()
+            if assess_g_r_doc.student in students_to_ignore:
+                assess_g_r_doc.online_assessment = 1    
             assess_g_r_doc.save()
 
     group_class_ranks = asses_g_doc.get_group_class_rank()
@@ -368,7 +370,7 @@ def calculate_and_save_group_results(assessment_group, student_list):
                     group_div_ranks[assess_g_res],
                 )
 
-        frappe.realtime.publish_progress(
+        frappe.publish_progress(
             idx * 100 // total_assess_g_res,
             title="Saving Assessment Group Result",
             description=f"{idx}/{total_assess_g_res} rows processed",

@@ -15,7 +15,8 @@
   "combined_total_score",
   "combined_maximum_score",
   "combined_percentage",
-  "amended_from"
+  "amended_from",
+  "online_assessment"
  ],
  "fields": [
   {
@@ -85,12 +86,42 @@
    "print_hide": 1,
    "read_only": 1,
    "search_index": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "subject_wise_result",
+   "fieldtype": "Table",
+   "is_virtual": 1,
+   "label": "Subject Wise Result",
+   "options": "Assessment Group Subject Detail"
+  },
+  {
+   "fetch_from": "student_group.custom_school",
+   "fetch_if_empty": 1,
+   "fieldname": "school",
+   "fieldtype": "Link",
+   "label": "School",
+   "options": "School"
+  },
+  {
+   "fetch_from": ".custom_program",
+   "fieldname": "student_group",
+   "fieldtype": "Link",
+   "label": "Division",
+   "options": "Student Group"
+  },
+  {
+   "default": "0",
+   "fieldname": "online_assessment",
+   "fieldtype": "Check",
+   "label": "Online Assessment",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-08-08 18:09:55.786279",
+ "modified": "2024-09-25 16:25:50.810138",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Assessment Group Result",

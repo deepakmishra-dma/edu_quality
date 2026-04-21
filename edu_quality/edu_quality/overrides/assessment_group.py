@@ -70,7 +70,7 @@ class CustomAssessmentGroup(AssessmentGroup):
                 subject_hash,
                 len(top_3_toppers) + 1,
             )
-    
+
     def create_division_toppers(self, division_set):
         if not self.custom_create_topper_for_division:
             return
@@ -156,6 +156,7 @@ class CustomAssessmentGroup(AssessmentGroup):
             .where(
                 (assess_res_qb.assessment_plan.isin(assessment_plan_names))
                 & (assess_group_res_qb.docstatus == 0)
+                & (assess_group_res_qb.online_assessment == 0)
                 & (assess_res_qb.docstatus == 1)
             )
             .inner_join(program_qb)
@@ -230,7 +231,6 @@ class CustomAssessmentGroup(AssessmentGroup):
                     division_hash,
                     school_hash,
                     subject_hash,
-                   
                 )
 
     def delete_topper_events(self):
@@ -351,6 +351,7 @@ class CustomAssessmentGroup(AssessmentGroup):
                 (assess_gr_qb.docstatus.isin([0, 1]))
                 & (assess_gr_qb.assessment_group == self.name)
                 & (assess_gr_qb.program == self.custom_program)
+                & (assess_gr_qb.online_assessment == 0)
             )
             .select(
                 assess_gr_qb.name,
@@ -383,6 +384,7 @@ class CustomAssessmentGroup(AssessmentGroup):
                 (assess_gr_qb.docstatus.isin([0, 1]))
                 & (assess_gr_qb.assessment_group == self.name)
                 & (assess_gr_qb.program == self.custom_program)
+                & (assess_gr_qb.online_assessment == 0)
             )
             .select(
                 assess_gr_qb.name,
@@ -407,6 +409,24 @@ class CustomAssessmentGroup(AssessmentGroup):
             data = {item["name"]: item["rank"] for item in data}
         frappe.log_error("ee", data)
         return data
+
+    def get_student_with_online_submission(self):
+        assess_res_qb = frappe.qb.DocType("Assessment Result")
+        assess_res_detail = frappe.qb.DocType("Assessment Result Detail")
+        query = (
+            frappe.qb.from_(assess_res_qb)
+            .where(
+                (assess_res_qb.docstatus == 1)
+                & (assess_res_qb.assessment_group == self.name)
+            )
+            .inner_join(assess_res_detail)
+            .on(assess_res_detail.parent == assess_res_qb.name)
+            .where(assess_res_detail.custom_online_assessment == 1)
+            .select(assess_res_qb.student)
+        )
+        data = query.run(as_dict=True)
+
+        return {student.get("student"): True for student in data}
 
 
 def get_wiki_template_title(result, mode):
@@ -466,11 +486,11 @@ def divide_toppers(all_group_results, topper_percentage):
         current_percentage = current_result.get(
             "percentage", 0
         )  # Assuming percentage is stored in the result
-        
+
         if current_percentage != prev_percentage:
             rank = len(unique_percentages) + 1
-        
-        current_result['calculated_position'] = rank
+
+        current_result["calculated_position"] = rank
 
         if current_percentage not in unique_percentages:
             unique_percentages.add(current_percentage)
@@ -485,12 +505,13 @@ def divide_toppers(all_group_results, topper_percentage):
             current_percentage = result.get("percentage", 0)
             if current_percentage != prev_percentage:
                 rank = j + 1
-            result['calculated_position'] = rank
+            result["calculated_position"] = rank
             prev_percentage = current_percentage
     else:
         rest_toppers = False
 
     return top_3_toppers, rest_toppers
+
 
 def create_wiki_page_for_toppers(
     assessment_group, topper_results, page_name, mode="class", title=""
@@ -601,7 +622,7 @@ def get_event_subject_name(
     short_acad_year = extract_year_from_academic_year_name(
         assessment_group_doc.custom_academic_year
     )
-    
+
     if mode == "class":
         return f"{program_short_code}-{result.get('assessment_group')}-{top_text}"
     elif mode == "division":
