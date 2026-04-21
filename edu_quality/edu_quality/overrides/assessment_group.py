@@ -481,7 +481,14 @@ def divide_toppers(all_group_results, topper_percentage):
     rank = 1
     prev_percentage = None
 
-    while len(unique_percentages) < 3 and i < total_results and i < toppers_count:
+    while (
+        len(unique_percentages) < 3
+        or (
+            len(unique_percentages) == 3
+            and i < total_results
+            and all_group_results[i].get("percentage", 0) == prev_percentage
+        )
+    ) and i < toppers_count:
         current_result = all_group_results[i]
         current_percentage = current_result.get(
             "percentage", 0
@@ -504,7 +511,7 @@ def divide_toppers(all_group_results, topper_percentage):
         for j, result in enumerate(rest_toppers, start=i):
             current_percentage = result.get("percentage", 0)
             if current_percentage != prev_percentage:
-                rank = j + 1
+                rank = rank + 1
             result["calculated_position"] = rank
             prev_percentage = current_percentage
     else:

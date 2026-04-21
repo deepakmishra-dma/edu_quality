@@ -1,17 +1,13 @@
-<table
-  border="1"
-  cellpadding="5"
-  cellspacing="0"
-  style="border-collapse: collapse; width: 100%"
->
+<table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%">
   <tr>
     <td colspan="3">
-      {% if mode == "class" %} Class: <strong>{{title}}</strong>
-      <br />
-      {% elif mode == "division" %} Division: <strong>{{title}}</strong>
-      <br />
-      <em>If subject wise, show subject here</em>
-      {% elif mode == "subject" %} Subject: <strong>{{title}}</strong>
+      {% if mode == "class" %}
+        Class: <strong>{{title}}</strong><br />
+      {% elif mode == "division" %}
+        Division: <strong>{{title}}</strong><br />
+        <em>If subject wise, show subject here</em>
+      {% elif mode == "subject" %}
+        Subject: <strong>{{title}}</strong>
       {% endif %}
     </td>
   </tr>
@@ -20,50 +16,26 @@
     <th style="text-align: center">Rank {{rank}}</th>
     {% endfor %}
   </tr>
-  {% set current_rank = 1 %}
-  {% set current_percentage = students[0]['percentage'] %}
-  {% set rank_students = [] %}
-  {% for student in students %}
-    {% if student['percentage'] != current_percentage %}
-      <tr>
-        {% for rank_student in rank_students %}
-          <td style="text-align: center">
-            <img
-              src="{{rank_student['image']}}"
-              width="100"
-              height="100"
-              alt="Rank {{current_rank}} Image"
-            />
-            <br />
-            {{rank_student['first_name']}} {{rank_student['middle_name']}}
-            {{rank_student['last_name']}}
-            <br />
-            Rank: {{current_rank}}
-          </td>
-        {% endfor %}
-      </tr>
-      {% set current_rank = loop.index %}
-      {% set current_percentage = student['percentage'] %}
-      {% set rank_students = [student] %}
-    {% else %}
-      {% set rank_students = rank_students + [student] %}
-    {% endif %}
-  {% endfor %}
   <tr>
-    {% for rank_student in rank_students %}
-      <td style="text-align: center">
-        <img
-          src="{{rank_student['image']}}"
-          width="100"
-          height="100"
-          alt="Rank {{current_rank}} Image"
-        />
-        <br />
-        {{rank_student['first_name']}} {{rank_student['middle_name']}}
-        {{rank_student['last_name']}}
-        <br />
-        Rank: {{current_rank}}
-      </td>
+    {% for rank in range(1, 4) %}
+    <td style="text-align: center; vertical-align: top">
+      {% for student in students %}
+        {% if student['calculated_position'] == rank %}
+        <div style="margin-bottom: 20px">
+          <img
+            src="{{student['image']}}"
+            width="100"
+            height="100"
+            alt="Rank {{student['calculated_position']}} Image"
+          />
+          <br />
+          {{student['first_name']}} {{student['middle_name']}} {{student['last_name']}}
+          <br />
+          Rank: {{student['calculated_position']}}
+        </div>
+        {% endif %}
+      {% endfor %}
+    </td>
     {% endfor %}
   </tr>
 </table>
