@@ -46,13 +46,13 @@ def get_all_assessment_plans(assessment_group, program, div):
     return data
 
 
-def check_assessment_plan_in_group(assessment_plans):
+def check_assessment_plan_in_group(assessment_plans, student_master=None):
     all_errors = []
     already_submitted = []
     for plan in assessment_plans:
         div = plan.get("student_group")
         plan_name = plan.get("name")
-        errors = check_assessment_plan_in_div(plan_name, div)
+        errors = check_assessment_plan_in_div(plan_name, div, student_master)
         all_errors.extend(errors)
 
     if already_submitted:
@@ -126,8 +126,12 @@ def get_assessment_plan_in_div(assessment_plan, division, students):
     return query.run(as_dict=True)
 
 
-def check_assessment_plan_in_div(assessment_plan, division):
-    students = get_div_students(division)
+def check_assessment_plan_in_div(assessment_plan, division, student_master=None):
+    if not student_master or not len(student_master):
+        students = get_div_students(division)
+    else:
+        students = student_master
+
     data = get_assessment_plan_in_div(assessment_plan, division, students)
 
     return diff_students_and_results(students, data, assessment_plan)
@@ -332,7 +336,7 @@ def calculate_and_save_group_results(assessment_group, student_list):
             {
                 "assessment_group": assessment_group,
                 "student": student,
-                "docstatus": ["in", [0, 1]],
+                "docstatus": ["in", [0]],
             },
         )
         for student in student_list
@@ -375,9 +379,6 @@ def calculate_and_save_group_results(assessment_group, student_list):
             title="Saving Assessment Group Result",
             description=f"{idx}/{total_assess_g_res} rows processed",
         )
-        if doc:
-            doc.results = []
-            doc.submit()
 
 
 def handle_error():
