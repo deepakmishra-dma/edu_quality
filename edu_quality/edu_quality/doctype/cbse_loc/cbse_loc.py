@@ -232,10 +232,7 @@ class CBSELOC(Document):
         """
         try:
             student = frappe.get_doc("Student", self.student)
-            updated_fields = {}
-        
-            # Compare and update student fields
-            fields_to_check = {
+            updated_fields = {
                 'first_name': self.first_name,
                 'middle_name': self.middle_name,
                 'last_name': self.last_name,
@@ -255,38 +252,31 @@ class CBSELOC(Document):
                 'birth_certificate': self.birth_certificate,
                 'aadhaar_card_certificate': self.aadhar_card,
             }
-        
-            for field, new_value in fields_to_check.items():
-                if student.get(field) != new_value:
-                    updated_fields[field] = new_value
-        
-            if updated_fields:
-                student.update(updated_fields)
-                student.save(ignore_permissions=True)
-        
+            student.update(updated_fields)
+            student.save(ignore_permissions=True)
+    
             # Update guardian details
             for relation in ['Father', 'Mother']:
-                guardian_name = frappe.get_value("Student Guardian", {'parent': self.student, 'relation': relation}, 'guardian')
-                guardian = frappe.get_doc("Guardian", guardian_name)
-                updated_guardian_fields = {}
-        
-                guardian_fields_to_check = {
+                student_guardian = frappe.get_doc("Student Guardian", {'parent': self.student, 'relation': relation}, 'guardian')
+                guardian = frappe.get_doc("Guardian", student_guardian.guardian)
+
+                relation = relation.lower()
+                updated_guardian_fields = {
                     'first_name': self.get(f'{relation}_first_name'),
                     'middle_name': self.get(f'{relation}_middle_name'),
                     'last_name': self.get(f'{relation}_last_name'),
+                    'guardian_name': self.get(f'{relation}_full_name'),
                     'mobile_number': self.get(f'{relation}_mobile_number'),
-                    'email_address': self.get(f'{relation}_email')
+                    'email_address': self.get(f'{relation}_email'),
+                    'annual_income': self.approximate_annual_income
                 }
         
-                for field, new_value in guardian_fields_to_check.items():
-                    if guardian.get(field) != new_value:
-                        updated_guardian_fields[field] = new_value
-        
-                if updated_guardian_fields:
-                    guardian.update(updated_guardian_fields)
-                    guardian.save(ignore_permissions=True)
+                guardian.update(updated_guardian_fields)
+                student_guardian.update(updated_guardian_fields)
+                guardian.save(ignore_permissions=True)
+                student_guardian.save(ignore_permissions=True)
         except Exception as e:
-            frappe.log_error(f"CBSE LOC: {str(e)}", frappe.get_traceback()) 
+            frappe.log_error(f"CBSE LOC: {self.name}", frappe.get_traceback()) 
         
 @frappe.whitelist(allow_guest=True)
 def get_form_details(hash):
