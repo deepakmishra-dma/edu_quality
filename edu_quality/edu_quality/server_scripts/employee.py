@@ -12,9 +12,9 @@ from edu_quality.common.utils.auth import set_user_permissions, remove_user_perm
 def before_save(doc, method=None):
     email_pattern = re.compile(r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
     mobile_pattern = re.compile(r"^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$")
-    if not mobile_pattern.match(doc.cell_number):
+    if doc.cell_number and not mobile_pattern.match(doc.cell_number):
         frappe.throw("Invalid Mobile Number")
-    if not email_pattern.match(doc.personal_email):
+    if doc.personal_email and not email_pattern.match(doc.personal_email):
         frappe.throw("Invalid Personal Email")
 
 
@@ -35,7 +35,8 @@ def after_insert(doc, method=None):
             add_user_to_group(doc.company_email, group_email=group_email)
 
     # Create User in Frappe/ERPNext
-    create_user(doc)
+    if doc.company_email:
+        create_user(doc, doc.company_email)
 
     if doc.user_id:
         # Add to relevant email groups in ERPNext
@@ -122,9 +123,11 @@ def create_google_user_account(doc):
     """
     Create a google user account
     """
+    first_name = doc.first_name.split()[0]
+    last_name = doc.last_name.split()[0]
     org_unit_path = get_google_group_info(doc)
     org_unit_path = org_unit_path.strip() if org_unit_path else None
-    email_key = doc.employee_name.lower().strip().replace(" ", ".")
+    email_key = ".".join([first_name, last_name]).lower()
     # Create a Google User
     company_email = create_employee_google_user(
         email_key,
@@ -141,20 +144,10 @@ def create_google_user_account(doc):
 def get_username(email):
     return email.split("@")[0]
 
-
-def create_user(emp):
-    employee_name = emp.employee_name.split(" ")
-    middle_name = last_name = ""
-
-    if len(employee_name) >= 3:
-        last_name = " ".join(employee_name[2:])
-        middle_name = employee_name[1]
-    elif len(employee_name) == 2:
-        last_name = employee_name[1]
-
-    first_name = employee_name[0]
-
-    email = emp.company_email or emp.personal_email
+@frappe.whitelist()
+def create_user(emp, email):
+    if isinstance(emp, str):
+        emp = frappe.get_doc("Employee", emp)
     username = get_username(email)
 
     user = frappe.new_doc("User")
@@ -163,9 +156,9 @@ def create_user(emp):
             "name": emp.employee_name,
             "email": email,
             "enabled": 1,
-            "first_name": first_name,
-            "middle_name": middle_name,
-            "last_name": last_name,
+            "first_name": emp.first_name,
+            "middle_name": emp.middle_name,
+            "last_name": emp.last_name,
             "gender": emp.gender,
             "birth_date": emp.date_of_birth,
             "phone": emp.cell_number,
@@ -184,50 +177,57 @@ def create_user(emp):
 def create_employee_google_user(
     email_key, first_name, last_name, recovery_mail, org_unit_path=None
 ):
-    user_service = get_google_admin_object()
-    google_service_doc = frappe.get_single("Google Service Account")
+    try:
+        user_service = get_google_admin_object()
+        google_service_doc = frappe.get_single("Google Service Account")
 
-    existing_user = None
-    for i in range(4):
-        existing_user = get_existing_google_user(email_key)
+        existing_user = None
+        for i in range(4):
+            existing_user = get_existing_google_user(email_key)
+            if not existing_user:
+                break
+            email_key += str(i)
+
+        company_email = f"{email_key}@{google_service_doc.domain}"
+
         if not existing_user:
-            break
-        email_key += str(i)
-
-    company_email = f"{email_key}@{google_service_doc.domain}"
-
-    if not existing_user:
-        recovery_mail = (str(recovery_mail) or str(google_service_doc.default_recovery_mail)).strip().lower()
-        email_pattern = r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"
-        recovery_mail = (
-            str(google_service_doc.default_recovery_mail)
-            if not re.match(email_pattern, recovery_mail)
-            else recovery_mail
-        )
-
-        new_user = {
-            "primaryEmail": company_email,
-            "name": {
-                "givenName": first_name,
-                "familyName": last_name,
-            },
-            "password": str(google_service_doc.default_password).strip(),
-            "changePasswordAtNextLogin": True,
-            "ipWhitelisted": False,
-            "recoveryEmail": recovery_mail,
-            "orgUnitPath": org_unit_path,
-        }
-
-        frappe.log_error("account creating for ", str(new_user))
-        resp = (
-            user_service.users()
-            .insert(
-                body=new_user,
+            recovery_mail = (str(recovery_mail) or str(google_service_doc.default_recovery_mail)).strip().lower()
+            email_pattern = r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"
+            recovery_mail = (
+                str(google_service_doc.default_recovery_mail)
+                if not re.match(email_pattern, recovery_mail)
+                else recovery_mail
             )
-            .execute()
+
+            new_user = {
+                "primaryEmail": company_email,
+                "name": {
+                    "givenName": first_name,
+                    "familyName": last_name,
+                },
+                "password": str(google_service_doc.default_password).strip(),
+                "changePasswordAtNextLogin": True,
+                "ipWhitelisted": False,
+                "recoveryEmail": recovery_mail,
+                "orgUnitPath": org_unit_path,
+            }
+
+            frappe.log_error("account creating for ", str(new_user))
+            resp = (
+                user_service.users()
+                .insert(
+                    body=new_user,
+                )
+                .execute()
+            )
+            frappe.log_error("Account created for ", str(resp))
+            return company_email
+    except Exception as e:
+        frappe.log_error("Error while creating google user", frappe.get_traceback())
+        frappe.throw(
+            title="Error while creating google user", 
+            msg="Please try again later, if the issue persists contact the administrator or check the error logs for more details"
         )
-        frappe.log_error("Account created for ", str(resp))
-        return company_email
 
 
 def get_existing_google_user(email_key):
