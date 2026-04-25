@@ -158,17 +158,33 @@ class AssessmentGroupResult(Document):
         if total_max_score:
             self.combined_percentage = (total_processed_score / total_max_score) * 100
 
+    def set_student_group_and_school(self):
+        student_group, school = frappe.db.get_value(
+            "Program Enrollment",
+            {
+                "docstatus": 1,
+                "student": self.student,
+                "academic_year": self.academic_year,
+                "program": self.program,
+            },
+            ["student_group", "custom_school"],
+        )
+        self.student_group = student_group
+        self.school = school
+
     def before_insert(self, method=None):
+        self.set_student_group_and_school()
+        self.calculate_total_ranks_and_score()
+
+    def before_submit(self, method=None):
+        self.calculate_total_ranks_and_score()
+
+        self.clean_virtual_child_tables()
+
+    def calculate_total_ranks_and_score(self):
         self.calculate_total_score()
         # self.class_rank = self.calculate_class_rank() or 0
         # self.division_rank = self.calculate_div_rank() or 0
-
-    def before_submit(self, method=None):
-        self.calculate_total_score()
-        self.class_rank = self.calculate_class_rank() or 0
-        self.division_rank = self.calculate_div_rank() or 0
-
-        self.clean_virtual_child_tables()
 
     def before_save(self):
         self.clean_virtual_child_tables()

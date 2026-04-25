@@ -68,7 +68,7 @@ export const Header: React.FC<HeaderProps> = ({ setNavbarOpen }) => {
             : location.pathname === "/archived"
             ? "Archived Messages"
             : location.pathname === "/calendar"
-            ? "School Calender"
+            ? "School Calendar"
             : location.pathname === "/stared"
             ? "Starred Messages"
             : location.pathname === "/early-pickup"
