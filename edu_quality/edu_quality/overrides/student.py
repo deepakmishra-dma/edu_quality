@@ -29,7 +29,7 @@ class CustomStudent(Student):
         elif self.student_applicant:
             applicant = frappe.get_doc("Student Applicant", self.student_applicant)
             prefix = frappe.get_value("School", applicant.school, "prefix")
-            series = self.get_reference()
+            series = self.get_reference(applicant.academic_year)
             prefix += series
             ref_id = self.get_last_id(prefix)
             if ref_id == "max":
@@ -50,12 +50,15 @@ class CustomStudent(Student):
             self.student_email_id = self.name + "@walnutedu.in"
             self.reference_number = self.name[2:]
     
-    def get_reference(self):
-        if not frappe.db.get_value(
+    def get_reference(self,academic_year):
+        previous_roll_no = not frappe.db.get_value(
             "Academic Year",
             {"custom_current_academic_year": 1},
             "rolled_over",
-        ):
+        )
+        if frappe.db.get_value("Academic Year",academic_year,'custom_next_academic_year'):
+            previous_roll_no = 1
+        if previous_roll_no:
             current_program = frappe.get_doc("Program", self.program)
             series = frappe.db.get_value(
                 "Program",
@@ -71,7 +74,6 @@ class CustomStudent(Student):
         else:
             series = frappe.db.get_value("Program", self.program, "reference_series")
         return series
-
 
     def get_last_id(self,prefix):
         val = frappe.db.get_all(
@@ -149,6 +151,7 @@ class CustomStudent(Student):
         try:
             student = self.name
             if frappe.db.exists("Program Enrollment",{'student':student,'academic_year':academic_year,'docstatus':1}):
+                frappe.logger('cancel').exception('pe')
                 frappe.db.set_value("Program Enrollment",{'student':student,'academic_year':academic_year,'docstatus':1},'docstatus',2)
             frappe.db.set_value("Student",student,'enabled',0)
             frappe.db.set_value("Student",student,"student_status","Cancelled")
@@ -227,14 +230,11 @@ class CustomStudent(Student):
                     return self.refund_deposit(fee.name,deposit,account)
                 
         return self.check_previous_deposits(deduct)
-
     
     def get_deposit_company(self):
-        company_list = frappe.get_list("Company",filters=[['default_deposit_account',"is","set"]],fields=['name','default_deposit_account'])
-        if not company_list:
-            return frappe.throw("Please set default deposit account in Company")
-        return company_list[0]
-        
+        company = frappe.get_doc("Company",{'default_deposit_account':['is','set']})
+        return company
+
     def check_previous_deposits(self,deduct=0):
         company = self.get_deposit_company()
         filters = {
@@ -277,7 +277,7 @@ class CustomStudent(Student):
         
 
     def refund_deposit(self,fee,amount,account):
-        company = frappe.get_doc("Company",frappe.defaults.get_user_default("company"))
+        company = self.get_deposit_company()
         student = self.name
         ref_doc = None
         if fee:
@@ -328,7 +328,7 @@ class CustomStudent(Student):
             pe.submit()
             return 1
         except Exception as e:
-            frappe.throw(e)
+            pass
 
     @frappe.whitelist()
     def mark_entry(self, status, reason=None, date=None, time=None):
