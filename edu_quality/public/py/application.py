@@ -38,10 +38,10 @@ def before_save(doc, method=None):
     doc.application_fees = 0
     if frappe.db.exists("Application Fees List", {"class_name": doc.program}):
         doc.application_fees = frappe.get_value(
-            "Application Fees List", {"class_name": doc.program}, "application_fees"
+            "Application Fees List", {"class_name": doc.program,"academic_year":doc.academic_year}, "application_fees"
         )
         fee_name = frappe.get_value(
-            "Application Fees List", {"class_name": doc.program}, "fee_category"
+            "Application Fees List", {"class_name": doc.program,"academic_year":doc.academic_year}, "fee_category"
         )
         if not fee_name:
             fee_name = "Application fee"
