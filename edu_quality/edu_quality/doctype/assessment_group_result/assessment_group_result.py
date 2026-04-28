@@ -159,7 +159,7 @@ class AssessmentGroupResult(Document):
             self.combined_percentage = (total_processed_score / total_max_score) * 100
 
     def set_student_group_and_school(self):
-        student_group, school = frappe.db.get_value(
+        latest_enrollment = frappe.db.get_value(
             "Program Enrollment",
             {
                 "docstatus": 1,
@@ -168,7 +168,24 @@ class AssessmentGroupResult(Document):
                 "program": self.program,
             },
             ["student_group", "custom_school"],
+            order_by="modified desc",
         )
+        if not latest_enrollment:
+            latest_enrollment = frappe.db.get_value(
+                "Program Enrollment",
+                {
+                    "docstatus": 2,
+                    "student": self.student,
+                    "academic_year": self.academic_year,
+                    "program": self.program,
+                },
+                ["student_group", "custom_school"],
+                order_by="modified desc",
+            )
+        if not latest_enrollment:
+            frappe.throw("Program Enrollment not found")
+
+        student_group, school = latest_enrollment
         self.student_group = student_group
         self.school = school
 
