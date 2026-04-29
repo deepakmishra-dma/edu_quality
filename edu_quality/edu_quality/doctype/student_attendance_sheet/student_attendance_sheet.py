@@ -28,14 +28,13 @@ def get_months():
 
 
 @frappe.whitelist()
-def get_days_in_month(month_name, academic_year,as_date=False,month=1,year=None):
-    year = int(academic_year.split("-")[0])
+def get_days_in_month(month_name, academic_year, as_date=False, month=1, year=None):
     month_number = list(calendar.month_name).index(month_name.capitalize())
+    year = int(get_year(academic_year, month_number))
 
     # Get the number of days in the month
     _, num_days = calendar.monthrange(year, month_number)
-  
-        
+
     # Generate a list of days
     days = [{"textContent": str(day)} for day in range(1, num_days + 1)]
     if as_date:
@@ -69,21 +68,29 @@ def get_students(
     return sorted(students, key=sorting_key)
 
 
-def get_holidays(start_date, end_date, program, format_as_date=False):
+def get_holidays(start_date, end_date, program, format_as_date=True):
     holidays = []
-    
-    events = frappe.db.get_all(
-        "Event",
-        filters={
-            "class": program,
-            "starts_on": ["between", [start_date, end_date]],
-            "custom_holiday": 1,
-        },
-        fields=[
-            "starts_on",
-            "ends_on",
-        ],
+    event_qb = frappe.qb.DocType("Event")
+    event_class_qb = frappe.qb.DocType("Event Class")
+    events = (
+        frappe.qb.from_(event_qb)
+        .inner_join(event_class_qb)
+        .on(event_class_qb.parent == event_qb.name)
+        .select(event_qb.starts_on, event_qb.ends_on)
+        .where(
+            (event_class_qb["class"] == program)
+            & (
+                ((event_qb.starts_on >= start_date) & (event_qb.ends_on <= end_date))
+                | (
+                    (event_qb.starts_on <= start_date)
+                    & (event_qb.ends_on >= start_date)
+                )
+            )
+            & (event_qb.custom_holiday == 1)
+        )
+        .run(as_dict=True)
     )
+
     if len(events) != 0:
         for event in events:
             days = get_included_days(event.starts_on, event.ends_on, format_as_date)
@@ -95,8 +102,8 @@ def get_holidays(start_date, end_date, program, format_as_date=False):
 def get_data(month_name, academic_year, program, division):
     students = get_students(program, division)
     days = get_days_in_month(month_name, academic_year)
-    year = int(academic_year.split("-")[0])
     month = datetime.strptime(month_name, "%B").month
+    year = int(get_year(academic_year, month))
     day_numbers = [int(day["textContent"]) for day in days]
     holidays = []
 
@@ -107,7 +114,8 @@ def get_data(month_name, academic_year, program, division):
         else datetime(year, month, 31).strftime("%Y-%m-%d")
     )
 
-    holidays = get_holidays(start_date, end_date, program)
+    holidays = get_holidays(start_date, end_date, program, True)
+    holidays = [holiday.day for holiday in holidays if holiday.month == month]
 
     result = {}
     for student in students:
@@ -156,7 +164,7 @@ def save_attendance(**data):
     month_name = data.get("month_name")
     academic_year = data.get("academic_year")
     month = datetime.strptime(month_name, "%B").month
-    year = int(academic_year.split("-")[0])
+    year = int(get_year(academic_year, month))
     program = data.get("program")
     division = data.get("division")
     attendance_data = json.loads(data.get("attendance_data"))
@@ -223,13 +231,33 @@ def save_attendance(**data):
     return {"msg": "Attendance saved successfully", "error": 0}
 
 
+def get_year(academic_year, month):
+    academic_year = frappe.get_doc("Academic Year", academic_year)
+    year_start_date = academic_year.year_start_date
+    year_end_date = academic_year.year_end_date
+    # calculate all months and their years between start and end date including them
+    months = []
+    while year_start_date <= year_end_date:
+        months.append(year_start_date)
+        year_start_date = year_start_date.replace(
+            month=year_start_date.month % 12 + 1,
+            year=year_start_date.year + year_start_date.month // 12,
+        )
+    # make a hash of months and their years
+    print(months)
+    month_year_hash = {month.month: month.year for month in months}
+    print(month_year_hash)
+    return month_year_hash[month]
+
+
 @frappe.whitelist()
 def submit_attendance(**data):
 
     month_name = data.get("month_name")
     academic_year = data.get("academic_year")
     month = datetime.strptime(month_name, "%B").month
-    year = int(academic_year.split("-")[0])
+    year = int(get_year(academic_year, month))
+
     program = data.get("program")
     division = data.get("division")
     start_date = datetime(year, month, 1).strftime("%Y-%m-%d")
@@ -239,7 +267,7 @@ def submit_attendance(**data):
         else datetime(year, month, 31).strftime("%Y-%m-%d")
     )
     holidays = get_holidays(start_date, end_date, program, True)
-    unique_dates = get_days_in_month(month_name, academic_year,True,month,year)
+    unique_dates = get_days_in_month(month_name, academic_year, True, month, year)
 
     attendance_entries = frappe.get_all(
         "Attendance Entry",
@@ -268,8 +296,6 @@ def submit_attendance(**data):
                 "Present" if status not in ["A", "S"] else "Absent"
             )
         attendance_entry.submit()
-
-
 
     all_students = frappe.get_all(
         "Program Enrollment",
@@ -333,7 +359,7 @@ def check_attendance_entry(**data):
     month_name = data.get("month_name")
     academic_year = data.get("academic_year")
     month = datetime.strptime(month_name, "%B").month
-    year = int(academic_year.split("-")[0])
+    year = int(get_year(academic_year, month))
     program = data.get("program")
     start_date = datetime(year, month, 1).strftime("%Y-%m-%d")
     end_date = (
@@ -374,7 +400,7 @@ def get_divisions(academic_year, program):
     )
 
 
-def get_included_days(start_on, end_on, format_as_date=False):
+def get_included_days(start_on, end_on, format_as_date=True):
 
     if end_on is None or not isinstance(end_on, datetime):
         end_on = start_on
