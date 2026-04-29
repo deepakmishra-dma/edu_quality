@@ -58,7 +58,7 @@ def check_assessment_plan_in_group(assessment_plans, student_master=None):
     if already_submitted:
         frappe.prompt("There are submitted results already, proceed ?")
     if all_errors:
-        frappe.log_error("Error while checking plans in group",str(all_errors))
+        frappe.log_error("Error while checking plans in group", str(all_errors))
     return all_errors
 
 
@@ -225,8 +225,9 @@ def process_atomic_exam(
     frappe.enqueue(
         _process_atomic_exam,
         assessment_group=assessment_group,
-        academic_year = academic_year,
-        assessment_plans=assessment_plans,
+        academic_year=academic_year,
+        program=program,
+        div=div,
         student_master=student_master,
         create_toppers_only=create_toppers_only,
         queue="long",
@@ -237,10 +238,16 @@ def process_atomic_exam(
 def _process_atomic_exam(
     assessment_group,
     academic_year,
-    assessment_plans,
-    student_master,
-    create_toppers_only,
+    program,
+    div=None,
+    student_master=None,
+    create_toppers_only=False,
 ):
+    assessment_plans = get_all_assessment_plans(assessment_group, program, div)
+    errors = check_assessment_plan_in_group(assessment_plans, student_master)
+    if errors:
+        return
+
     if not create_toppers_only:
         process_assessment_results(assessment_plans, student_master)
 
@@ -366,7 +373,7 @@ def calculate_and_save_group_results(assessment_group, student_list):
         if assess_g_r_doc:
             assess_g_r_doc.calculate_total_score()
             if assess_g_r_doc.student in students_to_ignore:
-                assess_g_r_doc.online_assessment = 1    
+                assess_g_r_doc.online_assessment = 1
             assess_g_r_doc.save()
 
     group_class_ranks = asses_g_doc.get_group_class_rank()
