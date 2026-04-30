@@ -6,6 +6,7 @@ from frappe import _
 from frappe.utils.data import cstr
 from frappe.model.document import Document
 from frappe.utils import nowdate, add_days, getdate
+from edu_quality.public.py.walsh.admin import send_notification
 
 
 class EventDetail(Document):
@@ -246,6 +247,51 @@ class EventDetail(Document):
         return frappe.get_all(
             "Student", {"name": ["in", students]}, pluck="student_email_id"
         )
+    
+    def send_app_notification(self, student, subject, message, is_raw_html=True, is_published=True):
+        """
+        Send app notification for the event
+        """
+        try:
+            notice_id = self.create_school_notice(student, subject, message, is_raw_html, is_published)
+            send_notification(student, subject, notice_id)
+        except Exception as e:
+            frappe.log_error(f"Error while sending app notification for event: {self.name}", frappe.get_traceback())
+
+    def create_school_notice(
+            self, student, subject, message, is_raw_html=True, is_published=True
+        ):
+            """
+            Create school notice for the event
+            """
+            academic_year = frappe.get_value(
+                "Academic Year", {"custom_current_academic_year": 1}
+            )
+            pe = frappe.get_value(
+                "Program Enrollment",
+                {"student": student, "academic_year": academic_year},
+                ["student_group", "program"],
+                as_dict=True,
+            )
+            student_status = frappe.get_value("Student", student, "student_status")
+            
+            notice_data = {
+                "student": student,
+                "academic_year": academic_year,
+                "school": self.school,
+                "division": pe.student_group if pe.student_group else None,
+                "student_status": student_status,
+                "subject": subject,
+                "notice": message,
+                "is_raw_html": is_raw_html,
+                "class": pe.program if pe.program else None,
+            }
+            
+            notice = frappe.get_doc({"doctype": "School Notice", **notice_data})
+            if hasattr(notice, "is_published"):
+                notice.is_published = is_published
+            notice.save(ignore_permissions=True)
+            return notice.name
 
 
 def get_event_dates(type, parent):

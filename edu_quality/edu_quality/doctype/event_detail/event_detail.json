@@ -157,19 +157,20 @@
   {
    "fieldname": "dates_of_event",
    "fieldtype": "Table",
+   "hidden": 1,
    "label": "Date(s) of event",
    "options": "Event Date"
   },
   {
    "fieldname": "event_registration_reminder",
    "fieldtype": "Table",
-   "label": "Reminder To Be Sent For Registration Of Event",
+   "label": "Reminder To Be Sent For Announcement Of Event",
    "options": "Event Date"
   },
   {
    "fieldname": "event_reminder",
    "fieldtype": "Table",
-   "label": "Reminder To Se Sent For Event",
+   "label": "Reminder To Se Sent For Event Participants Only",
    "options": "Event Date"
   },
   {
@@ -327,8 +328,14 @@
   }
  ],
  "index_web_pages_for_search": 1,
- "links": [],
- "modified": "2024-09-17 11:21:22.614210",
+ "links": [
+  {
+   "group": "Tasks",
+   "link_doctype": "Task",
+   "link_fieldname": "custom_for_event"
+  }
+ ],
+ "modified": "2024-10-08 10:56:17.744410",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Event Detail",
@@ -349,5 +356,6 @@
  ],
  "sort_field": "creation",
  "sort_order": "DESC",
- "states": []
+ "states": [],
+ "track_changes": 1
 }
