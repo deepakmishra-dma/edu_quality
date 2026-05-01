@@ -37,29 +37,37 @@ const autofilledForm = async (form) => {
 	form.redraw();
 }
 
-const handleFormSubmit = (form, submission) => {
-	frappe.call({
-		method: 'edu_quality.edu_quality.page.petty_cash_tool.petty_cash_tool.petty_cash_submit',
-		args: {
-			data: submission.data
-		},
-		callback: (r) => {
-			frappe.msgprint({
-				message: __('Petty Cash Submitted Successfully'),
-				title: __('Petty Cash Submitted'),
-				indicator: 'green',
-				primary_action: {
-					label: __('Close'),
-					action: function () {
-						frappe.msg_dialog.hide();
-					}
-				}
-			});
+const showMessage = (message, title, indicator) => {
+    frappe.msgprint({
+        message: __(message),
+        title: __(title),
+        indicator: indicator,
+        primary_action: {
+            label: __('Close'),
+            action: function () {
+                frappe.msg_dialog.hide();
+            }
+        }
+    });
+};
 
-			// reset the form after submission
-			form.resetValue();
-		}
-	});
+const handleFormSubmit = (form, submission) => {
+    frappe.call({
+        method: 'edu_quality.edu_quality.page.petty_cash_tool.petty_cash_tool.petty_cash_submit',
+        args: {
+            data: submission.data
+        },
+        callback: (r) => {
+            if (r.message.success) {
+                showMessage('Petty Cash Submitted Successfully', 'Petty Cash Submitted', 'green');
+            } else {
+                showMessage('Failed to submit Petty Cash, Please contact the administrator', 'Error', 'red');
+            }
+
+            // reset the form after submission
+            form.resetValue();
+        }
+    });
 };
 
 function updateField(key, value) {

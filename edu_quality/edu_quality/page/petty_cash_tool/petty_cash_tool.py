@@ -5,41 +5,48 @@ from frappe.utils.file_manager import save_file
 
 @frappe.whitelist()
 def petty_cash_submit(data):
-    data = frappe.parse_json(data)
-    account = get_data(data, "accountHead")
-    company = get_data(data, "company")
-    school = get_data(data, "school")
-    amount = data.get("amount")
-    to_from = data.get("to_from")
-    description = data.get("description")
-    _type = data.get("type")
-    file = data.get("file")
+    try:
+        data = frappe.parse_json(data)
+        account = get_data(data, "accountHead")
+        company = get_data(data, "company")
+        school = get_data(data, "school")
+        amount = data.get("amount")
+        to_from = data.get("to_from")
+        description = data.get("description")
+        _type = data.get("type")
+        file = data.get("file")
 
-    to_account, entry_type = determine_accounts_and_entry_type(company, school, _type)
+        to_account, entry_type = determine_accounts_and_entry_type(company, school, _type)
 
-    remark_parts = {}
+        remark_parts = {}
 
-    if description:
-        remark_parts["Description"] = description
+        if description:
+            remark_parts["Description"] = description
 
-    if school:
-        remark_parts["School"] = school
+        if school:
+            remark_parts["School"] = school
 
-    remark = frappe.as_json(remark_parts)
+        remark = frappe.as_json(remark_parts)
 
-    journal_entry = create_journal_entry(
-        account, to_account, amount, entry_type, to_from, remark
-    )
+        journal_entry = create_journal_entry(
+            account, to_account, amount, entry_type, to_from, remark
+        )
 
-    # Save the file in the Journal Entry as an attachment
-    handle_file(file, journal_entry)
-    journal_entry.save()
-    journal_entry.reload()
+        # Save the file in the Journal Entry as an attachment
+        handle_file(file, journal_entry)
+        journal_entry.save()
+        journal_entry.reload()
 
-    return {
-        "data": journal_entry.as_dict(),
-    }
-
+        return {
+            "success": True,
+            "data": journal_entry.as_dict(),
+        }
+    except Exception as e:
+        frappe.log_error("Error in petty_cash_submit", frappe.get_traceback())
+        return {
+            "success": False,
+            "data": str(e),
+        }
 
 def get_data(data, key):
     field = data.get(key)
