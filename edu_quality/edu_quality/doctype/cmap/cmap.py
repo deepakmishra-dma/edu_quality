@@ -2,6 +2,7 @@
 # For license information, please see license.txt
 
 import frappe
+from frappe import _
 from frappe.model.document import Document
 from frappe.query_builder.functions import Count, GROUP_CONCAT, Concat, Cast
 from frappe.utils import parse_json
@@ -110,14 +111,11 @@ class CMAP(Document):
             insert_cmap_instructor_assignees(self)
 
     def on_update(self, method=None):
-        # old_doc = self.get_doc_before_save()
-        # if old_doc and (
-        #     self.reserved_for_portion_circular != old_doc.reserved_for_portion_circular
-        #     or self.period != old_doc.period
-        # ):
-        #     self.name_func()
-        pass
-
+        if frappe.flags.in_import:
+            if frappe.get_value("CMAP", {"cmap_code": self.cmap_code}):
+                frappe.throw(
+                    _(f"CMAP with CMAP Code <b>{self.cmap_code}</b> already exists")
+                )
 
 def insert_cmap_assignees(self):
     program_name = self.get("class")
