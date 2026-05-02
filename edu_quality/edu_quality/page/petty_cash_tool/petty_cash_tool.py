@@ -111,6 +111,7 @@ def create_journal_entry(from_account, to_account, amount, entry_type, to_from, 
         ],
         "pay_to_recd_from": to_from,
         "user_remark": remark,
+        "is_petty_cash": True,
     }
 
     # Add cheque details only for 'Bank Entry'
@@ -122,6 +123,5 @@ def create_journal_entry(from_account, to_account, amount, entry_type, to_from, 
 
     journal_entry = frappe.get_doc(journal_entry_data)
     journal_entry.insert()
-    journal_entry.is_petty_cash = True
     return journal_entry
 

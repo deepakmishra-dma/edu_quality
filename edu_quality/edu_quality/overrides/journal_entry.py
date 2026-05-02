@@ -1,10 +1,30 @@
 import frappe 
 from frappe import _
+from frappe.model.naming import make_autoname
 from erpnext.accounts.utils import cancel_exchange_gain_loss_journal
 from erpnext.accounts.doctype.journal_entry.journal_entry import JournalEntry
 
 
 class customJournalEntry(JournalEntry):
+
+    def autoname(self):
+        if self.is_petty_cash:
+            name = self.generate_petty_cash_name()
+            if name:
+                self.name = name
+                return
+
+    def generate_petty_cash_name(self):
+        user_remark = frappe.json.loads(self.user_remark)
+        school = user_remark.get("School")
+        if school:
+            prefix = frappe.get_value("School", school, "prefix")
+            if prefix:
+                series = "PCJV-" + prefix + "-.#####"
+                return make_autoname(series)
+        return None
+
+
     def validate_party(self):
         for d in self.get("accounts"):
             account_type = frappe.get_cached_value("Account", d.account, "account_type")
