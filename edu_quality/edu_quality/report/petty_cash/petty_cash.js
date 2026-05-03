@@ -90,8 +90,14 @@ function handleApproval(report, action) {
 			args: { data: journal_entries, [action]: true },
 			callback: function (r) {
 				if (r.message) {
+					let action_msg = action.charAt(0).toUpperCase() + action.slice(1);
+					if (action === 'reject') {
+						action_msg += 'ed';
+					}else{
+						action_msg += 'd';
+					}
 					frappe.show_alert({
-						message: __(action.charAt(0).toUpperCase() + action.slice(1) + "d"),
+						message: __(action_msg),
 						indicator: "green"
 					});
 					report.refresh();
