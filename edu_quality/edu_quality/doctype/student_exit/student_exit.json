@@ -39,6 +39,9 @@
         "total_working_days",
         "extra_curricular",
         "attendance_percentage",
+        "date_of_application_for_certificate",
+        "udise_no",
+        "ncc_cadetscout",
         "column_break_tmke",
         "signature",
         "father_name",
@@ -48,14 +51,9 @@
         "discount_details",
         "days_present",
         "general_conduct",
+        "fee_concession",
         "subjects_section",
-        "subject_1",
-        "subject_2",
-        "subject_3",
-        "column_break_seca",
-        "subject_4",
-        "subject_5",
-        "subject_6"
+        "courses"
     ],
     "fields": [
         {
@@ -230,40 +228,6 @@
             "label": "Subjects"
         },
         {
-            "fieldname": "subject_1",
-            "fieldtype": "Data",
-            "label": "Subject 1"
-        },
-        {
-            "fieldname": "subject_2",
-            "fieldtype": "Data",
-            "label": "Subject 2"
-        },
-        {
-            "fieldname": "subject_3",
-            "fieldtype": "Data",
-            "label": "Subject 3"
-        },
-        {
-            "fieldname": "column_break_seca",
-            "fieldtype": "Column Break"
-        },
-        {
-            "fieldname": "subject_4",
-            "fieldtype": "Data",
-            "label": "Subject 4"
-        },
-        {
-            "fieldname": "subject_5",
-            "fieldtype": "Data",
-            "label": "Subject 5"
-        },
-        {
-            "fieldname": "subject_6",
-            "fieldtype": "Data",
-            "label": "Subject 6"
-        },
-        {
             "fieldname": "failed",
             "fieldtype": "Data",
             "label": "Failed"
@@ -332,12 +296,39 @@
             "fieldname": "attendance_percentage",
             "fieldtype": "Float",
             "label": "Attendance Percentage"
+        },
+        {
+            "fieldname": "date_of_application_for_certificate",
+            "fieldtype": "Date",
+            "label": "Date of Application for Certificate"
+        },
+        {
+            "fieldname": "udise_no",
+            "fieldtype": "Data",
+            "label": "UDISE No"
+        },
+        {
+            "description": "Whether the Student is NCC Cadet/Scout Guide (details may be given)",
+            "fieldname": "ncc_cadetscout",
+            "fieldtype": "Data",
+            "label": "NCC Cadet/Scout"
+        },
+        {
+            "fieldname": "fee_concession",
+            "fieldtype": "Data",
+            "label": "Fee Concession"
+        },
+        {
+            "fieldname": "courses",
+            "fieldtype": "Table",
+            "label": "Courses",
+            "options": "Program Enrollment Course"
         }
     ],
     "index_web_pages_for_search": 1,
     "is_submittable": 1,
     "links": [],
-    "modified": "2024-05-28 14:56:11.561349",
+    "modified": "2024-10-09 22:11:26.223334",
     "modified_by": "Administrator",
     "module": "Edu Quality",
     "name": "Student Exit",
