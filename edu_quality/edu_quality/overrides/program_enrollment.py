@@ -14,9 +14,24 @@ class CustomProgramEnrollment(ProgramEnrollment):
         self.sync_division_data()
         self.update_student_data()
 
+    def update_subjects(self):
+        self.courses = []
+        program = frappe.get_doc("Program",self.program)
+        for course in program.courses:
+            self.append('courses',{
+				'course':course.course,
+				'course_name':course.course_name,
+			})
+
+    def before_save(self):
+        self.update_subjects()
+
     def on_update_after_submit(self):
     #     self.sync_division_data()
         self.update_student_data()
+
+    def before_update_after_submit(self):
+        self.update_subjects()
 
     def validate_academic_year(self):
         start_date, end_date = frappe.db.get_value(

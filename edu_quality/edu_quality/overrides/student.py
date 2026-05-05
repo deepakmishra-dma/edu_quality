@@ -145,16 +145,23 @@ class CustomStudent(Student):
     def validate_bank_account(self):
         return frappe.db.exists("Bank Account", {"party": self.name})
 
+    def cancel_related_documents(self, academic_year):
+        # Cancel the program enrollment
+        pe_filter = {"student": self.name, "academic_year": academic_year, "docstatus": 1}
+        if frappe.db.exists("Program Enrollment", pe_filter):
+            frappe.db.set_value("Program Enrollment", pe_filter, "docstatus", 2)
+    
+        # Cancel the student
+        frappe.db.set_value("Student", self.name, {
+            'enabled': 0,
+            'student_status': 'Cancelled'
+        })
+
 
     @frappe.whitelist()
     def cancel_student(self,academic_year,fee_collection):
         try:
-            student = self.name
-            if frappe.db.exists("Program Enrollment",{'student':student,'academic_year':academic_year,'docstatus':1}):
-                frappe.logger('cancel').exception('pe')
-                frappe.db.set_value("Program Enrollment",{'student':student,'academic_year':academic_year,'docstatus':1},'docstatus',2)
-            frappe.db.set_value("Student",student,'enabled',0)
-            frappe.db.set_value("Student",student,"student_status","Cancelled")
+            self.cancel_related_documents(academic_year)
             if fee_collection == "Deposit Refund":
                 if self.check_pending_fee():
                     return frappe.throw("Fee Collection is pending.for this student!\nGO to the fee document, generate pending links and collect the fees!")

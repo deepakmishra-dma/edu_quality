@@ -3,7 +3,6 @@
 
 import frappe
 from frappe.model.document import Document
-from datetime import datetime
 
 
 def date_to_words(date):
@@ -21,6 +20,7 @@ class StudentExit(Document):
 	@frappe.whitelist()
 	def update_details(self):
 		student = frappe.get_doc("Student",self.student)
+		self.get_subjects()
 		try:
 			fee,deposit,account = student.check_deposit(deduct=1)
 			self.deposit_amount = deposit
@@ -48,7 +48,6 @@ class StudentExit(Document):
 			else:
 				self.refund_amount = 0
 			self.get_attendance_details()
-			self.get_subjects()
 			# self.save()
 		except Exception as e:
 			frappe.logger('dep').exception(e)
@@ -66,40 +65,16 @@ class StudentExit(Document):
 	
 	def get_subjects(self):
 		current_yr = frappe.db.get_value("Academic Year",{'custom_current_academic_year':1})
-		current_division = frappe.db.get_value("Program Enrollment",{'academic_year':current_yr,'student':self.student,'docstatus':1},'student_group')
-		self.last_class_studied = frappe.db.get_value("Program Enrollment",{'academic_year':current_yr,'student':self.student,'docstatus':1},'program')
-		assignments = frappe.db.get_all("CMAP Assignment",{'division':current_division},'parent',as_list=True)
-		short_codes = frappe.db.get_all("Course",fields=['course_name','custom_short_code'])
-		subject_map = {}
-		for sub in short_codes:
-			subject_map[sub.custom_short_code] = sub.course_name
-		subjects_studied = []
-		for s in assignments:
-			cmap = s[0]
-			cmap = cmap[10:13]
-			subjects_studied.append(cmap)
-		subjects_studied = set(subjects_studied)
-		i=1
-		for s in subjects_studied:
-			if subject_map.get(s):
-				if i ==1:
-					self.subject_1 = subject_map.get(s)
-					i+=1
-				elif i ==2:
-					self.subject_2 = subject_map.get(s)
-					i+=1
-				elif i ==3:
-					self.subject_3 = subject_map.get(s)
-					i+=1
-				elif i ==4:
-					self.subject_4 = subject_map.get(s)
-					i+=1
-				elif i ==5:
-					self.subject_5 = subject_map.get(s)
-					i+=1
-				else:
-						self.subject_6 = subject_map.get(s)
-				
+		pe_filter = {'academic_year':current_yr,'student':self.student,'docstatus':1}
+		program_enrollment = frappe.get_doc("Program Enrollment",pe_filter)
+		self.last_class_studied = program_enrollment.program
+		self.courses = []
+		for course in program_enrollment.courses:
+			self.append('courses',{
+				'course':course.course,
+				'course_name':course.course_name,
+			})
+
 	def get_fee_details(self):
 		last_paid_fee = frappe.db.get_all("Fees",filters=[["Fees","student","=","SHFA21"],["Payment Schedule","outstanding","=",0]],order_by="academic_year desc",limit=1)
 		if last_paid_fee:
