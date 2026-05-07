@@ -191,10 +191,10 @@ def create_employee_google_user(
         company_email = f"{email_key}@{google_service_doc.domain}"
 
         if not existing_user:
-            recovery_mail = (str(recovery_mail) or str(google_service_doc.default_recovery_mail)).strip().lower()
+            recovery_mail = (str(recovery_mail) or str(google_service_doc.default_recovery_email)).strip().lower()
             email_pattern = r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"
             recovery_mail = (
-                str(google_service_doc.default_recovery_mail)
+                str(google_service_doc.default_recovery_email)
                 if not re.match(email_pattern, recovery_mail)
                 else recovery_mail
             )
