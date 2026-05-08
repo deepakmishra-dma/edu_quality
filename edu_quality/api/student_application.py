@@ -825,6 +825,7 @@ def create_lead(kwargs):
                 "communication_day", "Monday"
             ),
             "custom_preferred_communication_time": kwargs.get("communication_time"),
+            "location": kwargs.get("page_location"),
         }
     )
     if (
