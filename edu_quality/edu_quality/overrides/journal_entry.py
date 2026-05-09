@@ -20,7 +20,7 @@ class customJournalEntry(JournalEntry):
         if school:
             prefix = frappe.get_value("School", school, "prefix")
             if prefix:
-                series = "PCJV-" + prefix + "-.#####"
+                series = f"PCJV-{prefix}-.YYYY.-.#####"
                 return make_autoname(series)
         return None
 
