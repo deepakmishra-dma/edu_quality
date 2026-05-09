@@ -153,7 +153,7 @@ def create_user(emp, email):
     user = frappe.new_doc("User")
     user.update(
         {
-            "name": emp.employee_name,
+            "full_name": emp.employee_name,
             "email": email,
             "enabled": 1,
             "first_name": emp.first_name,

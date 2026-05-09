@@ -66,7 +66,10 @@ class StudentExit(Document):
 	def get_subjects(self):
 		current_yr = frappe.db.get_value("Academic Year",{'custom_current_academic_year':1})
 		pe_filter = {'academic_year':current_yr,'student':self.student,'docstatus':1}
-		program_enrollment = frappe.get_doc("Program Enrollment",pe_filter)
+		program_enrollment_name = frappe.db.get_value("Program Enrollment",pe_filter)
+		if not program_enrollment_name:
+			return
+		program_enrollment = frappe.get_doc("Program Enrollment", program_enrollment_name)
 		self.last_class_studied = program_enrollment.program
 		self.courses = []
 		for course in program_enrollment.courses:
