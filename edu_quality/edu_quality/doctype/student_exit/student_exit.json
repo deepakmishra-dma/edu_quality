@@ -319,6 +319,7 @@
             "label": "Fee Concession"
         },
         {
+            "allow_on_submit": 1,
             "fieldname": "courses",
             "fieldtype": "Table",
             "label": "Courses",
@@ -328,7 +329,7 @@
     "index_web_pages_for_search": 1,
     "is_submittable": 1,
     "links": [],
-    "modified": "2024-10-09 22:11:26.223334",
+    "modified": "2024-10-11 12:12:53.342999",
     "modified_by": "Administrator",
     "module": "Edu Quality",
     "name": "Student Exit",
