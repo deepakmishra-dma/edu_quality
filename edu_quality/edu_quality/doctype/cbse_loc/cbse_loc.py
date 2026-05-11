@@ -41,7 +41,6 @@ class CBSELOC(Document):
     def on_submit(self):
         if self.workflow_state == 'Approved':
             self.update_student_details()
-            frappe.db.set_value('CBSE LOC', self.name, 'status', 'Approved')
 
 
     @property
