@@ -328,11 +328,12 @@ def get_data_from_queries(filters=None):
         .inner_join(purchase_rec_table)
         .on(purchase_rec_table.name == purchase_rec_item_table.parent)
         .where(purchase_rec_item_table.purchase_order.isin(purchase_orders or [None]))
-        .groupby(purchase_rec_item_table.purchase_order)
+        .groupby(purchase_rec_item_table.item_code)
         .select(
             purchase_rec_item_table.item_code,
             Max(purchase_rec_table.custom_receiving_date).as_("received_date"),
             Max(purchase_rec_table.custom_received_by).as_("received_by"),
+            purchase_rec_item_table.purchase_order,
         )
     )
 
