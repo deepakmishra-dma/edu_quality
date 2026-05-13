@@ -60,14 +60,20 @@ class CustomStudent(Student):
             previous_roll_no = 1
         if previous_roll_no:
             current_program = frappe.get_doc("Program", self.program)
+            previous_sequence = current_program.sequence - 1
+        
+            # Try to get the series based on the current program's school and previous sequence
             series = frappe.db.get_value(
                 "Program",
-                {
-                    "school": current_program.school,
-                    "sequence": current_program.sequence - 1,
-                },
-                "reference_series",
+                {"school": current_program.school, "sequence": previous_sequence},
+                "reference_series"
             )
+        
+            # If series is not found, try to get it based on the previous class
+            if not series:
+                series = frappe.db.get_value("Program", current_program.previous_class, "reference_series")
+        
+            # If still not found, generate the series based on the current program's reference series
             if not series:
                 series = current_program.reference_series
                 series = chr(ord(series[0]) + 1) + series[1]
