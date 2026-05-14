@@ -170,7 +170,7 @@
   {
    "fieldname": "event_reminder",
    "fieldtype": "Table",
-   "label": "Reminder To Se Sent For Event Participants Only",
+   "label": "Reminder To Be Sent For Event Participants Only",
    "options": "Event Date"
   },
   {
@@ -335,7 +335,7 @@
    "link_fieldname": "custom_for_event"
   }
  ],
- "modified": "2024-10-08 10:56:17.744410",
+ "modified": "2024-10-11 16:27:45.916548",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Event Detail",
