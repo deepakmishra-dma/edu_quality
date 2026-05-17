@@ -106,7 +106,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-07-25 18:02:18.488933",
+ "modified": "2024-10-16 17:42:48.107265",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Fees Settings",
@@ -125,5 +125,6 @@
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": []
+ "states": [],
+ "track_changes": 1
 }
