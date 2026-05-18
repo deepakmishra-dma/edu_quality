@@ -90,7 +90,7 @@
   },
   {
    "fieldname": "user_info",
-   "fieldtype": "Data",
+   "fieldtype": "Small Text",
    "label": "User Info"
   },
   {
@@ -107,7 +107,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-04-15 19:22:17.474610",
+ "modified": "2024-10-17 18:22:14.756568",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Rules and Regulation Submission",
