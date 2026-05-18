@@ -75,8 +75,13 @@ export const authProvider: AuthBindings = {
   check: async () => {
     const response = await fetch("/api/method/frappe.auth.get_logged_user");
     const data = await response.json();
+    const authenticated = data?.message && data?.message !== "Guest";
+    if (authenticated) {
+      await sendPushToken();
+    }
+    
     return {
-      authenticated: data?.message && data?.message !== "Guest",
+      authenticated,
     };
   },
   getPermissions: async () => null,
@@ -91,4 +96,33 @@ export const authProvider: AuthBindings = {
     }
     return { error };
   },
+};
+
+const sendPushToken = async () => {
+  // @ts-expect-error undefined
+  const pushToken = window.getPushNotificationToken?.();
+  if (pushToken) {
+    try {
+      const response = await fetch(
+        "/api/method/edu_quality.public.py.walsh.login.register_push_notice",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            push_token: pushToken,
+          }),
+        }
+      );
+      const data = await response.json();
+      if (data?.message?.success) {
+        console.log("Push token sent successfully");
+      } else {
+        console.error("Failed to send push token:", data?.message?.error_message);
+      }
+    } catch (error) {
+      console.error("Error sending push token:", error);
+    }
+  }
 };
