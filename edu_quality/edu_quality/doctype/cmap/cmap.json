@@ -218,12 +218,13 @@
   {
    "fieldname": "cmap_code",
    "fieldtype": "Data",
-   "label": "CMAP Code"
+   "label": "CMAP Code",
+   "unique": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-05-27 14:34:40.484477",
+ "modified": "2024-10-24 19:06:13.312525",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "CMAP",
