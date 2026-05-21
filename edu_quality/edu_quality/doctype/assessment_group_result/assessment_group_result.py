@@ -6,6 +6,7 @@ from frappe.model.document import Document
 from edu_quality.public.py.utils import get_div_students
 from pypika.analytics import Rank
 from frappe.query_builder import Order
+from education.education.api import get_grade as inner_get_grade
 
 
 class AssessmentGroupResult(Document):
@@ -53,6 +54,7 @@ class AssessmentGroupResult(Document):
 
         subject_wise_results = []
 
+        assess_g_doc = frappe.get_cached_doc("Assessment Group", self.assessment_group)
         for subject in subject_wise_group:
             subject_wise_result = {
                 "subject": subject,
@@ -73,6 +75,11 @@ class AssessmentGroupResult(Document):
                     subject_wise_result["score"] / subject_wise_result["maximum_score"]
                 ) * 100
 
+            if assess_g_doc.custom_group_result_grade:
+                subject_wise_result["grade"] = inner_get_grade(
+                    assess_g_doc.custom_group_result_grade,
+                    subject_wise_result["percentage"] or 0,
+                )
             subject_wise_results.append(subject_wise_result)
         return subject_wise_results
 
@@ -157,6 +164,14 @@ class AssessmentGroupResult(Document):
         self.combined_maximum_score = total_max_score
         if total_max_score:
             self.combined_percentage = (total_processed_score / total_max_score) * 100
+
+        assess_g_doc = frappe.get_cached_doc("Assessment Group", self.assessment_group)
+
+        if assess_g_doc.custom_group_result_grade:
+
+            self.grade = inner_get_grade(
+                assess_g_doc.custom_group_result_grade, self.combined_percentage or 0
+            )
 
     def set_student_group_and_school(self):
         latest_enrollment = frappe.db.get_value(
