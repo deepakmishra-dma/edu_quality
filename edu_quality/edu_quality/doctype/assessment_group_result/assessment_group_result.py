@@ -53,8 +53,11 @@ class AssessmentGroupResult(Document):
                 subject_wise_group[subject].append(result)
 
         subject_wise_results = []
+        assess_group_name = self.get("assessment_group") or None
+        
+        if(assess_group_name):
+            assess_g_doc = frappe.get_cached_doc("Assessment Group", assess_group_name)
 
-        assess_g_doc = frappe.get_cached_doc("Assessment Group", self.assessment_group)
         for subject in subject_wise_group:
             subject_wise_result = {
                 "subject": subject,
@@ -75,7 +78,7 @@ class AssessmentGroupResult(Document):
                     subject_wise_result["score"] / subject_wise_result["maximum_score"]
                 ) * 100
 
-            if assess_g_doc.custom_group_result_grade:
+            if assess_group_name and  assess_g_doc.custom_group_result_grade:
                 subject_wise_result["grade"] = inner_get_grade(
                     assess_g_doc.custom_group_result_grade,
                     subject_wise_result["percentage"] or 0,
@@ -164,14 +167,20 @@ class AssessmentGroupResult(Document):
         self.combined_maximum_score = total_max_score
         if total_max_score:
             self.combined_percentage = (total_processed_score / total_max_score) * 100
+            
+        assess_group_name = self.get("assessment_group") or None
 
-        assess_g_doc = frappe.get_cached_doc("Assessment Group", self.assessment_group)
-
-        if assess_g_doc.custom_group_result_grade:
-
-            self.grade = inner_get_grade(
-                assess_g_doc.custom_group_result_grade, self.combined_percentage or 0
+        if assess_group_name:
+            assess_g_doc = frappe.get_cached_doc(
+                "Assessment Group", assess_group_name
             )
+
+            if assess_g_doc.custom_group_result_grade:
+
+                self.grade = inner_get_grade(
+                    assess_g_doc.custom_group_result_grade,
+                    self.combined_percentage or 0,
+                )
 
     def set_student_group_and_school(self):
         latest_enrollment = frappe.db.get_value(
