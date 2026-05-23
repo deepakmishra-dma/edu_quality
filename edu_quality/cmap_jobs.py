@@ -249,7 +249,7 @@ def send_ptm_notifications_to_students():
         )
         scheduled_datetime = scheduled_datetime.replace(second=0, microsecond=0)
         cutoff_datetime_12h = scheduled_datetime - datetime.timedelta(hours=12)
-        cutoff_datetime_15m = scheduled_datetime - datetime.timedelta(minutes=15)
+        cutoff_datetime_15m = scheduled_datetime - datetime.timedelta(minutes=30)
         cutoff_datetime_5m = scheduled_datetime - datetime.timedelta(minutes=5)
         if current_datetime == cutoff_datetime_12h:
             list_12hrs.append(item)
