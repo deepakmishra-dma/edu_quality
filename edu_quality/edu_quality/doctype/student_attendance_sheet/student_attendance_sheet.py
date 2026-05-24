@@ -72,6 +72,8 @@ def get_holidays(start_date, end_date, program, format_as_date=True):
     holidays = []
     event_qb = frappe.qb.DocType("Event")
     event_class_qb = frappe.qb.DocType("Event Class")
+    all_day_end_date = f"{end_date} 23:59:59"
+    
     events = (
         frappe.qb.from_(event_qb)
         .inner_join(event_class_qb)
@@ -80,7 +82,16 @@ def get_holidays(start_date, end_date, program, format_as_date=True):
         .where(
             (event_class_qb["class"] == program)
             & (
-                ((event_qb.starts_on >= start_date) & (event_qb.ends_on <= end_date))
+                (
+                    (event_qb.starts_on >= start_date)
+                    & (
+                        ((event_qb.ends_on <= end_date) & (event_qb.all_day == 0))
+                        | (
+                            (event_qb.ends_on <= all_day_end_date)
+                            & (event_qb.all_day == 1)
+                        )
+                    )
+                )
                 | (
                     (event_qb.starts_on <= start_date)
                     & (event_qb.ends_on >= start_date)
