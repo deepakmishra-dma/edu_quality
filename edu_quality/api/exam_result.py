@@ -18,8 +18,11 @@ def get_all_assessment_plans(assessment_group, program, div):
     assess_plan_qb = frappe.qb.DocType("Assessment Plan")
 
     div_query = assess_plan_qb.student_group.isnotnull()
-    if div:
-        div_query = assess_plan_qb.student_group == div
+    
+    if div and isinstance(div,list):
+        div_query = assess_plan_qb.student_group.isin(div)
+    elif div:
+            div_query = assess_plan_qb.student_group == div
 
     query = (
         frappe.qb.from_(assess_group_qb)
@@ -89,7 +92,7 @@ def get_assessment_result_of_plans(
     return query.run(as_dict=True)
 
 
-def get_assessment_plan_in_div(assessment_plan, division, students):
+def get_assessment_res_in_div(assessment_plan, division, students):
     assess_res_qb = frappe.qb.DocType("Assessment Result")
     assess_res_de_qb = frappe.qb.DocType("Assessment Result Detail")
     div_con = assess_res_qb.student_group.isnotnull()
@@ -130,9 +133,9 @@ def check_assessment_plan_in_div(assessment_plan, division, student_master=None)
     if not student_master or not len(student_master):
         students = get_div_students(division)
     else:
-        students = student_master
+        students = [s for s in student_master if s in get_div_students(division)]
 
-    data = get_assessment_plan_in_div(assessment_plan, division, students)
+    data = get_assessment_res_in_div(assessment_plan, division, students)
 
     return diff_students_and_results(students, data, assessment_plan)
 
@@ -170,6 +173,19 @@ def diff_students_and_results(students, results, assessment_plan):
     return errors
 
 
+def get_all_divisions_of_students(students, academic_year):
+    data = frappe.db.get_all(
+        "Program Enrollment",
+        filters={
+            "student": ["in", students],
+            "academic_year": academic_year,
+            "docstatus": 1,
+        },
+        fields=["student_group"],
+    )
+    return {d.student_group for d in data}
+
+
 @frappe.whitelist()
 def process_result(
     assessment_group,
@@ -182,15 +198,15 @@ def process_result(
     is_composite, school = frappe.db.get_value(
         "Assessment Group", assessment_group, ["custom_is_composite", "custom_school"]
     )
-    student_list = get_ref_nos_from_string(ref_nos, school)
-
+    student_list = get_ref_nos_from_string(ref_nos, school) if ref_nos else []
+    divisions = get_all_divisions_of_students(student_list, academic_year)
     if is_composite:
         frappe.enqueue(
             process_composite_result,
             assessment_group=assessment_group,
             academic_year=academic_year,
             program=program,
-            div=division,
+            div=division or divisions,
             student_master=student_list,
             create_toppers_only=create_toppers_only,
             queue="long",
@@ -200,7 +216,7 @@ def process_result(
             assessment_group=assessment_group,
             academic_year=academic_year,
             program=program,
-            div=division,
+            div=division or divisions,
             student_master=student_list,
             create_toppers_only=create_toppers_only,
         )
@@ -222,17 +238,17 @@ def process_atomic_exam(
         frappe.msgprint(str(errors), title="Errors", indicator="red")
         frappe.throw(str(errors))
         return
-    frappe.enqueue(
-        _process_atomic_exam,
+    _process_atomic_exam(
         assessment_group=assessment_group,
         academic_year=academic_year,
         program=program,
         div=div,
         student_master=student_master,
         create_toppers_only=create_toppers_only,
-        queue="long",
-        timeout=15000,
     )
+    # frappe.enqueue(
+
+    # )
 
 
 def _process_atomic_exam(
@@ -243,12 +259,15 @@ def _process_atomic_exam(
     student_master=None,
     create_toppers_only=False,
 ):
+    print(student_master, div)
     assessment_plans = get_all_assessment_plans(assessment_group, program, div)
+    print(assessment_plans)
     errors = check_assessment_plan_in_group(assessment_plans, student_master)
     if errors:
         return
-
-    if not create_toppers_only:
+    print(create_toppers_only)
+    if not int(create_toppers_only):
+        print("true")
         process_assessment_results(assessment_plans, student_master)
 
     student_list = create_assessment_group_results(assessment_group, assessment_plans)
@@ -284,11 +303,13 @@ def process_assessment_results(assessment_plans, student_master):
     non_submitted_docs = get_assessment_result_of_plans(
         assessment_plans, [0], student_master
     )
+    print(submitted_docs)
     submit_assessment_results(non_submitted_docs)
 
 
 def submit_assessment_results(non_submitted_docs):
     total_res_rows = len(non_submitted_docs)
+    print(non_submitted_docs, "hhhe")
     for idx, result in enumerate(non_submitted_docs):
         # frappe.db.begin()
         assess_result = frappe.get_cached_doc("Assessment Result", result.get("name"))
@@ -322,13 +343,16 @@ def create_assessment_group_results(assessment_group, assessment_plans):
 
 def get_student_set(assessment_plans):
     student_set = set()
-    for plan in assessment_plans:
-        results = frappe.get_all(
-            "Assessment Result",
-            filters={"assessment_plan": plan.get("name")},
-            fields=["student"],
-        )
-        student_set.update(result.student for result in results)
+    all_students = frappe.get_all(
+        "Assessment Result",
+        filters={
+            "assessment_plan": ["in", assessment_plans],
+            "docstatus": ["in", [0, 1]],
+        },
+        fields=["student"],
+    )
+
+    student_set.update(result.student for result in all_students)
     return student_set
 
 

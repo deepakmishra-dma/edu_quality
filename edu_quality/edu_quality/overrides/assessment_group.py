@@ -407,7 +407,7 @@ class CustomAssessmentGroup(AssessmentGroup):
         data = query.run(as_dict=True)
         if as_map:
             data = {item["name"]: item["rank"] for item in data}
-        frappe.log_error("ee", data)
+ 
         return data
 
     def get_student_with_online_submission(self):

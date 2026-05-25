@@ -67,6 +67,15 @@ function onLoad() {
 				const program = filtersRef.get_value("program");
 				const academic_year = filtersRef.get_value("acad_year");
 				return { filters: { "program": program, academic_year: academic_year } };
+			},
+			onchange: () => {
+				if (filtersRef.get_value("division")) {
+					filtersRef.set_value("ref_nos", "");
+					filtersRef.set_df_property("ref_nos", "read_only", 1);
+				} else {
+					filtersRef.set_df_property("ref_nos", "read_only", 0);
+				}
+
 			}
 		},
 		{
@@ -74,9 +83,17 @@ function onLoad() {
 			fieldname: "ref_nos",
 			fieldtype: "Text",
 			options: "",
-			description: "Enter Ref Nos Separated by , to process only the specified ones"
-		},
+			description: "Enter Ref Nos Separated by , to process only the specified ones",
+			onchange: () => {
+				if (filtersRef.get_value("ref_nos")) {
+					filtersRef.set_value("division", "");
+					filtersRef.set_df_property("division", "read_only", 1);
+				} else {
+					filtersRef.set_df_property("division", "read_only", 0);
+				}
 
+			}
+		},
 		{
 			label: "Create Group Result Only",
 			fieldname: "create_toppers_only",
@@ -132,7 +149,7 @@ async function processResult() {
 				division: division,
 				assessment_group: assess_group,
 				ref_nos: ref_nos,
-				create_toppers_only: create_toppers_only
+				create_toppers_only: create_toppers_only || 0
 			}
 		})
 
