@@ -18,8 +18,11 @@ def get_all_assessment_plans(assessment_group, program, div):
     assess_plan_qb = frappe.qb.DocType("Assessment Plan")
 
     div_query = assess_plan_qb.student_group.isnotnull()
-    if div:
+    
+    if div and isinstance(div,list):
         div_query = assess_plan_qb.student_group.isin(div)
+    elif div:
+            div_query = assess_plan_qb.student_group == div
 
     query = (
         frappe.qb.from_(assess_group_qb)
