@@ -43,7 +43,7 @@ def migrate():
     set_property("Student Group", "student_group_name", "unique", "Check", 0)
 
 
-def is_deposit(fees, term):
+def check_if_deposit(fees, term):
     deposit = False
     if fees.payment_schedule:
         for schedule in fees.payment_schedule:
@@ -301,7 +301,7 @@ def handle_undertaking_submission(**kwargs):
         )
 
     student_doc = frappe.get_doc("Student", student)
-    is_deposit = is_deposit(doc, payment_term)
+    is_deposit = check_if_deposit(doc, payment_term)
     template = get_undertaking_template(fee=doc, is_deposit=is_deposit)
 
     fathers_name = frappe.get_value(
