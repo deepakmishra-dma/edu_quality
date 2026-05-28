@@ -36,23 +36,34 @@ frappe.listview_settings["Birthday Card"] = {
                 ],
                 primary_action_label: __('Submit'),
                 primary_action: async function (values) {
+                    dialog.hide();
+                    if (!values.from_date || !values.to_date) {
+                        frappe.throw(__('Please select both From Date and To Date'));
+                    }
+                    if (values.from_date > values.to_date) {
+                        frappe.throw(__('From Date cannot be greater than To Date'));
+                    }
                     const headers = new Headers();
                     headers.append('X-Frappe-CSRF-Token', frappe.csrf_token);
                     headers.append('Content-Type', 'application/json');
-                    const payload = { "from_date": values.from_date, "to_date": values.to_date, "student_status": values.student_status, "school": values.school}
-
+                    const payload = { "from_date": values.from_date, "to_date": values.to_date, "student_status": values.student_status, "school": values.school};
+                    
+                    frappe.show_progress('Printing Birthday Cards', 25, 100, 'Please wait, the birthday cards are being generated...');
+                
                     try {
                         const response = await fetch(`/api/method/edu_quality.edu_quality.doctype.birthday_card.birthday_card.print_birthday_cards`, {
                             method: 'POST',
                             headers: headers,
                             body: JSON.stringify(payload)
                         });
-
+                
                         const file = await response.blob();
+                        frappe.show_progress('Printing Birthday Cards', 50, 100, 'Please wait...');
                         await handleFileResponse(file, values);
                     } catch (e) {
                         console.error("An error occurred while trying to print birthday cards:", e);
                     } finally {
+                        frappe.hide_progress();
                         if (pdfUrl) {
                             URL.revokeObjectURL(pdfUrl);
                         }
@@ -79,12 +90,14 @@ async function handleFileResponse(file, values) {
         const text = await file.text();
         const { message } = JSON.parse(text);
         if (message === false) {
+            frappe.show_progress('Printing Birthday Cards', 75, 100, 'Please wait, the birthday cards are being generated...');
             showMessageDialog(`No Birthday Card Found for birthdates between ${fromMonthName} ${from_day} and ${toMonthName} ${to_day}`);
             return;
         }
     } catch (e) {
         console.info("PDF generated successfully!");
     }
+    frappe.show_progress('Printing Birthday Cards', 75, 100, 'Please wait, the birthday cards are being generated...');
 
     showMessageDialog("Birthday Cards PDF Generated Successfully", file);
 }
