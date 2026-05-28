@@ -532,6 +532,10 @@ function generate_payment_link(frm) {
             method: "get_uncreated_payment_terms",
             callback: function (response) {
                 let terms = response.message
+                if (terms.length == 0) {
+                    frappe.msgprint("All Payment Terms are already created")
+                    return
+                }
                 let d = new frappe.ui.Dialog({
                     title: 'Generate Payment Link',
                     fields: [

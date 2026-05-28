@@ -30,8 +30,26 @@ class CustomFees(Fees):
     @frappe.whitelist()
     def get_uncreated_payment_terms(self):
         terms = []
+        filters = {
+            "student": self.student,
+            "docstatus": 1,
+            "outstanding_amount": 0,
+            "next_program": self.program,
+            "academic_year": self.academic_year,
+        }
+    
         for term in self.payment_schedule:
-            if not frappe.db.exists("Payment Request",{'reference_name':self.name,'payment_term':term.payment_term,'docstatus':1}):
+            filters["payment_term"] = term.payment_term
+            fee_advance_exists = frappe.db.exists("Fee Advance", filters)
+            payment_request_exists = frappe.db.exists(
+                "Payment Request",
+                {
+                    "reference_name": self.name,
+                    "payment_term": term.payment_term,
+                    "docstatus": 1,
+                },
+            )
+            if not fee_advance_exists and not payment_request_exists:
                 terms.append(term.payment_term)
         return terms
     
