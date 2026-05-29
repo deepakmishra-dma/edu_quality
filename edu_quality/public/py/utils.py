@@ -43,7 +43,7 @@ def migrate():
     set_property("Student Group", "student_group_name", "unique", "Check", 0)
 
 
-def is_deposit(fees, term):
+def check_if_deposit(fees, term):
     deposit = False
     if fees.payment_schedule:
         for schedule in fees.payment_schedule:
@@ -193,7 +193,6 @@ def get_undertaking_template(doc=None, is_deposit=False, fee=None):
         "School", school, "custom_require_otp_for_accepting_rules_and_regulations"
     ):
         return None
-    status = is_old_student(student, academic_year)
     filter_dict = {"class": class_name, "academic_year": academic_year}
 
     if is_deposit:
@@ -201,37 +200,24 @@ def get_undertaking_template(doc=None, is_deposit=False, fee=None):
     else:
         filter_dict["show_on"] = "Fees"
 
-    if status:
-        filter_dict["status"] = "Current Student"
-    else:
-        filter_dict["status"] = "New Student"
+    student_status = frappe.get_value("Student", student, "student_status")
+    filter_dict["status"] = student_status.title()
 
     # check if doc filter exists in database
     template = frappe.db.get_value(
-        "Rules and Regulation Template", filter_dict, ["pdf", "name"]
+        "Rules and Regulation Template", filter_dict, "pdf"
     )
 
     # change the filter to check for the show_on Both
     if not template:
         filter_dict["show_on"] = "Both"
         template = frappe.db.get_value(
-            "Rules and Regulation Template", filter_dict, ["pdf", "name"]
-        )
-
-    # check if default filter exists in database
-    if not template:
-        default_filter = {
-            "class": class_name,
-            "academic_year": academic_year,
-            "status": "Defaulter",
-        }
-        template = frappe.db.get_value(
-            "Rules and Regulation Template", default_filter, ["pdf", "name"]
+            "Rules and Regulation Template", filter_dict, "pdf"
         )
 
     if template:
         site_url = frappe.utils.get_url()
-        pdf_url = site_url + template[0]
+        pdf_url = site_url + template
         return pdf_url
 
     return None
@@ -304,6 +290,7 @@ def handle_undertaking_submission(**kwargs):
             {"payment_hash": payment_hash},
             ["party", "reference_doctype", "reference_name", "payment_term"],
         )
+        doc = frappe.get_doc(doctype, docname)
     if doctype == "Fees":
         class_name, school = frappe.get_value(
             "Fees", docname, ["program", "custom_school"]
@@ -313,10 +300,10 @@ def handle_undertaking_submission(**kwargs):
             "Fee Advance", docname, ["next_program", "school"]
         )
 
-    template = frappe.get_value(
-        "Rules and Regulation Template", {"class": class_name}, "name"
-    )
     student_doc = frappe.get_doc("Student", student)
+    is_deposit = check_if_deposit(doc, payment_term)
+    template = get_undertaking_template(fee=doc, is_deposit=is_deposit)
+
     fathers_name = frappe.get_value(
         "Student Guardian", {"parent": student, "relation": "Father"}, "guardian_name"
     )
