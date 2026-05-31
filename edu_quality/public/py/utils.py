@@ -173,7 +173,7 @@ def verify_otp(fee, otp):
         return False
 
 
-def get_undertaking_template(doc=None, is_deposit=False, fee=None):
+def get_undertaking_template(doc=None, is_deposit=False, fee=None, url=False):
     if fee:
         doctype = fee.doctype
         docname = fee.name
@@ -205,20 +205,25 @@ def get_undertaking_template(doc=None, is_deposit=False, fee=None):
 
     # check if doc filter exists in database
     template = frappe.db.get_value(
-        "Rules and Regulation Template", filter_dict, "pdf"
+        "Rules and Regulation Template", filter_dict, ["name", "pdf"], as_dict=True
     )
 
     # change the filter to check for the show_on Both
     if not template:
         filter_dict["show_on"] = "Both"
         template = frappe.db.get_value(
-            "Rules and Regulation Template", filter_dict, "pdf"
+            "Rules and Regulation Template", filter_dict, ["name", "pdf"], as_dict=True
         )
 
-    if template:
+    # return pdf url if url is True and template exists
+    if template and url:
         site_url = frappe.utils.get_url()
-        pdf_url = site_url + template
+        pdf_url = site_url + template.pdf
         return pdf_url
+    
+    # return template name if template exists
+    if template:
+        return template.name
 
     return None
 
