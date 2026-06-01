@@ -25,6 +25,7 @@
   "is_team",
   "team",
   "column_break_tono",
+  "rename_files",
   "authorized_to",
   "student_details_tab",
   "student_details_section",
@@ -325,6 +326,13 @@
    "fieldtype": "Link",
    "label": "Web Form For Registration",
    "options": "Web Form"
+  },
+  {
+   "default": "1",
+   "description": "Rename the uploaded files from web forms",
+   "fieldname": "rename_files",
+   "fieldtype": "Check",
+   "label": "Rename Files"
   }
  ],
  "index_web_pages_for_search": 1,
@@ -335,7 +343,7 @@
    "link_fieldname": "custom_for_event"
   }
  ],
- "modified": "2024-10-11 16:27:45.916548",
+ "modified": "2024-11-13 15:17:57.560763",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "Event Detail",
