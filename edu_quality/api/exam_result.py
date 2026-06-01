@@ -274,7 +274,7 @@ def _process_atomic_exam(
     calculate_and_save_group_results(assessment_group, student_list)
     process_toppers(
         assessment_group, assessment_plans, get_division_set(assessment_plans)
-    )
+    )   
 
     frappe.msgprint(
         "Successfully Processed all the results matching the criteria provided"
@@ -325,7 +325,9 @@ def submit_assessment_results(non_submitted_docs):
 
 
 def create_assessment_group_results(assessment_group, assessment_plans):
-    student_set = get_student_set(assessment_plans)
+    plans = [plan.get("name") for plan in assessment_plans]
+
+    student_set = get_student_set(plans)
     student_list = list(student_set)
     total_students = len(student_list)
     for idx, student in enumerate(student_list):
