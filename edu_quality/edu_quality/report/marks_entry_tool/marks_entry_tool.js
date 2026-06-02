@@ -7,21 +7,22 @@ let filterTemplate = [
 		"fieldname": "academic_year",
 		"fieldtype": "Link",
 		"options": "Academic Year",
-		"label": "Academic Year",
+		"label": "Academic Year", "on_change": cleanCriterias,
 		"get_query": "edu_quality.public.py.utils.academic_year_query"
 	},
 	{
 		"fieldname": "school",
 		"fieldtype": "Link",
 		"options": "School",
-		"label": "School"
+		"label": "School",
+		"on_change": cleanCriterias,
 	},
 	{
 		"fieldname": "program",
 		"label": __("Class"),
 		"fieldtype": "Link",
 		"options": "Program",
-		"reqd": 1,
+		"reqd": 1, "on_change": cleanCriterias,
 		"get_query": function (txt) {
 			const school = frappe.query_report.get_filter_value("school");
 			return { filters: { "school": school } };
@@ -32,7 +33,7 @@ let filterTemplate = [
 		"label": __("Assessment Group"),
 		"fieldtype": "Link",
 		"reqd": 1,
-		"options": "Assessment Group",
+		"options": "Assessment Group", "on_change": cleanCriterias,
 		"get_query": function (txt) {
 			const school = frappe.query_report.get_filter_value("school");
 			const academic_year = frappe.query_report.get_filter_value("academic_year");
@@ -45,26 +46,27 @@ let filterTemplate = [
 		"label": __("Division"),
 		"fieldtype": "Link",
 		"options": "Student Group",
-		"reqd": 1,
+		"reqd": 1, "on_change": cleanCriterias,
 		"get_query": function (txt) {
 			const program = frappe.query_report.get_filter_value("program");
 			const academic_year = frappe.query_report.get_filter_value("academic_year");
 			return { filters: { "program": program, academic_year: academic_year } };
-		}
+		},
+		"on_change": cleanCriterias
 	}, {
 		"fieldname": "mode",
 		"label": __("Online Mode"),
-		"fieldtype": "Check",
+		"fieldtype": "Check", "on_change": cleanCriterias,
 		"hidden": true
 	},
 	{
 		"fieldname": "remarks",
-		"label": __("Remarks"),
+		"label": __("Remarks"), "on_change": cleanCriterias,
 		"fieldtype": "Check",
 	},
 	{
 		"fieldname": "ref_no",
-		"label": __("Online Mode"),
+		"label": __("Online Mode"), "on_change": cleanCriterias,
 		"fieldtype": "Link",
 		"options": "Student",
 	}
@@ -244,7 +246,7 @@ function formatter(value, row, column, data, defaultFormatter) {
 
 	value = defaultFormatter(value, row, column, data);
 	const values = data[column.fieldname + "_is_extra"]
-	
+
 	const docstatus = (values && values.docstatus) || data.docstatus
 	const onlineAssess = (values && values.online_assess) || data.online_assess
 
@@ -632,7 +634,10 @@ function addNote() {
 	noteContainerDiv.appendChild(legendContainer)
 	noteContainer.appendChild(noteContainerDiv)
 }
-
+function cleanCriterias(query_report) {
+	criteriasChanged = {}
+	frappe.query_report.refresh()
+}
 frappe.query_reports["Marks Entry Tool"] = {
 	"filters": filterTemplate,
 	"formatter": formatter,

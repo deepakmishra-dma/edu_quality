@@ -40,6 +40,7 @@ function App() {
   return (
     <BrowserRouter basename="/walsh">
       <RefineKbarProvider>
+        
         <ColorSchemeProvider
           colorScheme={colorScheme}
           toggleColorScheme={toggleColorScheme}

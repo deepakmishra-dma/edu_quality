@@ -2,15 +2,13 @@
 # For license information, please see license.txt
 
 import frappe
-from datetime import date
+from frappe.utils import getdate
 from weasyprint import HTML
 from frappe.model.document import Document
 from edu_quality.edu_quality.server_scripts.utils import current_academic_year
 from edu_quality.edu_quality.server_scripts.student_applicant import generate_hash
 from frappe.auth import LoginManager
-from edu_quality.public.py.walsh.admin import render_jinja, send_notification
-import json
-
+from datetime import timedelta
 
 class BirthdayCard(Document):
     def before_insert(self, method=None):
@@ -80,9 +78,18 @@ def set_guardian_permissions(doc):
 
 @frappe.whitelist()
 def print_birthday_card(birthday_cards):
+    """
+    Generate and print birthday cards for students.
+
+    Args:
+        birthday_cards (list): A list of tuples containing the birthday card name and the year.
+
+    Returns:
+        bytes: The PDF file content.
+    """
     try: 
         base_url = frappe.utils.get_url()
-        cards = [get_birthday_card_data(card) for card in birthday_cards]
+        cards = [get_birthday_card_data(card, year) for card, year in birthday_cards]
         template = frappe.render_template(
             "edu_quality/templates/pdf/birthday_card.html", {"cards": cards},
         )
@@ -103,56 +110,65 @@ def print_birthday_card(birthday_cards):
 
 @frappe.whitelist()
 def print_birthday_cards(from_date, to_date, student_status=None, school=None):
-    academic_year = current_academic_year()
-    query = """
-        SELECT birthday_card.name
-        FROM `tabBirthday Card` AS birthday_card
-        LEFT JOIN `tabStudent` AS student ON birthday_card.student = student.name
-        WHERE 
-            MONTH(CONVERT_TZ(birthday_card.date_of_birth, '+00:00', '+05:30')) 
-                BETWEEN 
-                    MONTH(CONVERT_TZ(%(from_date)s, '+00:00', '+05:30')) AND MONTH(CONVERT_TZ(%(to_date)s, '+00:00', '+05:30'))
-            AND 
-            DAY(CONVERT_TZ(birthday_card.date_of_birth, '+00:00', '+05:30')) 
-                BETWEEN 
-                    DAY(CONVERT_TZ(%(from_date)s, '+00:00', '+05:30')) AND DAY(CONVERT_TZ(%(to_date)s, '+00:00', '+05:30'))
-            AND birthday_card.academic_year = %(academic_year)s
-        """
-    values = {
-        "academic_year": academic_year,
-        "from_date": from_date,
-        "to_date": to_date,
-    }
+    """
+    Generate and print birthday cards for students within a specified date range.
 
+    Args:
+        from_date (str): The start date in 'DD-MM-YYYY' format.
+        to_date (str): The end date in 'DD-MM-YYYY' format.
+        student_status (str, optional): The status of the students to filter by.
+        school (str, optional): The school to filter students by.
+
+    Returns:
+        list: A list of tuples containing the birthday card name and the year.
+    """
+    from_date = getdate(from_date)
+    to_date = getdate(to_date)
+    filters = {}
     if student_status:
-        query += "AND student.student_status = %(student_status)s"
-        values["student_status"] = student_status
-    
+        filters["student_status"] = student_status
     if school:
-        query += "AND student.school = %(school)s"
-        values["school"] = school
+        filters["school"] = school
+    students = frappe.get_all("Student", filters=filters, pluck="name")
+    birthday_cards = frappe.get_all(
+        "Birthday Card",
+        filters={"student": ["in", students]},
+        fields=["name", "DATE_FORMAT(date_of_birth, '%m-%d') as dob"]
+    )
+    filtered_birthday_cards = []
+    current_date = from_date
+    while current_date <= to_date:
+        for card in birthday_cards:
+            if card.dob == current_date.strftime("%m-%d"):
+                filtered_birthday_cards.append((card.name, current_date.year))
+        current_date += timedelta(days=1)
+        
+    return print_birthday_card(filtered_birthday_cards)
 
-    all_birthdays = frappe.db.sql(query=query, as_dict=True, values=values)
-    birthday_cards = [i.name for i in all_birthdays]
-    if not birthday_cards:
-        return False
-    return print_birthday_card(birthday_cards)
 
+def get_birthday_card_data(birthday_card, year):
+    """
+    Get the data for a birthday card.
 
-def get_birthday_card_data(birthday_card):
+    Args:
+        birthday_card (str): The name of the birthday card.
+        year (int): The year of the birthday.
+
+    Returns:
+        dict: A dictionary containing the birthday card data
+    """
     birthday_card = frappe.get_doc("Birthday Card", birthday_card)
     dob = frappe.get_value("Student", birthday_card.student, "date_of_birth")
-    today = date.today()
-    age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
     program_name = frappe.get_value("Program", birthday_card.program, "program_name")
     division_name = frappe.get_value("Student Group", birthday_card.student_group, "student_group_name")
     student_name = frappe.get_value("Student", birthday_card.student, "student_name")
     has_traits = any(trait.description for trait in birthday_card.traits)
+    age = year - dob.year
     return {
         "has_traits": has_traits,
         "traits": birthday_card.traits,
         "student_name": student_name,
-        "special_day": dob.strftime("%d-%m") + today.strftime("-%Y"),
+        "special_day": dob.strftime("%d-%m") + "-" + str(year),
         "age": abs(age),
         "program_name": program_name,
         "division_name": division_name
