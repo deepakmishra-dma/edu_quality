@@ -1,9 +1,11 @@
 # Copyright (c) 2024, Hybrowlabs Technologies and contributors
 # For license information, please see license.txt
-import os, re
+import re
+import shutil
 import frappe
 from frappe import _
 from frappe.model.document import Document
+from pathlib import Path
 from edu_quality.common.utils.auth import set_user_permissions
 
 class EventParticipant(Document):
@@ -215,38 +217,49 @@ def get_data(**kwargs):
 
 
 @frappe.whitelist()
-def process_attachment(docname, file_url, field_name, old_file_url=None):
-    if file_url:
-        return rename_file(docname, file_url, field_name)
-    elif old_file_url:
-        files = frappe.get_all("File", {"file_url": old_file_url})
-        for file in files:
-            frappe.delete_doc("File", file.name)
+def process_attachment(
+    doctype, docname, file_url, field_name, field_label, old_file_url=None
+):
+    try:
+        if file_url:
+            return rename_file(doctype, docname, file_url, field_name, field_label)
+        elif old_file_url:
+            files = frappe.get_all("File", {"file_url": old_file_url})
+            for file in files:
+                frappe.delete_doc("File", file.name)
+    except Exception as e:
+        frappe.log_error(f"Error while renaming file: {str(e)}", frappe.get_traceback())
+        return False
 
-def clean_text(text):
-    return re.sub(r"\s+", "-", text.replace("-", " ").replace(".", " "))
 
-def rename_file(docname, file_url, field_name):
-    file_info = frappe.get_value("File", {"file_url": file_url}, ["name", "file_name", "file_url"], as_dict=True)
+def get_file_name(docname, ext, name_hash, field_label):
+    text = f"{docname}-({field_label})"
+    text = re.sub(r"\s+", "-", text.replace("-", " ").replace(".", " "))
+    return f"{text}-{name_hash}{ext}"
+
+
+def rename_file(doctype, docname, file_url, field_name, field_label):
+    file_info = frappe.get_value("File", {"file_url": file_url})
     if not file_info:
         return False
 
-    ext = os.path.splitext(file_info.file_name)[1]
-    new_file_name = clean_text(f"{docname}-({field_name})") + ext
-    
-    file_doc = frappe.get_doc("File", file_info.name)
+    file_doc = frappe.get_doc("File", file_info)
+    file_name = Path(file_doc.file_url).name
+    ext = Path(file_name).suffix
+    new_file_name = get_file_name(docname, ext, file_doc.name, field_label)
     old_file_path = file_doc.get_full_path()
-    new_file_path = os.path.join(frappe.get_site_path("public", "files"), new_file_name)
-    
-    try:
-        os.rename(old_file_path, new_file_path)
-    except OSError:
-        return False
+    new_file_path = Path(old_file_path).parent / new_file_name
+    if file_doc.is_private:
+        file_url = f"/private/files/{new_file_name}"
+    else:
+        file_url = f"/files/{new_file_name}"
+    shutil.move(old_file_path, new_file_path)
 
-    new_file_url = os.path.relpath(new_file_path, frappe.get_site_path()).replace("public", "")
-    
     file_doc.file_name = new_file_name
-    file_doc.file_url = new_file_url
+    file_doc.file_url = file_url
+    file_doc.attached_to_doctype = doctype
+    file_doc.attached_to_name = docname
+    file_doc.attached_to_field = field_name
     file_doc.is_private = 0
     file_doc.save()
 
