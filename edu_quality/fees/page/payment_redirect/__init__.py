@@ -151,7 +151,7 @@ def get_payment_details(**kwargs):
         "breakup": breakup,
         "discounts": get_discounts(fees),
         "term": payment_request.payment_term or "Deposit",
-        "undertaking_url": get_undertaking_template(payment_request, is_deposit=is_deposit),
+        "undertaking_url": get_undertaking_template(payment_request, is_deposit=is_deposit, url=True),
         "undertaking_accepted": get_submitted_undertaking(payment_request)
     }
 
