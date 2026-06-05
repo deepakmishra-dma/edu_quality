@@ -95,7 +95,7 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
             <Box
               sx={{
                 backgroundImage:
-                  "url(/assets/edu_quality/walsh/images/walnut-logo-blue.png)",
+                  "url(/assets/edu_quality/walsh/images/tgaa_logo.jpg)",
                 height: 36,
                 width: 40,
                 backgroundSize: "cover",
@@ -244,7 +244,7 @@ function NavRoute({
           borderBottom: "1px solid rgba(0,0,0,0.1)",
         }}
         label={n.label}
-        icon={<n.icon size={35} stroke={1.5} color="#00b8ff" />}
+        icon={<n.icon size={35} stroke={1.5} color="#1E6967" />}
       />
     );
 
@@ -267,7 +267,7 @@ function NavRoute({
           }}
           childrenOffset={55}
           label={n.label}
-          icon={<n.icon size={35} stroke={1.5} color="#00b8ff" />}
+          icon={<n.icon size={35} stroke={1.5} color="#1E6967" />}
         >
           {n.subRoutes.map((n) => (
             <NavLink
