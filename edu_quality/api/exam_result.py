@@ -18,11 +18,11 @@ def get_all_assessment_plans(assessment_group, program, div):
     assess_plan_qb = frappe.qb.DocType("Assessment Plan")
 
     div_query = assess_plan_qb.student_group.isnotnull()
-    
-    if div and isinstance(div,list):
+
+    if div and isinstance(div, list):
         div_query = assess_plan_qb.student_group.isin(div)
     elif div:
-            div_query = assess_plan_qb.student_group == div
+        div_query = assess_plan_qb.student_group == div
 
     query = (
         frappe.qb.from_(assess_group_qb)
@@ -232,23 +232,17 @@ def process_atomic_exam(
     student_master=None,
     create_toppers_only=False,
 ):
-    assessment_plans = get_all_assessment_plans(assessment_group, program, div)
-    errors = check_assessment_plan_in_group(assessment_plans, student_master)
-    if errors:
-        frappe.msgprint(str(errors), title="Errors", indicator="red")
-        frappe.throw(str(errors))
-        return
-    _process_atomic_exam(
+    frappe.enqueue(
+        _process_atomic_exam,
         assessment_group=assessment_group,
         academic_year=academic_year,
         program=program,
         div=div,
         student_master=student_master,
         create_toppers_only=create_toppers_only,
+        queue="long",
+        timeout=15000,
     )
-    # frappe.enqueue(
-
-    # )
 
 
 def _process_atomic_exam(
@@ -274,7 +268,7 @@ def _process_atomic_exam(
     calculate_and_save_group_results(assessment_group, student_list)
     process_toppers(
         assessment_group, assessment_plans, get_division_set(assessment_plans)
-    )   
+    )
 
     frappe.msgprint(
         "Successfully Processed all the results matching the criteria provided"
