@@ -212,13 +212,16 @@ def process_result(
             queue="long",
         )
     else:
-        process_atomic_exam(
+        frappe.enqueue(
+            process_atomic_exam,
             assessment_group=assessment_group,
             academic_year=academic_year,
             program=program,
             div=division or divisions,
             student_master=student_list,
             create_toppers_only=create_toppers_only,
+            queue="long",
+            timeout=15000,
         )
 
     frappe.db.commit()
@@ -232,16 +235,15 @@ def process_atomic_exam(
     student_master=None,
     create_toppers_only=False,
 ):
-    frappe.enqueue(
-        _process_atomic_exam,
+
+    _process_atomic_exam(
         assessment_group=assessment_group,
         academic_year=academic_year,
         program=program,
         div=div,
         student_master=student_master,
         create_toppers_only=create_toppers_only,
-        queue="long",
-        timeout=15000,
+
     )
 
 
@@ -253,15 +255,14 @@ def _process_atomic_exam(
     student_master=None,
     create_toppers_only=False,
 ):
-    print(student_master, div)
+
     assessment_plans = get_all_assessment_plans(assessment_group, program, div)
-    print(assessment_plans)
+
     errors = check_assessment_plan_in_group(assessment_plans, student_master)
     if errors:
         return
-    print(create_toppers_only)
+
     if not int(create_toppers_only):
-        print("true")
         process_assessment_results(assessment_plans, student_master)
 
     student_list = create_assessment_group_results(assessment_group, assessment_plans)
