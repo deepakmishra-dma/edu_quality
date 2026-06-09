@@ -182,7 +182,7 @@ def add_to_division(doc, division, roll_no=0, add_log=True):
     this function adds the student to the division
     """
     sg = frappe.get_doc("Student Group", division)
-    if len(sg.students) >= sg.max_strength:
+    if len(sg.students) >= sg.max_strength and sg.max_strength != 0:
         return frappe.throw("Max strength reached")
 
     next_roll_number = 0
