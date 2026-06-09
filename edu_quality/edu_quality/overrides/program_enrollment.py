@@ -72,6 +72,7 @@ class CustomProgramEnrollment(ProgramEnrollment):
                 )
 
     def _validate_selects(self):
+        return
         if frappe.flags.in_import:
             self.sync_division_data()
             self.update_student_data()
