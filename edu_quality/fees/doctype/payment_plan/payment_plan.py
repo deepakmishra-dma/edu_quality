@@ -35,6 +35,7 @@ class PaymentPlan(Document):
 			if self.payment_schedule[i].due_date < self.payment_schedule[i-1].due_date:
 				frappe.throw("Due Date cannot be less than previous Due Date")
 
+	def validate_existing_payment_plan(self):
 		existing_payment_plan = frappe.db.get_all("Payment Plan", {
 			"academic_year": self.academic_year,
 			"school": self.school,
