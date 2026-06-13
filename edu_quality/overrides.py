@@ -11,7 +11,7 @@ from erpnext.accounts.doctype.payment_entry.payment_entry import (
 )
 
 from erpnext.accounts.doctype.payment_request.payment_request import PaymentRequest, _get_payment_gateway_controller, get_dummy_message, get_existing_payment_request_amount, get_gateway_details
-from frappe.utils.data import flt
+from frappe.utils.data import flt,cint
 
 
 from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
@@ -141,7 +141,7 @@ class CustomPaymentRequest(PaymentRequest):
             data = frappe.db.get_value(
                 self.reference_doctype, self.reference_name, ["company", "customer_name"], as_dict=1
             )
-        controller = _get_payment_gateway_controller(self.payment_gateway)
+        controller = self.get_payment_gateway_controller()
         
         controller.validate_transaction_currency(self.currency)
         
@@ -162,7 +162,7 @@ class CustomPaymentRequest(PaymentRequest):
                 "payment_method": kwargs.get("payment_method")
             }
         )
-    
+
 
     def on_payment_authorized(self, status=None):
         if not status:
@@ -200,7 +200,36 @@ class CustomPaymentRequest(PaymentRequest):
     def validate(self):
         if self.get("__islocal"):
             self.status = "Draft"
+    
+    def get_payment_gateway_controller(self):
+        """Return payment gateway controller"""
+        enable_payment_mapping = frappe.get_value("Fees Settings", None, "enable_payment_mapping")
+        if cint(enable_payment_mapping):
+            program = None
+            if self.reference_doctype == "Fees":
+                program = frappe.get_value("Fees", self.reference_name, "program")
+            elif self.reference_name == "Fee Advance":
+                program = frappe.get_value("Fee Advance", self.reference_name, "next_program")
 
+            payment_gateway, gateway_account = frappe.db.get_value("Payment Mapping", {"parent": "Fees Settings", "grade": program}, ["payment_gateway", "gateway_account"])
+            try:
+                return frappe.get_doc(payment_gateway, gateway_account)
+            except Exception:
+                frappe.throw(_("{0} not found").format(payment_gateway))
+
+        gateway = frappe.get_doc("Payment Gateway", self.payment_gateway)
+
+        if gateway.gateway_controller is None:
+            try:
+                return frappe.get_doc(f"{self.payment_gateway} Settings")
+            except Exception:
+                frappe.throw(_("{0} Settings not found").format(self.payment_gateway))
+        else:
+            try:
+                return frappe.get_doc(gateway.gateway_settings, gateway.gateway_controller)
+            except Exception:
+                frappe.throw(_("{0} Settings not found").format(self.payment_gateway))
+            
 
 def payment_entry(doc, ref_doc, party_amount, paid_from, paid_to, company, cost_center, fee_categories=None):
     frappe.set_user("Administrator")

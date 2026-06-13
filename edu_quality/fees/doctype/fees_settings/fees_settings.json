@@ -12,8 +12,11 @@
   "combine_deposit_and_due_fees",
   "column_break_c6e9",
   "apply_fees",
+  "enable_payment_mapping",
+  "enable_payment_methods",
   "payment_methods_section",
   "payment_method",
+  "payment_mapping",
   "surcharge_section",
   "surcharge",
   "application_fees",
@@ -46,6 +49,7 @@
    "label": "Payment Methods"
   },
   {
+   "depends_on": "eval:doc.enable_payment_methods",
    "fieldname": "payment_method",
    "fieldtype": "Table",
    "label": "Payment Method",
@@ -101,12 +105,31 @@
    "fieldtype": "Table",
    "label": "Payment Reminder",
    "options": "Payment Reminder"
+  },
+  {
+   "depends_on": "eval:doc.enable_payment_mapping\n",
+   "fieldname": "payment_mapping",
+   "fieldtype": "Table",
+   "label": "Payment Mapping",
+   "options": "Payment Mapping"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_payment_mapping",
+   "fieldtype": "Check",
+   "label": "Enable Payment Mapping"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_payment_methods",
+   "fieldtype": "Check",
+   "label": "Enable Payment Methods"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-10-16 17:42:48.107265",
+ "modified": "2024-12-12 16:45:03.633411",
  "modified_by": "Administrator",
  "module": "Fees",
  "name": "Fees Settings",
