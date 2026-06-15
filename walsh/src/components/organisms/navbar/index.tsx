@@ -208,8 +208,8 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
             },
           },
           { label: "Logout", icon: IconLogout, onClick: () => logout() },
-        ].map((n) => {
-          return <NavRoute n={n} changeLocation={changeLocation} />;
+        ].map((n,index) => {
+          return <NavRoute key={index} n={n} changeLocation={changeLocation} />;
         })}
       </Box>
     </MantineNavbar>

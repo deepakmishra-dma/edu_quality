@@ -1,27 +1,30 @@
 import { AuthBindings } from "@refinedev/core";
 
 export const authProvider: AuthBindings = {
-  login: async ({ phone, otp }) => {
+  login: async ({ username, password }) => {
     // @ts-expect-error undefined
     const pushToken = window.getPushNotificationToken?.();
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
 
+    const payload = {
+      usr: username,
+      pwd: password,
+      push_token: pushToken || null,
+    };
+
     const response = await fetch(
-      "/api/method/edu_quality.public.py.walsh.login.verify_otp",
+      "/api/method/edu_quality.public.py.walsh.login.user_login",
       {
         method: "POST",
         headers: myHeaders,
-        body: JSON.stringify({
-          phone_no: phone,
-          otp: otp,
-          push_token: pushToken || undefined,
-        }),
+        body: JSON.stringify(payload),
         redirect: "follow",
       }
     );
     const data = await response.json();
     const message = data?.message;
+    console.log(data);
 
     if (message?.success) {
       return {
