@@ -1,4 +1,4 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useCustom } from "@refinedev/core";
 import { BaseRecord } from "@refinedev/core";
 
 export interface Notice extends BaseRecord {
@@ -19,37 +19,30 @@ interface NoticeListProps {
 }
 
 const useNoticeList = (props: NoticeListProps) => {
-  return useInfiniteQuery<{ message: { notices: Notice[]; total: number } }>(
-    ["student", "list", props.staredOnly, props.archivedOnly, props.category],
-    async ({ pageParam = 1 }) => {
-      const response = await fetch(
-        `/api/method/edu_quality.public.py.walsh.notices.get_all_notices?${new URLSearchParams(
-          {
-            stared_only: props.staredOnly?.toString() || "",
-            archived_only: props.archivedOnly?.toString() || "",
-            page: pageParam.toString(),
-            limit: String(props.limit || 10),
-            category: props.category || "",
-          }
-        )}`
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to get list");
-      }
-
-      return response.json();
-    },
-    {
-      getNextPageParam: (lastPage, pages) => {
-        const totalPages = Math.ceil(
-          lastPage.message.total / (props?.limit || 10)
-        );
-        const nextPage = pages.length + 1;
-        return nextPage <= totalPages ? nextPage : undefined;
+  return useCustom<{ message: Notice[] }>({
+    config: {
+      query: {
+        stared_only: props.staredOnly,
+        archived_only: props.archivedOnly,
+        category: props.category,
       },
-    }
-  );
+    },
+    errorNotification: {
+      message: "Failed to get list {{ resourceName }}",
+      type: "error",
+    },
+    method: "get",
+    queryOptions: {
+      queryKey: [
+        "student",
+        "list",
+        props.staredOnly,
+        props.archivedOnly,
+        props.category,
+      ],
+    },
+    successNotification: undefined,
+    url: "/api/method/edu_quality.public.py.walsh.notices.get_all_notices",
+  });
 };
-
 export default useNoticeList;

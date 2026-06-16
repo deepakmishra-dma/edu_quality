@@ -20,7 +20,8 @@
   "notice",
   "test",
   "category",
-  "requires_approval"
+  "requires_approval",
+  "approval_status"
  ],
  "fields": [
   {
@@ -129,11 +130,19 @@
    "fieldname": "requires_approval",
    "fieldtype": "Check",
    "label": "Requires Approval"
+  },
+  {
+   "default": "Pending",
+   "depends_on": "eval:doc.requires_approval",
+   "fieldname": "approval_status",
+   "fieldtype": "Select",
+   "label": "Approval Status",
+   "options": "Approved\nRejected\nPending"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-24 11:00:34.448560",
+ "modified": "2024-12-30 16:53:17.702059",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "School Notice",

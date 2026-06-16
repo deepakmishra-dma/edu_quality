@@ -327,44 +327,42 @@ def logout(push_token=None):
     }
 
 
-def set_session_variables():
-    # Fetch guardian details for the current session user
-    guardian_name = frappe.db.get_value(
-        "Guardian", {"user": frappe.session.user}, "name"
-    )
-    frappe.local.session["guardian"] = guardian_name
+# def set_session_variables():
+#     # Fetch guardian details for the current session user
+#     guardian_name = frappe.db.get_value(
+#         "Guardian", {"user": frappe.session.user}, "name"
+#     )
+#     frappe.local.session["guardian"] = guardian_name
 
-    # Fetch students associated with the guardian
-    students = get_students()
-    student_names = [s.name for s in students]
-    frappe.local.session.data["students"] = students
-    frappe.local.session.data["student_names"] = student_names
+#     # Fetch students associated with the guardian
+#     students = get_students()
+#     student_names = [s.name for s in students]
+#     frappe.local.session.data["students"] = students
+#     frappe.local.session.data["student_names"] = student_names
 
-    # Fetch program enrollments for the students
-    enrollments = frappe.db.sql(
-        """
-        SELECT DISTINCT student_group AS division, program AS class
-        FROM `tabProgram Enrollment`
-        WHERE student IN %(student_names)s
-        """,
-        {"student_names": student_names},
-        as_dict=True,
-    )
+#     # Fetch program enrollments for the students
+#     enrollments = frappe.db.sql(
+#         """
+#         SELECT DISTINCT student_group AS division, program AS class
+#         FROM `tabProgram Enrollment`
+#         WHERE student IN %(student_names)s
+#         """,
+#         {"student_names": student_names},
+#         as_dict=True,
+#     )
 
-    # Extract divisions and classes from enrollments
-    frappe.local.session.data["divisions"] = [e.division for e in enrollments]
-    frappe.local.session.data["classes"] = [e.get("class") for e in enrollments]
-    frappe.local.session.data["enrollments"] = enrollments
-    # Save changes to the database
+#     # Extract divisions and classes from enrollments
+#     frappe.local.session.data["divisions"] = [e.division for e in enrollments]
+#     frappe.local.session.data["classes"] = [e.get("class") for e in enrollments]
+#     frappe.local.session.data["enrollments"] = enrollments
+#     # Save changes to the database
 
-    frappe.local.session_obj.update(force=True)
-    frappe.db.commit()
+#     frappe.local.session_obj.update(force=True)
+#     frappe.db.commit()
 
 
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=True)
 def get_logged_user():
-    set_session_variables()
-    print(frappe.local.session)
     return frappe.session.user
 
 
@@ -398,7 +396,18 @@ def user_login(usr, pwd, push_token):
         login_manager.post_login()
         user = frappe.session.user
         guardian = get_guardian(user_id=user)
-
+        students = frappe.get_all(
+            "Student", filters={"guardian": guardian.name}, fields=["*"]
+        )
+        all_disabled = all(student["enabled"] == 0 for student in students)
+        
+        if not students or all_disabled:
+            return {
+                "error": True,
+                "error_type": "student_disabled",
+                "error_message": "All students for this guardian are disabled.",
+            }
+        
         if not guardian:
             return {
                 "error": True,

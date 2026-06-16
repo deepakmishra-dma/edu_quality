@@ -31,53 +31,28 @@ export const NoticeList: React.FC<StaredNoticeListProps> = ({
     isLoading,
     remove,
     refetch,
-    fetchNextPage,
-    hasNextPage,
   } = useNoticeList({
     staredOnly,
     archivedOnly,
-    limit: 10,
     category: selectedCategory,
   });
 
   const filteredList = useMemo(() => {
-    if (!list?.pages) return [];
-    if (!searchQuery)
-      return list.pages.flatMap((page) => page.message.notices) || [];
-    return list.pages.flatMap((page) =>
-      page.message.notices.filter((item) => {
+    if (!list) return [];
+    if (!searchQuery) return list?.data?.message || [];
+    return (
+      list?.data?.message?.filter((item) => {
         if (!searchQuery) return true;
+
         if (item?.subject?.toLowerCase?.()?.includes(searchQuery.toLowerCase()))
           return true;
+
         if (item?.notice?.toLowerCase?.()?.includes(searchQuery.toLowerCase()))
           return true;
         return false;
-      })
+      }) || []
     );
   }, [list, searchQuery]);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const [entry] = entries;
-        if (entry.isIntersecting && hasNextPage && !isLoading) {
-          fetchNextPage();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    const currentRef = loadMoreRef.current;
-    if (currentRef) {
-      observer.observe(currentRef);
-    }
-
-    return () => {
-      if (currentRef) {
-        observer.unobserve(currentRef);
-      }
-    };
-  }, [hasNextPage, isLoading, fetchNextPage]);
 
   const { data: categories = [] } = useSchoolNoticeCategory();
 
@@ -305,7 +280,6 @@ export const NoticeList: React.FC<StaredNoticeListProps> = ({
                 )}
                 stroke={1}
                 onClick={() => {
-                  console.log("item index", item);
                   markAsStared({
                     notice: item.name,
                     student: item.student,
@@ -334,8 +308,6 @@ export const NoticeList: React.FC<StaredNoticeListProps> = ({
                     : "white"
                 }
                 onClick={() => {
-                  console.log("delete index", item);
-
                   markAsArchived({
                     notice: item.name,
                     student: item.student,

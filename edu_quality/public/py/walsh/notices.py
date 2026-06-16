@@ -8,6 +8,8 @@ from edu_quality.public.py.walsh.login import (
     match_otp,
     create_otp,
     send_otp_to_email,
+    send_otp_to_sms,
+    get_guardian,
 )
 
 
@@ -45,6 +47,10 @@ def get_all_notices(
     if not page:
         page = 1
     user = frappe.session.user
+    if type(category) == list:
+        formatted_category = category
+    else:
+        formatted_category = [category]
 
     guardian = frappe.get_cached_doc("Guardian", {"user": user})
     if is_disabled(guardian.name, True):
@@ -71,7 +77,7 @@ def get_all_notices(
         """
         select name, custom_school, academic_year, student, student_group, program
         from `tabProgram Enrollment`
-        where student in %(student_names)s
+        where student in %(student_names)s and docstatus = 1
         group by custom_school, academic_year, student, student_group, program;
     """,
         values=enrollments_values,
@@ -286,8 +292,8 @@ def get_notice_by_id(id, student=None):
 
 @frappe.whitelist()
 def request_otp(id, student=None):
-    verify_student_in_session(student)
     user = frappe.session.user
+    verify_student_in_session(student)
     guardian = get_guardian(None, user)
     if not guardian:
         frappe.throw(("Not permitted"), frappe.PermissionError)
@@ -298,7 +304,8 @@ def request_otp(id, student=None):
 
     if notice.requires_approval and not notice.is_generic_notice:
         otp = create_otp(user, f"{user}:{id}")
-        send_otp_to_email(user, otp)
+        send_otp_to_email(guardian.get("email_address"), otp)
+        send_otp_to_sms(guardian.get("mobile_number"), otp)
         return {"success": True, "message": "OTP sent successfully"}
 
     return {"success": False}
@@ -316,10 +323,8 @@ def verify_otp(id, otp, student=None, approve=False):
             approval_status = "Rejected"
             if approve:
                 approval_status = "Approved"
-            status_id = frappe.db.set_value(
-                "School Notice", id, "approval_status", approval_status
-            )
-            create_undertaking(notice.student, notice.program, notice.name, otp)
+            frappe.db.set_value("School Notice", id, "approval_status", approval_status)
+            create_undertaking(notice.student, notice.name, otp)
             return {"success": True, "message": "Correct Otp"}
         return {"success": False, "message": "Incorrect Otp"}
     except Exception as e:
@@ -327,13 +332,19 @@ def verify_otp(id, otp, student=None, approve=False):
 
 
 def verify_student_in_session(student):
-    student_names = frappe.local.session.data.get("student_names", [])
+    students = get_students()
+
+    student_names = [s.name for s in students]
+
     if student not in student_names:
         frappe.throw(("Not permitted"), frappe.PermissionError)
 
 
 def validate_notice_approval(notice):
-    student_names = frappe.local.session.data.get("student_names", [])
+    students = get_students()
+
+    student_names = [s.name for s in students]
+
     if notice.student not in student_names:
         frappe.throw(("Not permitted"), frappe.PermissionError)
 
@@ -345,11 +356,11 @@ def validate_notice_approval(notice):
         raise Exception("Notice already approved")
 
 
-def create_undertaking(student, class_name, notice_name, otp):
+def create_undertaking(student, notice_name, otp):
     request = frappe.local.request
     student_doc = frappe.get_cached_doc("Student", student)
     user_agent = request.headers.get("User-Agent", "Unknown")
-
+    class_name = student_doc.program
     fathers_name = frappe.get_value(
         "Student Guardian", {"parent": student, "relation": "Father"}, "guardian_name"
     )
