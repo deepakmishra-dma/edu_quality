@@ -76,7 +76,9 @@ export const authProvider: AuthBindings = {
     };
   },
   check: async () => {
-    const response = await fetch("/api/method/frappe.auth.get_logged_user");
+    const response = await fetch(
+      "/api/method/edu_quality.public.py.walsh.login.get_logged_user"
+    );
     const data = await response.json();
     const authenticated = data?.message && data?.message !== "Guest";
     if (authenticated) {

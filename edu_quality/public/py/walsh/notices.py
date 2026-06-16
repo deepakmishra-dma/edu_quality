@@ -3,7 +3,12 @@ import frappe
 from edu_quality.public.py.walsh.admin import render_jinja
 
 from edu_quality.public.py.walsh.login import logout
-from edu_quality.public.py.walsh.login import is_disabled
+from edu_quality.public.py.walsh.login import (
+    is_disabled,
+    match_otp,
+    create_otp,
+    send_otp_to_email,
+)
 
 
 @frappe.whitelist()
@@ -28,7 +33,9 @@ def get_students():
 
 
 @frappe.whitelist()
-def get_all_notices(page=1, limit=0, stared_only=False, archived_only=False):
+def get_all_notices(
+    page=1, limit=0, stared_only=False, archived_only=False, category=None
+):
     if page:
         page = int(page)
     if limit:
@@ -78,28 +85,41 @@ def get_all_notices(page=1, limit=0, stared_only=False, archived_only=False):
         "student_names": student_names,
         "classes": classes,
         "divisions": divisions,
+        "categories": formatted_category,
         "limit": limit,
         "offset": (page - 1) * limit,
     }
-
     notices = frappe.db.sql(
         """
         select *
         from `tabSchool Notice` notice
-        where (student in %(student_names)s and is_generic_notice = 0)
+        where ((student in %(student_names)s and is_generic_notice = 0)
             or (
                 is_generic_notice = 1 and (
                 (notice.division in %(divisions)s)
                 or (notice.division is null and notice.class in %(classes)s)
             )
-        )
+        ))
+        {exists_clause}
         order by creation desc
         limit %(limit)s offset %(offset)s
-    """,
+    """.format(
+            exists_clause=(
+                """
+            and exists (
+                select 1 
+                from `tabSchool Notice Category Detail` ncd 
+                where ncd.parent = notice.name
+                and ncd.school_notice_category in %(categories)s
+            )
+            """
+                if category
+                else ""
+            )
+        ),
         values=notices_values,
         as_dict=1,
     )
-
     final_notices = []
     for notice in notices:
         if notice.is_generic_notice:
@@ -262,3 +282,103 @@ def get_notice_by_id(id, student=None):
     return {
         "data": school_notice,
     }
+
+
+@frappe.whitelist()
+def request_otp(id, student=None):
+    verify_student_in_session(student)
+    user = frappe.session.user
+    guardian = get_guardian(None, user)
+    if not guardian:
+        frappe.throw(("Not permitted"), frappe.PermissionError)
+    try:
+        notice = frappe.get_cached_doc("School Notice", id)
+    except Exception as e:
+        return {"success": False, "message": str(e)}
+
+    if notice.requires_approval and not notice.is_generic_notice:
+        otp = create_otp(user, f"{user}:{id}")
+        send_otp_to_email(user, otp)
+        return {"success": True, "message": "OTP sent successfully"}
+
+    return {"success": False}
+
+
+@frappe.whitelist()
+def verify_otp(id, otp, student=None, approve=False):
+    user = frappe.session.user
+    verify_student_in_session(student)
+    try:
+        notice = frappe.get_cached_doc("School Notice", id)
+        validate_notice_approval(notice)
+
+        if match_otp(user, otp, f"{user}:{id}"):
+            approval_status = "Rejected"
+            if approve:
+                approval_status = "Approved"
+            status_id = frappe.db.set_value(
+                "School Notice", id, "approval_status", approval_status
+            )
+            create_undertaking(notice.student, notice.program, notice.name, otp)
+            return {"success": True, "message": "Correct Otp"}
+        return {"success": False, "message": "Incorrect Otp"}
+    except Exception as e:
+        return {"success": False, "message": str(e)}
+
+
+def verify_student_in_session(student):
+    student_names = frappe.local.session.data.get("student_names", [])
+    if student not in student_names:
+        frappe.throw(("Not permitted"), frappe.PermissionError)
+
+
+def validate_notice_approval(notice):
+    student_names = frappe.local.session.data.get("student_names", [])
+    if notice.student not in student_names:
+        frappe.throw(("Not permitted"), frappe.PermissionError)
+
+    if not notice.requires_approval:
+        raise Exception("Notice doesn't require approval")
+    if notice.is_generic_notice:
+        raise Exception("Generic Notices cannot be approved/rejected")
+    if notice.approval_status != "Pending":
+        raise Exception("Notice already approved")
+
+
+def create_undertaking(student, class_name, notice_name, otp):
+    request = frappe.local.request
+    student_doc = frappe.get_cached_doc("Student", student)
+    user_agent = request.headers.get("User-Agent", "Unknown")
+
+    fathers_name = frappe.get_value(
+        "Student Guardian", {"parent": student, "relation": "Father"}, "guardian_name"
+    )
+    mothers_name = frappe.get_value(
+        "Student Guardian", {"parent": student, "relation": "Mother"}, "guardian_name"
+    )
+
+    if not frappe.db.exists(
+        "Undertaking Submission",
+        {
+            "student": student_doc.name,
+            "program": class_name,
+            "reference_doctype": "School Notice",
+            "reference_docname": notice_name,
+        },
+    ):
+        new_doc = frappe.new_doc("Undertaking Submission")
+        new_doc.student = student_doc.name
+        new_doc.reference_docname = notice_name
+        new_doc.program = class_name
+        new_doc.reference_doctype = "School Notice"
+        new_doc.reference_no = student_doc.reference_number
+        new_doc.fathers_name = fathers_name
+        new_doc.mothers_name = mothers_name
+        new_doc.submitted_with_response = "Yes"
+        new_doc.submitted_date = frappe.utils.nowdate()
+        new_doc.otp_entered = otp
+        # new_doc.otp_sent_to_contact_no = get_mobile_number(student_doc)
+        new_doc.otp_sent_to_email_id = student_doc.student_email_id
+        new_doc.ip_address = frappe.local.request_ip
+        new_doc.user_info = user_agent
+        new_doc.insert(ignore_permissions=True)

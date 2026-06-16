@@ -28,12 +28,12 @@ def format_wa_phone_no(phone_no):
     return phone_no
 
 
-def create_otp(wa_phone_no):
+def create_otp(wa_phone_no, custom_key=None):
     otp = ""
     for _ in range(4):
         otp += str(random.randint(1, 9))
     cache = frappe.cache()
-    key = "wo" + wa_phone_no
+    key = custom_key or ("wo" + wa_phone_no)
     # frappe.cache.delete_value(key)
     frappe.logger("otp").exception("generate-" + key)
     frappe.logger("otp").exception(otp)
@@ -43,9 +43,9 @@ def create_otp(wa_phone_no):
     return otp
 
 
-def match_otp(wa_phone_no, otp):
+def match_otp(wa_phone_no, otp, custom_key=None):
     cache = frappe.cache()
-    key = "wo" + wa_phone_no
+    key = custom_key or ("wo" + wa_phone_no)
     cache_otp = cache.get_value(key)
     frappe.logger("otp").exception("verify-" + key)
     frappe.logger("otp").exception(cache_otp)
@@ -145,11 +145,18 @@ def is_disabled(guardian_name, logout_if_defaulter=False):
     return False
 
 
-def get_guardian(guardian_number):
-    if frappe.db.exists("Guardian", {"mobile_number": guardian_number}):
+def get_guardian(guardian_number=None, user_id=None):
+    if user_id:
+        if user_id and frappe.db.exists("Guardian", {"user": user_id}):
+            guardian = frappe.get_cached_doc("Guardian", {"user": user_id})
+            return guardian
+
+    if guardian_number and frappe.db.exists(
+        "Guardian", {"mobile_number": guardian_number}
+    ):
         guardian = frappe.get_cached_doc("Guardian", {"mobile_number": guardian_number})
         return guardian
-    elif frappe.db.exists(
+    elif guardian_number and frappe.db.exists(
         "Guardian", {"custom_secondary_mobile_number": guardian_number}
     ):
         guardian = frappe.get_cached_doc(
@@ -318,3 +325,99 @@ def logout(push_token=None):
         "success": True,
         "message": "Logout Successful",
     }
+
+
+def set_session_variables():
+    # Fetch guardian details for the current session user
+    guardian_name = frappe.db.get_value(
+        "Guardian", {"user": frappe.session.user}, "name"
+    )
+    frappe.local.session["guardian"] = guardian_name
+
+    # Fetch students associated with the guardian
+    students = get_students()
+    student_names = [s.name for s in students]
+    frappe.local.session.data["students"] = students
+    frappe.local.session.data["student_names"] = student_names
+
+    # Fetch program enrollments for the students
+    enrollments = frappe.db.sql(
+        """
+        SELECT DISTINCT student_group AS division, program AS class
+        FROM `tabProgram Enrollment`
+        WHERE student IN %(student_names)s
+        """,
+        {"student_names": student_names},
+        as_dict=True,
+    )
+
+    # Extract divisions and classes from enrollments
+    frappe.local.session.data["divisions"] = [e.division for e in enrollments]
+    frappe.local.session.data["classes"] = [e.get("class") for e in enrollments]
+    frappe.local.session.data["enrollments"] = enrollments
+    # Save changes to the database
+
+    frappe.local.session_obj.update(force=True)
+    frappe.db.commit()
+
+
+@frappe.whitelist()
+def get_logged_user():
+    set_session_variables()
+    print(frappe.local.session)
+    return frappe.session.user
+
+
+def get_students():
+    user = frappe.session.user
+    guardian = frappe.get_cached_doc("Guardian", {"user": user})
+    students = frappe.get_all(
+        "Student", filters={"guardian": guardian.name}, fields=["enabled"]
+    )
+    student_disabled = all(student.get("enabled") == 0 for student in students)
+    # if all of student disabled log out the parent
+    if student_disabled:
+        logout()
+
+        frappe.throw(("Not permitted"), frappe.PermissionError)
+        return []
+
+    students = frappe.get_all(
+        "Student", filters={"guardian": guardian.name, "enabled": 1}, fields=["*"]
+    )
+    return students
+
+
+@frappe.whitelist(allow_guest=True)
+def user_login(usr, pwd, push_token):
+    login_manager = LoginManager()
+
+    try:
+
+        login_manager.authenticate(usr, pwd)
+        login_manager.post_login()
+        user = frappe.session.user
+        guardian = get_guardian(user_id=user)
+
+        if not guardian:
+            return {
+                "error": True,
+                "error_type": "invalid_guardian",
+                "error_message": "Invalid Guardian",
+            }
+
+        if push_token:
+            save_push_notification_token(push_token, user)
+
+        # key = "walsh_otp" + wa_phone_no
+        # frappe.cache.delete_value(key)
+
+        return {
+            "success": True,
+            "message": "Login Successful",
+        }
+
+    except Exception as e:
+        return {"error": True, "error_type": "server_error", "error_message": str(e)}
+
+

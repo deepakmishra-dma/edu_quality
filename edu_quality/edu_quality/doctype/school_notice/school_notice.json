@@ -18,7 +18,9 @@
   "subject",
   "is_raw_html",
   "notice",
-  "test"
+  "test",
+  "category",
+  "requires_approval"
  ],
  "fields": [
   {
@@ -115,11 +117,23 @@
    "fieldname": "test",
    "fieldtype": "Data",
    "label": "Test"
+  },
+  {
+   "fieldname": "category",
+   "fieldtype": "Table MultiSelect",
+   "label": "Category",
+   "options": "School Notice Category Detail"
+  },
+  {
+   "default": "0",
+   "fieldname": "requires_approval",
+   "fieldtype": "Check",
+   "label": "Requires Approval"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-29 16:18:36.756274",
+ "modified": "2024-12-24 11:00:34.448560",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "School Notice",
