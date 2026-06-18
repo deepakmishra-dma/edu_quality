@@ -85,7 +85,7 @@ def send_otp_to_whatsapp(wa_phone_no, otp):
 def send_otp_to_sms(full_phone_no, otp):
     api_key = "***REMOVED-SMS-KEY***"
     message = (
-        f"OTP is {otp} for logging into Walnut School's Wal-Sh app. "
+        f"OTP is {otp} for logging into Green Acre Academy's TGAA app. "
         + "Valid till 10 min.\nDo not share OTP for security reasons."
     )
     template_id = 1007162194737763683
