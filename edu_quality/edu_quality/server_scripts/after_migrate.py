@@ -3,9 +3,9 @@ from frappe.utils import get_url
 
 
 def after_migrate():
-    site_url = get_url()
-    if not ("uat" in site_url or "test" in site_url):
-        return
+    # site_url = get_url()
+    # if not ("uat" in site_url or "test" in site_url):
+    #     return
     # replace_domain()
     replace_emails()
     replace_account_credentials()
@@ -53,10 +53,10 @@ def replace_emails():
             frappe.db.set_value(
                 "Guardian",
                 guardian.name,
-                {"email_address": new_email, "mobile_number": ""},
+                {"email_address": new_email, "mobile_number": None},
             )
         else:
-            frappe.db.set_value("Guardian", guardian.name, "mobile_number", "")
+            frappe.db.set_value("Guardian", guardian.name, "mobile_number", None)
 
     # student email/phone
     student = frappe.db.get_all("Student", fields=["name", "student_email_id"])
