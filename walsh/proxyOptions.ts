@@ -1,3 +1,4 @@
+// @ts-nocheck
 const common_site_config = require("../../../sites/common_site_config.json");
 const { webserver_port } = common_site_config;
 

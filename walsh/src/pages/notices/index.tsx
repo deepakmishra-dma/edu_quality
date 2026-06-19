@@ -1,5 +1,5 @@
 import { IResourceComponentsProps } from "@refinedev/core";
-import React, { useMemo, useState, useEffect, useRef } from "react";
+import React, { useMemo, useState, useRef } from "react";
 import { Box, Button, Flex, Input, Stack, Text } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
 import { IconArchive, IconCalendar, IconSearch, IconStar } from "@tabler/icons";
