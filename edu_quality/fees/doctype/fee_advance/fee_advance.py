@@ -21,6 +21,7 @@ from edu_quality.overrides import make_payment_request
 from frappe.utils import (
     formatdate,
     today,
+    flt
 )
 
 from edu_quality.common.utils.progress import set_progress
@@ -97,7 +98,6 @@ class FeeAdvance(AccountsController):
             pr_list = frappe.get_all("Payment Request", {"reference_name": self.name})
             for pr in pr_list:
                 frappe.delete_doc("Payment Request", pr.name, ignore_permissions=True)
-    
     
         
     def set_missing_accounts_and_fields(self):
@@ -398,7 +398,7 @@ def get_components(fee_structure, percent, is_rte):
             frappe.throw("Label not found for Fee Category {0}".format(component.fees_category))
         # default_account = frappe.get_value("Fees Settings", None, "default_account")
 
-        component_amount = component.amount * percent / 100
+        component_amount = component.amount * flt(percent) / 100
         amount += component_amount
         company = frappe.get_value("Fee Category",component.fees_category, "custom_company")
         components.append(
@@ -497,11 +497,12 @@ def get_next_program(program, school):
 
 
 def get_first_payment_term(payment_plan):
+    if not payment_plan:
+        frappe.throw("Payment Plan not found")
     payment_plan = frappe.get_doc("Payment Plan", payment_plan)
     term = payment_plan.payment_schedule[0].payment_term
     due_date = payment_plan.payment_schedule[0].due_date
     return term, due_date
-
 
 def get_fee_structure(academic_year, school, program):
     doc_filter = {"academic_year": academic_year, "school": school, "program": program}
@@ -510,14 +511,13 @@ def get_fee_structure(academic_year, school, program):
 
 
 def get_payment_plan(fee_structure=None, program_enrollment=None):
-    if program_enrollment.payment_plan:
-        return program_enrollment.payment_plan
-    payment_plan = frappe.get_value("Payment Plan", {"fee_structure": fee_structure,"plan_name":["like", "%P2%"]}, "name")
-    if payment_plan:
-        return payment_plan
-    else:
-        return frappe.get_value("Payment Plan", {"fee_structure": fee_structure}, "name")
-
+    academic_year = frappe.get_value("Academic Year", {"custom_next_academic_year": 1})
+    # get payment plan from fee schedule
+    payment_plan = frappe.get_value("Fee Schedule", {"fee_structure": fee_structure, "docstatus": 1}, "payment_plan")
+    if not payment_plan:
+        # get payment plan from payment plan if exists
+        payment_plan = frappe.get_value("Payment Plan", {"fee_structure": fee_structure, "academic_year": academic_year}, "name")
+    return payment_plan
 
 def referal_discount(doc, method=None):
     """
