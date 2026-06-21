@@ -2,8 +2,8 @@
 
 export default {
   initialValues: {
-    username : "",
-    password : ""
+    mobile_number: "",
+    otp: "",
   },
   // validateInputOnChange: true,
   validateInputOnBlur: true,
