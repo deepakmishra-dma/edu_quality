@@ -505,7 +505,7 @@ class CustomStudent(Student):
             refno = frappe.get_all(
                 "Student", filters={"name": ["in", student]}, pluck="reference_number"
             )
-            return ",".join(refno)
+            return ",".join(list(map(str, refno)))
 
         guardian_names = [guardian.guardian for guardian in self.guardians]
         refno = get_refno(guardian_names)
