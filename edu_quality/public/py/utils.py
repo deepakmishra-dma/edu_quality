@@ -45,7 +45,7 @@ def migrate():
 
 def check_if_deposit(fees, term):
     deposit = False
-    if fees.payment_schedule:
+    if hasattr(fees, "payment_schedule"):
         for schedule in fees.payment_schedule:
             if (
                 schedule.payment_term == term
