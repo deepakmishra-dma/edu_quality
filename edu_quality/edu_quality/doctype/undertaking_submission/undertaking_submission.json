@@ -1,0 +1,149 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:SUB-{student}-{####}",
+ "creation": "2023-10-05 18:16:48.593692",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "reference_no",
+  "student",
+  "program",
+  "payment_term",
+  "fathers_name",
+  "mothers_name",
+  "submitted_with_response",
+  "reference_doctype",
+  "reference_docname",
+  "rules_and_regulation_template",
+  "column_break_ya8c",
+  "submitted_date",
+  "otp_entered",
+  "otp_sent_to_contact_no",
+  "otp_sent_to_email_id",
+  "ip_address",
+  "user_info"
+ ],
+ "fields": [
+  {
+   "fieldname": "student",
+   "fieldtype": "Link",
+   "label": "Student",
+   "options": "Student"
+  },
+  {
+   "fieldname": "fathers_name",
+   "fieldtype": "Data",
+   "label": "Father's Name"
+  },
+  {
+   "fieldname": "column_break_ya8c",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "rules_and_regulation_template",
+   "fieldtype": "Link",
+   "label": "Rules and Regulation Template",
+   "options": "Rules and Regulation Template"
+  },
+  {
+   "fetch_from": "student.reference_number",
+   "fieldname": "reference_no",
+   "fieldtype": "Data",
+   "label": "Reference No"
+  },
+  {
+   "fieldname": "mothers_name",
+   "fieldtype": "Data",
+   "label": "Mother's Name"
+  },
+  {
+   "fieldname": "submitted_with_response",
+   "fieldtype": "Select",
+   "label": "Form Submitted with response",
+   "options": "Yes\nNo"
+  },
+  {
+   "fieldname": "submitted_date",
+   "fieldtype": "Date",
+   "label": "Submitted Date"
+  },
+  {
+   "fieldname": "otp_entered",
+   "fieldtype": "Data",
+   "label": "OTP Entered"
+  },
+  {
+   "fieldname": "otp_sent_to_contact_no",
+   "fieldtype": "Data",
+   "label": "OTP Sent to Contact No"
+  },
+  {
+   "fieldname": "otp_sent_to_email_id",
+   "fieldtype": "Data",
+   "label": "OTP Sent to Email ID"
+  },
+  {
+   "fieldname": "ip_address",
+   "fieldtype": "Data",
+   "label": "IP Address"
+  },
+  {
+   "fieldname": "user_info",
+   "fieldtype": "Small Text",
+   "label": "User Info"
+  },
+  {
+   "fieldname": "program",
+   "fieldtype": "Link",
+   "label": "Class",
+   "options": "Program"
+  },
+  {
+   "fieldname": "payment_term",
+   "fieldtype": "Data",
+   "label": "Payment Term"
+  },
+  {
+   "fieldname": "reference_doctype",
+   "fieldtype": "Link",
+   "label": "Reference Doctype",
+   "options": "DocType",
+   "search_index": 1
+  },
+  {
+   "fieldname": "reference_docname",
+   "fieldtype": "Dynamic Link",
+   "label": "Reference Docname",
+   "options": "reference_doctype",
+   "search_index": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-12-30 10:12:47.252189",
+ "modified_by": "Administrator",
+ "module": "Edu Quality",
+ "name": "Undertaking Submission",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

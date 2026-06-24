@@ -8,20 +8,20 @@ import {
 
 import React, { useEffect } from "react";
 import {
-  IconArchive,
+  // IconArchive,
   IconCalendarOff,
   IconLogout,
   IconMessage,
   IconReload,
-  IconStack2,
-  IconStar,
-  IconCalendar,
+  // IconStack2,
+  // IconStar,
+  // IconCalendar,
   // IconFileDescription,
-  IconReport,
+  // IconReport,
   IconUser,
   IconCreditCard,
-  IconLink,
-  IconPrinter,
+  // IconLink,
+  // IconPrinter,
 } from "@tabler/icons";
 import { IconClock } from "@tabler/icons-react";
 // import { IconReport } from "@tabler/icons-react";
@@ -95,7 +95,7 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
             <Box
               sx={{
                 backgroundImage:
-                  "url(/assets/edu_quality/walsh/images/walnut-logo-blue.png)",
+                  "url(/assets/edu_quality/walsh/images/tgaa_logo.jpg)",
                 height: 36,
                 width: 40,
                 backgroundSize: "cover",
@@ -122,29 +122,29 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
         </Stack>
         {[
           { label: "Messages", icon: IconMessage, location: "/" },
-          {
-            label: "Curriculum Updates",
-            icon: IconStack2,
-            location: "/cmap",
-            subRoutes: [
-              {
-                label: "Daily Updates",
-                icon: IconStack2,
-                location: "/cmap",
-              },
-              {
-                label: "Portion",
-                icon: IconArchive,
-                location: "/portion-circular",
-              },
+          // {
+          //   label: "Curriculum Updates",
+          //   icon: IconStack2,
+          //   location: "/cmap",
+          //   subRoutes: [
+          //     {
+          //       label: "Daily Updates",
+          //       icon: IconStack2,
+          //       location: "/cmap",
+          //     },
+          //     {
+          //       label: "Portion",
+          //       icon: IconArchive,
+          //       location: "/portion-circular",
+          //     },
 
-              {
-                label: "Weekly Updates",
-                icon: IconArchive,
-                location: "/date-circular",
-              },
-            ],
-          },
+          //     {
+          //       label: "Weekly Updates",
+          //       icon: IconArchive,
+          //       location: "/date-circular",
+          //     },
+          //   ],
+          // },
           {
             label: "Absent Note",
             icon: IconCalendarOff,
@@ -155,11 +155,11 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
             icon: IconClock,
             location: "/early-pickup",
           },
-          {
-            label: "PTM Links",
-            icon: IconLink,
-            location: "/ptm-link",
-          },
+          // {
+          //   label: "PTM Links",
+          //   icon: IconLink,
+          //   location: "/ptm-link",
+          // },
           {
             label: "Student Profile",
             icon: IconUser,
@@ -171,34 +171,34 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
             location: "/fee",
           },
 
-          {
-            label: "Result",
-            icon: IconReport,
-            location: "/result",
-          },
+          // {
+          //   label: "Result",
+          //   icon: IconReport,
+          //   location: "/result",
+          // },
 
-          {
-            label: "School Calendar",
-            icon: IconCalendar,
-            location: "/calendar",
-          },
-          { label: "Starred Messages", icon: IconStar, location: "/stared" },
-          {
-            label: "Archived Messages",
-            icon: IconArchive,
-            location: "/archived",
-          },
+          // {
+          //   label: "School Calendar",
+          //   icon: IconCalendar,
+          //   location: "/calendar",
+          // },
+          // { label: "Starred Messages", icon: IconStar, location: "/stared" },
+          // {
+          //   label: "Archived Messages",
+          //   icon: IconArchive,
+          //   location: "/archived",
+          // },
           // {
           //   label: "Result",
           //   icon: IconFileDescription,
           //   location: "/result",
           // },
 
-          {
-            label: "Bonafide Certificate",
-            icon: IconPrinter,
-            location: "/bonafide",
-          },
+          // {
+          //   label: "Bonafide Certificate",
+          //   icon: IconPrinter,
+          //   location: "/bonafide",
+          // },
 
           {
             label: "Reload",
@@ -208,8 +208,8 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
             },
           },
           { label: "Logout", icon: IconLogout, onClick: () => logout() },
-        ].map((n) => {
-          return <NavRoute n={n} changeLocation={changeLocation} />;
+        ].map((n,index) => {
+          return <NavRoute key={index} n={n} changeLocation={changeLocation} />;
         })}
       </Box>
     </MantineNavbar>
@@ -244,7 +244,7 @@ function NavRoute({
           borderBottom: "1px solid rgba(0,0,0,0.1)",
         }}
         label={n.label}
-        icon={<n.icon size={35} stroke={1.5} color="#00b8ff" />}
+        icon={<n.icon size={35} stroke={1.5} color="#1E6967" />}
       />
     );
 
@@ -267,7 +267,7 @@ function NavRoute({
           }}
           childrenOffset={55}
           label={n.label}
-          icon={<n.icon size={35} stroke={1.5} color="#00b8ff" />}
+          icon={<n.icon size={35} stroke={1.5} color="#1E6967" />}
         >
           {n.subRoutes.map((n) => (
             <NavLink

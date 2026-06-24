@@ -508,10 +508,10 @@
   resolved "https://registry.npmjs.org/@emotion/weak-memoize/-/weak-memoize-0.3.1.tgz"
   integrity sha512-EsBwpc7hBUJWAsNPBmJy4hxWx12v6bshQsldrVmjxJoc3isbxhOrF2IcCpaXxfvq03NwkI7sbsOLXbYuqF/8Ww==
 
-"@esbuild/linux-x64@0.19.12":
+"@esbuild/win32-x64@0.19.12":
   version "0.19.12"
-  resolved "https://registry.npmjs.org/@esbuild/linux-x64/-/linux-x64-0.19.12.tgz"
-  integrity sha512-B71g1QpxfwBvNrfyJdVDexenDIt1CiDN1TIXLbhOw0KhJzE78KIFGX6OJ9MrtC0oOqMWf+0xop4qEU8JrJTwCg==
+  resolved "https://registry.npmjs.org/@esbuild/win32-x64/-/win32-x64-0.19.12.tgz"
+  integrity sha512-T1QyPSDCyMXaO3pzBkF96E8xMkiRYbUEZADd29SyPGabqxMViNoii+NcK7eWJAEoU6RZyEm5lVSIjTmcdoB9HA==
 
 "@eslint-community/eslint-utils@^4.2.0", "@eslint-community/eslint-utils@^4.4.0":
   version "4.4.0"
@@ -1085,15 +1085,10 @@
   resolved "https://registry.npmjs.org/@remix-run/router/-/router-1.15.0.tgz"
   integrity sha512-HOil5aFtme37dVQTB6M34G95kPM3MMuqSmIRVCC52eKV+Y/tGSqw9P3rWhlAx6A+mz+MoX+XxsGsNJbaI5qCgQ==
 
-"@rollup/rollup-linux-x64-gnu@4.9.6":
+"@rollup/rollup-win32-x64-msvc@4.9.6":
   version "4.9.6"
-  resolved "https://registry.npmjs.org/@rollup/rollup-linux-x64-gnu/-/rollup-linux-x64-gnu-4.9.6.tgz"
-  integrity sha512-HUNqM32dGzfBKuaDUBqFB7tP6VMN74eLZ33Q9Y1TBqRDn+qDonkAUyKWwF9BR9unV7QUzffLnz9GrnKvMqC/fw==
-
-"@rollup/rollup-linux-x64-musl@4.9.6":
-  version "4.9.6"
-  resolved "https://registry.npmjs.org/@rollup/rollup-linux-x64-musl/-/rollup-linux-x64-musl-4.9.6.tgz"
-  integrity sha512-ch7M+9Tr5R4FK40FHQk8VnML0Szi2KRujUgHXd/HjuH9ifH72GUmw6lStZBo3c3GB82vHa0ZoUfjfcM7JiiMrQ==
+  resolved "https://registry.npmjs.org/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.9.6.tgz"
+  integrity sha512-jqzNLhNDvIZOrt69Ce4UjGRpXJBzhUBzawMwnaDAwyHriki3XollsewxWzOzz+4yOFDkuJHtTsZFwMxhYJWmLQ==
 
 "@sindresorhus/is@^4.6.0":
   version "4.6.0"
@@ -1106,11 +1101,11 @@
   integrity sha512-+9jVqKhRSpsc591z5vX+X5Yyw+he/HCB4iQ/RYxw35CEPaY1gnsNE43nf9n9AaYjAQrTiI/mOwKUKdUs9vf7Xg==
 
 "@tabler/icons-preact@^3.5.0":
-  version "3.19.0"
-  resolved "https://registry.npmjs.org/@tabler/icons-preact/-/icons-preact-3.19.0.tgz"
-  integrity sha512-UMcaxO7W6cca54QeiGvoCZ1iw4bTZ0t2KLIrpbpuOHDpkDvzpmoaAFwr+DcifY7QyCa1Pf/PAK1jIVCuLjRDNg==
+  version "3.26.0"
+  resolved "https://registry.npmjs.org/@tabler/icons-preact/-/icons-preact-3.26.0.tgz"
+  integrity sha512-OtbeQT8oNJ/qFnl+FbsFnVCV+HfqQPBLAsy7q3nSVEdeiv79m7uojzV2gZReJYSSFABLsbH7lgufyQ8KbKaYAA==
   dependencies:
-    "@tabler/icons" "3.19.0"
+    "@tabler/icons" "3.26.0"
 
 "@tabler/icons-react@^3.1.0":
   version "3.1.0"
@@ -1129,10 +1124,10 @@
   resolved "https://registry.npmjs.org/@tabler/icons/-/icons-3.1.0.tgz"
   integrity sha512-CpZGyS1IVJKFcv88yZ2sYZIpWWhQ6oy76BQKQ5SF0fGgOqgyqKdBGG/YGyyMW632on37MX7VqQIMTzN/uQqmFg==
 
-"@tabler/icons@3.19.0":
-  version "3.19.0"
-  resolved "https://registry.npmjs.org/@tabler/icons/-/icons-3.19.0.tgz"
-  integrity sha512-A4WEWqpdbTfnpFEtwXqwAe9qf9sp1yRPvzppqAuwcoF0q5YInqB+JkJtSFToCyBpPVeLxJUxxkapLvt2qQgnag==
+"@tabler/icons@3.26.0":
+  version "3.26.0"
+  resolved "https://registry.npmjs.org/@tabler/icons/-/icons-3.26.0.tgz"
+  integrity sha512-oO3D4ss+DxzxqU1aDy0f1HmToyrO0gcQWIMpzHAfV1quPUx0BZYvNm5xz1DQb4DxNm/+xNvbBGLJy4pzTLYWag==
 
 "@tanstack/query-core@4.36.1":
   version "4.36.1"
@@ -1295,11 +1290,9 @@
     "@types/react" "*"
 
 "@types/react-transition-group@^4.4.0":
-  version "4.4.11"
-  resolved "https://registry.npmjs.org/@types/react-transition-group/-/react-transition-group-4.4.11.tgz"
-  integrity sha512-RM05tAniPZ5DZPzzNFP+DmrcOdD0efDUxMy3145oljWSl3x9ZV5vhme98gTxFrj2lhXvmGNnUiuDyJgY9IKkNA==
-  dependencies:
-    "@types/react" "*"
+  version "4.4.12"
+  resolved "https://registry.npmjs.org/@types/react-transition-group/-/react-transition-group-4.4.12.tgz"
+  integrity sha512-8TV6R3h2j7a91c+1DXdJi3Syo69zzIZbz7Lg5tORM5LEJG7X/E6a1V3drRyBRZq7/utz7A+c4OgYLiLcYGHG6w==
 
 "@types/react@*", "@types/react@^18.2.43":
   version "18.2.54"
@@ -2168,9 +2161,9 @@ copy-descriptor@^0.1.0:
   integrity sha512-XgZ0pFcakEUlbwQEVNg3+QAis1FyTL3Qel9FYy8pSkQqoG3PNoT0bOCQtOXcOkur21r2Eq2kI+IE+gsmAEVlYw==
 
 core-js@^3.6.0, core-js@^3.8.3:
-  version "3.38.1"
-  resolved "https://registry.npmjs.org/core-js/-/core-js-3.38.1.tgz"
-  integrity sha512-OP35aUorbU3Zvlx7pjsFdu1rGNnD4pgw/CWoYzRY3t2EzoVT7shKHY1dlAy3f41cGIO7ZDPQimhGFTlEYkG/Hw==
+  version "3.39.0"
+  resolved "https://registry.npmjs.org/core-js/-/core-js-3.39.0.tgz"
+  integrity sha512-raM0ew0/jJUqkJ0E6e8UDtl+y/7ktFivgWvqw8dNSQeNWoSDLvQ1H/RN3aPXB9tBd4/FhyR4RDPGhsNIMsAn7g==
 
 cosmiconfig@^7.0.0:
   version "7.1.0"
@@ -2434,9 +2427,9 @@ domhandler@^5.0.2, domhandler@^5.0.3:
     domelementtype "^2.3.0"
 
 dompurify@^2.5.4:
-  version "2.5.7"
-  resolved "https://registry.npmjs.org/dompurify/-/dompurify-2.5.7.tgz"
-  integrity sha512-2q4bEI+coQM8f5ez7kt2xclg1XsecaV9ASJk/54vwlfRRNQfDqJz2pzQ8t0Ix/ToBpXlVjrRIx7pFC/o8itG2Q==
+  version "2.5.8"
+  resolved "https://registry.npmjs.org/dompurify/-/dompurify-2.5.8.tgz"
+  integrity sha512-o1vSNgrmYMQObbSSvF/1brBYEQPHhV1+gsmrusO7/GXtp1T9rCS8cXFqVxK/9crT1jA6Ccv+5MTSjBNqr7Sovw==
 
 domutils@^1.5.1:
   version "1.7.0"
@@ -5076,9 +5069,9 @@ react-router@6.22.0:
     "@remix-run/router" "1.15.0"
 
 react-select@^5.8.0:
-  version "5.8.1"
-  resolved "https://registry.npmjs.org/react-select/-/react-select-5.8.1.tgz"
-  integrity sha512-RT1CJmuc+ejqm5MPgzyZujqDskdvB9a9ZqrdnVLsvAHjJ3Tj0hELnLeVPQlmYdVKCdCpxanepl6z7R5KhXhWzg==
+  version "5.9.0"
+  resolved "https://registry.npmjs.org/react-select/-/react-select-5.9.0.tgz"
+  integrity sha512-nwRKGanVHGjdccsnzhFte/PULziueZxGD8LL2WojON78Mvnq7LdAMEtu2frrwld1fr3geixg3iiMBIc/LLAZpw==
   dependencies:
     "@babel/runtime" "^7.12.0"
     "@emotion/cache" "^11.4.0"
@@ -5088,7 +5081,7 @@ react-select@^5.8.0:
     memoize-one "^6.0.0"
     prop-types "^15.6.0"
     react-transition-group "^4.3.0"
-    use-isomorphic-layout-effect "^1.1.2"
+    use-isomorphic-layout-effect "^1.2.0"
 
 react-textarea-autosize@^8.3.2, react-textarea-autosize@8.3.4:
   version "8.3.4"
@@ -6132,10 +6125,10 @@ use-editable@^2.3.3:
   resolved "https://registry.npmjs.org/use-editable/-/use-editable-2.3.3.tgz"
   integrity sha512-7wVD2JbfAFJ3DK0vITvXBdpd9JAz5BcKAAolsnLBuBn6UDDwBGuCIAGvR3yA2BNKm578vAMVHFCWaOcA+BhhiA==
 
-use-isomorphic-layout-effect@^1.1.1, use-isomorphic-layout-effect@^1.1.2:
-  version "1.1.2"
-  resolved "https://registry.npmjs.org/use-isomorphic-layout-effect/-/use-isomorphic-layout-effect-1.1.2.tgz"
-  integrity sha512-49L8yCO3iGT/ZF9QttjwLF/ZD9Iwto5LnH5LmEdk/6cFmXddqi2ulF0edxTwjj+7mqvpVVGQWvbXZdn32wRSHA==
+use-isomorphic-layout-effect@^1.1.1, use-isomorphic-layout-effect@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.npmjs.org/use-isomorphic-layout-effect/-/use-isomorphic-layout-effect-1.2.0.tgz"
+  integrity sha512-q6ayo8DWoPZT0VdG4u3D3uxcgONP3Mevx2i2b0434cwWBoL+aelL1DzkXI6w3PhTZzUeR2kaVlZn70iCiseP6w==
 
 use-latest@^1.2.1:
   version "1.2.1"

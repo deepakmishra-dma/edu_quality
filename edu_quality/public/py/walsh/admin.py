@@ -184,7 +184,8 @@ def enqueued_specific_notice_docs(__args):
     subject = __args.get("subject")
     content = __args.get("notice")
     raw_html = __args.get("raw_html")
-
+    categories = categories = [{"school_notice_category": c} for c in __args.get("categories", [])]
+    requires_approval = __args.get("requires_approval")
     csv_file_path = frappe.get_site_path() + csv_file
     csv_text = open(csv_file_path, mode="r", encoding="utf-8-sig").read()
 
@@ -213,7 +214,9 @@ def enqueued_specific_notice_docs(__args):
                 "student": student.name,
                 "subject": notice_subject,
                 "notice": notice_content,
-                "is_raw_html": 1 if raw_html else 0
+                "is_raw_html": 1 if raw_html else 0,
+                "category":categories,
+                "requires_approval":requires_approval
             }).insert(ignore_permissions=True)
             notice.reload()
             notice_ids.append(notice.name)

@@ -99,9 +99,8 @@ export const Login = () => {
           <Flex justify={"center"}>
             <Image
               radius={"lg"}
-              width={90}
-              height={90}
-              src="/assets/edu_quality/walsh/images/walnut-logo-2023.svg"
+              width={160}
+              src="/assets/edu_quality/walsh/images/tgaa_logo.jpg"
             />
           </Flex>
           <Stack spacing={2} mt={12} mb={8} align="center">
@@ -126,7 +125,7 @@ export const Login = () => {
                 }}
                 align="center"
               >
-                If you are already a parent of Walnut School <br /> Log in below
+                If you are already a parent of Green Acres <br /> Log in below
               </Text>
             ) : (
               <Text size={"sm"}>Phone No: {values.mobile_number}</Text>
@@ -184,10 +183,11 @@ export const Login = () => {
             <Button
               type="submit"
               sx={{
-                backgroundColor: "#00b3ff",
+                backgroundColor: "#1E6967",
                 marginTop: 10,
                 ":hover": {
-                  backgroundColor: "#03a5ea",
+                  backgroundColor: "#1E6967",
+                  opacity: 0.8,
                 },
               }}
             >
@@ -202,7 +202,7 @@ export const Login = () => {
               <Button
                 sx={{
                   backgroundColor: "transparent",
-                  color: "#03aaf1",
+                  color: "#1E6967",
                   width: "fit-content",
                   ":hover": {
                     backgroundColor: "transparent",
@@ -242,7 +242,7 @@ export const Login = () => {
           </Stack>
         </form>
       </Stack>
-      <Box
+      {/* <Box
         pos="fixed"
         bottom={0}
         left={0}
@@ -255,7 +255,7 @@ export const Login = () => {
           src={"/assets/edu_quality/walsh/images/walnut-bg-transparent.png"}
           w={"100%"}
         />
-      </Box>
+      </Box> */}
     </>
   );
 };
