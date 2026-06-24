@@ -3,9 +3,9 @@ from frappe.utils import get_url
 
 
 def after_migrate():
-    # site_url = get_url()
-    # if not ("uat" in site_url or "test" in site_url):
-    #     return
+    site_url = get_url()
+    if not ("uat" in site_url or "test" in site_url):
+        return
     # replace_domain()
     replace_emails()
     replace_account_credentials()
