@@ -28,13 +28,15 @@ def format_wa_phone_no(phone_no):
     return phone_no
 
 
-def create_otp(wa_phone_no, custom_key=None):
+def create_otp(wa_phone_no, custom_key=None, for_appstore_test=False):
     otp = ""
     for _ in range(4):
         otp += str(random.randint(1, 9))
     cache = frappe.cache()
     key = custom_key or ("wo" + wa_phone_no)
     # frappe.cache.delete_value(key)
+    if for_appstore_test:
+        otp = "1234"
     frappe.logger("otp").exception("generate-" + key)
     frappe.logger("otp").exception(otp)
     cache.set_value(key, otp)
@@ -213,6 +215,13 @@ def send_otp(phone_no):
             }
 
         otp = create_otp(wa_phone_no)
+
+        if "1234567890" in str(wa_phone_no):
+            otp = create_otp(wa_phone_no, for_appstore_test=True)
+            return {
+                "success": True,
+                "message": "Otp Sent To +" + str(wa_phone_no),
+            }
         send_otp_to_whatsapp(wa_phone_no, otp)
         send_otp_to_sms(phone_with_country_code, otp)
         frappe.logger("otp").exception("sms sent")
@@ -400,14 +409,14 @@ def user_login(usr, pwd, push_token):
             "Student", filters={"guardian": guardian.name}, fields=["*"]
         )
         all_disabled = all(student["enabled"] == 0 for student in students)
-        
+
         if not students or all_disabled:
             return {
                 "error": True,
                 "error_type": "student_disabled",
                 "error_message": "All students for this guardian are disabled.",
             }
-        
+
         if not guardian:
             return {
                 "error": True,
@@ -428,5 +437,3 @@ def user_login(usr, pwd, push_token):
 
     except Exception as e:
         return {"error": True, "error_type": "server_error", "error_message": str(e)}
-
-
