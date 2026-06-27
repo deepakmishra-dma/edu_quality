@@ -394,8 +394,9 @@ def get_components(fee_structure, percent, is_rte):
         label = component.label
         if not label:
             label = frappe.get_value("Fee Category",component.fees_category, "custom_label")
-        if not label:
-            frappe.throw("Label not found for Fee Category {0}".format(component.fees_category))
+        # if not label:
+        #     frappe.throw("Label not found for Fee Category {0}".format(component.fees_category))
+
         # default_account = frappe.get_value("Fees Settings", None, "default_account")
 
         component_amount = component.amount * flt(percent) / 100
@@ -457,10 +458,12 @@ def create_fee_advance(student, program_enrollment,all_len=None,index=None):
             set_progress(index + 1, all_len,index, "Student Fees Details")
         school = frappe.get_value("Program", program_enrollment.program,"school")
         next_program = get_next_program(program_enrollment.program, school)
+        student_category = frappe.get_value("Student", student, "student_category")
         institution = frappe.get_value("School", frappe.get_value("Program", next_program,"school"),"institution")
-        next_academic_year = next_yr()
-        fee_structure = get_fee_structure(next_academic_year, school, next_program)
+        next_academic_year = frappe.get_value("Academic Year",{"custom_next_academic_year":1})
+        fee_structure = get_fee_structure(next_academic_year, school, next_program, student_category)
         payment_plan = get_payment_plan(fee_structure, program_enrollment)
+        frappe.logger("fee_advance").exception(f"Student: {student}, Program: {next_program}, Fee Structure: {fee_structure}, Payment Plan: {payment_plan} Academic Year: {next_academic_year}, Student Category: {student_category}")
         term, due_date = get_first_payment_term(payment_plan)
 
         fee_advance = frappe.new_doc("Fee Advance")
@@ -504,14 +507,17 @@ def get_first_payment_term(payment_plan):
     due_date = payment_plan.payment_schedule[0].due_date
     return term, due_date
 
-def get_fee_structure(academic_year, school, program):
+def get_fee_structure(academic_year, school, program, student_category=None):
     doc_filter = {"academic_year": academic_year, "school": school, "program": program}
+    if student_category:
+        doc_filter["student_category"] = student_category
     fee_structure = frappe.get_value("Fee Structure", doc_filter)
     return fee_structure
 
 
-def get_payment_plan(fee_structure=None, program_enrollment=None):
-    academic_year = frappe.get_value("Academic Year", {"custom_next_academic_year": 1})
+def get_payment_plan(fee_structure, academic_year):
+    if not fee_structure:
+        return None
     # get payment plan from fee schedule
     payment_plan = frappe.get_value("Fee Schedule", {"fee_structure": fee_structure, "docstatus": 1}, "payment_plan")
     if not payment_plan:

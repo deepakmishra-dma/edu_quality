@@ -32,7 +32,7 @@ class CustomPaymentRequest(PaymentRequest):
         else:
             if self.status != 'Paid':
                 payment_entry = self.create_payment_entry()
-                self.make_invoice()
+                # self.make_invoice()
                 return payment_entry
 
     def refund_request(self):

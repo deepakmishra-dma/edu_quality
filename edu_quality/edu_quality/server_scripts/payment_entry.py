@@ -16,7 +16,7 @@ def validate(doc, method=None):
 
 
 def get_letter_head(doc):
-    program_name = doc.program if doc.doctype == "Fees" else doc.next_class
+    program_name = doc.program if doc.doctype == "Fees" else doc.next_program
     if program_name:
         return frappe.get_value("Program", program_name, "letter_head")
     if doc.school:

@@ -11,6 +11,15 @@ frappe.ui.form.on("Program Enrollment", {
                 frm.save()
             }).addClass("btn-primary");
         }
+        frm.set_query("student_group", function () {
+            return {
+                filters: {
+                    "program": frm.doc.program,
+                    "academic_year": frm.doc.academic_year,
+                    "student_category": frm.doc.student_category
+                }
+            };
+        });
         frm.set_query("payment_plan", function () {
             return {
                 filters: {

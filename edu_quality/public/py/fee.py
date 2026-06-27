@@ -297,11 +297,11 @@ def create_fees(doc, method=None):
             )
             if len(existing_pe) <= 1:
                 return
-        fee_structure = frappe.get_value(
-            "Fee Structure",
-            {"program": doc.program, "academic_year": doc.academic_year, "docstatus": 1},
-            "name",
-        )
+        fee_structure_filters = {"program": doc.program, "academic_year": doc.academic_year, "docstatus": 1}
+        if student.student_category:
+            fee_structure_filters["student_category"] = student.student_category
+
+        fee_structure = frappe.get_value("Fee Structure",fee_structure_filters,"name")
         fee_schedule = frappe.get_value(
             "Fee Schedule", {"fee_structure": fee_structure, "docstatus": 1}, "name"
         )
