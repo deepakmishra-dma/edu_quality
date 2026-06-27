@@ -208,7 +208,7 @@ class CustomPaymentRequest(PaymentRequest):
             program = None
             if self.reference_doctype == "Fees":
                 program = frappe.get_value("Fees", self.reference_name, "program")
-            elif self.reference_name == "Fee Advance":
+            elif self.reference_doctype == "Fee Advance":
                 program = frappe.get_value("Fee Advance", self.reference_name, "next_program")
 
             payment_gateway, gateway_account = frappe.db.get_value("Payment Mapping", {"parent": "Fees Settings", "grade": program}, ["payment_gateway", "gateway_account"])
