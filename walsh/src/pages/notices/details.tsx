@@ -1,5 +1,5 @@
 import { useOne } from "@refinedev/core";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Box, Button, Flex, Stack, Text } from "@mantine/core";
 import { useParams, useSearchParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
@@ -12,6 +12,7 @@ import useMarkAsStared from "../../components/queries/useMarkStarMutation.ts";
 import useStudentList from "../../components/queries/useStudentList.ts";
 import OtpComponent from "../confirmation/index.tsx";
 import useRequestOtp from "../../components/queries/useNoticeRequestOtp.ts";
+import { Document, Page } from "react-pdf";
 
 export const NoticeDetails: React.FC = () => {
   const params = useParams();
@@ -23,6 +24,15 @@ export const NoticeDetails: React.FC = () => {
   const { mutateAsync: markAsStared } = useMarkAsStared();
   const { mutateAsync: markAsArchived } = useMarkAsArchived();
   const { data: studentsList } = useStudentList();
+  const [numPages, setNumPages] = useState<number>(0);
+  const [width, setWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   // const { refetch, data: list } = useNoticeList({
   //   archivedOnly: true,
 
@@ -251,7 +261,27 @@ export const NoticeDetails: React.FC = () => {
               padding: 10,
             }}
           >
-            {data?.data?.is_raw_html ? (
+            {data?.data?.is_pdf ? (
+              <Document
+                file={{
+                  url: data?.data?.pdf,
+                }}
+                onLoadSuccess={({ numPages }) => {
+                  setNumPages(numPages);
+                }}
+              >
+                {Array.from(new Array(numPages), (_el, index) => (
+                  <Page
+                    key={`page_${index + 1}`}
+                    pageNumber={index + 1}
+                    width={width > 700 ? 700 : width}
+                    scale={0.8}
+                    renderTextLayer={false}
+                    renderAnnotationLayer={false}
+                  />
+                ))}
+              </Document>
+            ) : !data?.data?.pdf && data?.data?.is_raw_html ? (
               <>
                 <div
                   dangerouslySetInnerHTML={{ __html: data?.data?.notice || "" }}

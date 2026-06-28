@@ -6,7 +6,6 @@ import requests
 from frappe.core.doctype.communication.email import make as create_email
 from edu_quality.edu_quality.server_scripts.utils import current_academic_year
 
-
 def render_jinja(text, object):
     if not text:
         return ""
@@ -89,7 +88,10 @@ def enqueued_specific_notice_emails(__args):
     csv_file = __args.get("csv_file")
     subject = __args.get("subject")
     content = __args.get("notice")
-
+    has_pdf = __args.get("hasPdf")
+    if has_pdf:
+        content = "pdf"
+   
     csv_file_path = frappe.get_site_path() + csv_file
     csv_text = open(csv_file_path, mode="r", encoding="utf-8-sig").read()
 
@@ -186,6 +188,12 @@ def enqueued_specific_notice_docs(__args):
     raw_html = __args.get("raw_html")
     categories = categories = [{"school_notice_category": c} for c in __args.get("categories", [])]
     requires_approval = __args.get("requires_approval")
+    has_pdf = __args.get("hasPdf")
+    pdf = __args.get("pdf")
+
+    if has_pdf:
+        content = "pdf"
+
     csv_file_path = frappe.get_site_path() + csv_file
     csv_text = open(csv_file_path, mode="r", encoding="utf-8-sig").read()
 
@@ -217,13 +225,15 @@ def enqueued_specific_notice_docs(__args):
                 "is_raw_html": 1 if raw_html else 0,
                 "category":categories,
                 "requires_approval":requires_approval
+                "is_pdf":bool(has_pdf) or 0,
+                "pdf":pdf,
             }).insert(ignore_permissions=True)
             notice.reload()
             notice_ids.append(notice.name)
             success_ref_ids.append(student_id)
         except Exception as e:
             failure_ref_ids.append(row.get("ID") or row.get("id") or row.get("name"))
-            failure_texts.append(e)
+            failure_texts.append(frappe.get_traceback())
     frappe.enqueue(enqueued_specific_notifications, queue="long", notice_ids=notice_ids)
     # enqueued_specific_notifications(notice_ids)
 
@@ -243,8 +253,11 @@ def enqueued_generic_notice_emails(__args):
     divisions = __args.get("divisions")
     student_statuses = __args.get("student_statuses")
     academic_year = __args.get("academic_year")
+    has_pdf = __args.get("hasPdf")
     school = __args.get("school")
-
+    if has_pdf:
+       content = "pdf"
+   
     bcc_email_group = frappe.get_value("School", school, 'bcc_email_group')
 
     bcc_emails = []
@@ -370,10 +383,10 @@ def enqueued_generic_notifications(notice_ids):
                     success_student_ids.append(student.name)
                 except Exception as e:
                     failure_ids.append(student.get("name"))
-                    failure_texts.append(e)
+                    failure_texts.append(frappe.get_traceback())
         except Exception as e:
             failure_ids.append(f"notice:{notice_id}")
-            failure_texts.append(e)
+            failure_texts.append(frappe.get_traceback())
 
     if len(failure_ids):
         frappe.get_doc({
@@ -390,6 +403,10 @@ def enqueued_generic_notice_docs(__args):
     school = __args.get("school")
     classes = __args.get("classes")
     divisions = __args.get("divisions")
+    has_pdf = __args.get("hasPdf")
+    pdf = __args.get("pdf")
+    if has_pdf:
+        content = "pdf"
     student_statuses = __args.get("student_statuses")
     academic_year = __args.get("academic_year")
     raw_html = __args.get("raw_html")
@@ -406,7 +423,9 @@ def enqueued_generic_notice_docs(__args):
                     "student_status": student_status,
                     "notice": content,
                     'academic_year': academic_year,
-                    "is_raw_html": 1 if raw_html else 0
+                    "is_raw_html": 1 if raw_html else 0,
+                    "is_pdf":has_pdf,
+                "pdf":pdf,
                 }).insert(ignore_permissions=True)
                 notice.reload()
                 notice_ids.append(notice.name)
@@ -484,7 +503,8 @@ def validate_args(**kwargs):
     is_test = kwargs.get("is_test")
     academic_year = kwargs.get("academic_year")
     student_data = kwargs.get("student_data")
-
+    has_pdf = kwargs.get("hasPdf")
+    pdf = kwargs.get("pdf")
     # verify supplied data
     if has_csv:
         if is_test:
@@ -552,9 +572,10 @@ def validate_args(**kwargs):
     if not subject:
         raise frappe.exceptions.MandatoryError("Subject is required")
 
-    if not content:
+    if not has_pdf  and not content:
         raise frappe.exceptions.MandatoryError("Content is required")
-
+    if has_pdf and not pdf:
+        raise frappe.exceptions.MandatoryError("PDF is required")
 
 
 @frappe.whitelist()
