@@ -283,9 +283,20 @@ export const NoticeDetails: React.FC = () => {
               </Document>
             ) : !data?.data?.pdf && data?.data?.is_raw_html ? (
               <>
-                <div
-                  dangerouslySetInnerHTML={{ __html: data?.data?.notice || "" }}
-                ></div>
+                <Box
+                  ref={(el) => {
+                    if (el) {
+                      // Only create shadow DOM if it doesn't exist
+                      if (!el.shadowRoot) {
+                        const shadowRoot = el.attachShadow({ mode: "open" });
+                        shadowRoot.innerHTML = data?.data?.notice || "";
+                      } else {
+                        // Update existing shadow root content
+                        el.shadowRoot.innerHTML = data?.data?.notice || "";
+                      }
+                    }
+                  }}
+                />
               </>
             ) : (
               <>
@@ -297,10 +308,23 @@ export const NoticeDetails: React.FC = () => {
                   href="https://cdn.jsdelivr.net/npm/quill@2.0.0-beta.0/dist/quill.bubble.css"
                   rel="stylesheet"
                 />
-                <div
-                  className="ql-editor"
-                  dangerouslySetInnerHTML={{ __html: data?.data?.notice || "" }}
-                ></div>
+                <>
+                  <Box
+                    className="ql-editor"
+                    ref={(el) => {
+                      if (el) {
+                        // Only create shadow DOM if it doesn't exist
+                        if (!el.shadowRoot) {
+                          const shadowRoot = el.attachShadow({ mode: "open" });
+                          shadowRoot.innerHTML = data?.data?.notice || "";
+                        } else {
+                          // Update existing shadow root content
+                          el.shadowRoot.innerHTML = data?.data?.notice || "";
+                        }
+                      }
+                    }}
+                  />
+                </>
               </>
             )}
           </Box>
