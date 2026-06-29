@@ -5,7 +5,10 @@ from education.education.doctype.program_enrollment.program_enrollment import (
 from frappe.utils import comma_and, get_link_to_form, getdate
 from frappe import _
 from frappe.utils.data import cstr
-from edu_quality.edu_quality.server_scripts.student import add_to_division, sync_and_sort_division_data
+from edu_quality.edu_quality.server_scripts.student import (
+    add_to_division,
+    sync_and_sort_division_data,
+)
 
 
 class CustomProgramEnrollment(ProgramEnrollment):
@@ -14,20 +17,32 @@ class CustomProgramEnrollment(ProgramEnrollment):
         self.sync_division_data()
         self.update_student_data()
 
+    def invalidate_walsh_enrollments(self):
+        student_doc = frappe.get_cached_doc("Student", self.student)
+        for guardian in student_doc.guardians:
+            user = frappe.db.get_value("Guardian", {"name": guardian.guardian}, "user")
+            enrollment_key = f"walsh:enrollments_{user}"
+            if frappe.cache().get_value(enrollment_key):
+                frappe.cache().delete_value(enrollment_key)
+
     def update_subjects(self):
         self.courses = []
-        program = frappe.get_doc("Program",self.program)
+        program = frappe.get_doc("Program", self.program)
         for course in program.courses:
-            self.append('courses',{
-				'course':course.course,
-				'course_name':course.course_name,
-			})
+            self.append(
+                "courses",
+                {
+                    "course": course.course,
+                    "course_name": course.course_name,
+                },
+            )
 
     def before_save(self):
         self.update_subjects()
 
     def on_update_after_submit(self):
-    #     self.sync_division_data()
+        #     self.sync_division_data()
+        self.invalidate_walsh_enrollments()
         self.update_student_data()
 
     def before_update_after_submit(self):
@@ -132,7 +147,10 @@ class CustomProgramEnrollment(ProgramEnrollment):
         frappe.db.set_value("Student", self.student, fields)
 
     def sync_division_data(self):
-        if frappe.db.exists('Student Group Student', {"parent": self.student_group, "student":self.student}):
+        if frappe.db.exists(
+            "Student Group Student",
+            {"parent": self.student_group, "student": self.student},
+        ):
             return
         roll_no = add_to_division(self, self.student_group, add_log=False)
         self.roll_no = roll_no
@@ -140,7 +158,7 @@ class CustomProgramEnrollment(ProgramEnrollment):
         self.reload()
         # After adding student to division, sync and sort division data
         sync_and_sort_division_data(self.student_group)
-    
+
 
 def sync_student_data():
     """

@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {useSearchParams} from "react-router-dom";
+import { useSearchParams} from "react-router-dom";
 import {Box, Stack, Text} from "@mantine/core";
 import {
   IconCalendar,
@@ -276,13 +276,15 @@ const CmapList = () => {
                       textTransform: 'uppercase',
                       paddingTop: isOpen ? 5 : undefined
                     }}>
-                    {isOpen && <Box
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          e.preventDefault();
-                          if (product?.item_data?.custom_product_url)
-                            window.open(product?.item_data?.custom_product_url)
-                        }}
+                    {isOpen && <a href ={product?.item_data?.custom_product_url} onClick={(e)=>{
+                      e.stopPropagation()
+                    }}><Box
+                        // onClick={(e) => {
+                        //   e.stopPropagation();
+                        //   e.preventDefault();
+                        //   if (product?.item_data?.custom_product_url)
+                        //     window.open(product?.item_data?.custom_product_url)
+                        // }}
                         sx={{
                           display: 'flex',
                           justifyContent: 'center',
@@ -292,7 +294,7 @@ const CmapList = () => {
                         }}
                     >
                         <fileType.icon stroke={1} color={fileType.color} size={30}/>
-                    </Box>}
+                    </Box></a>}
                     <Text>{product?.item}</Text>
                   </Box>
                 })}

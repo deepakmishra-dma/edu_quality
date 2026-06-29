@@ -224,7 +224,7 @@ def enqueued_specific_notice_docs(__args):
                 "notice": notice_content,
                 "is_raw_html": 1 if raw_html else 0,
                 "category":categories,
-                "requires_approval":requires_approval
+                "requires_approval":requires_approval,
                 "is_pdf":bool(has_pdf) or 0,
                 "pdf":pdf,
             }).insert(ignore_permissions=True)

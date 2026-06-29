@@ -5,6 +5,7 @@ import useStudentList from "../../components/queries/useStudentList.ts";
 import useClassDetails from "../../components/queries/useClassDetails.ts";
 import useStudentProfileColor from "../../components/hooks/useStudentProfileColor.ts";
 import { IconList } from "@tabler/icons";
+import HelpLink from "../../components/HelpLink/index.tsx";
 
 const PortionCircular = () => {
   const [selectedStudent, setSelectedStudent] = useState<string>("");
@@ -138,107 +139,112 @@ const PortionCircular = () => {
           {classLoading ? "Loading..." : "Not Enrolled in program"}
         </Text>
       ) : (
-        <Box
-          sx={{
-            border: "1px solid " + studentProfileColor + "77",
-            margin: 30,
-            borderRadius: 10,
-          }}
-        >
-          <Stack
-            sx={{
-              borderBottom: "1px solid " + studentProfileColor + "77",
-              padding: "5px 10px",
-              backgroundColor: studentProfileColor + "22",
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <Text
-              sx={{
-                color: studentProfileColor,
-                fontWeight: "bold",
-              }}
-            >
-              {classDetails?.data?.message?.program?.program_name} -{" "}
-              {classDetails?.data?.message?.division?.student_group_name}
-            </Text>
-            {students.find((student) => student.name === selectedStudent)
-              ?.reference_number && (
-              <Text
-                sx={{
-                  borderRadius: 50,
-                  backgroundColor: studentProfileColor + "22",
-                  padding: "1px 5px",
-                  fontSize: 10,
-                  display: "inline-block",
-                  height: "1.4em",
-                  lineHeight: 1.4,
-                  color: studentProfileColor,
-                  fontWeight: "bold",
-                  letterSpacing: 0.5,
-                  textTransform: "uppercase",
-                }}
-              >
-                {
-                  students.find((student) => student.name === selectedStudent)
-                    ?.reference_number
-                }
-              </Text>
-            )}
-          </Stack>
+        <>
+          <HelpLink studentProfileColor={studentProfileColor} />
           <Box
             sx={{
-              textAlign: "center",
+              border: "1px solid " + studentProfileColor + "77",
+              margin: 30,
+              marginTop: 15,
+              borderRadius: 10,
+              overflow: "hidden",
             }}
           >
-            <Select
-              color={studentProfileColor}
+            <Stack
               sx={{
-                margin: 10,
-                ".mantine-Select-dropdown": {
-                  '.mantine-Select-item[data-hovered="true"]': {
-                    backgroundColor: studentProfileColor,
-                  },
-                },
-                ".mantine-Select-input": {
-                  color: studentProfileColor,
-                  ":active": {
-                    borderColor: studentProfileColor,
-                  },
-                  ":focus": {
-                    borderColor: studentProfileColor,
-                  },
-                },
-                borderRadius: 10,
-                borderColor: studentProfileColor,
-              }}
-              data={unitOptions}
-              value={selectedUnit}
-              onChange={(value) => setSelectedUnit(value || "")}
-              icon={<IconList color={studentProfileColor} stroke={1} />}
-            />
-            <Button
-              sx={{
-                marginBottom: 10,
-                marginTop: 10,
-                borderRadius: 10,
-                backgroundColor: studentProfileColor,
-              }}
-              onClick={() => {
-                if (selectedStudent && selectedUnit && selectedSubject)
-                  navigate(
-                    `/portion-circular/list?unit=${encodeURIComponent(
-                      selectedUnit || ""
-                    )}&student=${encodeURIComponent(selectedStudent || "")}`
-                  );
+                borderBottom: "1px solid " + studentProfileColor + "77",
+                padding: "5px 10px",
+                backgroundColor: studentProfileColor + "22",
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
               }}
             >
-              Show Portion
-            </Button>
+              <Text
+                sx={{
+                  color: studentProfileColor,
+                  fontWeight: "bold",
+                }}
+              >
+                {classDetails?.data?.message?.program?.program_name} -{" "}
+                {classDetails?.data?.message?.division?.student_group_name}
+              </Text>
+              {students.find((student) => student.name === selectedStudent)
+                ?.reference_number && (
+                <Text
+                  sx={{
+                    borderRadius: 50,
+                    backgroundColor: studentProfileColor + "22",
+                    padding: "1px 5px",
+                    fontSize: 10,
+                    display: "inline-block",
+                    height: "1.4em",
+                    lineHeight: 1.4,
+                    color: studentProfileColor,
+                    fontWeight: "bold",
+                    letterSpacing: 0.5,
+                    textTransform: "uppercase",
+                  }}
+                >
+                  {
+                    students.find((student) => student.name === selectedStudent)
+                      ?.reference_number
+                  }
+                </Text>
+              )}
+            </Stack>
+            <Box
+              sx={{
+                textAlign: "center",
+              }}
+            >
+              <Select
+                color={studentProfileColor}
+                sx={{
+                  margin: 10,
+                  ".mantine-Select-dropdown": {
+                    '.mantine-Select-item[data-hovered="true"]': {
+                      backgroundColor: studentProfileColor,
+                    },
+                  },
+                  ".mantine-Select-input": {
+                    color: studentProfileColor,
+                    ":active": {
+                      borderColor: studentProfileColor,
+                    },
+                    ":focus": {
+                      borderColor: studentProfileColor,
+                    },
+                  },
+                  borderRadius: 10,
+                  borderColor: studentProfileColor,
+                }}
+                data={unitOptions}
+                value={selectedUnit}
+                onChange={(value) => setSelectedUnit(value || "")}
+                icon={<IconList color={studentProfileColor} stroke={1} />}
+              />
+              <Button
+                sx={{
+                  marginBottom: 10,
+                  marginTop: 10,
+                  borderRadius: 10,
+                  backgroundColor: studentProfileColor,
+                }}
+                onClick={() => {
+                  if (selectedStudent && selectedUnit && selectedSubject)
+                    navigate(
+                      `/portion-circular/list?unit=${encodeURIComponent(
+                        selectedUnit || ""
+                      )}&student=${encodeURIComponent(selectedStudent || "")}`
+                    );
+                }}
+              >
+                Show Portion
+              </Button>
+            </Box>
           </Box>
-        </Box>
+        </>
       )}
     </Box>
   );

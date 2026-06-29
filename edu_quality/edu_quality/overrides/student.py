@@ -524,3 +524,16 @@ class CustomStudent(Student):
                 ticket["refno"] = refno
             return tickets
         return False
+    
+    def on_update(self,method=None):
+        self.invalidate_walsh_cache()
+    
+    def invalidate_walsh_cache(self):
+        for guardian in  self.guardians:
+
+            user = frappe.db.get_value("Guardian", {"name": guardian.guardian}, "user")
+            students_key = f"walsh:guardian_students_{user}"
+          
+            
+            if frappe.cache().get_value(students_key):
+                frappe.cache().delete_value(students_key)
