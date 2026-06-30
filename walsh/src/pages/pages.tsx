@@ -24,6 +24,7 @@ import { PtmLinks } from "./PtmLinks.tsx";
 import Fees from "./fee/index.tsx";
 import { FeesList } from "./fee/List.tsx";
 import { Results } from "./Results.tsx";
+import { RenderPDF } from "./render-pdf.tsx";
 // import { Results } from "./Result.tsx";
 
 const Pages = () => {
@@ -53,6 +54,7 @@ const Pages = () => {
             "padding-bottom": isAuthenticated.data?.authenticated ? "5px" : "0",
             "padding-top": isAuthenticated.data?.authenticated ? "60px" : "0",
             position: "relative",
+            
             width: "100%",
           },
         },
@@ -96,11 +98,13 @@ const Pages = () => {
                 <Route path="/date-circular" element={<DateCmap />} />
                 <Route path="/date-circular/list" element={<CmapDateList />} />
                 <Route path="/leave-note" element={<LeaveNote />} />
+
                 <Route path="*" element={<ErrorComponent />} />
               </Routes>
             </Authenticated>
           }
         />
+        <Route path="/render-pdf" element={<RenderPDF />} />
       </Routes>
     </AppShell>
   );

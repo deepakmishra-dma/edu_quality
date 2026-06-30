@@ -1,5 +1,5 @@
 import { IResourceComponentsProps } from "@refinedev/core";
-import React, { useMemo, useState, useRef } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import { Box, Button, Flex, Input, Stack, Text } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
 import { IconArchive, IconCalendar, IconSearch, IconStar } from "@tabler/icons";
@@ -31,30 +31,53 @@ export const NoticeList: React.FC<StaredNoticeListProps> = ({
     isLoading,
     remove,
     refetch,
+    fetchNextPage,
+    hasNextPage,
   } = useNoticeList({
     staredOnly,
     archivedOnly,
     category: selectedCategory,
+    limit: 10,
   });
-
+  const { data: categories = [] } = useSchoolNoticeCategory();
   const filteredList = useMemo(() => {
-    if (!list) return [];
-    if (!searchQuery) return list?.data?.message || [];
-    return (
-      list?.data?.message?.filter((item) => {
+    if (!list?.pages) return [];
+    if (!searchQuery)
+      return list.pages.flatMap((page) => page.message.notices) || [];
+    return list.pages.flatMap((page) =>
+      page.message.notices.filter((item) => {
         if (!searchQuery) return true;
-
         if (item?.subject?.toLowerCase?.()?.includes(searchQuery.toLowerCase()))
           return true;
-
         if (item?.notice?.toLowerCase?.()?.includes(searchQuery.toLowerCase()))
           return true;
         return false;
-      }) || []
+      })
     );
   }, [list, searchQuery]);
 
-  const { data: categories = [] } = useSchoolNoticeCategory();
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry.isIntersecting && hasNextPage && !isLoading) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const currentRef = loadMoreRef.current;
+    if (currentRef) {
+      observer.observe(currentRef);
+    }
+
+    return () => {
+      if (currentRef) {
+        observer.unobserve(currentRef);
+      }
+    };
+  }, [hasNextPage, isLoading, fetchNextPage]);
 
   const handleToggle = (item: string) => {
     if (selectedCategory !== item) {
@@ -63,7 +86,6 @@ export const NoticeList: React.FC<StaredNoticeListProps> = ({
       setSelectedCategory("");
     }
   };
-
   return (
     <Box>
       <Box pb={10} pt={15} px={5}>

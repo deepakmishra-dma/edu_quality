@@ -7,20 +7,30 @@ from edu_quality.public.py.walsh.login import logout
 @frappe.whitelist()
 def get_students():
     user = frappe.session.user
+
+    cache_key = f"walsh:guardian_students_{user}"
+    students_cache = frappe.cache().get_value(cache_key)
+
+    if students_cache:
+        return students_cache
+
     guardian = frappe.get_cached_doc("Guardian", {"user": user})
-    students = frappe.get_all(
+    all_student_data = frappe.get_all(
         "Student", filters={"guardian": guardian.name}, fields=["*"]
     )
-    student_disabled = all(student.get("enabled") == 0 for student in students)
+
+    student_disabled = all(student.get("enabled") == 0 for student in all_student_data)
     # if all of student disabled log out the parent
     if student_disabled:
         logout()
+
         frappe.throw(("Not permitted"), frappe.PermissionError)
         return []
 
-    students = frappe.get_all(
-        "Student", filters={"guardian": guardian.name, "enabled": 1}, fields=["*"]
-    )
+    students = [student for student in all_student_data if student.get("enabled")]
+
+    # Cache the results for 10 minutes
+    frappe.cache().set_value(cache_key, students, expires_in_sec=600)
     return students
 
 
@@ -180,7 +190,6 @@ def get_portion_circulars(unit, division):
         item_urls = i["item_urls"].split(",") or []
         products = i["products"]
 
-
         if subject not in subject_hash:
             subject_hash[subject] = {textbook: {chapter: [i]}}
 
@@ -196,6 +205,3 @@ def get_portion_circulars(unit, division):
             subject_hash[subject][textbook][chapter].append(i)
 
     return subject_hash
-
-
-

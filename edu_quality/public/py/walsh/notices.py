@@ -11,16 +11,26 @@ from edu_quality.public.py.walsh.login import (
     send_otp_to_sms,
     get_guardian,
 )
+from edu_quality.public.py.walsh.login import is_disabled
+import json
 
 
 @frappe.whitelist()
 def get_students():
     user = frappe.session.user
+
+    cache_key = f"walsh:guardian_students_{user}"
+    students_cache = frappe.cache().get_value(cache_key)
+
+    if students_cache:
+        return students_cache
+
     guardian = frappe.get_cached_doc("Guardian", {"user": user})
-    students = frappe.get_all(
-        "Student", filters={"guardian": guardian.name}, fields=["enabled"]
+    all_student_data = frappe.get_all(
+        "Student", filters={"guardian": guardian.name}, fields=["*"]
     )
-    student_disabled = all(student.get("enabled") == 0 for student in students)
+
+    student_disabled = all(student.get("enabled") == 0 for student in all_student_data)
     # if all of student disabled log out the parent
     if student_disabled:
         logout()
@@ -28,31 +38,69 @@ def get_students():
         frappe.throw(("Not permitted"), frappe.PermissionError)
         return []
 
-    students = frappe.get_all(
-        "Student", filters={"guardian": guardian.name, "enabled": 1}, fields=["*"]
-    )
+    students = [student for student in all_student_data if student.get("enabled")]
+
+    # Cache the results for 10 minutes
+    frappe.cache().set_value(cache_key, students, expires_in_sec=600)
     return students
+
+
+def get_enrollments(student_names):
+    user = frappe.session.user
+    cache_key = f"walsh:enrollments_{user}"
+    enrollments_cache = frappe.cache().get_value(cache_key)
+
+    if enrollments_cache:
+        return enrollments_cache
+
+    enrollments_values = {
+        "student_names": student_names,
+    }
+
+    enrollments = frappe.db.sql(
+        """
+        select name, custom_school, academic_year, student, student_group, program
+        from `tabProgram Enrollment`
+        where student in %(student_names)s AND docstatus = 1
+        group by custom_school, academic_year, student, student_group, program;
+    """,
+        values=enrollments_values,
+        as_dict=1,
+    )
+
+    # Cache the results for 10 minutes
+    frappe.cache().set_value(cache_key, enrollments, expires_in_sec=600)
+    return enrollments
 
 
 @frappe.whitelist()
 def get_all_notices(
-    page=1, limit=0, stared_only=False, archived_only=False, category=None
+    cursor_creation=None,
+    cursor_name=None,
+    limit=10,
+    stared_only=False,
+    archived_only=False,
+    category=None,
 ):
-    if page:
-        page = int(page)
     if limit:
         limit = int(limit)
     if not limit:
         limit = 1000
-    if not page:
-        page = 1
+
     user = frappe.session.user
     if type(category) == list:
         formatted_category = category
     else:
         formatted_category = [category]
 
+    user = frappe.session.user
     guardian = frappe.get_cached_doc("Guardian", {"user": user})
+    cursor = None
+    if cursor_name and cursor_creation:
+        cursor = {
+            "creation": cursor_creation,
+            "name": cursor_name,
+        }
     if is_disabled(guardian.name, True):
         return {
             "success": False,
@@ -69,21 +117,7 @@ def get_all_notices(
             "error_message": "No Students Found",
         }
 
-    enrollments_values = {
-        "student_names": student_names,
-    }
-
-    enrollments = frappe.db.sql(
-        """
-        select name, custom_school, academic_year, student, student_group, program
-        from `tabProgram Enrollment`
-        where student in %(student_names)s and docstatus = 1
-        group by custom_school, academic_year, student, student_group, program;
-    """,
-        values=enrollments_values,
-        as_dict=1,
-    )
-
+    enrollments = get_enrollments(student_names)
     divisions = [e.student_group for e in enrollments]
     classes = [e.program for e in enrollments]
 
@@ -92,11 +126,30 @@ def get_all_notices(
         "classes": classes,
         "divisions": divisions,
         "categories": formatted_category,
-        "limit": limit,
-        "offset": (page - 1) * limit,
+        "limit": limit + 1,
+        "cursor_creation": cursor.get("creation") if cursor else None,
+        "cursor_name": cursor.get("name") if cursor else None,
     }
-    notices = frappe.db.sql(
+
+    cursor_condition = (
+        "AND (creation <= %(cursor_creation)s AND name != %(cursor_name)s)"
+        if cursor
+        else ""
+    )
+    exists_clause = (
         """
+            and exists (
+                select 1 
+                from `tabSchool Notice Category Detail` ncd 
+                where ncd.parent = notice.name
+                and ncd.school_notice_category in %(categories)s
+            )
+            """
+        if category
+        else ""
+    )
+    notices = frappe.db.sql(
+        f"""
         select *
         from `tabSchool Notice` notice
         where ((student in %(student_names)s and is_generic_notice = 0)
@@ -107,22 +160,10 @@ def get_all_notices(
             )
         ))
         {exists_clause}
+        {cursor_condition}
         order by creation desc
-        limit %(limit)s offset %(offset)s
-    """.format(
-            exists_clause=(
-                """
-            and exists (
-                select 1 
-                from `tabSchool Notice Category Detail` ncd 
-                where ncd.parent = notice.name
-                and ncd.school_notice_category in %(categories)s
-            )
-            """
-                if category
-                else ""
-            )
-        ),
+        limit %(limit)s
+    """,
         values=notices_values,
         as_dict=1,
     )
@@ -160,8 +201,8 @@ def get_all_notices(
                     "student_first_name": student_dict[notice.student].first_name,
                 }
             )
-
     try:
+
         notice_statuses = frappe.get_all(
             "School Notice Status",
             filters=[
@@ -185,7 +226,7 @@ def get_all_notices(
     except Exception as e:
         frappe.logger("notice").exception(e)
 
-    return [
+    filtered_notices = [
         notice
         for notice in final_notices
         if (
@@ -198,6 +239,22 @@ def get_all_notices(
             )
         )
     ]
+
+    has_more = len(notices) > limit
+
+    next_cursor = (
+        {
+            "creation": notices[-1].get("creation"),
+            "name": notices[-1].get("name"),
+        }
+        if has_more
+        else None
+    )
+    return {
+        "notices": filtered_notices,
+        "next_cursor": next_cursor,
+        "has_more": has_more,
+    }
 
 
 def create_or_update_notice_status(notice, student, statues):
