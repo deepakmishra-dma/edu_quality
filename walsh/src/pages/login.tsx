@@ -279,7 +279,7 @@ export const Login = () => {
                   setErrorMessage("");
                 }}
               >
-                Didn't received OTP
+                Resend OTP
               </Text>
             ) : null}
           </Stack>
