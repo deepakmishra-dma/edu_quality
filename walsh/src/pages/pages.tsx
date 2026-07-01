@@ -1,4 +1,4 @@
-import { Route, Routes, useNavigate } from "react-router-dom";
+import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import { Authenticated, useIsAuthenticated } from "@refinedev/core";
 import { Login } from "./login.tsx";
 import { Header } from "../components";
@@ -25,6 +25,7 @@ import Fees from "./fee/index.tsx";
 import { FeesList } from "./fee/List.tsx";
 import { Results } from "./Results.tsx";
 import { RenderPDF } from "./render-pdf.tsx";
+import { Register } from "./register.tsx";
 // import { Results } from "./Result.tsx";
 
 const Pages = () => {
@@ -54,7 +55,7 @@ const Pages = () => {
             "padding-bottom": isAuthenticated.data?.authenticated ? "5px" : "0",
             "padding-top": isAuthenticated.data?.authenticated ? "60px" : "0",
             position: "relative",
-            
+
             width: "100%",
           },
         },
@@ -62,11 +63,50 @@ const Pages = () => {
     >
       <Routes>
         <Route
+          path="/"
+          element={
+            <>
+              <Header
+                setNavbarOpen={setIsNavBarOpen}
+                navbarOpen={isNavBarOpen}
+              />
+              <Navbar isOpen={isNavBarOpen} setIsOpen={setIsNavBarOpen} />
+              <NoticeList />
+            </>
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <>
+              <Header
+                setNavbarOpen={setIsNavBarOpen}
+                navbarOpen={isNavBarOpen}
+              />
+              <Navbar isOpen={isNavBarOpen} setIsOpen={setIsNavBarOpen} />
+              <Login />{" "}
+            </>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <>
+              <Header
+                setNavbarOpen={setIsNavBarOpen}
+                navbarOpen={isNavBarOpen}
+              />
+              <Navbar isOpen={isNavBarOpen} setIsOpen={setIsNavBarOpen} />
+              <Register />
+            </>
+          }
+        />
+        <Route
           path="/*"
           element={
             <Authenticated
               key="authenticated-outer"
-              fallback={<Login />}
+              fallback={<Navigate to="/login" />}
               v3LegacyAuthProviderCompatible
             >
               <Header
@@ -75,7 +115,6 @@ const Pages = () => {
               />
               <Navbar isOpen={isNavBarOpen} setIsOpen={setIsNavBarOpen} />
               <Routes>
-                <Route path="/" element={<NoticeList />} />
                 <Route path="/stared" element={<NoticeList staredOnly />} />
                 <Route path="/archived" element={<NoticeList archivedOnly />} />
                 <Route path="/calendar" element={<SchoolCalendar />} />
@@ -98,7 +137,6 @@ const Pages = () => {
                 <Route path="/date-circular" element={<DateCmap />} />
                 <Route path="/date-circular/list" element={<CmapDateList />} />
                 <Route path="/leave-note" element={<LeaveNote />} />
-
                 <Route path="*" element={<ErrorComponent />} />
               </Routes>
             </Authenticated>

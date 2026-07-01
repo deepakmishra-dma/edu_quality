@@ -1,4 +1,4 @@
-import { IResourceComponentsProps } from "@refinedev/core";
+import { IResourceComponentsProps, useGetIdentity } from "@refinedev/core";
 import React, { useMemo, useState, useEffect, useRef } from "react";
 import { Box, Button, Flex, Input, Stack, Text } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
@@ -22,7 +22,11 @@ export const NoticeList: React.FC<StaredNoticeListProps> = ({
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
-  const { data } = useStudentList();
+  const { data: identity } = useGetIdentity();
+  const { data: studentData } = useStudentList({
+    enabled: !!identity,
+  });
+
   const { mutateAsync: markAsStared } = useMarkAsStared();
   const { mutateAsync: markAsArchived } = useMarkAsArchived();
   const loadMoreRef = useRef(null);
@@ -34,12 +38,14 @@ export const NoticeList: React.FC<StaredNoticeListProps> = ({
     fetchNextPage,
     hasNextPage,
   } = useNoticeList({
-    staredOnly,
-    archivedOnly,
+    staredOnly: identity ? staredOnly : undefined,
+    archivedOnly: identity ? archivedOnly : undefined,
     category: selectedCategory,
+    identity,
     limit: 10,
   });
-  const { data: categories = [] } = useSchoolNoticeCategory();
+
+  const { data: categories = [] } = useSchoolNoticeCategory({ identity });
   const filteredList = useMemo(() => {
     if (!list?.pages) return [];
     if (!searchQuery)
@@ -86,6 +92,10 @@ export const NoticeList: React.FC<StaredNoticeListProps> = ({
       setSelectedCategory("");
     }
   };
+  if ((staredOnly || archivedOnly) && !identity) {
+    navigate("/");
+    return null;
+  }
   return (
     <Box>
       <Box pb={10} pt={15} px={5}>
@@ -138,15 +148,7 @@ export const NoticeList: React.FC<StaredNoticeListProps> = ({
         ))}
       </Flex>
 
-      <Box
-        p={2}
-        sx={
-          {
-            // backgroundColor: 'rgba(0,0,0,0.04)',
-          }
-        }
-      >
-        {/*<Divider/>*/}
+      <Box p={2}>
         {!filteredList?.length && (
           <Text align="center" color="dimmed" weight="bold" my={30}>
             {isLoading ? "Loading..." : "No Notice Found"}
@@ -197,7 +199,6 @@ export const NoticeList: React.FC<StaredNoticeListProps> = ({
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   width: "100%",
-                  // fontSize: 15,
                 }}
               >
                 {item.subject || "-"}
@@ -212,8 +213,6 @@ export const NoticeList: React.FC<StaredNoticeListProps> = ({
                   fontSize: 14,
                   height: "5em",
                   pointerEvents: "none",
-                  // borderRadius: '5px',
-                  // color: '#888',
                 }}
               >
                 <div
@@ -221,123 +220,120 @@ export const NoticeList: React.FC<StaredNoticeListProps> = ({
                 ></div>
               </Box>
 
-              <Stack
-                h={35}
-                sx={{
-                  flexDirection: "row",
-                  // justifyContent: 'space-between',
-                  paddingTop: 5,
-                  paddingBottom: 5,
-                  borderTop: "1px solid #eee",
-                  gap: 10,
-                  color: "#666",
-                }}
-              >
+              {
                 <Stack
-                  align="center"
-                  justify="center"
-                  mt={4}
-                  px={10}
+                  h={35}
                   sx={{
-                    display: "inline-block",
-                    whiteSpace: "nowrap",
-                    fontSize: 13,
-                    backgroundColor: getStudentProfileColor(
-                      item.student,
-                      data?.data?.message || []
-                    ),
-                    color: "white",
-                    fontWeight: "bold",
-                    borderRadius: 3,
-                  }}
-                >
-                  {item?.student_first_name}
-                </Stack>
-                <Stack
-                  align="center"
-                  justify="center"
-                  py={4}
-                  sx={{
-                    display: "inline-flex",
-                    // justifyContent: 'center',
                     flexDirection: "row",
-                    // alignItems: 'center',
-                    // borderRadius: 5,
-                    whiteSpace: "nowrap",
-                    fontSize: 13,
-                    gap: 5,
+                    paddingTop: 5,
+                    paddingBottom: 5,
+                    borderTop: "1px solid #eee",
+                    gap: 10,
+                    color: "#666",
                   }}
                 >
-                  <IconCalendar size={15} />
-                  <span style={{ paddingTop: 5 }}>
-                    {new Date(item.creation)
-                      .toLocaleDateString()
-                      ?.replace(/\//g, "-") || "-"}
-                  </span>
+                  <Stack
+                    align="center"
+                    justify="center"
+                    mt={4}
+                    px={10}
+                    sx={{
+                      display: "inline-block",
+                      whiteSpace: "nowrap",
+                      fontSize: 13,
+                      backgroundColor: getStudentProfileColor(
+                        item.student,
+                        studentData?.data?.message || []
+                      ),
+                      color: "white",
+                      fontWeight: "bold",
+                      borderRadius: 3,
+                    }}
+                  >
+                    {!item?.is_public
+                      ? item?.student_first_name
+                      : "Announcement"}
+                  </Stack>
+                  <Stack
+                    align="center"
+                    justify="center"
+                    py={4}
+                    sx={{
+                      display: "inline-flex",
+                      flexDirection: "row",
+                      whiteSpace: "nowrap",
+                      fontSize: 13,
+                      gap: 5,
+                    }}
+                  >
+                    <IconCalendar size={15} />
+                    <span style={{ paddingTop: 5 }}>
+                      {new Date(item.creation)
+                        .toLocaleDateString()
+                        ?.replace(/\//g, "-") || "-"}
+                    </span>
+                  </Stack>
                 </Stack>
-              </Stack>
+              }
             </Box>
-            <Box
-              sx={{
-                padding: 5,
-                paddingRight: 10,
-              }}
-            >
-              <IconStar
-                style={{
-                  marginBottom: 10,
-                }}
-                size={30}
-                fill={
-                  item.is_stared
-                    ? getStudentProfileColor(
-                        item.student,
-                        data?.data?.message || []
-                      )
-                    : "white"
-                }
-                color={getStudentProfileColor(
-                  item.student,
-                  data?.data?.message || []
-                )}
-                stroke={1}
-                onClick={() => {
-                  markAsStared({
-                    notice: item.name,
-                    student: item.student,
-                    stared: !item.is_stared,
-                  }).then(() => refetch());
-                }}
-              />
+            {identity ? (
+              <Box sx={{ padding: 5, paddingRight: 10 }}>
+                <IconStar
+                  style={{
+                    marginBottom: 10,
+                  }}
+                  size={30}
+                  fill={
+                    item.is_stared
+                      ? getStudentProfileColor(
+                          item.student,
+                          studentData?.data?.message || []
+                        )
+                      : "white"
+                  }
+                  color={getStudentProfileColor(
+                    item.student,
+                    studentData?.data?.message || []
+                  )}
+                  stroke={1}
+                  onClick={() => {
+                    markAsStared({
+                      notice: item.name,
+                      student: item.student,
+                      stared: !item.is_stared,
+                    }).then(() => refetch());
+                  }}
+                />
 
-              <IconArchive
-                size={30}
-                color={
-                  item.is_archived
-                    ? "white"
-                    : getStudentProfileColor(
-                        item.student,
-                        data?.data?.message || []
-                      )
-                }
-                stroke={1}
-                fill={
-                  item.is_archived
-                    ? getStudentProfileColor(
-                        item.student,
-                        data?.data?.message || []
-                      )
-                    : "white"
-                }
-                onClick={() => {
-                  markAsArchived({
-                    notice: item.name,
-                    student: item.student,
-                    archived: !item.is_archived,
-                  }).then(() => refetch());
-                }}
-              />
-            </Box>
+                <IconArchive
+                  size={30}
+                  color={
+                    item.is_archived
+                      ? "white"
+                      : getStudentProfileColor(
+                          item.student,
+                          studentData?.data?.message || []
+                        )
+                  }
+                  stroke={1}
+                  fill={
+                    item.is_archived
+                      ? getStudentProfileColor(
+                          item.student,
+                          studentData?.data?.message || []
+                        )
+                      : "white"
+                  }
+                  onClick={() => {
+                    markAsArchived({
+                      notice: item.name,
+                      student: item.student,
+                      archived: !item.is_archived,
+                    }).then(() => refetch());
+                  }}
+                />
+              </Box>
+            ) : null}
           </Stack>
         ))}
         <div ref={loadMoreRef} style={{ height: "20px" }} />

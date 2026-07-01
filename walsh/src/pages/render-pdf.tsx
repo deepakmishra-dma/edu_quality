@@ -53,7 +53,7 @@ export const RenderPDF: React.FC = () => {
             key={`page_${index + 1}`}
             pageNumber={index + 1}
             width={width}
-            scale={0.8}
+            scale={0.95}
             renderTextLayer={true}
             renderAnnotationLayer={true}
           />

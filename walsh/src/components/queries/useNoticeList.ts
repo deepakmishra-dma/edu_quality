@@ -16,6 +16,7 @@ interface NoticeListProps {
   staredOnly?: boolean;
   limit?: number;
   category?: string;
+  identity: any;
 }
 
 interface Cursor {
@@ -31,7 +32,14 @@ const useNoticeList = (props: NoticeListProps) => {
       has_more: boolean;
     };
   }>(
-    ["student", "list", props.staredOnly, props.archivedOnly, props.category],
+    [
+      "student",
+      "list",
+      props.staredOnly,
+      props.archivedOnly,
+      props.category,
+      props.identity,
+    ],
     async ({ pageParam }) => {
       const response = await fetch(
         `/api/method/edu_quality.public.py.walsh.notices.get_all_notices?${new URLSearchParams(

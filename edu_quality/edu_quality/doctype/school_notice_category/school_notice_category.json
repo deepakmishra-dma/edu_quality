@@ -7,7 +7,8 @@
  "engine": "InnoDB",
  "field_order": [
   "name1",
-  "description"
+  "description",
+  "is_public"
  ],
  "fields": [
   {
@@ -20,11 +21,17 @@
    "fieldtype": "Data",
    "label": "Name",
    "unique": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_public",
+   "fieldtype": "Check",
+   "label": "Is Public"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-30 16:45:30.243793",
+ "modified": "2025-01-23 01:36:56.961096",
  "modified_by": "Administrator",
  "module": "Edu Quality",
  "name": "School Notice Category",

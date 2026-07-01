@@ -14,6 +14,7 @@ import { useEffect, useMemo, useState } from "react";
 import { OtpInput } from "../components";
 import { useLogin } from "@refinedev/core";
 import { IconReload } from "@tabler/icons";
+import { Link } from "react-router-dom";
 
 export const Login = () => {
   const { mutateAsync, isLoading } = useLogin();
@@ -237,7 +238,9 @@ export const Login = () => {
               {mode !== "otp" ? "Get OTP" : "Submit OTP"}
             </Button>
 
-            <Box
+            <Flex
+              direction={"column"}
+              align={"center"}
               sx={{
                 textAlign: "center",
               }}
@@ -264,7 +267,27 @@ export const Login = () => {
                   }}
                 />
               </Button>
-            </Box>
+              {mode !== "otp" && (
+                <Button
+                  component={Link}
+                  to="/register"
+                  sx={{
+                    backgroundColor: "transparent",
+                    color: "#1E6967",
+                    width: "fit-content",
+                    ":hover": {
+                      backgroundColor: "transparent",
+                    },
+                    ":active": {
+                      backgroundColor: "transparent",
+                    },
+                  }}
+                >
+                  Don't Have an Account ? Register Now
+                </Button>
+              )}
+            </Flex>
+
             {mode === "otp" ? (
               <Text
                 align="center"
