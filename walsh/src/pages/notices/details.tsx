@@ -275,9 +275,9 @@ export const NoticeDetails: React.FC = () => {
                     key={`page_${index + 1}`}
                     pageNumber={index + 1}
                     width={width > 700 ? 700 : width}
-                    scale={0.8}
-                    renderTextLayer={false}
-                    renderAnnotationLayer={false}
+                    scale={0.95}
+                    renderTextLayer={true}
+                    renderAnnotationLayer={true}
                   />
                 ))}
               </Document>

@@ -73,7 +73,7 @@ def get_enrollments(student_names):
     return enrollments
 
 
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=True)
 def get_all_notices(
     cursor_creation=None,
     cursor_name=None,
@@ -88,12 +88,91 @@ def get_all_notices(
         limit = 1000
 
     user = frappe.session.user
+    if user == "Guest":
+        return get_guest_notices(cursor_creation, cursor_name, limit, category)
+    return get_user_notices(
+        cursor_creation, cursor_name, limit, stared_only, archived_only, category
+    )
+
+
+def get_guest_notices(cursor_creation, cursor_name, limit, category):
+    cursor = None
+    if cursor_name and cursor_creation:
+        cursor = {
+            "creation": cursor_creation,
+            "name": cursor_name,
+        }
+
     if type(category) == list:
         formatted_category = category
     else:
         formatted_category = [category]
 
+    notices_values = {
+        "categories": formatted_category,
+        "limit": limit + 1,
+        "cursor_creation": cursor.get("creation") if cursor else None,
+        "cursor_name": cursor.get("name") if cursor else None,
+    }
+
+    cursor_condition = (
+        "AND (creation <= %(cursor_creation)s AND name != %(cursor_name)s)"
+        if cursor
+        else ""
+    )
+    exists_clause = (
+        """
+            and exists (
+                select 1 
+                from `tabSchool Notice Category Detail` ncd 
+                where ncd.parent = notice.name
+                and ncd.school_notice_category in %(categories)s
+            )
+            """
+        if category
+        else ""
+    )
+    notices = frappe.db.sql(
+        f"""
+        select *
+        from `tabSchool Notice` notice
+        where is_public = 1
+        {exists_clause}
+        {cursor_condition}
+        order by creation desc
+        limit %(limit)s
+    """,
+        values=notices_values,
+        as_dict=1,
+    )
+
+    has_more = len(notices) > limit
+
+    next_cursor = (
+        {
+            "creation": notices[-1].get("creation"),
+            "name": notices[-1].get("name"),
+        }
+        if has_more
+        else None
+    )
+
+    return {
+        "notices": notices[:limit],
+        "next_cursor": next_cursor,
+        "has_more": has_more,
+    }
+
+
+def get_user_notices(
+    cursor_creation, cursor_name, limit, stared_only, archived_only, category
+):
     user = frappe.session.user
+    if type(category) == list:
+        formatted_category = category
+    else:
+        formatted_category = [category]
+
     guardian = frappe.get_cached_doc("Guardian", {"user": user})
     cursor = None
     if cursor_name and cursor_creation:
@@ -152,7 +231,7 @@ def get_all_notices(
         f"""
         select *
         from `tabSchool Notice` notice
-        where ((student in %(student_names)s and is_generic_notice = 0)
+        where (is_public = 1) or ((student in %(student_names)s and is_generic_notice = 0)
             or (
                 is_generic_notice = 1 and (
                 (notice.division in %(divisions)s)
@@ -195,14 +274,16 @@ def get_all_notices(
                             }
                         )
         else:
-            final_notices.append(
-                {
-                    **notice,
-                    "student_first_name": student_dict[notice.student].first_name,
-                }
-            )
+            if notice.get("is_public"):
+                final_notices.append({**notice})
+            else:
+                final_notices.append(
+                    {
+                        **notice,
+                        "student_first_name": student_dict[notice.student].first_name,
+                    }
+                )
     try:
-
         notice_statuses = frappe.get_all(
             "School Notice Status",
             filters=[
@@ -225,7 +306,6 @@ def get_all_notices(
                     break
     except Exception as e:
         frappe.logger("notice").exception(e)
-
     filtered_notices = [
         notice
         for notice in final_notices
@@ -450,3 +530,17 @@ def create_undertaking(student, notice_name, otp):
         new_doc.ip_address = frappe.local.request_ip
         new_doc.user_info = user_agent
         new_doc.insert(ignore_permissions=True)
+
+
+# /api/method/edu_quality.public.py.walsh.notices.get_school_notice_category
+@frappe.whitelist(allow_guest=True)
+def get_school_notice_category():
+    filters = {}
+    if frappe.session.user == "Guest":
+        filters["is_public"] = 1
+    return frappe.get_all(
+        "School Notice Category",
+        filters=filters,
+        fields=["name"],
+        order_by="name asc",
+    )

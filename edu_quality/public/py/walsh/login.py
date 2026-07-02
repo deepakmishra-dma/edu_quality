@@ -147,12 +147,15 @@ def is_disabled(guardian_name, logout_if_defaulter=False):
     return False
 
 
-def get_guardian(guardian_number=None, user_id=None):
+def get_guardian(guardian_number=None, user_id=None, email=None):
     if user_id:
         if user_id and frappe.db.exists("Guardian", {"user": user_id}):
             guardian = frappe.get_cached_doc("Guardian", {"user": user_id})
             return guardian
-
+    if email:
+        if email and frappe.db.exists("Guardian", {"email_address": email}):
+            guardian = frappe.get_cached_doc("Guardian", {"email_address": email})
+            return guardian
     if guardian_number and frappe.db.exists(
         "Guardian", {"mobile_number": guardian_number}
     ):
@@ -169,20 +172,23 @@ def get_guardian(guardian_number=None, user_id=None):
 
 
 @frappe.whitelist(allow_guest=True)
-def send_otp(phone_no):
+def send_otp(phone_no=None, email=None):
     try:
-        wa_phone_no = format_wa_phone_no(phone_no)
-        if not wa_phone_no:
-            return {
-                "error": True,
-                "error_type": "invalid_phone_number",
-                "error_message": "Invalid Phone Number",
-            }
+        wa_phone_no = None
+        guardian_number = None
+        if phone_no:
+            wa_phone_no = format_wa_phone_no(phone_no)
+            if not wa_phone_no:
+                return {
+                    "error": True,
+                    "error_type": "invalid_phone_number",
+                    "error_message": "Invalid Phone Number",
+                }
 
-        phone_with_country_code = "+" + str(wa_phone_no)
-        guardian_number = remove_indian_country_code(phone_with_country_code)
+            phone_with_country_code = "+" + str(wa_phone_no)
+            guardian_number = remove_indian_country_code(phone_with_country_code)
+        guardian = get_guardian(guardian_number, email=email)
 
-        guardian = get_guardian(guardian_number)
         students = frappe.get_all(
             "Student", filters={"guardian": guardian.name}, fields=["*"]
         )
@@ -213,23 +219,26 @@ def send_otp(phone_no):
                 "error_type": "user_not_found",
                 "error_message": "User Not Found",
             }
-
-        otp = create_otp(wa_phone_no)
+        if email:
+            otp = create_otp(email, "email")
+        else:
+            otp = create_otp(wa_phone_no)
 
         if "1234567890" in str(wa_phone_no):
             otp = create_otp(wa_phone_no, for_appstore_test=True)
             return {
                 "success": True,
-                "message": "Otp Sent To +" + str(wa_phone_no),
+                "message": "Otp Sent To +" + str(wa_phone_no or email),
             }
-        send_otp_to_whatsapp(wa_phone_no, otp)
-        send_otp_to_sms(phone_with_country_code, otp)
+        if wa_phone_no:
+            send_otp_to_whatsapp(wa_phone_no, otp)
+            send_otp_to_sms(phone_with_country_code, otp)
         frappe.logger("otp").exception("sms sent")
         send_otp_to_email(guardian.email_address, otp)
 
         return {
             "success": True,
-            "message": "Otp Sent To +" + str(wa_phone_no),
+            "message": "Otp Sent To +" + str(wa_phone_no or email),
         }
     except Exception as e:
         frappe.logger("otp").exception(e)
@@ -281,14 +290,21 @@ def get_student_form(doc):
 
 
 @frappe.whitelist(allow_guest=True)
-def verify_otp(otp, phone_no, push_token=None, form_link=None):
+def verify_otp(otp, phone_no=None, push_token=None, form_link=None, email=None):
     try:
-        wa_phone_no = format_wa_phone_no(phone_no)
-        phone_with_country_code = "+" + wa_phone_no
-        guardian_number = remove_indian_country_code(phone_with_country_code)
+        guardian_number = None
+        matched = False
 
-        if match_otp(wa_phone_no, otp):
-            guardian = get_guardian(guardian_number)
+        if not email:
+            wa_phone_no = format_wa_phone_no(phone_no)
+            phone_with_country_code = "+" + wa_phone_no
+            guardian_number = remove_indian_country_code(phone_with_country_code)
+            matched = match_otp(wa_phone_no, otp)
+        else:
+            matched = match_otp(email, otp, "email")
+
+        if matched:
+            guardian = get_guardian(guardian_number, email=email)
             user = frappe.get_cached_doc("User", guardian.user)
             login_manager = LoginManager()
             login_manager.login_as(user.name)

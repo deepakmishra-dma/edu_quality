@@ -19,7 +19,7 @@ export interface Student {
   annual_income: string;
 }
 
-const useStudentList = () => {
+const useStudentList = ({ enabled }: { enabled?: boolean } = {}) => {
   return useCustom<{ message: Student[] }>({
     url: "/api/method/edu_quality.public.py.walsh.cmap.get_students",
     method: "get",
@@ -29,6 +29,7 @@ const useStudentList = () => {
       cacheTime: 1200000,
       refetchOnWindowFocus: true,
       refetchInterval: 600000,
+      enabled
     },
     config: undefined,
     errorNotification: undefined,

@@ -1,7 +1,7 @@
 import { AuthBindings } from "@refinedev/core";
 
 export const authProvider: AuthBindings = {
-  login: async ({ phone, otp }) => {
+  login: async ({ phone, otp, email }) => {
     // @ts-expect-error undefined
     const pushToken = window.getPushNotificationToken?.();
     const myHeaders = new Headers();
@@ -14,6 +14,7 @@ export const authProvider: AuthBindings = {
         headers: myHeaders,
         body: JSON.stringify({
           phone_no: phone,
+          email: email,
           otp: otp,
           push_token: pushToken || undefined,
         }),
@@ -79,13 +80,21 @@ export const authProvider: AuthBindings = {
     if (authenticated) {
       await sendPushToken();
     }
-    
+
     return {
       authenticated,
     };
   },
   getPermissions: async () => null,
-  getIdentity: async () => {},
+  getIdentity: async () => {
+    const response = await fetch("/api/method/frappe.auth.get_logged_user");
+    if (response.status > 400 && response.status <= 403) {
+      return false;
+    }
+    const data = await response.json();
+    return data;
+  },
+
   onError: async (error) => {
     if (error.statusCode === 401 || error.statusCode === 403) {
       return {
@@ -119,7 +128,10 @@ const sendPushToken = async () => {
       if (data?.message?.success) {
         console.log("Push token sent successfully");
       } else {
-        console.error("Failed to send push token:", data?.message?.error_message);
+        console.error(
+          "Failed to send push token:",
+          data?.message?.error_message
+        );
       }
     } catch (error) {
       console.error("Error sending push token:", error);
