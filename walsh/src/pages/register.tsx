@@ -39,7 +39,8 @@ export const Register = () => {
           fathers_name: values.fathers_name,
           first_name: values.name,
           fathers_phone: values.fathers_phone,
-          email: values.email,
+          fathers_email: values.email,
+          source: "Mobile App",
         }),
         redirect: "follow",
       }

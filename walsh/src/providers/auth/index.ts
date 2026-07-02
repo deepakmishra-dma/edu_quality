@@ -89,12 +89,12 @@ export const authProvider: AuthBindings = {
   getIdentity: async () => {
     const response = await fetch("/api/method/frappe.auth.get_logged_user");
     if (response.status > 400 && response.status <= 403) {
-      return undefined;
+      return false;
     }
     const data = await response.json();
     return data;
   },
-  
+
   onError: async (error) => {
     if (error.statusCode === 401 || error.statusCode === 403) {
       return {
