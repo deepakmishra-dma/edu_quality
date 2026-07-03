@@ -215,9 +215,11 @@ export const NoticeList: React.FC<StaredNoticeListProps> = ({
                   pointerEvents: "none",
                 }}
               >
-                <div
-                  dangerouslySetInnerHTML={{ __html: item.notice || "" }}
-                ></div>
+                {item?.is_pdf ? null : (
+                  <div
+                    dangerouslySetInnerHTML={{ __html: item.notice || "" }}
+                  ></div>
+                )}
               </Box>
 
               {

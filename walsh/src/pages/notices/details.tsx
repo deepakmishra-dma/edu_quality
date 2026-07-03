@@ -1,4 +1,4 @@
-import { useOne } from "@refinedev/core";
+import { useGetIdentity, useOne } from "@refinedev/core";
 import React, { useState, useEffect } from "react";
 import { Box, Button, Flex, Stack, Text } from "@mantine/core";
 import { useParams, useSearchParams } from "react-router-dom";
@@ -23,7 +23,8 @@ export const NoticeDetails: React.FC = () => {
   const navigate = useNavigate();
   const { mutateAsync: markAsStared } = useMarkAsStared();
   const { mutateAsync: markAsArchived } = useMarkAsArchived();
-  const { data: studentsList } = useStudentList();
+  const { data: identity } = useGetIdentity();
+  const { data: studentsList } = useStudentList({ enabled: !!identity });
   const [numPages, setNumPages] = useState<number>(0);
   const [width, setWidth] = useState(window.innerWidth);
 
@@ -32,15 +33,6 @@ export const NoticeDetails: React.FC = () => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-
-  // const { refetch, data: list } = useNoticeList({
-  //   archivedOnly: true,
-
-  // });
-  // const { data: listStared, refetch: starRefetch } = useNoticeList({
-  //   staredOnly: true,
-
-  // });
 
   const {
     data,
@@ -85,9 +77,6 @@ export const NoticeDetails: React.FC = () => {
     setOpenDialog(false);
   };
 
-  // const listItem = list?.data?.message?.find((i) => params?.id && i.name === params.id);
-  // const listStar = listStared?.data?.message?.find((i) => params?.id && i.name === params.id);
-
   if (isLoading)
     return (
       <Text align="center" color="dimmed" weight="bold" my={30}>
@@ -130,7 +119,6 @@ export const NoticeDetails: React.FC = () => {
               h={35}
               sx={{
                 flexDirection: "row",
-                // justifyContent: 'space-between',
                 paddingTop: 5,
                 paddingBottom: 5,
                 borderTop: "1px solid #eee",
@@ -160,10 +148,7 @@ export const NoticeDetails: React.FC = () => {
                 py={4}
                 sx={{
                   display: "inline-flex",
-                  // justifyContent: 'center',
                   flexDirection: "row",
-                  // alignItems: 'center',
-                  // borderRadius: 5,
                   whiteSpace: "nowrap",
                   fontSize: 13,
                   gap: 5,
@@ -176,81 +161,84 @@ export const NoticeDetails: React.FC = () => {
                     ?.replace(/\//g, "-") || "-"}
                 </span>
 
-                <IconStar
-                  style={{
-                    marginTop: 5,
-                    position: "absolute",
-                    right: 45,
-                    borderRight: "1px solid #eee",
+                {identity ? (
+                  <>
+                    <IconStar
+                      style={{
+                        marginTop: 5,
+                        position: "absolute",
+                        right: 45,
+                        borderRight: "1px solid #eee",
+                        paddingRight: "5px",
+                      }}
+                      size={35}
+                      fill={
+                        data?.data?.is_stared
+                          ? getStudentIconColor(
+                              studentId,
+                              studentsList?.data?.message || []
+                            )
+                          : "white"
+                      }
+                      color={getStudentIconColor(
+                        studentId,
+                        studentsList?.data?.message || []
+                      )}
+                      stroke={1}
+                      onClick={async () => {
+                        try {
+                          await markAsStared({
+                            notice: noticeId,
+                            student: studentId,
+                            stared: !data?.data?.is_stared,
+                          });
 
-                    paddingRight: "5px",
-                  }}
-                  size={35}
-                  fill={
-                    data?.data?.is_stared
-                      ? getStudentIconColor(
-                          studentId,
-                          studentsList?.data?.message || []
-                        )
-                      : "white"
-                  }
-                  color={getStudentIconColor(
-                    studentId,
-                    studentsList?.data?.message || []
-                  )}
-                  stroke={1}
-                  onClick={async () => {
-                    try {
-                      await markAsStared({
-                        notice: noticeId,
-                        student: studentId,
-                        stared: !data?.data?.is_stared,
-                      });
-
-                      await refetchNotice();
-                    } catch (error) {
-                      console.error("Error marking as Stared:", error);
-                    }
-                  }}
-                />
-                <IconArchive
-                  style={{
-                    marginTop: 5,
-                    position: "absolute",
-                    right: 8,
-                  }}
-                  size={30}
-                  color={
-                    data?.data?.is_archived
-                      ? "white"
-                      : getStudentIconColor(
-                          studentId,
-                          studentsList?.data?.message || []
-                        )
-                  }
-                  stroke={1}
-                  fill={
-                    data?.data?.is_archived
-                      ? getStudentIconColor(
-                          studentId,
-                          studentsList?.data?.message || []
-                        )
-                      : "white"
-                  }
-                  onClick={async () => {
-                    try {
-                      await markAsArchived({
-                        notice: noticeId,
-                        student: studentId,
-                        archived: !data?.data?.is_archived,
-                      });
-                      await refetchNotice();
-                      navigate("/");
-                    } catch (error) {
-                      console.error("Error marking as archived:", error);
-                    }
-                  }}
-                />
+                          await refetchNotice();
+                        } catch (error) {
+                          console.error("Error marking as Stared:", error);
+                        }
+                      }}
+                    />
+                    <IconArchive
+                      style={{
+                        marginTop: 5,
+                        position: "absolute",
+                        right: 8,
+                      }}
+                      size={30}
+                      color={
+                        data?.data?.is_archived
+                          ? "white"
+                          : getStudentIconColor(
+                              studentId,
+                              studentsList?.data?.message || []
+                            )
+                      }
+                      stroke={1}
+                      fill={
+                        data?.data?.is_archived
+                          ? getStudentIconColor(
+                              studentId,
+                              studentsList?.data?.message || []
+                            )
+                          : "white"
+                      }
+                      onClick={async () => {
+                        try {
+                          await markAsArchived({
+                            notice: noticeId,
+                            student: studentId,
+                            archived: !data?.data?.is_archived,
+                          });
+                          await refetchNotice();
+                          navigate("/");
+                        } catch (error) {
+                          console.error("Error marking as archived:", error);
+                        }
+                      }}
+                    />
+                  </>
+                ) : null}
               </Stack>
             </Stack>
           </Box>
@@ -286,12 +274,10 @@ export const NoticeDetails: React.FC = () => {
                 <Box
                   ref={(el) => {
                     if (el) {
-                      // Only create shadow DOM if it doesn't exist
                       if (!el.shadowRoot) {
                         const shadowRoot = el.attachShadow({ mode: "open" });
                         shadowRoot.innerHTML = data?.data?.notice || "";
                       } else {
-                        // Update existing shadow root content
                         el.shadowRoot.innerHTML = data?.data?.notice || "";
                       }
                     }
@@ -313,12 +299,10 @@ export const NoticeDetails: React.FC = () => {
                     className="ql-editor"
                     ref={(el) => {
                       if (el) {
-                        // Only create shadow DOM if it doesn't exist
                         if (!el.shadowRoot) {
                           const shadowRoot = el.attachShadow({ mode: "open" });
                           shadowRoot.innerHTML = data?.data?.notice || "";
                         } else {
-                          // Update existing shadow root content
                           el.shadowRoot.innerHTML = data?.data?.notice || "";
                         }
                       }
@@ -329,53 +313,55 @@ export const NoticeDetails: React.FC = () => {
             )}
           </Box>
         </Box>
-        {data?.data?.requires_approval === 1 &&
-          data?.data?.approval_status === "Pending" &&
-          !hideButtons && (
-            <Flex mt="md" mb="xl" style={{ display: "flex", gap: "48px" }}>
-              <Button
-                size="md"
-                radius="md"
-                color="#D97706"
-                sx={{
-                  backgroundColor: "#D97706",
-                  "&:hover": {
-                    backgroundColor: "#B45309",
-                  },
-                  padding: "12px 24px",
-                  fontSize: "16px",
-                  fontWeight: 600,
-                  boxShadow:
-                    "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
-                  transition: "all 0.2s ease",
-                }}
-                onClick={handleDialogOpen}
-              >
-                Accept
-              </Button>
+        {identity
+          ? data?.data?.requires_approval === 1 &&
+            data?.data?.approval_status === "Pending" &&
+            !hideButtons && (
+              <Flex mt="md" mb="xl" style={{ display: "flex", gap: "48px" }}>
+                <Button
+                  size="md"
+                  radius="md"
+                  color="#D97706"
+                  sx={{
+                    backgroundColor: "#D97706",
+                    "&:hover": {
+                      backgroundColor: "#B45309",
+                    },
+                    padding: "12px 24px",
+                    fontSize: "16px",
+                    fontWeight: 600,
+                    boxShadow:
+                      "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+                    transition: "all 0.2s ease",
+                  }}
+                  onClick={handleDialogOpen}
+                >
+                  Accept
+                </Button>
 
-              <Button
-                size="md"
-                radius="md"
-                color="#57534E"
-                sx={{
-                  backgroundColor: "#57534E",
-                  "&:hover": {
-                    backgroundColor: "#44403C",
-                  },
-                  padding: "12px 24px",
-                  fontSize: "16px",
-                  fontWeight: 600,
-                  boxShadow:
-                    "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
-                  transition: "all 0.2s ease",
-                }}
-                onClick={handleDialogOpen}
-              >
-                Reject
-              </Button>
-            </Flex>
-          )}
+                <Button
+                  size="md"
+                  radius="md"
+                  color="#57534E"
+                  sx={{
+                    backgroundColor: "#57534E",
+                    "&:hover": {
+                      backgroundColor: "#44403C",
+                    },
+                    padding: "12px 24px",
+                    fontSize: "16px",
+                    fontWeight: 600,
+                    boxShadow:
+                      "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+                    transition: "all 0.2s ease",
+                  }}
+                  onClick={handleDialogOpen}
+                >
+                  Reject
+                </Button>
+              </Flex>
+            )
+          : null}
       </Box>
 
       <div

@@ -112,7 +112,7 @@ export const Login = () => {
             <Image
               radius={"lg"}
               width={160}
-              src="/assets/edu_quality/walsh/images/tgaa_logo.jpg"
+              src="/assets/edu_quality/walsh/images/tgaa1024.jpg"
             />
           </Flex>
           <Stack spacing={2} mt={12} mb={8} align="center">

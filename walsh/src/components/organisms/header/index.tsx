@@ -2,6 +2,7 @@ import { Box, Burger, Header as MantineHeader, Stack } from "@mantine/core";
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { IconArrowLeft } from "@tabler/icons";
+import { useGetIdentity } from "@refinedev/core";
 
 interface HeaderProps {
   setNavbarOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -11,7 +12,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ setNavbarOpen }) => {
   const location = useLocation();
   const navigate = useNavigate();
-
+  const { data: identity } = useGetIdentity();
   // const [sidebarOpened, setSidebarOpened] = useState(false)
   return (
     <MantineHeader
@@ -64,7 +65,9 @@ export const Header: React.FC<HeaderProps> = ({ setNavbarOpen }) => {
           }}
         >
           {location.pathname === "/"
-            ? "Notices"
+            ? identity
+              ? "Notices"
+              : "School Board"
             : location.pathname === "/archived"
             ? "Archived Messages"
             : location.pathname === "/calendar"

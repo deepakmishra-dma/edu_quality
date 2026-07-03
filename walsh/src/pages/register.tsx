@@ -8,14 +8,25 @@ import {
   Stack,
   Text,
   TextInput,
+  Select,
 } from "@mantine/core";
 import { IconReload } from "@tabler/icons";
 import { useState } from "react";
+import {
+  useGetSchools,
+  useGetPrograms,
+} from "../components/queries/useGetRegisterSelectData";
 
 export const Register = () => {
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isRegistered, setIsRegistered] = useState(false);
+  const [selectedSchool, setSelectedSchool] = useState<string>("");
+
+  // Use both hooks separately
+  const { schools, isLoading: isLoadingSchools } = useGetSchools();
+  const { programs, isLoading: isLoadingPrograms } =
+    useGetPrograms(selectedSchool);
 
   const { getInputProps, values, setValues, onSubmit } = useForm({
     initialValues: {
@@ -23,8 +34,26 @@ export const Register = () => {
       name: "",
       fathers_phone: "",
       email: "",
+      school: "",
+      class: "",
     },
   });
+
+  console.log(schools, programs);
+  // Transform the data for Mantine Select
+  const schoolOptions = (schools?.data ?? []).map(
+    (school: { name: string }) => ({
+      value: school.name,
+      label: school.name,
+    })
+  );
+
+  const programOptions = (programs?.data ?? []).map(
+    (program: { program_name: string }) => ({
+      value: program.program_name,
+      label: program.program_name,
+    })
+  );
 
   const handleSubmit = onSubmit((values) => {
     const myHeaders = new Headers();
@@ -40,6 +69,8 @@ export const Register = () => {
           first_name: values.name,
           fathers_phone: values.fathers_phone,
           fathers_email: values.email,
+          school: values.school,
+          class: values.class,
           source: "Mobile App",
         }),
         redirect: "follow",
@@ -169,6 +200,53 @@ export const Register = () => {
               }}
               placeholder="Email"
               {...getInputProps("email")}
+            />
+
+            <Select
+              variant="filled"
+              sx={{
+                ".mantine-Input-input": {
+                  letterSpacing: 2,
+                  borderRadius: 8,
+                  border: "1px solid rgba(0,0,0,0.1)",
+                  fontSize: 20,
+                  "::placeholder": {
+                    letterSpacing: 0,
+                    textAlign: "center",
+                  },
+                },
+              }}
+              placeholder={
+                isLoadingSchools ? "Loading schools..." : "Select School"
+              }
+              data={schoolOptions}
+              {...getInputProps("school")}
+              onChange={(value) => {
+                setSelectedSchool(value || "");
+                setValues({ ...values, school: value || "" });
+              }}
+            />
+
+            <Select
+              variant="filled"
+              sx={{
+                ".mantine-Input-input": {
+                  letterSpacing: 2,
+                  borderRadius: 8,
+                  border: "1px solid rgba(0,0,0,0.1)",
+                  fontSize: 20,
+                  "::placeholder": {
+                    letterSpacing: 0,
+                    textAlign: "center",
+                  },
+                },
+              }}
+              placeholder={
+                isLoadingPrograms ? "Loading programs..." : "Select Class"
+              }
+              data={programOptions}
+              disabled={!selectedSchool}
+              {...getInputProps("class")}
             />
 
             {successMessage && (

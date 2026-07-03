@@ -379,9 +379,21 @@ def mark_as_read(notice, student, read=True):
     )
 
 
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=True)
 def get_notice_by_id(id, student=None):
     user = frappe.session.user
+
+    if user == "Guest":
+        school_notice_doc = frappe.get_cached_doc("School Notice", id)
+        if school_notice_doc.is_public:
+            return {
+                "data": school_notice_doc.as_dict(),
+            }
+        return {
+            "success": False,
+            "data": {},
+        }
+
     guardian = frappe.get_cached_doc("Guardian", {"user": user})
     if is_disabled(guardian.name, True):
         return {
