@@ -61,12 +61,12 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
           location: "/leave-note",
         },
         { label: "Early Pick Up", icon: IconClock, location: "/early-pickup" },
-         { label: "Starred Messages", icon: IconStar, location: "/stared" },
-          {
-            label: "Archived Messages",
-            icon: IconArchive,
-            location: "/archived",
-          },
+        { label: "Starred Messages", icon: IconStar, location: "/stared" },
+        {
+          label: "Archived Messages",
+          icon: IconArchive,
+          location: "/archived",
+        },
         {
           label: "Student Profile",
           icon: IconUser,
@@ -92,7 +92,6 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
     : [
         { label: "Messages", icon: IconMessage, location: "/" },
         { label: "Login", icon: IconUser, location: "/login" },
-        { label: "Register", icon: IconUser, location: "/register" },
         {
           label: "Reload",
           icon: IconReload,
@@ -100,6 +99,7 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
             window.location.reload();
           },
         },
+        { label: "Register", icon: IconUser, location: "/register" },
       ];
 
   return (
@@ -146,11 +146,12 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
             <Box
               sx={{
                 backgroundImage:
-                  "url(/assets/edu_quality/walsh/images/tgaa_logo.jpg)",
-                height: 36,
+                  "url(/assets/edu_quality/walsh/images/tgaa1024.jpg)",
+                height: 40,
                 width: 40,
-                backgroundSize: "cover",
-              }}
+                borderRadius: 4,
+                backgroundSize: "contain",
+              }}  
             />
           </Box>
           <Stack

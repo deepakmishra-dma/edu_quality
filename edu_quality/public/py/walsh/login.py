@@ -453,3 +453,27 @@ def user_login(usr, pwd, push_token):
 
     except Exception as e:
         return {"error": True, "error_type": "server_error", "error_message": str(e)}
+
+
+@frappe.whitelist(allow_guest=True)
+def get_schools_for_guest():
+    try:
+        schools = frappe.get_all("School", fields=["name"])
+        return {"success": True, "data": schools}
+    except Exception as e:
+        return {"error": True, "error_type": "server_error", "error_message": str(e)}
+
+
+@frappe.whitelist(allow_guest=True)
+def get_programs_for_guest(school):
+    try:
+        programs = frappe.get_all(
+            "Program",
+            filters={
+                "school": school,
+            },
+            fields=["program_name"],
+        )
+        return {"success": True, "data": programs}
+    except Exception as e:
+        return {"error": True, "error_type": "server_error", "error_message": str(e)}

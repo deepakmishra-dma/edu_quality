@@ -102,6 +102,19 @@ const Pages = () => {
           }
         />
         <Route
+          path="/notice/:id"
+          element={
+            <>
+              <Header
+                setNavbarOpen={setIsNavBarOpen}
+                navbarOpen={isNavBarOpen}
+              />
+              <Navbar isOpen={isNavBarOpen} setIsOpen={setIsNavBarOpen} />
+              <NoticeDetails />
+            </>
+          }
+        />
+        <Route
           path="/*"
           element={
             <Authenticated
@@ -122,7 +135,7 @@ const Pages = () => {
                 <Route path="/ptm-link" element={<PtmLinks />} />
                 <Route path="/student-profile" element={<StudentProfle />} />
                 <Route path="/early-pickup" element={<EarlyPickup />} />
-                <Route path="/notice/:id" element={<NoticeDetails />} />
+
                 <Route path="/cmap" element={<Cmap />} />
                 <Route path="/cmap/list" element={<CmapList />} />
                 <Route path="/portion-circular" element={<PortionCircular />} />
