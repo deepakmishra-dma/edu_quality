@@ -477,3 +477,38 @@ def get_programs_for_guest(school):
         return {"success": True, "data": programs}
     except Exception as e:
         return {"error": True, "error_type": "server_error", "error_message": str(e)}
+
+
+@frappe.whitelist()
+def request_account_deletion():
+    user = frappe.session.user
+    guardian = get_guardian(user_id=user)
+    if not guardian:
+        return {
+            "error": True,
+            "error_type": "invalid_guardian",
+            "error_message": "Invalid Guardian",
+        }
+
+    existing_request = frappe.get_all(
+        "Deletion Request", filters={"user": user, "status": "Pending"}, limit=1
+    )
+
+    if existing_request:
+        return {
+            "error": True,
+            "error_type": "request_exists",
+            "error_message": "A deletion request is already pending for this account/Test accounts cant be deleted",
+        }
+
+    deletion_request = frappe.new_doc("Deletion Request")
+    deletion_request.user = user
+    deletion_request.status = "Pending"
+    deletion_request.insert(ignore_permissions=True)
+
+    frappe.local.login_manager.logout()
+
+    return {
+        "success": True,
+        "message": "Account deletion request submitted successfully",
+    }

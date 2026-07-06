@@ -4,19 +4,19 @@ import { useSearchParams } from "react-router-dom";
 import useStudentList from "../components/queries/useStudentList.ts";
 import useClassDetails from "../components/queries/useClassDetails.ts";
 import useStudentProfileColor from "../components/hooks/useStudentProfileColor.ts";
-import { Box, Stack, Image } from "@mantine/core";
+import { Box, Stack, Image, Button, Modal, Text } from "@mantine/core";
+import { useNotification } from "@refinedev/core";
 
 import { StudentProfleFOrm } from "./StudentProfileForm.tsx";
 
 export const StudentProfle = () => {
   const [selectedStudent, setSelectedStudent] = useState<string>("");
-
   const [selectedSubject, setSelectedSubject] = useState<string>("");
   const [selectedUnit, setSelectedUnit] = useState<string>("unit 1");
-
   const [opened, setOpened] = useState(false);
-
   const [success, setSuccess] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const [searchParams, setSearchParams] = useSearchParams();
   const searchedStudent = searchParams.get("student");
@@ -27,13 +27,45 @@ export const StudentProfle = () => {
     () => studentsList?.data?.message || [],
     [studentsList?.data]
   );
+  const { open } = useNotification();
+
+  const handleDeleteRequest = async () => {
+    if (isDeleting) return;
+    setIsDeleting(true);
+    try {
+      const response = await fetch(
+        "/api/method/edu_quality.public.py.walsh.login.request_account_deletion",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ studentId: selectedStudent }),
+        }
+      );
+
+      if (response.ok) {
+        open?.({
+          type: "success",
+          message: "Your account deletion request has been queued",
+        });
+      }
+    } catch (error) {
+      open?.({
+        type: "error",
+        message: "Failed to submit deletion request",
+      });
+      setIsDeleting(false);
+    }
+    setShowDeleteModal(false);
+  };
 
   useEffect(() => {
     if (selectedStudent) {
       searchParams.set("student", selectedStudent || "");
       setSearchParams(searchParams, { replace: true });
     }
-  }, [selectedStudent]);
+  }, [selectedStudent, searchParams, setSearchParams]);
 
   const subjectOptions = useMemo(() => {
     return (
@@ -90,7 +122,7 @@ export const StudentProfle = () => {
 
   useEffect(() => {
     if (success) setSuccess(false);
-  }, [selectedStudent]);
+  }, [selectedStudent, success]);
 
   return (
     <>
@@ -100,7 +132,6 @@ export const StudentProfle = () => {
             whiteSpace: "nowrap",
             overflow: "auto",
             flexDirection: "column",
-
             gap: 0,
           }}
         >
@@ -112,7 +143,6 @@ export const StudentProfle = () => {
                 sx={{
                   display: "inline-block",
                   marginTop: 10,
-                  // marginBottom: 10,
                   flexShrink: 0,
                   flexGrow: 1,
                   textAlign: "left",
@@ -183,6 +213,49 @@ export const StudentProfle = () => {
               </Box>
             );
           })}
+          {selectedStudent && (
+            <Button
+              color="red"
+              variant="outline"
+              onClick={() => setShowDeleteModal(true)}
+              style={{
+                marginTop: "1rem",
+                marginLeft: "1rem",
+                marginRight: "1rem",
+              }}
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Deletion Requested" : "Request Account Deletion"}
+            </Button>
+          )}
+          <Modal
+            opened={showDeleteModal}
+            onClose={() => setShowDeleteModal(false)}
+            title="Confirm Account Deletion"
+          >
+            <Text size="sm">
+              Are you sure you want to request account deletion? This action
+              cannot be undone.
+            </Text>
+            <Box
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "1rem",
+                marginTop: "1rem",
+              }}
+            >
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteModal(false)}
+              >
+                Cancel
+              </Button>
+              <Button color="red" onClick={handleDeleteRequest}>
+                Confirm Deletion
+              </Button>
+            </Box>
+          </Modal>
           <Box
             pos="fixed"
             bottom={0}
