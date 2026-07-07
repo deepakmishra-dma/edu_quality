@@ -23,18 +23,28 @@ def get_academic_year_with_fees(student):
 
 @frappe.whitelist()
 def get_student_fee_schedule(student):
+    academic_year = current_academic_year()
+    next_acad_year = next_academic_year()
+    fee_advance = (
+        frappe.get_all(
+            "Fee Advance",
+            {"student": student, "academic_year": next_acad_year},
+            fields=["payment_term", "amount as payment_amount", "due_date"],
+        )
+        or []
+    )
+
     fee_qb = frappe.qb.DocType("Fees")
     p_schedule_qb = frappe.qb.DocType("Payment Schedule")
-
-    academic_year = current_academic_year()
 
     enrollment = frappe.db.get_value(
         "Program Enrollment",
         {"academic_year": academic_year, "docstatus": 1, "student": student},
         "name",
     )
+
     if not enrollment:
-        return []
+        return fee_advance
 
     payment_term_query = (
         frappe.qb.from_(fee_qb)
@@ -50,7 +60,9 @@ def get_student_fee_schedule(student):
             p_schedule_qb.payment_amount,
         )
     )
-    return payment_term_query.run(as_dict=True)
+    fee_schedule = payment_term_query.run(as_dict=True)
+
+    return fee_advance + fee_schedule
 
 
 def get_fees(student, acad_year):
