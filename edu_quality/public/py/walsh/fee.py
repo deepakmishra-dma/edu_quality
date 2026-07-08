@@ -28,7 +28,7 @@ def get_student_fee_schedule(student):
     fee_advance = (
         frappe.get_all(
             "Fee Advance",
-            {"student": student, "academic_year": next_acad_year},
+            filters={"student": student, "academic_year": next_acad_year},
             fields=["payment_term", "amount as payment_amount", "due_date"],
         )
         or []
