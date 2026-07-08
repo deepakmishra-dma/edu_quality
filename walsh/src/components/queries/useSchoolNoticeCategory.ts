@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 
-const fetchSchoolNoticeCategories = async () => {
+const fetchSchoolNoticeCategories = async (): Promise<
+  { name: string; notice_count: number }[]
+> => {
   const url =
     "/api/method/edu_quality.public.py.walsh.notices.get_school_notice_category";
   try {
@@ -12,7 +14,7 @@ const fetchSchoolNoticeCategories = async () => {
       },
     });
     const jsonData = await response.json();
-    return jsonData.message.map((item: { name: string }) => item.name);
+    return jsonData.message;
   } catch (err) {
     console.error(err);
     return [];

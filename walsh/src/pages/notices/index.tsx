@@ -114,7 +114,7 @@ export const NoticeList: React.FC<StaredNoticeListProps> = ({
         display={"flex"}
         gap={8}
         px={0}
-        py={3}
+        py={8}
         sx={{
           overflowX: "auto",
           whiteSpace: "nowrap",
@@ -124,28 +124,48 @@ export const NoticeList: React.FC<StaredNoticeListProps> = ({
           "::-webkit-scrollbar": { display: "none" },
         }}
       >
-        {categories.map((item: string, index: number) => (
+        {categories.map((item, index: number) => (
           <Button
             key={index}
-            onClick={() => handleToggle(item)}
+            onClick={() => handleToggle(item.name)}
             style={{
               padding: "10px 20px",
               borderRadius: "10px",
               border:
-                selectedCategory === item
+                selectedCategory === item.name
                   ? "1px solid #00b3ff"
                   : "1px solid #ccc",
-              backgroundColor: selectedCategory === item ? "#00b3ff" : "#fff",
-              color: selectedCategory === item ? "#fff" : "#000",
+              backgroundColor:
+                selectedCategory === item.name ? "#00b3ff" : "#fff",
+              color: selectedCategory === item.name ? "#fff" : "#000",
               cursor: "pointer",
               transition:
                 "background-color 0.3s ease, color 0.3s ease, border 0.3s ease",
               whiteSpace: "nowrap",
+              position: "relative",
             }}
           >
-            {item}
+            {item.name}
+            {item.notice_count > 0 && (
+              <Box
+                style={{
+                  position: "absolute",
+                  top: -8,
+                  right: -8,
+                  backgroundColor: "#ff4d4f",
+                  color: "white",
+                  borderRadius: "50%",
+                  padding: "4px 4px",
+                  fontSize: "12px",
+                  minWidth: "20px",
+                  textAlign: "center",
+                }}
+              >
+                {item.notice_count}
+              </Box>
+            )}
           </Button>
-        ))}
+        ))}{" "}
       </Flex>
 
       <Box p={2}>
