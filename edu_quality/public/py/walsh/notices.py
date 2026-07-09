@@ -231,12 +231,12 @@ def get_user_notices(
         f"""
         select *
         from `tabSchool Notice` notice
-        where (is_public = 1) or ((student in %(student_names)s and is_generic_notice = 0)
+        where ((student in %(student_names)s and is_generic_notice = 0)
             or (
                 is_generic_notice = 1 and (
                 (notice.division in %(divisions)s)
                 or (notice.division is null and notice.class in %(classes)s)
-            )
+            ) or (is_public = 1)
         ))
         {exists_clause}
         {cursor_condition}
@@ -544,15 +544,74 @@ def create_undertaking(student, notice_name, otp):
         new_doc.insert(ignore_permissions=True)
 
 
-# /api/method/edu_quality.public.py.walsh.notices.get_school_notice_category
 @frappe.whitelist(allow_guest=True)
 def get_school_notice_category():
     filters = {}
     if frappe.session.user == "Guest":
         filters["is_public"] = 1
-    return frappe.get_all(
+    
+    categories = frappe.get_all(
         "School Notice Category",
         filters=filters,
         fields=["name"],
         order_by="name asc",
     )
+    
+    user = frappe.session.user
+    
+    if user == "Guest":
+        # Return categories without counts for guests
+        return categories
+    
+    # Get counts only for logged in users
+    guardian = frappe.get_cached_doc("Guardian", {"user": user})
+    students = frappe.get_all(
+        "Student", 
+        filters={"guardian": guardian.name, "enabled": 1}, 
+        fields=["name"]
+    )
+    student_names = [s.name for s in students]
+    
+    enrollments = get_enrollments(student_names)
+    divisions = [e.student_group for e in enrollments]
+    classes = [e.program for e in enrollments]
+    
+    notice_counts = frappe.db.sql("""
+        SELECT 
+            ncd.school_notice_category, 
+            COUNT(DISTINCT CASE 
+                WHEN ns.is_read IS NULL OR ns.is_read = 0 
+                THEN n.name 
+                END
+            ) as count
+        FROM `tabSchool Notice` n
+        INNER JOIN `tabSchool Notice Category Detail` ncd ON ncd.parent = n.name
+        LEFT JOIN `tabSchool Notice Status` ns ON 
+            ns.notice = n.name AND 
+            ns.user = %(user)s AND
+            (ns.student = n.student OR n.is_generic_notice = 1)
+        WHERE (
+            (n.student IN %(students)s AND n.is_generic_notice = 0)
+            OR (
+                n.is_generic_notice = 1 
+                AND (
+                    (n.division IN %(divisions)s)
+                    OR (n.division IS NULL AND n.class IN %(classes)s)
+                )
+            )
+            OR (n.is_public = 1)
+        )
+        GROUP BY ncd.school_notice_category
+    """, {
+        "user": user,
+        "students": student_names,
+        "divisions": divisions,
+        "classes": classes
+    }, as_dict=True)
+
+    count_map = {nc.school_notice_category: nc.count for nc in notice_counts}
+    
+    for category in categories:
+        category["notice_count"] = count_map.get(category.name, 0)
+    
+    return categories
