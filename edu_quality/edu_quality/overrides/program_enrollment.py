@@ -128,9 +128,6 @@ class CustomProgramEnrollment(ProgramEnrollment):
                 )
 
     def update_student_data(self):
-        division = frappe.get_value(
-            "Student Group", self.student_group, "student_group_name"
-        )
         fields = {
             "roll_no": self.roll_no,
             "tiffin_rack_no": self.tiffin_rack_no,
@@ -142,7 +139,7 @@ class CustomProgramEnrollment(ProgramEnrollment):
             "drop_address": self.drop_address,
             "image": self.image,
             "program": self.program,
-            "custom_division": division,
+            "custom_division": self.student_group,
         }
         frappe.db.set_value("Student", self.student, fields)
 
@@ -204,7 +201,7 @@ def sync_student_data():
             "pickup_address": pe.pickup_address,
             "drop_address": pe.drop_address,
             "program": pe.program,
-            "custom_division": division,
+            "custom_division": pe.student_group,
         }
         frappe.db.set_value("Student", pe.student, fields)
 
