@@ -8,9 +8,9 @@ def generate_split_payment(fees,update=0):
         fees: Fees or Fee Advance Doctype
         update: 0 or 1
         returns: {
-                    "Term 1": {"RegistrationFeesFursungiPrimary": 90345.0, "KAPIL": 40331.0}, 
-                    "Term 2": {"KAPIL": 37417.0, "RegistrationFeesFursungiPrimary": 20845.0}, 
-                    "Deposit": {"RegistrationFeesFursungiPrimary": 69500.0}
+                    "Term 1": {"Tuition": 90345.0, "Transport": 40331.0}, 
+                    "Term 2": {"Transport": 37417.0, "Tuition": 20845.0}, 
+                    "Deposit": {"Tuition": 69500.0}
                 }
     """
     # if update:

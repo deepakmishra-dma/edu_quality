@@ -265,7 +265,6 @@ scheduler_events = {
         "edu_quality.overrides_hooks.item.upload_all_imported_to_drive",
     ],
     "cron": {
-        "0 * * * *": ["edu_quality.tasks.cron"],
         "0 19 * * *": ["edu_quality.tasks.send_bulk_notification_cmap_to_guardian"],
         "0 6 * * *": [
             "edu_quality.tasks.schedule_birthday_greeting",

@@ -65,7 +65,7 @@ function postScanQr(key) {
 					type: "POST",
 				}, callback: (r) => {
 					console.log(r.message)
-					if ((frappe.user_roles.includes("Watchman") && !frappe.user_roles.includes("Administrator") && !frappe.user_roles.includes("Walnut Admin") && !frappe.user_roles.includes("System Manager") && r.message)) {
+					if ((frappe.user_roles.includes("Watchman") && !frappe.user_roles.includes("Administrator") && !frappe.user_roles.includes("School Admin") && !frappe.user_roles.includes("System Manager") && r.message)) {
 
 						frappe.msgprint({
 							indicator: "green",

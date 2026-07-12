@@ -12,6 +12,11 @@ import re
 PASSWORD_LENGTH = 12
 
 
+def get_workspace_domain():
+    """Google Workspace domain, configured on the Google Service Account single."""
+    return frappe.db.get_single_value("Google Service Account", "domain")
+
+
 def get_google_admin_object():
     """
     Returns an object of Google Admin.
@@ -34,10 +39,11 @@ def get_google_users():
 @frappe.whitelist()
 def get_google_user_with_key(email_key):
     admin_obj = get_google_admin_object()
+    domain = get_workspace_domain()
     return (
         admin_obj.users()
         .get(
-            userKey=f"{email_key}@walnutedu.in",
+            userKey=f"{email_key}@{domain}",
         )
         .execute()
     )
@@ -48,41 +54,43 @@ def create_google_user(
     email_key, first_name, last_name, recovery_mail, phone_no, school, org_unit_path=None
 ):
     user_service = get_google_admin_object()
+    domain = get_workspace_domain()
+    default_recovery_mail = f"support@{domain}"
     exception = False
     existing_user = None
     try:
         existing_user = (
             user_service.users()
             .get(
-                userKey=f"{email_key}@walnutedu.in",
+                userKey=f"{email_key}@{domain}",
             )
             .execute()
         )
-     
+
     except:
-       
+
         exception = True
 
     try:
         if exception:
             new_user = {
-                "primaryEmail": f"{email_key}@walnutedu.in",
+                "primaryEmail": f"{email_key}@{domain}",
                 "name": {
                     "givenName": first_name,
                     "familyName": last_name,
                 },
                 # "recoveryPhone": add_indian_country_code(phone_no, True),
-                "password": "walnut@12345",
+                "password": frappe.generate_hash(length=16),
                 "changePasswordAtNextLogin": True,
                 "ipWhitelisted": False,
                 # "recoveryEmail": recovery_mail,
                 "orgUnitPath": org_unit_path or f"/{school}/Students",
             }
-            recovery_mail = (str(recovery_mail) or "feedback@walnutedu.in").strip().lower()
+            recovery_mail = (str(recovery_mail) or default_recovery_mail).strip().lower()
             email_pattern = r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"
             match = re.match(email_pattern, recovery_mail)
             if not match:
-                recovery_mail = "feedback@walnutedu.in"
+                recovery_mail = default_recovery_mail
             new_user["recoveryEmail"] = recovery_mail
 
             # if phone_no:

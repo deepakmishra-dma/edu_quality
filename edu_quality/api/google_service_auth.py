@@ -62,9 +62,7 @@ class GoogleServiceAccountAuth:
 
     def get_google_service_object(self,imporsonate_user = None,imporsonate=False):
         """Returns google service object"""
-        imporsonate_usr='teacher@walnutedu.in'
-        if imporsonate_user:
-            imporsonate_usr = imporsonate_user
+        imporsonate_usr = imporsonate_user or self.google_settings.get("default_impersonate_user")
         if imporsonate:
             credentials = service_account.Credentials.from_service_account_file(
                 get_absolute_path(self.google_settings.service_account_credentials_json),

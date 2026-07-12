@@ -1,4 +1,5 @@
 import frappe
+from edu_quality.edu_quality.server_scripts.utils import get_email_domain
 
 from frappe.utils import getdate
 import datetime
@@ -47,7 +48,7 @@ def refund_deposit(student,fee,amount):
             "payment_request_type": "Outward",
             "currency": "INR",
             "grand_total": amount,
-            "email_to": student+"@walnutedu.in",
+            "email_to": f"{student}@{get_email_domain()}",
             "subject": "Deposit Refund For for {0}".format(student),
             "message": "Deposit Refund",
             "reference_doctype": "Fees",

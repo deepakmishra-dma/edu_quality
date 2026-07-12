@@ -44,19 +44,6 @@ def add_mentions(comment_by, user_id, content, reference_doctype, reference_name
     comment.insert(ignore_permissions=True)
 
 
-def test():
-    comment_by = "chanchal@walnutedu.in"
-    mentioned_users = "chanchal@walnutedu.in"
-    name = "Chanchal Kulkarni"
-    content = "Your Next PTM Meeting for Class Division 10A and Subject "
-    reference_doctype = "PTM Scheduler"
-    reference_name = "PTM-2024-2025-class_division-False-66116"
-
-    add_mentions(
-        comment_by, mentioned_users, content, reference_doctype, reference_name, name
-    )
-
-
 def compare_time(time_str, minute_difference):
     try:
         # Convert time string to datetime object

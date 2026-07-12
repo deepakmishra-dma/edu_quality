@@ -4,6 +4,11 @@ import json
 from frappe.auth import LoginManager
 
 
+def get_email_domain():
+    """Institution email domain, configured on MGR Settings (e.g. "example.edu")."""
+    return frappe.db.get_single_value("MGR Settings", "email_domain") or ""
+
+
 def current_academic_year():
     filter = {"custom_current_academic_year": 1}
     if frappe.db.exists("Academic Year", filter):

@@ -191,13 +191,14 @@ def send_otp_to_mobile_number(mobile_number):
 
 
 def send_otp_to_sms(full_phone_no, otp):
-    api_key = "***REMOVED-SMS-KEY***"
+    api_key = frappe.conf.get("sms_api_key")
+    app_name = frappe.conf.get("sms_app_name") or "the app"
     message = (
-        f"OTP is {otp} for logging into Walnut School's Wal-Sh app."
+        f"OTP is {otp} for logging into {app_name}. "
         + "Valid till 10 min.\nDo not share OTP for security reasons."
     )
-    template_id = 1007162194737763683
-    sender = "WLTSCL"
+    template_id = frappe.conf.get("sms_login_template_id")
+    sender = frappe.conf.get("sms_sender")
     encoded_message = requests.utils.quote(message)
     url = f"http://smssolution.net.in/api/v4/?api_key={api_key}&method=sms&message={encoded_message}\
     &to={full_phone_no}&sender={sender}&template_id={template_id}"

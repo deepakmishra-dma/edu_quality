@@ -20,13 +20,10 @@ def replace_domain():
 
 
 def disable_incoming_emails():
-    # Have to disable for seamless creation og hd tickets on PROD
-    if frappe.db.exists("Email Account", {"email_id": " feedback@walnutedu.in"}):
-        email_account = frappe.get_doc(
-            "Email Account", {"email_id": " feedback@walnutedu.in"}
-        )
-        email_account.enable_incoming = 0
-        email_account.save(ignore_permissions=True)
+    # On non-prod sites, stop all inbound email fetching so ticket/reply
+    # automation does not fire against real mailboxes.
+    for name in frappe.get_all("Email Account", {"enable_incoming": 1}, pluck="name"):
+        frappe.db.set_value("Email Account", name, "enable_incoming", 0)
 
 
 def add_guardian_groups():

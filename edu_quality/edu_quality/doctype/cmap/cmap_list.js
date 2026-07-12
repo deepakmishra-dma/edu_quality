@@ -1,7 +1,7 @@
 frappe.listview_settings['CMAP'] = {
     add_fields: ["item_code_field"],
     onload: function (list_view) {
-        if ((frappe.user_roles.includes("Content Admin") || frappe.user_roles.includes("Administrator") || frappe.user_roles.includes("Walnut Admin") ||
+        if ((frappe.user_roles.includes("Content Admin") || frappe.user_roles.includes("Administrator") || frappe.user_roles.includes("School Admin") ||
             frappe.user_roles.includes("System_Manager") || frappe.user_roles.includes("Content Creator")))
             list_view.page.add_menu_item("Fetch Product Material", async () => {
                 frappe.call({

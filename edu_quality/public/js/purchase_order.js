@@ -179,7 +179,7 @@ async function handleCreateCmapReceipt(frm) {
 
 function createReceiptButton(frm) {
     // if (!frm.doc.custom_is_cmap) return
-    if ((frappe.user_roles.includes("Printer") || frappe.user_roles.includes("Administrator") || frappe.user_roles.includes("Walnut Admin") ||
+    if ((frappe.user_roles.includes("Printer") || frappe.user_roles.includes("Administrator") || frappe.user_roles.includes("School Admin") ||
         frappe.user_roles.includes("System_Manager")))
         frm.add_custom_button(__('Create Challans'), () => { handleCreateChallan(frm) })
 }
@@ -199,7 +199,7 @@ function addQrPrintHandlers(frm) {
 function removeBtnsForPrinters(frm) {
 
     if (!frm.doc.custom_is_cmap_print) return
-    if ((frappe.user_roles.includes("Printer") && !frappe.user_roles.includes("Administrator") && !frappe.user_roles.includes("Walnut Admin") &&
+    if ((frappe.user_roles.includes("Printer") && !frappe.user_roles.includes("Administrator") && !frappe.user_roles.includes("School Admin") &&
         !frappe.user_roles.includes("System Manager"))) {
 
         const removeButtons = () => {
@@ -232,7 +232,7 @@ function addScanBtnForPrinter(frm) {
     if (!frm.doc.custom_is_cmap_print) {
         return
     }
-    if ((frappe.user_roles.includes("Printer") && !frappe.user_roles.includes("Administrator") && !frappe.user_roles.includes("Walnut Admin") &&
+    if ((frappe.user_roles.includes("Printer") && !frappe.user_roles.includes("Administrator") && !frappe.user_roles.includes("School Admin") &&
         !frappe.user_roles.includes("System Manager"))) {
         frm.add_custom_button(__("Scan Item Code"), async function () {
             const images = await nativeInterface.execute('openWebViewScanner')
@@ -257,7 +257,7 @@ function addScanBtnForPrinter(frm) {
 
 function mailFunction(frm) {
     if (!frm.doc.__islocal) {
-        if (!(frappe.user_roles.includes("Printer") && !frappe.user_roles.includes("Administrator") && !frappe.user_roles.includes("Walnut Admin") && !frappe.user_roles.includes("System Manager"))) {
+        if (!(frappe.user_roles.includes("Printer") && !frappe.user_roles.includes("Administrator") && !frappe.user_roles.includes("School Admin") && !frappe.user_roles.includes("System Manager"))) {
             frm.add_custom_button(__('Send Test Mail'), () => {
 
                 const d = new frappe.ui.Dialog({

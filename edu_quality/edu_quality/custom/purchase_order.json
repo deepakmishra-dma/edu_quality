@@ -350,13 +350,13 @@
    "link_filters": null,
    "mandatory_depends_on": null,
    "modified": "2024-03-07 15:40:37.979717",
-   "modified_by": "whatsappwalnutbot@hybrowlabs.com",
+   "modified_by": "Administrator",
    "module": "Edu Quality",
    "name": "Purchase Order-custom_class",
    "no_copy": 0,
    "non_negative": 0,
    "options": "Class Type",
-   "owner": "whatsappwalnutbot@hybrowlabs.com",
+   "owner": "Administrator",
    "permlevel": 0,
    "precision": "",
    "print_hide": 0,
@@ -943,7 +943,7 @@
    "columns": 0,
    "creation": "2024-02-13 16:30:10.071914",
    "default": null,
-   "depends_on": "eval:(!frappe.user_roles.includes(\"Printer\") || frappe.user_roles.includes(\"Administrator\") || frappe.user_roles.includes(\"Walnut Admin\") ||\nfrappe.user_roles.includes(\"System_Manager\"))",
+   "depends_on": "eval:(!frappe.user_roles.includes(\"Printer\") || frappe.user_roles.includes(\"Administrator\") || frappe.user_roles.includes(\"School Admin\") ||\nfrappe.user_roles.includes(\"System_Manager\"))",
    "description": null,
    "docstatus": 0,
    "dt": "Purchase Order",
@@ -1666,7 +1666,7 @@
    "property": "depends_on",
    "property_type": "Data",
    "row_name": null,
-   "value": "eval:(!frappe.user_roles.includes(\"Printer\") || frappe.user_roles.includes(\"Administrator\") || frappe.user_roles.includes(\"Walnut Admin\") ||\nfrappe.user_roles.includes(\"System_Manager\"))"
+   "value": "eval:(!frappe.user_roles.includes(\"Printer\") || frappe.user_roles.includes(\"Administrator\") || frappe.user_roles.includes(\"School Admin\") ||\nfrappe.user_roles.includes(\"System_Manager\"))"
   },
   {
    "_assign": null,
@@ -1689,7 +1689,7 @@
    "property": "depends_on",
    "property_type": "Data",
    "row_name": null,
-   "value": "eval:(!frappe.user_roles.includes(\"Printer\") || frappe.user_roles.includes(\"Administrator\") || frappe.user_roles.includes(\"Walnut Admin\") ||\nfrappe.user_roles.includes(\"System_Manager\"))"
+   "value": "eval:(!frappe.user_roles.includes(\"Printer\") || frappe.user_roles.includes(\"Administrator\") || frappe.user_roles.includes(\"School Admin\") ||\nfrappe.user_roles.includes(\"System_Manager\"))"
   },
   {
    "_assign": null,
@@ -1712,7 +1712,7 @@
    "property": "depends_on",
    "property_type": "Data",
    "row_name": null,
-   "value": "eval:(!frappe.user_roles.includes(\"Printer\") || frappe.user_roles.includes(\"Administrator\") || frappe.user_roles.includes(\"Walnut Admin\") ||\nfrappe.user_roles.includes(\"System_Manager\"))"
+   "value": "eval:(!frappe.user_roles.includes(\"Printer\") || frappe.user_roles.includes(\"Administrator\") || frappe.user_roles.includes(\"School Admin\") ||\nfrappe.user_roles.includes(\"System_Manager\"))"
   },
   {
    "_assign": null,
@@ -1735,7 +1735,7 @@
    "property": "depends_on",
    "property_type": "Data",
    "row_name": null,
-   "value": "eval:(!frappe.user_roles.includes(\"Printer\") || frappe.user_roles.includes(\"Administrator\") || frappe.user_roles.includes(\"Walnut Admin\") ||\nfrappe.user_roles.includes(\"System_Manager\"))"
+   "value": "eval:(!frappe.user_roles.includes(\"Printer\") || frappe.user_roles.includes(\"Administrator\") || frappe.user_roles.includes(\"School Admin\") ||\nfrappe.user_roles.includes(\"System_Manager\"))"
   },
   {
    "_assign": null,
@@ -1758,7 +1758,7 @@
    "property": "depends_on",
    "property_type": "Data",
    "row_name": null,
-   "value": "eval:(!frappe.user_roles.includes(\"Printer\") || frappe.user_roles.includes(\"Administrator\") || frappe.user_roles.includes(\"Walnut Admin\") ||\nfrappe.user_roles.includes(\"System_Manager\"))"
+   "value": "eval:(!frappe.user_roles.includes(\"Printer\") || frappe.user_roles.includes(\"Administrator\") || frappe.user_roles.includes(\"School Admin\") ||\nfrappe.user_roles.includes(\"System_Manager\"))"
   },
   {
    "_assign": null,
@@ -1781,7 +1781,7 @@
    "property": "depends_on",
    "property_type": "Data",
    "row_name": null,
-   "value": "eval:(!frappe.user_roles.includes(\"Printer\") || frappe.user_roles.includes(\"Administrator\") || frappe.user_roles.includes(\"Walnut Admin\") ||\nfrappe.user_roles.includes(\"System_Manager\"))"
+   "value": "eval:(!frappe.user_roles.includes(\"Printer\") || frappe.user_roles.includes(\"Administrator\") || frappe.user_roles.includes(\"School Admin\") ||\nfrappe.user_roles.includes(\"System_Manager\"))"
   },
   {
    "_assign": null,
@@ -1804,7 +1804,7 @@
    "property": "depends_on",
    "property_type": "Data",
    "row_name": null,
-   "value": "eval:(!frappe.user_roles.includes(\"Printer\") || frappe.user_roles.includes(\"Administrator\") || frappe.user_roles.includes(\"Walnut Admin\") ||\nfrappe.user_roles.includes(\"System_Manager\"))"
+   "value": "eval:(!frappe.user_roles.includes(\"Printer\") || frappe.user_roles.includes(\"Administrator\") || frappe.user_roles.includes(\"School Admin\") ||\nfrappe.user_roles.includes(\"System_Manager\"))"
   },
   {
    "_assign": null,
@@ -1827,7 +1827,7 @@
    "property": "depends_on",
    "property_type": "Data",
    "row_name": null,
-   "value": "eval:(!frappe.user_roles.includes(\"Printer\") || frappe.user_roles.includes(\"Administrator\") || frappe.user_roles.includes(\"Walnut Admin\") ||\nfrappe.user_roles.includes(\"System_Manager\"))"
+   "value": "eval:(!frappe.user_roles.includes(\"Printer\") || frappe.user_roles.includes(\"Administrator\") || frappe.user_roles.includes(\"School Admin\") ||\nfrappe.user_roles.includes(\"System_Manager\"))"
   },
   {
    "_assign": null,
@@ -1850,7 +1850,7 @@
    "property": "depends_on",
    "property_type": "Data",
    "row_name": null,
-   "value": "eval:(!frappe.user_roles.includes(\"Printer\") || frappe.user_roles.includes(\"Administrator\") || frappe.user_roles.includes(\"Walnut Admin\") ||\nfrappe.user_roles.includes(\"System_Manager\"))"
+   "value": "eval:(!frappe.user_roles.includes(\"Printer\") || frappe.user_roles.includes(\"Administrator\") || frappe.user_roles.includes(\"School Admin\") ||\nfrappe.user_roles.includes(\"System_Manager\"))"
   },
   {
    "_assign": null,
@@ -1873,7 +1873,7 @@
    "property": "depends_on",
    "property_type": "Data",
    "row_name": null,
-   "value": "eval:(!frappe.user_roles.includes(\"Printer\") || frappe.user_roles.includes(\"Administrator\") || frappe.user_roles.includes(\"Walnut Admin\") ||\nfrappe.user_roles.includes(\"System_Manager\"))"
+   "value": "eval:(!frappe.user_roles.includes(\"Printer\") || frappe.user_roles.includes(\"Administrator\") || frappe.user_roles.includes(\"School Admin\") ||\nfrappe.user_roles.includes(\"System_Manager\"))"
   },
   {
    "_assign": null,
@@ -1896,7 +1896,7 @@
    "property": "depends_on",
    "property_type": "Data",
    "row_name": null,
-   "value": "eval:(!frappe.user_roles.includes(\"Printer\") || frappe.user_roles.includes(\"Administrator\") || frappe.user_roles.includes(\"Walnut Admin\") ||\nfrappe.user_roles.includes(\"System_Manager\"))"
+   "value": "eval:(!frappe.user_roles.includes(\"Printer\") || frappe.user_roles.includes(\"Administrator\") || frappe.user_roles.includes(\"School Admin\") ||\nfrappe.user_roles.includes(\"System_Manager\"))"
   },
   {
    "_assign": null,
@@ -1919,7 +1919,7 @@
    "property": "depends_on",
    "property_type": "Data",
    "row_name": null,
-   "value": "eval:(!frappe.user_roles.includes(\"Printer\") || frappe.user_roles.includes(\"Administrator\") || frappe.user_roles.includes(\"Walnut Admin\") ||\nfrappe.user_roles.includes(\"System_Manager\"))"
+   "value": "eval:(!frappe.user_roles.includes(\"Printer\") || frappe.user_roles.includes(\"Administrator\") || frappe.user_roles.includes(\"School Admin\") ||\nfrappe.user_roles.includes(\"System_Manager\"))"
   },
   {
    "_assign": null,
@@ -1942,7 +1942,7 @@
    "property": "depends_on",
    "property_type": "Data",
    "row_name": null,
-   "value": "eval:(!frappe.user_roles.includes(\"Printer\") || frappe.user_roles.includes(\"Administrator\") || frappe.user_roles.includes(\"Walnut Admin\") ||\nfrappe.user_roles.includes(\"System_Manager\"))"
+   "value": "eval:(!frappe.user_roles.includes(\"Printer\") || frappe.user_roles.includes(\"Administrator\") || frappe.user_roles.includes(\"School Admin\") ||\nfrappe.user_roles.includes(\"System_Manager\"))"
   },
   {
    "_assign": null,
@@ -1965,7 +1965,7 @@
    "property": "depends_on",
    "property_type": "Data",
    "row_name": null,
-   "value": "eval:(!frappe.user_roles.includes(\"Printer\") || frappe.user_roles.includes(\"Administrator\") || frappe.user_roles.includes(\"Walnut Admin\") ||\nfrappe.user_roles.includes(\"System_Manager\"))"
+   "value": "eval:(!frappe.user_roles.includes(\"Printer\") || frappe.user_roles.includes(\"Administrator\") || frappe.user_roles.includes(\"School Admin\") ||\nfrappe.user_roles.includes(\"System_Manager\"))"
   },
   {
    "_assign": null,
@@ -1988,7 +1988,7 @@
    "property": "depends_on",
    "property_type": "Data",
    "row_name": null,
-   "value": "(!frappe.user_roles.includes(\"Printer\") || frappe.user_roles.includes(\"Administrator\") || frappe.user_roles.includes(\"Walnut Admin\") ||\nfrappe.user_roles.includes(\"System_Manager\"))"
+   "value": "(!frappe.user_roles.includes(\"Printer\") || frappe.user_roles.includes(\"Administrator\") || frappe.user_roles.includes(\"School Admin\") ||\nfrappe.user_roles.includes(\"System_Manager\"))"
   },
   {
    "_assign": null,

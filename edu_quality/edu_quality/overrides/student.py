@@ -12,18 +12,12 @@ from frappe.desk.query_report import run
 
 class CustomStudent(Student):
     def autoname(self):
-        school_prefixes = {
-            "Walnut School at Fursungi": "FU",
-            "Walnut School at Shivane": "SH",
-            "Walnut School at Wakad": "WA",
-        }
-
         if self.imported and self.reference_number:
-            prefix = school_prefixes.get(self.school, "")
+            prefix = frappe.get_value("School", self.school, "prefix") or ""
             doc_name = prefix + self.reference_number
             self.name = doc_name
         elif self.reference_number:
-            prefix = school_prefixes.get(self.school, "")
+            prefix = frappe.get_value("School", self.school, "prefix") or ""
             doc_name = prefix + self.reference_number
             self.name = doc_name
         elif self.student_applicant:
@@ -47,7 +41,9 @@ class CustomStudent(Student):
             else:
                 prefix = prefix + ref_id
             self.name = prefix
-            self.student_email_id = self.name + "@walnutedu.in"
+            from edu_quality.edu_quality.server_scripts.utils import get_email_domain
+
+            self.student_email_id = f"{self.name}@{get_email_domain()}"
             self.reference_number = self.name[2:]
     
     def get_reference(self,academic_year):

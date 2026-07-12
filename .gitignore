@@ -6,3 +6,5 @@ tags
 edu_quality/docs/current
 node_modules/
 .idea
+openspec/
+.claude/

@@ -126,29 +126,9 @@ def get_deposits(doc):
         )
 
 def baby_school(student_applicant):
-    school_map = {
-    "Walnut School at Wakad": "Baby Walnut Wakad",
-    "Walnut School at Fursungi": "Baby Walnut Fursungi",
-    "Walnut School at Shivane": "Baby Walnut Shivane"
-    }
-    program = student_applicant.program.lower()
-    if not ("kg" in program or "nursery" in program):
-        return 
+    # Pre-primary ("Baby Walnut") redirection is currently disabled.
     return
-    school = school_map[student_applicant.school] 
-    new_program = check_class(student_applicant.program,school)
-    student_applicant.school = school
-    student_applicant.program = new_program
-    student_applicant.fee_structure = None 
-    student_applicant.fee_schedule = None
-    student_applicant.application_fees = 0
-    student_applicant.fee_components = []
-    student_applicant.total_amount = 0
-    student_applicant.save(ignore_permissions=True)
-    frappe.logger('enr').exception(new_program)
-    student_applicant.reload()
-    if not student_applicant.fee_schedule:
-        frappe.throw("Please create fee schedule for the program - {0}".format(new_program))
+
 
 def check_class(program, school):
     current = frappe.get_doc("Program", program)

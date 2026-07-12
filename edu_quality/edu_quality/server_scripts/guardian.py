@@ -1,5 +1,7 @@
 import frappe
 
+from edu_quality.edu_quality.server_scripts.utils import get_email_domain
+
 @frappe.whitelist()
 def enqueue_gardian_user_creation():
     guardians = frappe.get_all("Guardian", filters=[["Guardian","user","is","not set"]],fields=["name","email_address"])
@@ -61,7 +63,7 @@ def create_user(doc, patch=0):
     if not (doc.email_address or doc.mobile_number):
        return
 
-    email = doc.email_address if doc.email_address else doc.mobile_number + "@walnutedu.in"
+    email = doc.email_address or f"{doc.mobile_number}@{get_email_domain()}"
 
 
     guardian_user = frappe.db.get_value("User", {"email": email})

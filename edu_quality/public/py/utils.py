@@ -150,10 +150,10 @@ def email_otp(email, otp, undertaking, cc_email=None):
 
 @frappe.whitelist(allow_guest=True)
 def sms_otp(number, otp):
-    api_key = "***REMOVED-SMS-KEY***"
-    message = f"{otp} is OTP for updating child details initiated by you -Team Walnut"
-    template_id = 1007162244812510707
-    sender = "WLTSCL"
+    api_key = frappe.conf.get("sms_api_key")
+    message = f"{otp} is OTP for updating child details initiated by you."
+    template_id = frappe.conf.get("sms_update_child_template_id")
+    sender = frappe.conf.get("sms_sender")
     encoded_message = requests.utils.quote(message)
     url = f"http://smssolution.net.in/api/v4/?api_key={api_key}&method=sms&message={encoded_message}&to={number}&sender={sender}&template_id={template_id}"
     response = requests.post(url)
@@ -570,7 +570,7 @@ def reduce_font_size_steps(initial_size, step, data, initial_char_length, lowest
 
 
 def check_admin_roles(roles, additional_roles=None):
-    roles_to_check = ["Administrator", "Walnut Admin", "System Manager"]
+    roles_to_check = ["Administrator", "School Admin", "System Manager"]
     if isinstance(additional_roles, list):
         roles_to_check += additional_roles
 

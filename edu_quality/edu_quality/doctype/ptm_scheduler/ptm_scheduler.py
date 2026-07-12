@@ -290,10 +290,3 @@ def get_recording_of_gmeet():
 		return meeting_details
 	except Exception as e:
 		raise e
-	
-def test():
-    generate_meeeting(summary="PTM Scheduler",description='HSHSH',attendees_emails=str(['samarth@walnutedu.in'])) 	
-		
-  
-	
-        

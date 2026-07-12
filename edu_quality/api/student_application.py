@@ -17,9 +17,6 @@ from edu_quality.public.py.utils import (
 from itertools import chain
 
 
-CONFIG = {
-    "WALSH_API_BASE": "https://testwalsh.walnutedu.in/indexCI.php",
-}
 
 
 def get_class_without_std(txt):
@@ -128,13 +125,6 @@ def create_student_application(**args):
     except Exception as e:
         frappe.msgprint(msg=str(e), title="Error", indicator="red")
         raise e
-
-
-school_id_map = {
-    "2": "Walnut School at Shivane",
-    "4": "Walnut School at Fursungi",
-    "5": "Walnut School at Wakad",
-}
 
 
 # @frappe.whitelist(allow_guest=True)
@@ -508,10 +498,10 @@ def upload_to_mgr(doc):
         "preferred_batch_time": doc.get("batch_time") or " ",
         "academic_year": doc.get("academic_year") or " ",
     }
-    mgr_url = (
-        frappe.db.get_single_value("MGR Settings", "url")
-        or "https://test.walnutedu.in/indexCI.php"
-    )
+    mgr_url = frappe.db.get_single_value("MGR Settings", "url")
+    if not mgr_url:
+        # External LMS sync is optional; skip when no endpoint is configured.
+        return
     response = requests.post(
         url=f"{mgr_url}/student_lms/post_student_lms_data",
         json=json.loads(json.dumps(JSON, default=default)),
@@ -662,23 +652,6 @@ def append_father_guardian(doc, guardians, fathers_name):
     )
 
 
-# 46 Fursungi
-# 47 Shivane
-# 74 Wakad
-
-#  these ids coresspond to ids on wordpress location, select
-
-
-# id_to_location_map_fb = {
-#     "wakad": "Walnut School at Wakad",
-#     "shivane": "Walnut School at Shivane",
-#     "fursungi": "Walnut School at Fursungi",
-#     "walnut school at wakad": "Walnut School at Wakad",
-#     "walnut school at shivane": "Walnut School at Shivane",
-#     "walnut school at fursungi": "Walnut School at Fursungi",
-# }
-
-
 def get_existing_leads(first_name, fathers_phone):
     # to improve condition in one go
     return (
@@ -712,7 +685,6 @@ def get_existing_leads(first_name, fathers_phone):
 
 def get_school(location):
     return location
-    return id_to_location_map_fb.get(str(location).lower(), "")
 
 
 def get_class(school_name, class_name):
