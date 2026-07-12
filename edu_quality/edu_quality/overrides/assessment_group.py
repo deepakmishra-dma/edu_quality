@@ -599,7 +599,6 @@ def create_wiki_page(title, content, route):
             "title": title,
             "route": route,
             "content": content,
-            "published": 0,
             "published": 1,
         }
     )

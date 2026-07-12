@@ -415,7 +415,7 @@ def company_wise_split(fees, categories, due_date, payment_term=None, transactio
             fee_categories[company] = [fee_category]
             amounts[company] = component.amount
 
-    for company, fee_categories in fee_categories.items():
+    for company, company_categories in fee_categories.items():
             fee_receipt = frappe.new_doc("Fee Receipt")
             fee_receipt.fees = fees.name
             fee_receipt.due_date = due_date
@@ -426,7 +426,7 @@ def company_wise_split(fees, categories, due_date, payment_term=None, transactio
             fee_receipt.payment_term = payment_term
             fee_receipt.school = fees.custom_school
 
-            for fee_category in fee_categories:
+            for fee_category in company_categories:
                 fee_receipt.append("fee_category", {
                     "fee_category": fee_category,
                     "amount": fee_amounts[fee_category]

@@ -54,42 +54,6 @@ class CMAP(Document):
                         child.real_date_updated_on = frappe.utils.now_datetime()
                         break
 
-    def before_validate(self, method=None):
-
-        added_broadcasts = [product.get("broadcast") for product in self.products] or []
-        added_parent_notes = [
-            product.get("parent_note") for product in self.products
-        ] or []
-        added_home_works = [product.get("home_work") for product in self.products] or []
-        added_material_required = [
-            product.get("material_required") for product in self.products
-        ] or []
-        added_class_works = [
-            product.get("class_work") for product in self.products
-        ] or []
-        generate_text_from_unique_notes(
-            self, "Broadcast", added_broadcasts, field="broadcast_text"
-        )
-        generate_text_from_unique_notes(
-            self, "Parent Note", added_parent_notes, field="parent_notes"
-        )
-        generate_text_from_unique_notes(
-            self, "Home Work", added_home_works, field="home_work"
-        )
-        generate_text_from_unique_notes(
-            self, "Class Work", added_class_works, field="class_work"
-        )
-        generate_text_from_unique_notes(
-            self,
-            "Material Required",
-            added_material_required,
-            field="material_required",
-        )
-
-        self.item_code_field = ", ".join(
-            (str(item.get("item", "")) or "" for item in self.products) or [""]
-        )
-
     def validate(self, method=None):
         fields = frappe.get_meta("Item Detail").fields
         mandatory = [i.get("fieldname") for i in fields if i.get("reqd") == 1]

@@ -137,7 +137,7 @@ class RolloverTool(Document):
 				next_program = next_program or programs[i+1]
 
 				next_yr =  next_academic_year(self.academic_year)
-				students = self.get_students(program.name)
+				students = self.get_program_students(program.name)
 				for j,student in enumerate(students):
 					division = self.get_division(student,next_program.name)
 					if not division:
@@ -172,7 +172,7 @@ class RolloverTool(Document):
 		self.save()
 		
 
-	def get_students(self,program):
+	def get_program_students(self, program):
 		query = """
 					SELECT pe.student, pe.student_name,  pe.student_group, pe.program,`tabStudent`.possible_dropout from 
 						`tabProgram Enrollment` as pe

@@ -657,7 +657,7 @@ def enter_remark_mark(ref_no, assessment_group, remark_data):
 def enter_column_wise_mark(data, hashed_columns, filters):
     student_data = {}
     student_list = hashed_columns.keys() or []
-    students = [{"ref_no": student for student in student_list}]
+    students = [{"ref_no": student} for student in student_list]
 
     earlier_questions = get_desc_earlier_marks(filters, students, return_hash=True)
 

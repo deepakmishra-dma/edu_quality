@@ -419,16 +419,6 @@ def update_lead_status(doc, method=None):
 
 def append_program_enrollment(doc, method=None):
     return
-    student.append(
-        "class_details",
-        {
-            "program_enrollment": doc.name,
-            "academic_year": doc.academic_year,
-            "student_group": doc.student_group,
-            "payment_plan": doc.payment_plan,
-        },
-    )
-    student.save()
 
 
 def remove_program_enrollment(doc, method=None):

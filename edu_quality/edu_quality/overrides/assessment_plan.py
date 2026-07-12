@@ -1,4 +1,5 @@
 import frappe
+from frappe import _
 from education.education.doctype.assessment_plan.assessment_plan import AssessmentPlan
 from edu_quality.public.py.utils import extract_year_from_academic_year_name
 from edu_quality.edu_quality.server_scripts.utils import current_academic_year

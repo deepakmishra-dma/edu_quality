@@ -569,7 +569,6 @@ def serialize_lead_to_application(doc: dict):
         "pincode": doc.get("pincode"),
         "state": doc.get("state"),
         "city": doc.get("city"),
-        "last_name": doc.get("last_name"),
         "mother_f_name": doc.get("mothers_name"),
         "date_of_birth": doc.get("date_of_birth"),
         "student_mobile_number": doc.get("fathers_phone") or doc.get("mothers_phone"),
