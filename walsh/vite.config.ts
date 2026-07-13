@@ -1,23 +1,23 @@
-import path from 'path';
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react'
-import proxyOptions from './proxyOptions';
+import path from "path";
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import proxyOptions from "./proxyOptions";
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   server: {
     port: 8080,
-    proxy: proxyOptions
+    proxy: proxyOptions,
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, 'src')
-    }
+      "@": path.resolve(__dirname, "src"),
+    },
   },
   build: {
-    outDir: '../edu_quality/public/walsh',
+    outDir: "../edu_quality/public/walsh",
     emptyOutDir: true,
-    target: 'es2015',
+    target: "es2015",
   },
 });

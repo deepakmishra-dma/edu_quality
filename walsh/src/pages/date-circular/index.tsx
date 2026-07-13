@@ -64,7 +64,7 @@ const DateCmap = () => {
     classError ||
     !classDetails?.data?.message ||
     Object.keys(classDetails?.data?.message).length == 0;
-    
+
   return (
     <Box>
       <Stack

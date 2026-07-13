@@ -1,4 +1,4 @@
-import {ColorScheme, MantineThemeOverride} from "@mantine/core";
+import { ColorScheme, MantineThemeOverride } from "@mantine/core";
 
 const theme = (colorScheme: ColorScheme): MantineThemeOverride => ({
   ...{
@@ -26,6 +26,6 @@ const theme = (colorScheme: ColorScheme): MantineThemeOverride => ({
   },
   colorScheme: colorScheme,
   fontFamily: "Inter, sans-serif",
-})
+});
 
-export default theme
+export default theme;

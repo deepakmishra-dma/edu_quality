@@ -1,4 +1,4 @@
-frappe.listview_settings['Lead'] = {
+frappe.listview_settings["Lead"] = {
   hide_name_column: true,
   button: {
     show(doc) {
@@ -8,20 +8,21 @@ frappe.listview_settings['Lead'] = {
       return '<img src="https://static.vecteezy.com/system/resources/thumbnails/000/423/339/small/Multimedia__2850_29.jpg" width="14",height="14">';
     },
     get_description(doc) {
-      return __('Copy {0}', [`${doc.fathers_phone}`])
+      return __("Copy {0}", [`${doc.fathers_phone}`]);
     },
     action(doc) {
-      var tempTextarea = document.createElement('textarea');
+      var tempTextarea = document.createElement("textarea");
       tempTextarea.value = doc.fathers_phone;
       document.body.appendChild(tempTextarea);
       tempTextarea.select();
-      document.execCommand('copy');
+      document.execCommand("copy");
       document.body.removeChild(tempTextarea);
-    }
+    },
   },
   onload: function (list_view) {
     list_view.page.add_action_item("Create a Broadcast Group", () => {
-      const selectedLeads = list_view?.get_checked_items(true); console.log(selectedLeads)
+      const selectedLeads = list_view?.get_checked_items(true);
+      console.log(selectedLeads);
       const broadCastDialog = new frappe.ui.Dialog({
         title: "Create a BroadCast Group",
         fields: [
@@ -37,62 +38,65 @@ frappe.listview_settings['Lead'] = {
         primary_action_label: "Join",
 
         primary_action: async function (values) {
-
           const payload = {
-
-            "group_members": selectedLeads?.map((lead) => { return { member_name: lead } }) || []
-          }
+            group_members:
+              selectedLeads?.map((lead) => {
+                return { member_name: lead };
+              }) || [],
+          };
           try {
-            const headers = new Headers()
-            headers.append('X-Frappe-CSRF-Token', frappe.csrf_token)
-            headers.append('content', 'application/json')
-            const groupName = values.group_name
-            const doc = await fetch(`/api/resource/Broadcast Group/${groupName}`, { headers: headers })
-            const docData = await doc.json()
-            payload.group_members = [...(docData.data.group_members || []), ...payload.group_members]
-            group_hash = {}
-          
-            payload.group_members = payload.group_members.filter((member, index, array) => {
-              if (!group_hash[member.member_name]) {
-                group_hash[member.member_name] = 1
-                return true
-              }
-              else return false
-            })
+            const headers = new Headers();
+            headers.append("X-Frappe-CSRF-Token", frappe.csrf_token);
+            headers.append("content", "application/json");
+            const groupName = values.group_name;
+            const doc = await fetch(
+              `/api/resource/Broadcast Group/${groupName}`,
+              { headers: headers }
+            );
+            const docData = await doc.json();
+            payload.group_members = [
+              ...(docData.data.group_members || []),
+              ...payload.group_members,
+            ];
+            group_hash = {};
 
-            const res = await fetch(`/api/resource/Broadcast Group/${groupName}`, {
-              method: 'PUT',
-              headers: headers, body: JSON.stringify(payload)
-            })
+            payload.group_members = payload.group_members.filter(
+              (member, index, array) => {
+                if (!group_hash[member.member_name]) {
+                  group_hash[member.member_name] = 1;
+                  return true;
+                } else return false;
+              }
+            );
+
+            const res = await fetch(
+              `/api/resource/Broadcast Group/${groupName}`,
+              {
+                method: "PUT",
+                headers: headers,
+                body: JSON.stringify(payload),
+              }
+            );
 
             if (res.status === 200) {
               broadCastDialog.hide();
-              const json = await res.json()
+              const json = await res.json();
 
               frappe.msgprint({
-                title: __('Success'),
-                message: __('Broadcast Group Joined Successfully'),
+                title: __("Success"),
+                message: __("Broadcast Group Joined Successfully"),
                 primary_action: {
                   action(values) {
-                    frappe.set_route("app", "broadcast-group", groupName)
-                  }
-                }
+                    frappe.set_route("app", "broadcast-group", groupName);
+                  },
+                },
               });
             }
-
-          }
-
-          catch (e) {
-
-          }
-
+          } catch (e) {}
         },
       });
 
       broadCastDialog.show();
-    })
-
-
-
-  }
-}
+    });
+  },
+};

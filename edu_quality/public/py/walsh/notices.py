@@ -1,139 +1,130 @@
+import json
+
 import frappe
 
 from edu_quality.public.py.walsh.admin import render_jinja
-
-from edu_quality.public.py.walsh.login import logout
 from edu_quality.public.py.walsh.login import (
-    is_disabled,
-    match_otp,
-    create_otp,
-    send_otp_to_email,
-    send_otp_to_sms,
-    get_guardian,
+	create_otp,
+	get_guardian,
+	is_disabled,
+	logout,
+	match_otp,
+	send_otp_to_email,
+	send_otp_to_sms,
 )
-from edu_quality.public.py.walsh.login import is_disabled
-import json
 
 
 @frappe.whitelist()
 def get_students():
-    user = frappe.session.user
+	user = frappe.session.user
 
-    cache_key = f"walsh:guardian_students_{user}"
-    students_cache = frappe.cache().get_value(cache_key)
+	cache_key = f"walsh:guardian_students_{user}"
+	students_cache = frappe.cache().get_value(cache_key)
 
-    if students_cache:
-        return students_cache
+	if students_cache:
+		return students_cache
 
-    guardian = frappe.get_cached_doc("Guardian", {"user": user})
-    all_student_data = frappe.get_all(
-        "Student", filters={"guardian": guardian.name}, fields=["*"]
-    )
+	guardian = frappe.get_cached_doc("Guardian", {"user": user})
+	all_student_data = frappe.get_all("Student", filters={"guardian": guardian.name}, fields=["*"])
 
-    student_disabled = all(student.get("enabled") == 0 for student in all_student_data)
-    # if all of student disabled log out the parent
-    if student_disabled:
-        logout()
+	student_disabled = all(student.get("enabled") == 0 for student in all_student_data)
+	# if all of student disabled log out the parent
+	if student_disabled:
+		logout()
 
-        frappe.throw(("Not permitted"), frappe.PermissionError)
-        return []
+		frappe.throw(("Not permitted"), frappe.PermissionError)
+		return []
 
-    students = [student for student in all_student_data if student.get("enabled")]
+	students = [student for student in all_student_data if student.get("enabled")]
 
-    # Cache the results for 10 minutes
-    frappe.cache().set_value(cache_key, students, expires_in_sec=600)
-    return students
+	# Cache the results for 10 minutes
+	frappe.cache().set_value(cache_key, students, expires_in_sec=600)
+	return students
 
 
 def get_enrollments(student_names):
-    user = frappe.session.user
-    cache_key = f"walsh:enrollments_{user}"
-    enrollments_cache = frappe.cache().get_value(cache_key)
+	user = frappe.session.user
+	cache_key = f"walsh:enrollments_{user}"
+	enrollments_cache = frappe.cache().get_value(cache_key)
 
-    if enrollments_cache:
-        return enrollments_cache
+	if enrollments_cache:
+		return enrollments_cache
 
-    enrollments_values = {
-        "student_names": student_names,
-    }
+	enrollments_values = {
+		"student_names": student_names,
+	}
 
-    enrollments = frappe.db.sql(
-        """
+	enrollments = frappe.db.sql(
+		"""
         select name, custom_school, academic_year, student, student_group, program
         from `tabProgram Enrollment`
         where student in %(student_names)s AND docstatus = 1
         group by custom_school, academic_year, student, student_group, program;
     """,
-        values=enrollments_values,
-        as_dict=1,
-    )
+		values=enrollments_values,
+		as_dict=1,
+	)
 
-    # Cache the results for 10 minutes
-    frappe.cache().set_value(cache_key, enrollments, expires_in_sec=600)
-    return enrollments
+	# Cache the results for 10 minutes
+	frappe.cache().set_value(cache_key, enrollments, expires_in_sec=600)
+	return enrollments
 
 
 @frappe.whitelist(allow_guest=True)
 def get_all_notices(
-    cursor_creation=None,
-    cursor_name=None,
-    limit=10,
-    stared_only=False,
-    archived_only=False,
-    category=None,
+	cursor_creation=None,
+	cursor_name=None,
+	limit=10,
+	stared_only=False,
+	archived_only=False,
+	category=None,
 ):
-    if limit:
-        limit = int(limit)
-    if not limit:
-        limit = 1000
+	if limit:
+		limit = int(limit)
+	if not limit:
+		limit = 1000
 
-    user = frappe.session.user
-    if user == "Guest":
-        return get_guest_notices(cursor_creation, cursor_name, limit, category)
-    return get_user_notices(
-        cursor_creation, cursor_name, limit, stared_only, archived_only, category
-    )
+	user = frappe.session.user
+	if user == "Guest":
+		return get_guest_notices(cursor_creation, cursor_name, limit, category)
+	return get_user_notices(cursor_creation, cursor_name, limit, stared_only, archived_only, category)
 
 
 def get_guest_notices(cursor_creation, cursor_name, limit, category):
-    cursor = None
-    if cursor_name and cursor_creation:
-        cursor = {
-            "creation": cursor_creation,
-            "name": cursor_name,
-        }
+	cursor = None
+	if cursor_name and cursor_creation:
+		cursor = {
+			"creation": cursor_creation,
+			"name": cursor_name,
+		}
 
-    if type(category) == list:
-        formatted_category = category
-    else:
-        formatted_category = [category]
+	if isinstance(category, list):
+		formatted_category = category
+	else:
+		formatted_category = [category]
 
-    notices_values = {
-        "categories": formatted_category,
-        "limit": limit + 1,
-        "cursor_creation": cursor.get("creation") if cursor else None,
-        "cursor_name": cursor.get("name") if cursor else None,
-    }
+	notices_values = {
+		"categories": formatted_category,
+		"limit": limit + 1,
+		"cursor_creation": cursor.get("creation") if cursor else None,
+		"cursor_name": cursor.get("name") if cursor else None,
+	}
 
-    cursor_condition = (
-        "AND (creation <= %(cursor_creation)s AND name != %(cursor_name)s)"
-        if cursor
-        else ""
-    )
-    exists_clause = (
-        """
+	cursor_condition = "AND (creation <= %(cursor_creation)s AND name != %(cursor_name)s)" if cursor else ""
+	exists_clause = (
+		"""
             and exists (
-                select 1 
-                from `tabSchool Notice Category Detail` ncd 
+                select 1
+                from `tabSchool Notice Category Detail` ncd
                 where ncd.parent = notice.name
                 and ncd.school_notice_category in %(categories)s
             )
             """
-        if category
-        else ""
-    )
-    notices = frappe.db.sql(
-        f"""
+		if category
+		else ""
+	)
+	notices = frappe.db.sql(
+		f"""
         select *
         from `tabSchool Notice` notice
         where is_public = 1
@@ -142,93 +133,87 @@ def get_guest_notices(cursor_creation, cursor_name, limit, category):
         order by creation desc
         limit %(limit)s
     """,
-        values=notices_values,
-        as_dict=1,
-    )
+		values=notices_values,
+		as_dict=1,
+	)
 
-    has_more = len(notices) > limit
+	has_more = len(notices) > limit
 
-    next_cursor = (
-        {
-            "creation": notices[-1].get("creation"),
-            "name": notices[-1].get("name"),
-        }
-        if has_more
-        else None
-    )
+	next_cursor = (
+		{
+			"creation": notices[-1].get("creation"),
+			"name": notices[-1].get("name"),
+		}
+		if has_more
+		else None
+	)
 
-    return {
-        "notices": notices[:limit],
-        "next_cursor": next_cursor,
-        "has_more": has_more,
-    }
+	return {
+		"notices": notices[:limit],
+		"next_cursor": next_cursor,
+		"has_more": has_more,
+	}
 
 
-def get_user_notices(
-    cursor_creation, cursor_name, limit, stared_only, archived_only, category
-):
-    user = frappe.session.user
-    if type(category) == list:
-        formatted_category = category
-    else:
-        formatted_category = [category]
+def get_user_notices(cursor_creation, cursor_name, limit, stared_only, archived_only, category):
+	user = frappe.session.user
+	if isinstance(category, list):
+		formatted_category = category
+	else:
+		formatted_category = [category]
 
-    guardian = frappe.get_cached_doc("Guardian", {"user": user})
-    cursor = None
-    if cursor_name and cursor_creation:
-        cursor = {
-            "creation": cursor_creation,
-            "name": cursor_name,
-        }
-    if is_disabled(guardian.name, True):
-        return {
-            "success": False,
-            "data": [],
-        }
-    students = get_students()
-    student_dict = {s.name: s for s in students}
-    student_names = [s.name for s in students]
+	guardian = frappe.get_cached_doc("Guardian", {"user": user})
+	cursor = None
+	if cursor_name and cursor_creation:
+		cursor = {
+			"creation": cursor_creation,
+			"name": cursor_name,
+		}
+	if is_disabled(guardian.name, True):
+		return {
+			"success": False,
+			"data": [],
+		}
+	students = get_students()
+	student_dict = {s.name: s for s in students}
+	student_names = [s.name for s in students]
 
-    if not len(students):
-        return {
-            "error": True,
-            "error_type": "no_students",
-            "error_message": "No Students Found",
-        }
+	if not len(students):
+		return {
+			"error": True,
+			"error_type": "no_students",
+			"error_message": "No Students Found",
+		}
 
-    enrollments = get_enrollments(student_names)
-    divisions = [e.student_group for e in enrollments]
-    classes = [e.program for e in enrollments]
+	enrollments = get_enrollments(student_names)
+	divisions = [e.student_group for e in enrollments]
+	classes = [e.program for e in enrollments]
 
-    notices_values = {
-        "student_names": student_names,
-        "classes": classes,
-        "divisions": divisions,
-        "categories": formatted_category,
-        "limit": limit + 1,
-        "cursor_creation": cursor.get("creation") if cursor else None,
-        "cursor_name": cursor.get("name") if cursor else None,
-    }
+	notices_values = {
+		"student_names": student_names,
+		"classes": classes,
+		"divisions": divisions,
+		"categories": formatted_category,
+		"limit": limit + 1,
+		"cursor_creation": cursor.get("creation") if cursor else None,
+		"cursor_name": cursor.get("name") if cursor else None,
+	}
 
-    cursor_condition = (
-        "AND (creation <= %(cursor_creation)s AND name != %(cursor_name)s)"
-        if cursor
-        else ""
-    )
-    exists_clause = (
-        """
+	cursor_condition = "AND (creation <= %(cursor_creation)s AND name != %(cursor_name)s)" if cursor else ""
+	exists_clause = (
+		"""
             and exists (
-                select 1 
-                from `tabSchool Notice Category Detail` ncd 
+                select 1
+                from `tabSchool Notice Category Detail` ncd
                 where ncd.parent = notice.name
                 and ncd.school_notice_category in %(categories)s
             )
             """
-        if category
-        else ""
-    )
-    notices = frappe.db.sql(
-        f"""
+		if category
+		else ""
+	)
+	notices = frappe.db.sql(
+		f"""
         select *
         from `tabSchool Notice` notice
         where ((student in %(student_names)s and is_generic_notice = 0)
@@ -243,357 +228,337 @@ def get_user_notices(
         order by creation desc
         limit %(limit)s
     """,
-        values=notices_values,
-        as_dict=1,
-    )
-    final_notices = []
-    for notice in notices:
-        if notice.is_generic_notice:
-            for student in students:
-                for enrollment in enrollments:
-                    if (
-                        notice.division == enrollment.student_group
-                        or (
-                            not notice.division
-                            and notice.get("class") == enrollment.program
-                        )
-                    ) and (
-                        student.name == enrollment.student
-                        and notice.student_status == student.get("student_status")
-                        and notice.academic_year == enrollment.academic_year
-                    ):
-                        final_notices.append(
-                            {
-                                **notice,
-                                "notice": render_jinja(notice.notice, student),
-                                "subject": render_jinja(notice.subject, student),
-                                "student_first_name": student_dict[
-                                    student.name
-                                ].first_name,
-                                "student": student.name,
-                            }
-                        )
-        else:
-            if notice.get("is_public"):
-                final_notices.append({**notice})
-            else:
-                final_notices.append(
-                    {
-                        **notice,
-                        "student_first_name": student_dict[notice.student].first_name,
-                    }
-                )
-    try:
-        notice_statuses = frappe.get_all(
-            "School Notice Status",
-            filters=[
-                ["student", "in", student_names],
-                ["notice", "in", [notice.get("name") for notice in final_notices]],
-                ["user", "=", user],
-            ],
-            fields=["*"],
-        )
+		values=notices_values,
+		as_dict=1,
+	)
+	final_notices = []
+	for notice in notices:
+		if notice.is_generic_notice:
+			for student in students:
+				for enrollment in enrollments:
+					if (
+						notice.division == enrollment.student_group
+						or (not notice.division and notice.get("class") == enrollment.program)
+					) and (
+						student.name == enrollment.student
+						and notice.student_status == student.get("student_status")
+						and notice.academic_year == enrollment.academic_year
+					):
+						final_notices.append(
+							{
+								**notice,
+								"notice": render_jinja(notice.notice, student),
+								"subject": render_jinja(notice.subject, student),
+								"student_first_name": student_dict[student.name].first_name,
+								"student": student.name,
+							}
+						)
+		else:
+			if notice.get("is_public"):
+				final_notices.append({**notice})
+			else:
+				final_notices.append(
+					{
+						**notice,
+						"student_first_name": student_dict[notice.student].first_name,
+					}
+				)
+	try:
+		notice_statuses = frappe.get_all(
+			"School Notice Status",
+			filters=[
+				["student", "in", student_names],
+				["notice", "in", [notice.get("name") for notice in final_notices]],
+				["user", "=", user],
+			],
+			fields=["*"],
+		)
 
-        for notice in final_notices:
-            for notice_status in notice_statuses:
-                if (
-                    notice.get("name") == notice_status.notice
-                    and notice.get("student") == notice_status.student
-                ):
-                    notice["is_read"] = notice_status.is_read
-                    notice["is_archived"] = notice_status.is_archived
-                    notice["is_stared"] = notice_status.is_stared
-                    break
-    except Exception as e:
-        frappe.logger("notice").exception(e)
-    filtered_notices = [
-        notice
-        for notice in final_notices
-        if (
-            notice.get("is_stared")
-            if stared_only
-            else (
-                notice.get("is_archived")
-                if archived_only
-                else not notice.get("is_archived")
-            )
-        )
-    ]
+		for notice in final_notices:
+			for notice_status in notice_statuses:
+				if (
+					notice.get("name") == notice_status.notice
+					and notice.get("student") == notice_status.student
+				):
+					notice["is_read"] = notice_status.is_read
+					notice["is_archived"] = notice_status.is_archived
+					notice["is_stared"] = notice_status.is_stared
+					break
+	except Exception as e:
+		frappe.logger("notice").exception(e)
+	filtered_notices = [
+		notice
+		for notice in final_notices
+		if (
+			notice.get("is_stared")
+			if stared_only
+			else (notice.get("is_archived") if archived_only else not notice.get("is_archived"))
+		)
+	]
 
-    has_more = len(notices) > limit
+	has_more = len(notices) > limit
 
-    next_cursor = (
-        {
-            "creation": notices[-1].get("creation"),
-            "name": notices[-1].get("name"),
-        }
-        if has_more
-        else None
-    )
-    return {
-        "notices": filtered_notices,
-        "next_cursor": next_cursor,
-        "has_more": has_more,
-    }
+	next_cursor = (
+		{
+			"creation": notices[-1].get("creation"),
+			"name": notices[-1].get("name"),
+		}
+		if has_more
+		else None
+	)
+	return {
+		"notices": filtered_notices,
+		"next_cursor": next_cursor,
+		"has_more": has_more,
+	}
 
 
 def create_or_update_notice_status(notice, student, statues):
-    user = frappe.session.user
-    if frappe.db.exists(
-        "School Notice Status", {"notice": notice, "user": user, "student": student}
-    ):
-        notice_status = frappe.get_doc(
-            "School Notice Status", {"notice": notice, "user": user, "student": student}
-        )
-        notice_status.update(statues)
-        notice_status.save(ignore_permissions=True)
-        return notice_status
-    else:
-        notice_status = frappe.new_doc("School Notice Status")
-        notice_status.user = user
-        notice_status.notice = notice
-        notice_status.student = student
-        notice_status.update(statues)
-        notice_status.insert(ignore_permissions=True)
-        return notice_status
+	user = frappe.session.user
+	if frappe.db.exists("School Notice Status", {"notice": notice, "user": user, "student": student}):
+		notice_status = frappe.get_doc(
+			"School Notice Status", {"notice": notice, "user": user, "student": student}
+		)
+		notice_status.update(statues)
+		notice_status.save(ignore_permissions=True)
+		return notice_status
+	else:
+		notice_status = frappe.new_doc("School Notice Status")
+		notice_status.user = user
+		notice_status.notice = notice
+		notice_status.student = student
+		notice_status.update(statues)
+		notice_status.insert(ignore_permissions=True)
+		return notice_status
 
 
 @frappe.whitelist()
 def mark_as_stared(notice, student, stared=True):
-    return create_or_update_notice_status(
-        notice, student, {"is_stared": 1 if stared else 0}
-    )
+	return create_or_update_notice_status(notice, student, {"is_stared": 1 if stared else 0})
 
 
 @frappe.whitelist()
 def mark_as_archived(notice, student, archived=True):
-    return create_or_update_notice_status(
-        notice, student, {"is_archived": 1 if archived else 0}
-    )
+	return create_or_update_notice_status(notice, student, {"is_archived": 1 if archived else 0})
 
 
 @frappe.whitelist()
 def mark_as_read(notice, student, read=True):
-    return create_or_update_notice_status(
-        notice, student, {"is_read": 1 if read else 0}
-    )
+	return create_or_update_notice_status(notice, student, {"is_read": 1 if read else 0})
 
 
 @frappe.whitelist(allow_guest=True)
 def get_notice_by_id(id, student=None):
-    user = frappe.session.user
+	user = frappe.session.user
 
-    if user == "Guest":
-        school_notice_doc = frappe.get_cached_doc("School Notice", id)
-        if school_notice_doc.is_public:
-            return {
-                "data": school_notice_doc.as_dict(),
-            }
-        return {
-            "success": False,
-            "data": {},
-        }
+	if user == "Guest":
+		school_notice_doc = frappe.get_cached_doc("School Notice", id)
+		if school_notice_doc.is_public:
+			return {
+				"data": school_notice_doc.as_dict(),
+			}
+		return {
+			"success": False,
+			"data": {},
+		}
 
-    guardian = frappe.get_cached_doc("Guardian", {"user": user})
-    if is_disabled(guardian.name, True):
-        return {
-            "success": False,
-            "data": [],
-        }
-    school_notice_doc = frappe.get_cached_doc("School Notice", id)
-    school_notice = school_notice_doc.as_dict()
-    if student and school_notice.is_generic_notice:
-        student_doc = frappe.get_cached_doc("Student", student)
-        student_data = student_doc.as_dict()
-        school_notice = {
-            **school_notice,
-            "notice": render_jinja(school_notice_doc.notice, student_data),
-            "subject": render_jinja(school_notice_doc.subject, student_data),
-            "student_first_name": student_doc.first_name,
-            "student": student_doc.name,
-        }
-    elif school_notice_doc.student:
-        school_notice_status = (
-            frappe.get_value(
-                "School Notice Status",
-                {"notice": id, "user": user, "student": student},
-                ["is_read", "is_archived", "is_stared"],
-                as_dict=True,
-            )
-            or {}
-        )
+	guardian = frappe.get_cached_doc("Guardian", {"user": user})
+	if is_disabled(guardian.name, True):
+		return {
+			"success": False,
+			"data": [],
+		}
+	school_notice_doc = frappe.get_cached_doc("School Notice", id)
+	school_notice = school_notice_doc.as_dict()
+	if student and school_notice.is_generic_notice:
+		student_doc = frappe.get_cached_doc("Student", student)
+		student_data = student_doc.as_dict()
+		school_notice = {
+			**school_notice,
+			"notice": render_jinja(school_notice_doc.notice, student_data),
+			"subject": render_jinja(school_notice_doc.subject, student_data),
+			"student_first_name": student_doc.first_name,
+			"student": student_doc.name,
+		}
+	elif school_notice_doc.student:
+		school_notice_status = (
+			frappe.get_value(
+				"School Notice Status",
+				{"notice": id, "user": user, "student": student},
+				["is_read", "is_archived", "is_stared"],
+				as_dict=True,
+			)
+			or {}
+		)
 
-        school_notice["student_first_name"] = frappe.db.get_value(
-            "Student", school_notice.student, "first_name"
-        )
-        school_notice = {**school_notice, **school_notice_status}
+		school_notice["student_first_name"] = frappe.db.get_value(
+			"Student", school_notice.student, "first_name"
+		)
+		school_notice = {**school_notice, **school_notice_status}
 
-    try:
-        create_or_update_notice_status(id, student, {"is_read": 1})
-        frappe.db.commit()
-    except:
-        pass
+	try:
+		create_or_update_notice_status(id, student, {"is_read": 1})
+		frappe.db.commit()
+	except:
+		pass
 
-    return {
-        "data": school_notice,
-    }
+	return {
+		"data": school_notice,
+	}
 
 
 @frappe.whitelist()
 def request_otp(id, student=None):
-    user = frappe.session.user
-    verify_student_in_session(student)
-    guardian = get_guardian(None, user)
-    if not guardian:
-        frappe.throw(("Not permitted"), frappe.PermissionError)
-    try:
-        notice = frappe.get_cached_doc("School Notice", id)
-    except Exception as e:
-        return {"success": False, "message": str(e)}
+	user = frappe.session.user
+	verify_student_in_session(student)
+	guardian = get_guardian(None, user)
+	if not guardian:
+		frappe.throw(("Not permitted"), frappe.PermissionError)
+	try:
+		notice = frappe.get_cached_doc("School Notice", id)
+	except Exception as e:
+		return {"success": False, "message": str(e)}
 
-    if notice.requires_approval and not notice.is_generic_notice:
-        otp = create_otp(user, f"{user}:{id}")
-        send_otp_to_email(guardian.get("email_address"), otp)
-        send_otp_to_sms(guardian.get("mobile_number"), otp)
-        return {"success": True, "message": "OTP sent successfully"}
+	if notice.requires_approval and not notice.is_generic_notice:
+		otp = create_otp(user, f"{user}:{id}")
+		send_otp_to_email(guardian.get("email_address"), otp)
+		send_otp_to_sms(guardian.get("mobile_number"), otp)
+		return {"success": True, "message": "OTP sent successfully"}
 
-    return {"success": False}
+	return {"success": False}
 
 
 @frappe.whitelist()
 def verify_otp(id, otp, student=None, approve=False):
-    user = frappe.session.user
-    verify_student_in_session(student)
-    try:
-        notice = frappe.get_cached_doc("School Notice", id)
-        validate_notice_approval(notice)
+	user = frappe.session.user
+	verify_student_in_session(student)
+	try:
+		notice = frappe.get_cached_doc("School Notice", id)
+		validate_notice_approval(notice)
 
-        if match_otp(user, otp, f"{user}:{id}"):
-            approval_status = "Rejected"
-            if approve:
-                approval_status = "Approved"
-            frappe.db.set_value("School Notice", id, "approval_status", approval_status)
-            create_undertaking(notice.student, notice.name, otp)
-            return {"success": True, "message": "Correct Otp"}
-        return {"success": False, "message": "Incorrect Otp"}
-    except Exception as e:
-        return {"success": False, "message": str(e)}
+		if match_otp(user, otp, f"{user}:{id}"):
+			approval_status = "Rejected"
+			if approve:
+				approval_status = "Approved"
+			frappe.db.set_value("School Notice", id, "approval_status", approval_status)
+			create_undertaking(notice.student, notice.name, otp)
+			return {"success": True, "message": "Correct Otp"}
+		return {"success": False, "message": "Incorrect Otp"}
+	except Exception as e:
+		return {"success": False, "message": str(e)}
 
 
 def verify_student_in_session(student):
-    students = get_students()
+	students = get_students()
 
-    student_names = [s.name for s in students]
+	student_names = [s.name for s in students]
 
-    if student not in student_names:
-        frappe.throw(("Not permitted"), frappe.PermissionError)
+	if student not in student_names:
+		frappe.throw(("Not permitted"), frappe.PermissionError)
 
 
 def validate_notice_approval(notice):
-    students = get_students()
+	students = get_students()
 
-    student_names = [s.name for s in students]
+	student_names = [s.name for s in students]
 
-    if notice.student not in student_names:
-        frappe.throw(("Not permitted"), frappe.PermissionError)
+	if notice.student not in student_names:
+		frappe.throw(("Not permitted"), frappe.PermissionError)
 
-    if not notice.requires_approval:
-        raise Exception("Notice doesn't require approval")
-    if notice.is_generic_notice:
-        raise Exception("Generic Notices cannot be approved/rejected")
-    if notice.approval_status != "Pending":
-        raise Exception("Notice already approved")
+	if not notice.requires_approval:
+		raise Exception("Notice doesn't require approval")
+	if notice.is_generic_notice:
+		raise Exception("Generic Notices cannot be approved/rejected")
+	if notice.approval_status != "Pending":
+		raise Exception("Notice already approved")
 
 
 def create_undertaking(student, notice_name, otp):
-    request = frappe.local.request
-    student_doc = frappe.get_cached_doc("Student", student)
-    user_agent = request.headers.get("User-Agent", "Unknown")
-    class_name = student_doc.program
-    fathers_name = frappe.get_value(
-        "Student Guardian", {"parent": student, "relation": "Father"}, "guardian_name"
-    )
-    mothers_name = frappe.get_value(
-        "Student Guardian", {"parent": student, "relation": "Mother"}, "guardian_name"
-    )
+	request = frappe.local.request
+	student_doc = frappe.get_cached_doc("Student", student)
+	user_agent = request.headers.get("User-Agent", "Unknown")
+	class_name = student_doc.program
+	fathers_name = frappe.get_value(
+		"Student Guardian", {"parent": student, "relation": "Father"}, "guardian_name"
+	)
+	mothers_name = frappe.get_value(
+		"Student Guardian", {"parent": student, "relation": "Mother"}, "guardian_name"
+	)
 
-    if not frappe.db.exists(
-        "Undertaking Submission",
-        {
-            "student": student_doc.name,
-            "program": class_name,
-            "reference_doctype": "School Notice",
-            "reference_docname": notice_name,
-        },
-    ):
-        new_doc = frappe.new_doc("Undertaking Submission")
-        new_doc.student = student_doc.name
-        new_doc.reference_docname = notice_name
-        new_doc.program = class_name
-        new_doc.reference_doctype = "School Notice"
-        new_doc.reference_no = student_doc.reference_number
-        new_doc.fathers_name = fathers_name
-        new_doc.mothers_name = mothers_name
-        new_doc.submitted_with_response = "Yes"
-        new_doc.submitted_date = frappe.utils.nowdate()
-        new_doc.otp_entered = otp
-        # new_doc.otp_sent_to_contact_no = get_mobile_number(student_doc)
-        new_doc.otp_sent_to_email_id = student_doc.student_email_id
-        new_doc.ip_address = frappe.local.request_ip
-        new_doc.user_info = user_agent
-        new_doc.insert(ignore_permissions=True)
+	if not frappe.db.exists(
+		"Undertaking Submission",
+		{
+			"student": student_doc.name,
+			"program": class_name,
+			"reference_doctype": "School Notice",
+			"reference_docname": notice_name,
+		},
+	):
+		new_doc = frappe.new_doc("Undertaking Submission")
+		new_doc.student = student_doc.name
+		new_doc.reference_docname = notice_name
+		new_doc.program = class_name
+		new_doc.reference_doctype = "School Notice"
+		new_doc.reference_no = student_doc.reference_number
+		new_doc.fathers_name = fathers_name
+		new_doc.mothers_name = mothers_name
+		new_doc.submitted_with_response = "Yes"
+		new_doc.submitted_date = frappe.utils.nowdate()
+		new_doc.otp_entered = otp
+		# new_doc.otp_sent_to_contact_no = get_mobile_number(student_doc)
+		new_doc.otp_sent_to_email_id = student_doc.student_email_id
+		new_doc.ip_address = frappe.local.request_ip
+		new_doc.user_info = user_agent
+		new_doc.insert(ignore_permissions=True)
 
 
 @frappe.whitelist(allow_guest=True)
 def get_school_notice_category():
-    filters = {}
-    if frappe.session.user == "Guest":
-        filters["is_public"] = 1
-    
-    categories = frappe.get_all(
-        "School Notice Category",
-        filters=filters,
-        fields=["name"],
-        order_by="name asc",
-    )
-    
-    user = frappe.session.user
-    
-    if user == "Guest":
-        # Return categories without counts for guests
-        return categories
-    
-    # Get counts only for logged in users
-    guardian = frappe.get_cached_doc("Guardian", {"user": user})
-    students = frappe.get_all(
-        "Student", 
-        filters={"guardian": guardian.name, "enabled": 1}, 
-        fields=["name"]
-    )
-    student_names = [s.name for s in students]
-    
-    enrollments = get_enrollments(student_names)
-    divisions = [e.student_group for e in enrollments]
-    classes = [e.program for e in enrollments]
-    
-    notice_counts = frappe.db.sql("""
-        SELECT 
-            ncd.school_notice_category, 
-            COUNT(DISTINCT CASE 
-                WHEN ns.is_read IS NULL OR ns.is_read = 0 
-                THEN n.name 
+	filters = {}
+	if frappe.session.user == "Guest":
+		filters["is_public"] = 1
+
+	categories = frappe.get_all(
+		"School Notice Category",
+		filters=filters,
+		fields=["name"],
+		order_by="name asc",
+	)
+
+	user = frappe.session.user
+
+	if user == "Guest":
+		# Return categories without counts for guests
+		return categories
+
+	# Get counts only for logged in users
+	guardian = frappe.get_cached_doc("Guardian", {"user": user})
+	students = frappe.get_all("Student", filters={"guardian": guardian.name, "enabled": 1}, fields=["name"])
+	student_names = [s.name for s in students]
+
+	enrollments = get_enrollments(student_names)
+	divisions = [e.student_group for e in enrollments]
+	classes = [e.program for e in enrollments]
+
+	notice_counts = frappe.db.sql(
+		"""
+        SELECT
+            ncd.school_notice_category,
+            COUNT(DISTINCT CASE
+                WHEN ns.is_read IS NULL OR ns.is_read = 0
+                THEN n.name
                 END
             ) as count
         FROM `tabSchool Notice` n
         INNER JOIN `tabSchool Notice Category Detail` ncd ON ncd.parent = n.name
-        LEFT JOIN `tabSchool Notice Status` ns ON 
-            ns.notice = n.name AND 
+        LEFT JOIN `tabSchool Notice Status` ns ON
+            ns.notice = n.name AND
             ns.user = %(user)s AND
             (ns.student = n.student OR n.is_generic_notice = 1)
         WHERE (
             (n.student IN %(students)s AND n.is_generic_notice = 0)
             OR (
-                n.is_generic_notice = 1 
+                n.is_generic_notice = 1
                 AND (
                     (n.division IN %(divisions)s)
                     OR (n.division IS NULL AND n.class IN %(classes)s)
@@ -602,16 +567,14 @@ def get_school_notice_category():
             OR (n.is_public = 1)
         )
         GROUP BY ncd.school_notice_category
-    """, {
-        "user": user,
-        "students": student_names,
-        "divisions": divisions,
-        "classes": classes
-    }, as_dict=True)
+    """,
+		{"user": user, "students": student_names, "divisions": divisions, "classes": classes},
+		as_dict=True,
+	)
 
-    count_map = {nc.school_notice_category: nc.count for nc in notice_counts}
-    
-    for category in categories:
-        category["notice_count"] = count_map.get(category.name, 0)
-    
-    return categories
+	count_map = {nc.school_notice_category: nc.count for nc in notice_counts}
+
+	for category in categories:
+		category["notice_count"] = count_map.get(category.name, 0)
+
+	return categories

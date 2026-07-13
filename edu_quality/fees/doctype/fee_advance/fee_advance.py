@@ -2,676 +2,726 @@
 # For license information, please see license.txt
 
 from datetime import datetime
-from edu_quality.public.py.discount import calculate_discount, get_discount_list
+
+import erpnext
+import frappe
 from erpnext.accounts.doctype.account.account import get_account_currency
 from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
-    get_accounting_dimensions,
+	get_accounting_dimensions,
 )
+from erpnext.accounts.general_ledger import make_gl_entries, make_reverse_gl_entries
 from erpnext.accounts.utils import get_fiscal_years
-from erpnext.accounts.general_ledger import make_reverse_gl_entries, make_gl_entries
-import frappe
-import erpnext
 from erpnext.controllers.accounts_controller import (
-    AccountsController,
-    set_balance_in_account_currency,
-    update_gl_dict_with_regional_fields,
+	AccountsController,
+	set_balance_in_account_currency,
+	update_gl_dict_with_regional_fields,
 )
-from frappe.utils import today
-from edu_quality.overrides import make_payment_request
-from frappe.utils import (
-    formatdate,
-    today,
-    flt
-)
+from frappe.utils import flt, formatdate, today
 
 from edu_quality.common.utils.progress import set_progress
 from edu_quality.edu_quality.server_scripts.payment_split import generate_split_payment
+from edu_quality.overrides import make_payment_request
+from edu_quality.public.py.discount import calculate_discount, get_discount_list
 
 
 class FeeAdvance(AccountsController):
-    def generate_split(self):
-        generate_split_payment(self)
+	def generate_split(self):
+		generate_split_payment(self)
 
-    def update_split(self):
-        self.reload()
-        generate_split_payment(self, update=True)
+	def update_split(self):
+		self.reload()
+		generate_split_payment(self, update=True)
 
+	def before_insert(self):
+		try:
+			percent = get_percent(self.payment_term, self.payment_plan)
+			components, amount = get_components(self.fee_structure, percent, self.is_rte)
+			self.amount = amount
+			self.outstanding_amount = amount
+			self.components = []
+			for component in components:
+				self.append("components", component)
+		except Exception as e:
+			frappe.logger("fee_advance").exception(e)
 
-    def before_insert(self):
-        try:
-            percent = get_percent(self.payment_term, self.payment_plan)
-            components, amount = get_components(self.fee_structure, percent, self.is_rte)
-            self.amount = amount
-            self.outstanding_amount = amount
-            self.components = []
-            for component in components:
-                self.append('components', component)
-        except Exception as e:
-            frappe.logger("fee_advance").exception(e)
+	def before_save(self):
+		if self.referral_amount:
+			if self.referral_amount > 0:
+				add_referral_discount(self)
+			elif self.referral_amount == 0:
+				remove_referral_discount(self)
 
+	def before_submit(self):
+		if frappe.get_value(
+			"Fees", {"student": self.student, "program": self.next_program, "docstatus": 1}
+		) or frappe.get_value(
+			"Fee Advance", {"student": self.student, "next_program": self.next_program, "docstatus": 1}
+		):
+			frappe.throw("Fees or Fee Advance are already present for this class, so you cannot submit it.")
+		payment_plan(self)
+		self.generate_split()
 
-    def before_save(self):
-        if self.referral_amount:
-            if self.referral_amount > 0:
-                add_referral_discount(self)
-            elif self.referral_amount == 0:
-                remove_referral_discount(self)
+	def before_update_after_submit(self):
+		if check_discounts_before_update(self):
+			return
+		try:
+			add_referral_discount(self)
+			pre_doc = self.get_doc_before_save()
+			if pre_doc.payment_plan != self.payment_plan:
+				payment_plan(self)
+			self.generate_split()
+		except Exception as e:
+			frappe.logger("pay_change").exception(e)
 
+	def validate(self):
+		self.set_missing_accounts_and_fields()
 
-    def before_submit(self):
-        if frappe.get_value("Fees",{"student":self.student,"program":self.next_program,"docstatus":1}) or frappe.get_value("Fee Advance",{"student":self.student,"next_program":self.next_program,"docstatus":1}):
-            frappe.throw("Fees or Fee Advance are already present for this class, so you cannot submit it.")
-        payment_plan(self)
-        self.generate_split()
+	def on_submit(self):
+		self.make_gl_entries()
+		create_payment_request(self)
 
-    def before_update_after_submit(self):
-        if check_discounts_before_update(self):
-            return
-        try:
-            add_referral_discount(self)
-            pre_doc = self.get_doc_before_save()
-            if pre_doc.payment_plan != self.payment_plan:
-                payment_plan(self)
-            self.generate_split()
-        except Exception as e:
-            frappe.logger("pay_change").exception(e)
+	def on_cancel(self):
+		if frappe.db.exists("Payment Request", {"reference_name": self.name, "docstatus": 1}):
+			doc = frappe.get_doc("Payment Request", {"reference_name": self.name, "docstatus": 1})
+			doc.cancel()
+		self.ignore_linked_doctypes = ("GL Entry", "Payment Ledger Entry")
+		make_reverse_gl_entries(voucher_type=self.doctype, voucher_no=self.name)
 
-    def validate(self):
-        self.set_missing_accounts_and_fields()
+	def on_trash(self):
+		if frappe.db.exists("Payment Request", {"reference_name": self.name}):
+			pr_list = frappe.get_all("Payment Request", {"reference_name": self.name})
+			for pr in pr_list:
+				frappe.delete_doc("Payment Request", pr.name, ignore_permissions=True)
 
-    
-    def on_submit(self):
-        self.make_gl_entries()
-        create_payment_request(self)
-    
+	def set_missing_accounts_and_fields(self):
+		if not self.company:
+			company = frappe.get_value("Program", self.next_program, "school")
+			self.company = company
+		if not self.currency:
+			self.currency = erpnext.get_company_currency(self.company)
+		if not (self.receivable_account and self.income_account and self.cost_center):
+			accounts_details = frappe.get_all(
+				"Company",
+				fields=[
+					"default_receivable_account",
+					"default_income_account",
+					"default_liability_account",
+					"cost_center",
+				],
+				filters={"name": self.company},
+			)
+			if accounts_details:
+				accounts_details = accounts_details[0]
+				if not self.receivable_account:
+					self.receivable_account = accounts_details.default_receivable_account
+				if not self.income_account:
+					self.income_account = (
+						accounts_details.default_liability_account or accounts_details.default_income_account
+					)
+				if not self.cost_center:
+					self.cost_center = accounts_details.cost_center
 
-    def on_cancel(self):
-        if frappe.db.exists("Payment Request", {"reference_name": self.name, "docstatus": 1}):
-            doc = frappe.get_doc("Payment Request", {"reference_name": self.name, "docstatus": 1})
-            doc.cancel()
-        self.ignore_linked_doctypes = ("GL Entry", "Payment Ledger Entry")
-        make_reverse_gl_entries(voucher_type=self.doctype, voucher_no=self.name)
-        
-        
-    def on_trash(self):
-        if frappe.db.exists("Payment Request", {"reference_name": self.name}):
-            pr_list = frappe.get_all("Payment Request", {"reference_name": self.name})
-            for pr in pr_list:
-                frappe.delete_doc("Payment Request", pr.name, ignore_permissions=True)
-    
-        
-    def set_missing_accounts_and_fields(self):
-        if not self.company:
-            company = frappe.get_value("Program", self.next_program,"school")
-            self.company = company
-        if not self.currency:
-            self.currency = erpnext.get_company_currency(self.company)
-        if not (self.receivable_account and self.income_account and self.cost_center):
-            accounts_details = frappe.get_all(
-                "Company",
-                fields=[
-                    "default_receivable_account",
-                    "default_income_account",
-                    "default_liability_account",
-                    "cost_center",
-                ],
-                filters={"name": self.company},
-            )
-            if accounts_details:
-                accounts_details = accounts_details[0]
-                if not self.receivable_account:
-                    self.receivable_account = accounts_details.default_receivable_account
-                if not self.income_account:
-                    self.income_account = accounts_details.default_liability_account or accounts_details.default_income_account
-                if not self.cost_center:
-                    self.cost_center = accounts_details.cost_center
+	def make_gl_entries(self):
+		if not self.amount:
+			return
+		entries = self.get_company_splits()
+		from erpnext.accounts.general_ledger import make_gl_entries
 
+		make_gl_entries(
+			entries,
+			cancel=(self.docstatus == 2),
+			update_outstanding="Yes",
+			merge_entries=False,
+		)
 
-    def make_gl_entries(self):
-        if not self.amount:
-            return
-        entries = self.get_company_splits()
-        from erpnext.accounts.general_ledger import make_gl_entries
+	def get_gl_dict(self, args, account_currency=None, item=None):
+		"""this method populates the common properties of a gl entry record"""
+		company = args.get("company") or self.company
+		posting_date = args.get("posting_date") or self.get("posting_date")
+		fiscal_years = get_fiscal_years(posting_date, company=company)
+		if len(fiscal_years) > 1:
+			frappe.throw(
+				frappe._(
+					"Multiple fiscal years exist for the date {0}. Please set company in Fiscal Year"
+				).format(formatdate(posting_date))
+			)
+		else:
+			fiscal_year = fiscal_years[0][0]
 
-        make_gl_entries(
-            entries,
-            cancel=(self.docstatus == 2),
-            update_outstanding="Yes",
-            merge_entries=False,
-        )
+		gl_dict = frappe._dict(
+			{
+				"company": company,
+				"posting_date": posting_date,
+				"fiscal_year": fiscal_year,
+				"voucher_type": self.doctype,
+				"voucher_no": self.name,
+				"remarks": self.get("remarks") or self.get("remark"),
+				"debit": 0,
+				"credit": 0,
+				"debit_in_account_currency": 0,
+				"credit_in_account_currency": 0,
+				"is_opening": self.get("is_opening") or "No",
+				"party_type": None,
+				"party": None,
+				"project": self.get("project"),
+				"post_net_value": args.get("post_net_value"),
+			}
+		)
 
+		update_gl_dict_with_regional_fields(self, gl_dict)
+		accounting_dimensions = get_accounting_dimensions()
+		dimension_dict = frappe._dict()
 
-    def get_gl_dict(self, args, account_currency=None, item=None):
-        """this method populates the common properties of a gl entry record"""
-        company = args.get('company') or self.company
-        posting_date = args.get("posting_date") or self.get("posting_date")
-        fiscal_years = get_fiscal_years(posting_date, company=company)
-        if len(fiscal_years) > 1:
-            frappe.throw(
-                frappe._("Multiple fiscal years exist for the date {0}. Please set company in Fiscal Year").format(
-                    formatdate(posting_date)
-                )
-            )
-        else:
-            fiscal_year = fiscal_years[0][0]
+		for dimension in accounting_dimensions:
+			dimension_dict[dimension] = self.get(dimension)
+			if item and item.get(dimension):
+				dimension_dict[dimension] = item.get(dimension)
 
-        gl_dict = frappe._dict(
-            {
-                "company": company,
-                "posting_date": posting_date,
-                "fiscal_year": fiscal_year,
-                "voucher_type": self.doctype,
-                "voucher_no": self.name,
-                "remarks": self.get("remarks") or self.get("remark"),
-                "debit": 0,
-                "credit": 0,
-                "debit_in_account_currency": 0,
-                "credit_in_account_currency": 0,
-                "is_opening": self.get("is_opening") or "No",
-                "party_type": None,
-                "party": None,
-                "project": self.get("project"),
-                "post_net_value": args.get("post_net_value"),
-            }
-        )
+		gl_dict.update(dimension_dict)
+		gl_dict.update(args)
 
-        update_gl_dict_with_regional_fields(self, gl_dict)
-        accounting_dimensions = get_accounting_dimensions()
-        dimension_dict = frappe._dict()
+		if not account_currency:
+			account_currency = get_account_currency(gl_dict.account)
 
-        for dimension in accounting_dimensions:
-            dimension_dict[dimension] = self.get(dimension)
-            if item and item.get(dimension):
-                dimension_dict[dimension] = item.get(dimension)
+		if gl_dict.account and self.doctype not in [
+			"Journal Entry",
+			"Period Closing Voucher",
+			"Payment Entry",
+			"Purchase Receipt",
+			"Purchase Invoice",
+			"Stock Entry",
+		]:
+			self.validate_account_currency(gl_dict.account, account_currency)
 
-        gl_dict.update(dimension_dict)
-        gl_dict.update(args)
+		if gl_dict.account and self.doctype not in [
+			"Journal Entry",
+			"Period Closing Voucher",
+			"Payment Entry",
+		]:
+			set_balance_in_account_currency(
+				gl_dict, account_currency, self.get("conversion_rate"), self.company_currency
+			)
 
-        if not account_currency:
-            account_currency = get_account_currency(gl_dict.account)
+		return gl_dict
 
-        if gl_dict.account and self.doctype not in [
-            "Journal Entry",
-            "Period Closing Voucher",
-            "Payment Entry",
-            "Purchase Receipt",
-            "Purchase Invoice",
-            "Stock Entry",
-        ]:
-            self.validate_account_currency(gl_dict.account, account_currency)
+	def get_company_splits(self):
+		try:
+			student_entries = {}
+			fee_entries = {}
 
-        if gl_dict.account and self.doctype not in [
-            "Journal Entry",
-            "Period Closing Voucher",
-            "Payment Entry",
-        ]:
-            set_balance_in_account_currency(
-                gl_dict, account_currency, self.get("conversion_rate"), self.company_currency
-            )
+			for component in self.components:
+				company = component.custom_company or self.company
+				receivable_account, liability_account, cost_center = frappe.db.get_value(
+					"Company",
+					company,
+					["default_receivable_account", "default_liability_account", "cost_center"],
+				)
 
-        return gl_dict
+				if receivable_account not in student_entries:
+					student_entries[receivable_account] = self.get_gl_dict(
+						{
+							"company": component.custom_company,
+							"account": receivable_account,
+							"party_type": "Student",
+							"party": self.student,
+							"against": liability_account,
+							"debit": component.custom_amount_after_discount or component.amount,
+							"debit_in_account_currency": component.custom_amount_after_discount
+							or component.amount,
+							"against_voucher": self.name,
+							"against_voucher_type": self.doctype,
+						},
+						item=self,
+					)
 
+				else:
+					student_entries[receivable_account]["debit"] += (
+						component.custom_amount_after_discount or component.amount
+					)
+					student_entries[receivable_account]["debit_in_account_currency"] += (
+						component.custom_amount_after_discount or component.amount
+					)
 
-    def get_company_splits(self):
-        try:
-            student_entries = {}
-            fee_entries = {}
+				if liability_account not in fee_entries:
+					fee_entries[liability_account] = self.get_gl_dict(
+						{
+							"company": component.custom_company,
+							"account": liability_account,
+							"against": self.student,
+							"credit": component.custom_amount_after_discount or component.amount,
+							"credit_in_account_currency": component.custom_amount_after_discount
+							or component.amount,
+							"cost_center": cost_center,
+						},
+						item=self,
+					)
 
-            for component in self.components:
-                company = component.custom_company or self.company
-                receivable_account, liability_account, cost_center = frappe.db.get_value("Company", company, ["default_receivable_account", "default_liability_account", "cost_center"])
+				else:
+					fee_entries[liability_account]["credit"] += (
+						component.custom_amount_after_discount or component.amount
+					)
+					fee_entries[liability_account]["credit_in_account_currency"] += (
+						component.custom_amount_after_discount or component.amount
+					)
 
-                if receivable_account not in student_entries:
-                    student_entries[receivable_account] = self.get_gl_dict({
-                        "company": component.custom_company,
-                        "account": receivable_account,
-                        "party_type": "Student",
-                        "party": self.student,
-                        "against": liability_account,
-                        "debit":  component.custom_amount_after_discount or component.amount,
-                        "debit_in_account_currency": component.custom_amount_after_discount or component.amount,
-                        "against_voucher": self.name,
-                        "against_voucher_type": self.doctype
-                    }, item=self)
+			entries = list(student_entries.values()) + list(fee_entries.values())
+			return entries
+		except Exception as e:
+			frappe.logger("fee").exception(e)
 
-                else:
-                    student_entries[receivable_account]['debit'] += component.custom_amount_after_discount or component.amount
-                    student_entries[receivable_account]['debit_in_account_currency'] += component.custom_amount_after_discount or component.amount
+	def remove_discount_entry(self, company, amount):
+		liability_account, discount_account = frappe.db.get_value(
+			"Company", company, ["default_liability_account", "default_discount_account"]
+		)
+		entries = []
+		debit_filter = {
+			"voucher_type": self.doctype,
+			"voucher_no": self.name,
+			"account": discount_account,
+			"debit": amount,
+		}
+		credit_filter = {
+			"voucher_type": self.doctype,
+			"voucher_no": self.name,
+			"account": liability_account,
+			"credit": amount,
+		}
+		if frappe.db.exists("GL Entry", debit_filter):
+			entries.append(frappe.get_doc("GL Entry", debit_filter).as_dict())
+		if frappe.db.exists("GL Entry", credit_filter):
+			entries.append(frappe.get_doc("GL Entry", credit_filter).as_dict())
+		make_reverse_gl_entries(entries)
 
-                if liability_account not in fee_entries:
-                    fee_entries[liability_account] = self.get_gl_dict({
-                        "company": component.custom_company,
-                        "account": liability_account,
-                        "against": self.student,
-                        "credit": component.custom_amount_after_discount or component.amount,
-                        "credit_in_account_currency": component.custom_amount_after_discount or component.amount,
-                        "cost_center": cost_center
-                    }, item=self)
+	def remove_all_discount_entries(self):
+		entries = []
+		debit_filter = {"voucher_type": self.doctype, "voucher_no": self.name, "is_cancelled": 0}
+		if frappe.db.exists("GL Entry", debit_filter):
+			gl_list = frappe.get_all("GL Entry", debit_filter)
+			for gl in gl_list:
+				entries.append(frappe.get_doc("GL Entry", gl).as_dict())
+		make_reverse_gl_entries(entries)
 
-                else:
-                    fee_entries[liability_account]['credit'] += component.custom_amount_after_discount or component.amount
-                    fee_entries[liability_account]['credit_in_account_currency'] += component.custom_amount_after_discount or component.amount
+	def add_discount_entry(self, company, amount):
+		receivable_account, discount_account, cost_center = frappe.db.get_value(
+			"Company", company, ["default_receivable_account", "default_discount_account", "cost_center"]
+		)
+		debit_entry = self.get_gl_dict(
+			{
+				"company": company,
+				"account": discount_account,
+				"party_type": "Student",
+				"party": self.student,
+				"against": receivable_account,
+				"debit": amount,
+				"debit_in_account_currency": amount,
+				"against_voucher": self.name,
+				"against_voucher_type": self.doctype,
+			},
+			item=self,
+		)
+		credit_entry = self.get_gl_dict(
+			{
+				"company": company,
+				"account": receivable_account,
+				"against": self.student,
+				"credit": amount,
+				"credit_in_account_currency": amount,
+				"cost_center": cost_center,
+			},
+			item=self,
+		)
+		make_gl_entries(
+			[debit_entry, credit_entry],
+			cancel=(self.docstatus == 2),
+			update_outstanding="No",
+			merge_entries=False,
+		)
 
-            entries = list(student_entries.values()) + list(fee_entries.values())
-            return entries
-        except Exception as e:
-            frappe.logger('fee').exception(e)
-
-
-    def remove_discount_entry(self, company, amount):
-        liability_account, discount_account = frappe.db.get_value("Company", company,["default_liability_account","default_discount_account"])
-        entries = []
-        debit_filter = {'voucher_type':self.doctype,'voucher_no':self.name,'account': discount_account, 'debit':amount}
-        credit_filter = {'voucher_type':self.doctype,'voucher_no':self.name,'account': liability_account, 'credit':amount}
-        if frappe.db.exists("GL Entry",debit_filter):
-            entries.append(frappe.get_doc("GL Entry",debit_filter).as_dict())
-        if frappe.db.exists("GL Entry",credit_filter):
-            entries.append(frappe.get_doc("GL Entry",credit_filter).as_dict())
-        make_reverse_gl_entries(entries)
-
-
-    def remove_all_discount_entries(self):
-        entries = []
-        debit_filter = {'voucher_type':self.doctype,'voucher_no':self.name,"is_cancelled":0}
-        if frappe.db.exists("GL Entry",debit_filter):
-            gl_list = frappe.get_all("GL Entry",debit_filter)
-            for gl in gl_list:
-                entries.append(frappe.get_doc("GL Entry",gl).as_dict())
-        make_reverse_gl_entries(entries)
-        
-
-    def add_discount_entry(self, company, amount):
-        receivable_account, discount_account, cost_center = frappe.db.get_value("Company", company,["default_receivable_account","default_discount_account","cost_center"])
-        debit_entry = (self.get_gl_dict(
-                {
-                    "company": company,
-                    "account":discount_account ,
-                    "party_type": "Student",
-                    "party": self.student,
-                    "against": receivable_account,
-                    "debit": amount,
-                    "debit_in_account_currency": amount,
-                    "against_voucher": self.name,
-                    "against_voucher_type": self.doctype,
-                },
-                item=self,
-            ))
-        credit_entry = (self.get_gl_dict(
-                        {
-                            "company": company,
-                            "account": receivable_account,
-                            "against": self.student,
-                            "credit": amount,
-                            "credit_in_account_currency":amount,
-                            "cost_center": cost_center,
-                        },
-                        item=self,
-                    ))
-        make_gl_entries(
-        [debit_entry,credit_entry],
-        cancel=(self.docstatus == 2),
-        update_outstanding="No",
-        merge_entries=False,
-    )
-    
 
 def add_referral_discount(doc, method=None):
-    grand_total = 0
-    for component in doc.components:
-        if component.fees_category in ["Tuition Fee", 'Tuition Fee (KG)']:
-            if doc.referral_amount:
-                component.custom_discounts = "Referral"
-                component.custom_discount_amount = doc.referral_amount
-        if component.custom_discount_amount:
-            component.custom_amount_after_discount = component.amount - component.custom_discount_amount
-            component.custom_discount_percentage = calculate_discount(component.amount, component.custom_discount_amount)
-        elif component.custom_discount_percentage:
-            component.custom_discount_amount = (component.amount * component.custom_discount_percentage) / 100
-            component.custom_amount_after_discount = component.amount - component.custom_discount_amount
-        grand_total += component.custom_amount_after_discount or component.amount
-    doc.amount = doc.outstanding_amount = grand_total
+	grand_total = 0
+	for component in doc.components:
+		if component.fees_category in ["Tuition Fee", "Tuition Fee (KG)"]:
+			if doc.referral_amount:
+				component.custom_discounts = "Referral"
+				component.custom_discount_amount = doc.referral_amount
+		if component.custom_discount_amount:
+			component.custom_amount_after_discount = component.amount - component.custom_discount_amount
+			component.custom_discount_percentage = calculate_discount(
+				component.amount, component.custom_discount_amount
+			)
+		elif component.custom_discount_percentage:
+			component.custom_discount_amount = (component.amount * component.custom_discount_percentage) / 100
+			component.custom_amount_after_discount = component.amount - component.custom_discount_amount
+		grand_total += component.custom_amount_after_discount or component.amount
+	doc.amount = doc.outstanding_amount = grand_total
 
 
 def remove_referral_discount(doc):
-    referral_amount = 0
-    for component in doc.components:
-        if component.fees_category in ["Tuition Fee", 'Tuition Fee (KG)']:
-            if not component.custom_discounts:
-                return
-            if "Referral" in component.custom_discounts:
-                referral_amount += component.custom_discount_amount
-                component.custom_discounts = ""
-                component.custom_discount_amount = 0
-                component.custom_discount_percentage = 0
-                component.custom_amount_after_discount = 0
-    doc.amount += referral_amount
-    doc.outstanding_amount += referral_amount
+	referral_amount = 0
+	for component in doc.components:
+		if component.fees_category in ["Tuition Fee", "Tuition Fee (KG)"]:
+			if not component.custom_discounts:
+				return
+			if "Referral" in component.custom_discounts:
+				referral_amount += component.custom_discount_amount
+				component.custom_discounts = ""
+				component.custom_discount_amount = 0
+				component.custom_discount_percentage = 0
+				component.custom_amount_after_discount = 0
+	doc.amount += referral_amount
+	doc.outstanding_amount += referral_amount
 
 
 def create_payment_request(doc, method=None):
-    not_paid_filter = {
-        "reference_name": doc.name,
-        "status": ["!=", "Paid"],
-        "payment_term": ["is","set"]
-    }
+	not_paid_filter = {"reference_name": doc.name, "status": ["!=", "Paid"], "payment_term": ["is", "set"]}
 
-    if frappe.db.exists("Payment Request",not_paid_filter):
-        pr = frappe.get_doc("Payment Request",not_paid_filter)
-        if not pr.docstatus.is_cancelled() and not pr.docstatus.is_draft():
-            pr.cancel()
-            frappe.delete_doc("Payment Request",pr.name, ignore_permissions=True)
+	if frappe.db.exists("Payment Request", not_paid_filter):
+		pr = frappe.get_doc("Payment Request", not_paid_filter)
+		if not pr.docstatus.is_cancelled() and not pr.docstatus.is_draft():
+			pr.cancel()
+			frappe.delete_doc("Payment Request", pr.name, ignore_permissions=True)
 
-    student_email = frappe.db.get_value("Student", doc.student, "student_email_id")
-    days = frappe.db.get_value("Fee Schedule", {"fee_structure": doc.fee_structure}, "create_payment_request_before")
-    today_date = frappe.utils.getdate(today())
+	student_email = frappe.db.get_value("Student", doc.student, "student_email_id")
+	days = frappe.db.get_value(
+		"Fee Schedule", {"fee_structure": doc.fee_structure}, "create_payment_request_before"
+	)
+	today_date = frappe.utils.getdate(today())
 
-    if isinstance(doc.due_date, str):
-        due_date = frappe.utils.getdate(doc.due_date)
-    else:
-        due_date = doc.due_date
+	if isinstance(doc.due_date, str):
+		due_date = frappe.utils.getdate(doc.due_date)
+	else:
+		due_date = doc.due_date
 
-    if (due_date - today_date).days <= days:
-        make_payment_request(
-                party_type="Student",
-                party=doc.student,
-                dt=doc.doctype,
-                dn=doc.name,
-                recipient_id=student_email,
-                payment_term=doc.payment_term,
-                submit_doc=True,
-            )
+	if (due_date - today_date).days <= days:
+		make_payment_request(
+			party_type="Student",
+			party=doc.student,
+			dt=doc.doctype,
+			dn=doc.name,
+			recipient_id=student_email,
+			payment_term=doc.payment_term,
+			submit_doc=True,
+		)
 
 
 def get_components(fee_structure, percent, is_rte):
-    fee_structure_doc = frappe.get_doc("Fee Structure", fee_structure)
-    components = []
-    amount = 0
-    for component in fee_structure_doc.components:
-        if is_rte:
-            rte_excempt = frappe.get_value("Fee Category",component.fees_category, "rte_excempt")
-            if rte_excempt:
-                continue
-        label = component.label
-        if not label:
-            label = frappe.get_value("Fee Category",component.fees_category, "custom_label")
-        # if not label:
-        #     frappe.throw("Label not found for Fee Category {0}".format(component.fees_category))
+	fee_structure_doc = frappe.get_doc("Fee Structure", fee_structure)
+	components = []
+	amount = 0
+	for component in fee_structure_doc.components:
+		if is_rte:
+			rte_excempt = frappe.get_value("Fee Category", component.fees_category, "rte_excempt")
+			if rte_excempt:
+				continue
+		label = component.label
+		if not label:
+			label = frappe.get_value("Fee Category", component.fees_category, "custom_label")
+		# if not label:
+		#     frappe.throw("Label not found for Fee Category {0}".format(component.fees_category))
 
-        # default_account = frappe.get_value("Fees Settings", None, "default_account")
+		# default_account = frappe.get_value("Fees Settings", None, "default_account")
 
-        component_amount = component.amount * flt(percent) / 100
-        amount += component_amount
-        company = frappe.get_value("Fee Category",component.fees_category, "custom_company")
-        components.append(
-            {
-                "fees_category": component.fees_category,
-                "description": component.description,
-                "amount": component_amount,
-                "custom_company": company,
-                "label": label,
-                "fee_type": component.fee_type,
-                "school": component.school,
-            }
-        )
-    return components, amount
+		component_amount = component.amount * flt(percent) / 100
+		amount += component_amount
+		company = frappe.get_value("Fee Category", component.fees_category, "custom_company")
+		components.append(
+			{
+				"fees_category": component.fees_category,
+				"description": component.description,
+				"amount": component_amount,
+				"custom_company": company,
+				"label": label,
+				"fee_type": component.fee_type,
+				"school": component.school,
+			}
+		)
+	return components, amount
 
 
 def get_percent(term, payment_plan):
-    doc = frappe.get_doc("Payment Plan", payment_plan)
-    for d in doc.payment_schedule:
-        if d.payment_term == term:
-            return d.invoice_portion
-    return 100
+	doc = frappe.get_doc("Payment Plan", payment_plan)
+	for d in doc.payment_schedule:
+		if d.payment_term == term:
+			return d.invoice_portion
+	return 100
 
-    
+
 @frappe.whitelist()
 def fee_advance(**kwargs):
-    students = kwargs.get("students")
-    students = frappe.parse_json(students)
-    for s in students:
-        if frappe.get_value("Student",{"name":s.get("name"),"student_status":"Current student"}):
-            student = frappe.get_doc("Student", s.get("name"))
-            current_academic_year = frappe.get_value("Academic Year",{"custom_current_academic_year":1})
-            pe_filter = {"student": student.name, "academic_year": current_academic_year}
-            if frappe.db.exists("Program Enrollment", pe_filter):
-                program_enrollment = frappe.get_doc("Program Enrollment", pe_filter)
-                school = frappe.get_value("Program", program_enrollment.program,"school")
-                next_program = get_next_program(program_enrollment.program, school)
-                if not frappe.get_value("Fees",{"student":student.name,"program":next_program,"docstatus":1}) and  not frappe.get_value("Fee Advance",{"student":student.name,"next_program":next_program,"docstatus":1}):
-                    frappe.enqueue(create_fee_advance, student=student, program_enrollment=program_enrollment)
-            else:
-                frappe.msgprint(
-                    f"Program Enrollment does not exists for student <b>{student.first_name}</b>. Fee Advance can only be created for old students."
-                )
+	students = kwargs.get("students")
+	students = frappe.parse_json(students)
+	for s in students:
+		if frappe.get_value("Student", {"name": s.get("name"), "student_status": "Current student"}):
+			student = frappe.get_doc("Student", s.get("name"))
+			current_academic_year = frappe.get_value("Academic Year", {"custom_current_academic_year": 1})
+			pe_filter = {"student": student.name, "academic_year": current_academic_year}
+			if frappe.db.exists("Program Enrollment", pe_filter):
+				program_enrollment = frappe.get_doc("Program Enrollment", pe_filter)
+				school = frappe.get_value("Program", program_enrollment.program, "school")
+				next_program = get_next_program(program_enrollment.program, school)
+				if not frappe.get_value(
+					"Fees", {"student": student.name, "program": next_program, "docstatus": 1}
+				) and not frappe.get_value(
+					"Fee Advance", {"student": student.name, "next_program": next_program, "docstatus": 1}
+				):
+					frappe.enqueue(create_fee_advance, student=student, program_enrollment=program_enrollment)
+			else:
+				frappe.msgprint(
+					f"Program Enrollment does not exists for student <b>{student.first_name}</b>. Fee Advance can only be created for old students."
+				)
 
 
-def create_fee_advance(student, program_enrollment,all_len=None,index=None):
-    """
-    program_enrollment: Previous Program Enrollment Doc
-    """
-    try:
-        from edu_quality.edu_quality.server_scripts.utils import next_academic_year as next_yr
-        if frappe.get_value("Program", program_enrollment.program, "custom_is_passing_out_class"):
-            frappe.log_error(title="Fee Advance",message="Since there is not a class scheduled for {class_name}, we will not be creating a fee advance.".format(class_name =program_enrollment.program))
-            return 
-        if all_len and index:
-            set_progress(index + 1, all_len,index, "Student Fees Details")
-        school = frappe.get_value("Program", program_enrollment.program,"school")
-        next_program = get_next_program(program_enrollment.program, school)
-        student_category = frappe.get_value("Student", student, "student_category")
-        institution = frappe.get_value("School", frappe.get_value("Program", next_program,"school"),"institution")
-        next_academic_year = frappe.get_value("Academic Year",{"custom_next_academic_year":1})
-        fee_structure = get_fee_structure(next_academic_year, school, next_program, student_category)
-        payment_plan = get_payment_plan(fee_structure, program_enrollment)
-        frappe.logger("fee_advance").exception(f"Student: {student}, Program: {next_program}, Fee Structure: {fee_structure}, Payment Plan: {payment_plan} Academic Year: {next_academic_year}, Student Category: {student_category}")
-        term, due_date = get_first_payment_term(payment_plan)
+def create_fee_advance(student, program_enrollment, all_len=None, index=None):
+	"""
+	program_enrollment: Previous Program Enrollment Doc
+	"""
+	try:
+		from edu_quality.edu_quality.server_scripts.utils import next_academic_year as next_yr
 
-        fee_advance = frappe.new_doc("Fee Advance")
-        fee_advance.student = program_enrollment.student
-        fee_advance.academic_year = next_academic_year
-        fee_advance.school = school
-        fee_advance.fee_structure = fee_structure
-        fee_advance.company = institution
-        fee_advance.program = program_enrollment.program
-        fee_advance.next_program = next_program
-        fee_advance.payment_plan = payment_plan
-        fee_advance.payment_term = term
-        fee_advance.is_rte = student.is_rte
-        fee_advance.posting_date = today()
-        fee_advance.due_date = due_date
-        fee_advance.receivable_account = frappe.get_value("Company", institution, "default_receivable_account")
-        fee_advance.income_account = frappe.get_value("Company", institution, "default_liability_account")
-        fee_advance.cost_center = frappe.get_value("Company", institution, "cost_center")
-        fee_advance.save()
-        # fee_advance.submit()
-    except Exception:
-        frappe.log_error(
-            title="Fee Advance",
-            message=frappe.get_traceback(),
-        )
+		if frappe.get_value("Program", program_enrollment.program, "custom_is_passing_out_class"):
+			frappe.log_error(
+				title="Fee Advance",
+				message=f"Since there is not a class scheduled for {program_enrollment.program}, we will not be creating a fee advance.",
+			)
+			return
+		if all_len and index:
+			set_progress(index + 1, all_len, index, "Student Fees Details")
+		school = frappe.get_value("Program", program_enrollment.program, "school")
+		next_program = get_next_program(program_enrollment.program, school)
+		student_category = frappe.get_value("Student", student, "student_category")
+		institution = frappe.get_value(
+			"School", frappe.get_value("Program", next_program, "school"), "institution"
+		)
+		next_academic_year = frappe.get_value("Academic Year", {"custom_next_academic_year": 1})
+		fee_structure = get_fee_structure(next_academic_year, school, next_program, student_category)
+		payment_plan = get_payment_plan(fee_structure, program_enrollment)
+		frappe.logger("fee_advance").exception(
+			f"Student: {student}, Program: {next_program}, Fee Structure: {fee_structure}, Payment Plan: {payment_plan} Academic Year: {next_academic_year}, Student Category: {student_category}"
+		)
+		term, due_date = get_first_payment_term(payment_plan)
+
+		fee_advance = frappe.new_doc("Fee Advance")
+		fee_advance.student = program_enrollment.student
+		fee_advance.academic_year = next_academic_year
+		fee_advance.school = school
+		fee_advance.fee_structure = fee_structure
+		fee_advance.company = institution
+		fee_advance.program = program_enrollment.program
+		fee_advance.next_program = next_program
+		fee_advance.payment_plan = payment_plan
+		fee_advance.payment_term = term
+		fee_advance.is_rte = student.is_rte
+		fee_advance.posting_date = today()
+		fee_advance.due_date = due_date
+		fee_advance.receivable_account = frappe.get_value(
+			"Company", institution, "default_receivable_account"
+		)
+		fee_advance.income_account = frappe.get_value("Company", institution, "default_liability_account")
+		fee_advance.cost_center = frappe.get_value("Company", institution, "cost_center")
+		fee_advance.save()
+		# fee_advance.submit()
+	except Exception:
+		frappe.log_error(
+			title="Fee Advance",
+			message=frappe.get_traceback(),
+		)
+
 
 def get_next_program(program, school):
-    sequence = frappe.get_value("Program", program, "sequence")
-    next_program = int(sequence) + 1
-    next_program = frappe.get_value("Program", {"sequence": str(next_program), "school":school})
-    if not next_program:
-        next_program = frappe.get_value("Program", {"previous_class":program})
-    return next_program
+	sequence = frappe.get_value("Program", program, "sequence")
+	next_program = int(sequence) + 1
+	next_program = frappe.get_value("Program", {"sequence": str(next_program), "school": school})
+	if not next_program:
+		next_program = frappe.get_value("Program", {"previous_class": program})
+	return next_program
 
 
 def get_first_payment_term(payment_plan):
-    if not payment_plan:
-        frappe.throw("Payment Plan not found")
-    payment_plan = frappe.get_doc("Payment Plan", payment_plan)
-    term = payment_plan.payment_schedule[0].payment_term
-    due_date = payment_plan.payment_schedule[0].due_date
-    return term, due_date
+	if not payment_plan:
+		frappe.throw("Payment Plan not found")
+	payment_plan = frappe.get_doc("Payment Plan", payment_plan)
+	term = payment_plan.payment_schedule[0].payment_term
+	due_date = payment_plan.payment_schedule[0].due_date
+	return term, due_date
+
 
 def get_fee_structure(academic_year, school, program, student_category=None):
-    doc_filter = {"academic_year": academic_year, "school": school, "program": program}
-    if student_category:
-        doc_filter["student_category"] = student_category
-    fee_structure = frappe.get_value("Fee Structure", doc_filter)
-    return fee_structure
+	doc_filter = {"academic_year": academic_year, "school": school, "program": program}
+	if student_category:
+		doc_filter["student_category"] = student_category
+	fee_structure = frappe.get_value("Fee Structure", doc_filter)
+	return fee_structure
 
 
 def get_payment_plan(fee_structure, academic_year):
-    if not fee_structure:
-        return None
-    # get payment plan from fee schedule
-    payment_plan = frappe.get_value("Fee Schedule", {"fee_structure": fee_structure, "docstatus": 1}, "payment_plan")
-    if not payment_plan:
-        # get payment plan from payment plan if exists
-        payment_plan = frappe.get_value("Payment Plan", {"fee_structure": fee_structure, "academic_year": academic_year}, "name")
-    return payment_plan
+	if not fee_structure:
+		return None
+	# get payment plan from fee schedule
+	payment_plan = frappe.get_value(
+		"Fee Schedule", {"fee_structure": fee_structure, "docstatus": 1}, "payment_plan"
+	)
+	if not payment_plan:
+		# get payment plan from payment plan if exists
+		payment_plan = frappe.get_value(
+			"Payment Plan", {"fee_structure": fee_structure, "academic_year": academic_year}, "name"
+		)
+	return payment_plan
+
 
 def referal_discount(doc, method=None):
-    """
-    Apply referral discount to eligible fee components and update the document when creating fee document.
+	"""
+	Apply referral discount to eligible fee components and update the document when creating fee document.
 
-    Parameters:
-    - doc (frappe.model.document.Document): The document to which the referral discount is applied.
-    - method (str, optional): The method triggering the referral discount application.
+	Parameters:
+	- doc (frappe.model.document.Document): The document to which the referral discount is applied.
+	- method (str, optional): The method triggering the referral discount application.
 
-    Returns:
-    dict: A dictionary containing information about the applied referral discount per fee category.
-    """
-    grand_total = doc.amount
-    student = frappe.get_doc("Student", doc.student)
+	Returns:
+	dict: A dictionary containing information about the applied referral discount per fee category.
+	"""
+	grand_total = doc.amount
+	student = frappe.get_doc("Student", doc.student)
 
-    if student.is_rte or student.referral_amount == 0:
-        return
-    
-    discount = float(student.referral_amount)
+	if student.is_rte or student.referral_amount == 0:
+		return
 
-    for component in doc.components:
-        if not component.fees_category in ["Tuition Fee", 'Tuition Fee (KG)']:
-            continue
+	discount = float(student.referral_amount)
 
-        if component.amount > discount and discount != 0:
-            amount = component.custom_amount_after_discount or component.amount
-            amount_after_discount = amount - discount
-            previous_discount = component.custom_discount_amount or 0
-            new_discount = previous_discount + discount
-            discount_percentage = calculate_discount(component.amount, new_discount)
+	for component in doc.components:
+		if component.fees_category not in ["Tuition Fee", "Tuition Fee (KG)"]:
+			continue
 
-            discount_name = component.custom_discounts
-            discount_list = get_discount_list(discount_name)
+		if component.amount > discount and discount != 0:
+			amount = component.custom_amount_after_discount or component.amount
+			amount_after_discount = amount - discount
+			previous_discount = component.custom_discount_amount or 0
+			new_discount = previous_discount + discount
+			discount_percentage = calculate_discount(component.amount, new_discount)
 
-            if discount_list and "Referral" not in discount_list:
-                discount_list.append("Referral")
-                discount_name = ", ".join(discount_list)
-            else:
-                discount_name = "Referral"
+			discount_name = component.custom_discounts
+			discount_list = get_discount_list(discount_name)
 
-            grand_total = doc.amount - discount
+			if discount_list and "Referral" not in discount_list:
+				discount_list.append("Referral")
+				discount_name = ", ".join(discount_list)
+			else:
+				discount_name = "Referral"
 
-            component.custom_discounts = discount_name
-            component.custom_discount_amount = new_discount
-            component.custom_amount_after_discount = amount_after_discount
-            component.custom_discount_percentage = discount_percentage
+			grand_total = doc.amount - discount
 
-            doc.amount = grand_total
-            doc.outstanding_amount = grand_total
-            # doc.add_discount_entry(component.custom_company, discount)
-            break  
+			component.custom_discounts = discount_name
+			component.custom_discount_amount = new_discount
+			component.custom_amount_after_discount = amount_after_discount
+			component.custom_discount_percentage = discount_percentage
+
+			doc.amount = grand_total
+			doc.outstanding_amount = grand_total
+			# doc.add_discount_entry(component.custom_company, discount)
+			break
 
 
 def payment_plan(doc, method=None):
-    payment_plan_doc = frappe.get_doc("Payment Plan", doc.payment_plan)
-    payplan_discount = get_payplan_discount(doc, payment_plan_doc)
-    if not payplan_discount:
-        frappe.response["message"] = f"Payment Plan Discount not found for {doc.payment_plan}"
-        return
-    discount_amount, discount = payplan_discount
-    if discount_amount:
-        for component in doc.components:
-            if component.fees_category == discount.fee_category:
-                amount = component.custom_amount_after_discount or component.amount
-                amount_after_discount = amount - discount_amount
-                previous_discount = component.custom_discount_amount or 0
-                new_discount = previous_discount + discount_amount
-                discount_percentage = calculate_discount(component.amount, new_discount)
+	payment_plan_doc = frappe.get_doc("Payment Plan", doc.payment_plan)
+	payplan_discount = get_payplan_discount(doc, payment_plan_doc)
+	if not payplan_discount:
+		frappe.response["message"] = f"Payment Plan Discount not found for {doc.payment_plan}"
+		return
+	discount_amount, discount = payplan_discount
+	if discount_amount:
+		for component in doc.components:
+			if component.fees_category == discount.fee_category:
+				amount = component.custom_amount_after_discount or component.amount
+				amount_after_discount = amount - discount_amount
+				previous_discount = component.custom_discount_amount or 0
+				new_discount = previous_discount + discount_amount
+				discount_percentage = calculate_discount(component.amount, new_discount)
 
-                discount_name = component.custom_discounts
-                discount_list = get_discount_list(discount_name)
+				discount_name = component.custom_discounts
+				discount_list = get_discount_list(discount_name)
 
-                if discount_list and discount.name not in discount_list:
-                    discount_list.append(discount.name)
-                    discount_name = ", ".join(discount_list)
-                else:
-                    discount_name = discount.name
+				if discount_list and discount.name not in discount_list:
+					discount_list.append(discount.name)
+					discount_name = ", ".join(discount_list)
+				else:
+					discount_name = discount.name
 
-                grand_total = doc.amount - discount_amount
+				grand_total = doc.amount - discount_amount
 
-                component.custom_discounts = discount_name
-                component.custom_discount_amount = new_discount
-                component.custom_amount_after_discount = amount_after_discount
-                component.custom_discount_percentage = discount_percentage
+				component.custom_discounts = discount_name
+				component.custom_discount_amount = new_discount
+				component.custom_amount_after_discount = amount_after_discount
+				component.custom_discount_percentage = discount_percentage
 
-                doc.amount = grand_total
-                doc.outstanding_amount = grand_total
-                # doc.add_discount_entry(component.custom_company, discount_amount)
-                break
+				doc.amount = grand_total
+				doc.outstanding_amount = grand_total
+				# doc.add_discount_entry(component.custom_company, discount_amount)
+				break
 
 
 def get_payplan_discount(doc, payment_plan):
-    """
-    Calculates and returns the discount amount for a payment plan.
+	"""
+	Calculates and returns the discount amount for a payment plan.
 
-    Parameters:
-    doc (object): The document.
-    payment_plan: The payment plan name.
+	Parameters:
+	doc (object): The document.
+	payment_plan: The payment plan name.
 
-    Returns:
-    tuple: Discount amount and the discount configuration document, or None if no discount is applicable.
-    """
-    if len(payment_plan.payment_schedule) > 1:
-        return
-    
-    for ps in payment_plan.payment_schedule:
-        if ps.due_date < datetime.today().date():
-            frappe.msgprint("Cannot Apply new Payment Plan Discount As Due Date is Passed!")
-            return
-        
-    for component in doc.components:
-        dis_filter = {"payment_plan": payment_plan.name, "fee_structure":doc.fee_structure, "fee_category": component.fees_category, "enabled":1}
-        if frappe.db.exists("Discount Configuration", dis_filter):
-            dis = frappe.get_doc("Discount Configuration", dis_filter)
-            if dis.discount_amount:
-                return dis.discount_amount, dis
-            else:
-                discount_amount = (component.amount * float(dis.discount)) / 100
-                return discount_amount, dis
-    return None
+	Returns:
+	tuple: Discount amount and the discount configuration document, or None if no discount is applicable.
+	"""
+	if len(payment_plan.payment_schedule) > 1:
+		return
+
+	for ps in payment_plan.payment_schedule:
+		if ps.due_date < datetime.today().date():
+			frappe.msgprint("Cannot Apply new Payment Plan Discount As Due Date is Passed!")
+			return
+
+	for component in doc.components:
+		dis_filter = {
+			"payment_plan": payment_plan.name,
+			"fee_structure": doc.fee_structure,
+			"fee_category": component.fees_category,
+			"enabled": 1,
+		}
+		if frappe.db.exists("Discount Configuration", dis_filter):
+			dis = frappe.get_doc("Discount Configuration", dis_filter)
+			if dis.discount_amount:
+				return dis.discount_amount, dis
+			else:
+				discount_amount = (component.amount * float(dis.discount)) / 100
+				return discount_amount, dis
+	return None
 
 
 def cancel_liability_entries(doc):
-    entries = []
-    filters = {'voucher_type':doc.doctype,'voucher_no':doc.name}
-    if frappe.db.exists("GL Entry",filters):
-        for entry in frappe.get_all("GL Entry",filters):
-            entries.append(frappe.get_doc("GL Entry",entry.name).as_dict())
-    make_reverse_gl_entries(entries)
+	entries = []
+	filters = {"voucher_type": doc.doctype, "voucher_no": doc.name}
+	if frappe.db.exists("GL Entry", filters):
+		for entry in frappe.get_all("GL Entry", filters):
+			entries.append(frappe.get_doc("GL Entry", entry.name).as_dict())
+	make_reverse_gl_entries(entries)
 
 
 def get_one_time_discounts(doc):
-    return {
-        discount: component.custom_discount_amount
-        for component in doc.components if component.custom_discounts
-        for discount in map(str.lower, component.custom_discounts.split(", "))
-        if "one time" in discount
-    }
+	return {
+		discount: component.custom_discount_amount
+		for component in doc.components
+		if component.custom_discounts
+		for discount in map(str.lower, component.custom_discounts.split(", "))
+		if "one time" in discount
+	}
 
 
 def check_discounts_before_update(doc):
-    """
-    Checks for one time and payplan discounts before updating a fee document.
-    """
-    for component in doc.components:
-        if component.custom_discounts:
-            if "one time" in component.custom_discounts.lower():
-                return True
-            elif "payment plan" in component.custom_discounts.lower():
-                return True
-    return False
+	"""
+	Checks for one time and payplan discounts before updating a fee document.
+	"""
+	for component in doc.components:
+		if component.custom_discounts:
+			if "one time" in component.custom_discounts.lower():
+				return True
+			elif "payment plan" in component.custom_discounts.lower():
+				return True
+	return False

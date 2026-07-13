@@ -1,5 +1,5 @@
-import React from 'react';
-import clsx from 'clsx';
+import React from "react";
+import clsx from "clsx";
 
 interface CheckBoxProps {
   label?: string;
@@ -27,7 +27,7 @@ const CheckBox = (props: CheckBoxProps) => {
             />
           </span>
           {label && (
-            <span className={clsx('label-area', required && 'reqd')}>
+            <span className={clsx("label-area", required && "reqd")}>
               {label}
             </span>
           )}

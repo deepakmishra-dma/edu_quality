@@ -8,10 +8,10 @@
     margin: 0;
     padding: 0;
   }
-  
+
   @font-face {
       font-family: "Arial";
-      src: url("/assets/edu_quality/fonts/arial.ttf"); 
+      src: url("/assets/edu_quality/fonts/arial.ttf");
       font-weight: normal;/* EOT file for IE */
     }
     @font-face {
@@ -39,7 +39,7 @@
     padding-left:12px;
     padding-right: 12px;
     width: 100%;
-   
+
   }
 
   .row {
@@ -51,7 +51,7 @@
 
 {% for enrollment_array in program_enrollments %}
 <div class="container-fluid page">
-  
+
     {% for enrollment in range(0,(enrollment_array|length)) %}
     {% set enroll_template =
     render_template_with_exception("edu_quality/templates/pdf/permanent_id_card.html",{'doc':enrollment_array[enrollment],
@@ -63,8 +63,8 @@
         <div class="parent-container">
           <div class="cut-mark-container" style="margin-top:10px;padding-bottom: 5px;"><div class="left"><div class="cut-mark-circle"><div class="horizontal"></div><div class="vertical"></div></div></div><div class="right"><div class="cut-mark-circle"><div class="horizontal"></div><div class="vertical"></div></div></div></div>
           <div class="front">
-      
-         
+
+
           </div>
           <div class="cut-mark-container" style="padding-bottom: 5px;padding-top: 5px;">
             <div class="cut-mark-container-two">
@@ -72,24 +72,24 @@
               <div class="cut-mark-circle "><div class="horizontal"></div><div class="vertical"></div></div>
               <div class="cut-mark-circle "><div class="horizontal"></div><div class="vertical"></div></div></div>
             </div>
-        
+
             <div class="cut-mark-container-two">
               <div class="right">
               <div class="cut-mark-circle"><div class="horizontal"></div><div class="vertical"></div></div>
               <div class="cut-mark-circle"><div class="horizontal"></div><div class="vertical"></div></div></div>
             </div>
-        
+
           </div>
           <div
             class="back"
-            
+
           >
-         
-          
+
+
           </div>
           <div class="cut-mark-container" style="padding-top: 5px;" ><div class="left"><div class="cut-mark-circle"><div class="horizontal"></div><div class="vertical"></div></div></div><div class="right"><div class="cut-mark-circle"><div class="horizontal"></div><div class="vertical"></div></div></div></div>
         </div>
-        
+
         {% endif %}
     {% endfor %}
   </div>

@@ -4,7 +4,7 @@ export default {
   initialValues: {
     mobile_number: "",
     otp: "",
-    email:"",
+    email: "",
   },
   // validateInputOnChange: true,
   validateInputOnBlur: true,

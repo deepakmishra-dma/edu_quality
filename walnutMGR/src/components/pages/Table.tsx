@@ -148,158 +148,155 @@ export const Table = ({
 
   return (
     <>
-      {isButtonClicked &&
-        !isLoading &&
-        cmap_table?.data?.message?.length > 0 && (
-          <section style={{ height: "500px", overflowX: "scroll" }}>
-            <DragDropContext onDragEnd={handleOnDragEnd}>
-              <StrictModeDroppable droppableId="characters">
-                {(provided: any) => (
-                  <table
-                    className=" "
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
-                  >
-                    <thead className="flex mt-5 h-[50px] mx-auto  w-full  bg-[#428bca] items-center">
-                      <tr>
-                        {/* {isEditMode && ( */}
-                        <th className="w-[50px] text-[#fff] border-r-[1px] h-[50px] text-center">
-                          <input
-                            type="checkbox"
-                            checked={selectedRows.length === draggedList.length}
-                            onChange={handleSelectAll}
-                          />
-                        </th>
-                        {/* <th className="text-[#fff] border-r-[1px] w-[100px] h-[50px] text-[12px]">
+      {isButtonClicked && !isLoading && cmap_table?.data?.message?.length > 0 && (
+        <section style={{ height: "500px", overflowX: "scroll" }}>
+          <DragDropContext onDragEnd={handleOnDragEnd}>
+            <StrictModeDroppable droppableId="characters">
+              {(provided: any) => (
+                <table
+                  className=" "
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                >
+                  <thead className="flex mt-5 h-[50px] mx-auto  w-full  bg-[#428bca] items-center">
+                    <tr>
+                      {/* {isEditMode && ( */}
+                      <th className="w-[50px] text-[#fff] border-r-[1px] h-[50px] text-center">
+                        <input
+                          type="checkbox"
+                          checked={selectedRows.length === draggedList.length}
+                          onChange={handleSelectAll}
+                        />
+                      </th>
+                      {/* <th className="text-[#fff] border-r-[1px] w-[100px] h-[50px] text-[12px]">
                           Real Date
                         </th> */}
-                        {/* )} */}
-                        {cmap_table?.data?.message?.length > 0 &&
-                          cmap_headers?.data?.message
-                            ?.filter?.(
-                              (val: any) =>
-                                !["Academic Year", "Subject", "Class"].includes(
-                                  val?.label
-                                )
-                            )
-                            ?.map?.((val: any) => {
-                              return (
-                                <>
-                                  <th
-                                    className={` ${
-                                      val?.label === "Period" ||
-                                      val?.label === "Class" ||
-                                      val?.label === "Subject" ||
-                                      val?.label === "Academic Year" ||
-                                      val?.label ===
-                                        "Last Period of the Unit" ||
-                                      val?.label === "Parent Note" ||
-                                      val?.label === "Home Work" ||
-                                      val?.label === "Class Work"
-                                        ? "w-[100px]"
-                                        : "min-w-[200px]"
-                                    } text-[#fff] border-r-[1px] h-[50px] text-[12px]`}
-                                  >
-                                    {val?.label}
-                                  </th>
-                                </>
-                              );
-                            })}
-                      </tr>
-                    </thead>
-
-                    <tbody
-                      ref={provided.innerRef}
-                      style={{ overflowX: "scroll" }}
-                      {...provided.droppableProps}
-                    >
-                      {draggedList?.map?.((val: any, index: number) => {
-                        return (
-                          <>
-                            <Draggable
-                              key={index}
-                              draggableId={index.toString()}
-                              index={index}
-                            >
-                              {(provided: any) => (
-                                <tr
-                                  className="flex    w-full    "
-                                  ref={provided.innerRef}
-                                  {...provided.draggableProps}
-                                  {...provided.dragHandleProps}
+                      {/* )} */}
+                      {cmap_table?.data?.message?.length > 0 &&
+                        cmap_headers?.data?.message
+                          ?.filter?.(
+                            (val: any) =>
+                              !["Academic Year", "Subject", "Class"].includes(
+                                val?.label
+                              )
+                          )
+                          ?.map?.((val: any) => {
+                            return (
+                              <>
+                                <th
+                                  className={` ${
+                                    val?.label === "Period" ||
+                                    val?.label === "Class" ||
+                                    val?.label === "Subject" ||
+                                    val?.label === "Academic Year" ||
+                                    val?.label === "Last Period of the Unit" ||
+                                    val?.label === "Parent Note" ||
+                                    val?.label === "Home Work" ||
+                                    val?.label === "Class Work"
+                                      ? "w-[100px]"
+                                      : "min-w-[200px]"
+                                  } text-[#fff] border-r-[1px] h-[50px] text-[12px]`}
                                 >
-                                  {/* {isEditMode && ( */}
-                                  <td className="w-[50px] border-[1px] flex items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px]">
-                                    <input
-                                      type="checkbox"
-                                      checked={selectedRows.some(
-                                        (row: any) => row.index === index
-                                      )}
-                                      onChange={() => {
-                                        setSelectedCmapItem(val);
-                                        handleSelectRow({
-                                          index,
-                                          name: val.name,
-                                        });
-                                      }}
-                                    />
-                                  </td>
-                                  {/* <td className="w-[100px] border-[1px] flex items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px]">
+                                  {val?.label}
+                                </th>
+                              </>
+                            );
+                          })}
+                    </tr>
+                  </thead>
+
+                  <tbody
+                    ref={provided.innerRef}
+                    style={{ overflowX: "scroll" }}
+                    {...provided.droppableProps}
+                  >
+                    {draggedList?.map?.((val: any, index: number) => {
+                      return (
+                        <>
+                          <Draggable
+                            key={index}
+                            draggableId={index.toString()}
+                            index={index}
+                          >
+                            {(provided: any) => (
+                              <tr
+                                className="flex    w-full    "
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                              >
+                                {/* {isEditMode && ( */}
+                                <td className="w-[50px] border-[1px] flex items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px]">
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedRows.some(
+                                      (row: any) => row.index === index
+                                    )}
+                                    onChange={() => {
+                                      setSelectedCmapItem(val);
+                                      handleSelectRow({
+                                        index,
+                                        name: val.name,
+                                      });
+                                    }}
+                                  />
+                                </td>
+                                {/* <td className="w-[100px] border-[1px] flex items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px]">
                                     {formatDate(
                                       val?.real_dates?.split?.(",")[0]
                                     )}
                                   </td> */}
-                                  <td className="min-w-[200px] border-[1px] flex items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px] p-2   ">
-                                    {cmap_headers?.data?.message?.find(
-                                      (items: any) =>
-                                        items?.fieldname === "plan_date"
-                                    ) ? (
-                                      <input
-                                        type="date"
-                                        value={val?.plan_date}
-                                        onChange={async (e) => {
-                                          setSelectedName(val?.name);
-                                          console.log(
-                                            e.target.value,
-                                            val?.plan_date
-                                          );
-                                          await handlePlanDate(
-                                            e.target.value,
-                                            val?.name
-                                          );
-                                        }}
-                                      ></input>
-                                    ) : (
-                                      "NOT ASSIGNED"
-                                    )}
-                                  </td>
-                                  <td className="w-[100px] border-[1px] flex items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px] p-2   ">
-                                    {cmap_headers?.data?.message?.find(
-                                      (items: any) =>
-                                        items?.fieldname === "period"
-                                    ) ? (
-                                      <>
-                                        <span
-                                          className={
-                                            val?.newPeriod
-                                              ? "line-through text-red-500 font-bold"
-                                              : ""
-                                          }
-                                        >
-                                          {val?.period}
+                                <td className="min-w-[200px] border-[1px] flex items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px] p-2   ">
+                                  {cmap_headers?.data?.message?.find(
+                                    (items: any) =>
+                                      items?.fieldname === "plan_date"
+                                  ) ? (
+                                    <input
+                                      type="date"
+                                      value={val?.plan_date}
+                                      onChange={async (e) => {
+                                        setSelectedName(val?.name);
+                                        console.log(
+                                          e.target.value,
+                                          val?.plan_date
+                                        );
+                                        await handlePlanDate(
+                                          e.target.value,
+                                          val?.name
+                                        );
+                                      }}
+                                    ></input>
+                                  ) : (
+                                    "NOT ASSIGNED"
+                                  )}
+                                </td>
+                                <td className="w-[100px] border-[1px] flex items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px] p-2   ">
+                                  {cmap_headers?.data?.message?.find(
+                                    (items: any) =>
+                                      items?.fieldname === "period"
+                                  ) ? (
+                                    <>
+                                      <span
+                                        className={
+                                          val?.newPeriod
+                                            ? "line-through text-red-500 font-bold"
+                                            : ""
+                                        }
+                                      >
+                                        {val?.period}
+                                      </span>
+                                      &nbsp;&nbsp;&nbsp;
+                                      {val?.newPeriod ? (
+                                        <span className="text-green-500 font-bold">
+                                          {val?.newPeriod}{" "}
                                         </span>
-                                        &nbsp;&nbsp;&nbsp;
-                                        {val?.newPeriod ? (
-                                          <span className="text-green-500 font-bold">
-                                            {val?.newPeriod}{" "}
-                                          </span>
-                                        ) : null}
-                                      </>
-                                    ) : (
-                                      "NOT ASSIGNED"
-                                    )}
-                                  </td>
-                                  {/* <td className="w-[200px] border-[1px] flex items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px] p-2   ">
+                                      ) : null}
+                                    </>
+                                  ) : (
+                                    "NOT ASSIGNED"
+                                  )}
+                                </td>
+                                {/* <td className="w-[200px] border-[1px] flex items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px] p-2   ">
                                     {cmap_headers?.data?.message?.find(
                                       (items: any) =>
                                         items?.fieldname ===
@@ -309,123 +306,123 @@ export const Table = ({
                                       : "NOT ASSIGNED"}
                                   </td> */}
 
-                                  <td className="w-[200px] border-[1px] flex flex-col items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px] p-2   ">
-                                    <div className="flex justify-center flex-col items-center my-auto gap-2">
-                                      <div className="flex items-center justify-center gap-2">
-                                        <span>Unit:</span>
-                                        <select
-                                          name=""
-                                          id=""
-                                          className="border-[1px] h-[30px]"
-                                          value={selectedUnits[index] || ""}
-                                          onChange={(e) =>
-                                            handleUnitChange(e, index)
-                                          }
-                                        >
-                                          <option>1</option>
-                                          <option>2</option>
-                                          <option>3</option>
-                                          <option>4</option>
-                                        </select>
-                                      </div>
-                                      <button
-                                        className="bg-[#428bca] p-2 text-white rounded-[5px] mt-2"
-                                        onClick={() => {
-                                          setSelectedName(val?.name);
-                                          setTimeout(() => {
-                                            unitModalOpen();
-                                          }, 2000);
-                                        }}
+                                <td className="w-[200px] border-[1px] flex flex-col items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px] p-2   ">
+                                  <div className="flex justify-center flex-col items-center my-auto gap-2">
+                                    <div className="flex items-center justify-center gap-2">
+                                      <span>Unit:</span>
+                                      <select
+                                        name=""
+                                        id=""
+                                        className="border-[1px] h-[30px]"
+                                        value={selectedUnits[index] || ""}
+                                        onChange={(e) =>
+                                          handleUnitChange(e, index)
+                                        }
                                       >
-                                        Move
-                                      </button>
+                                        <option>1</option>
+                                        <option>2</option>
+                                        <option>3</option>
+                                        <option>4</option>
+                                      </select>
                                     </div>
-                                  </td>
+                                    <button
+                                      className="bg-[#428bca] p-2 text-white rounded-[5px] mt-2"
+                                      onClick={() => {
+                                        setSelectedName(val?.name);
+                                        setTimeout(() => {
+                                          unitModalOpen();
+                                        }, 2000);
+                                      }}
+                                    >
+                                      Move
+                                    </button>
+                                  </div>
+                                </td>
 
-                                  <td className="w-[100px] border-[1px] flex items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px] p-2   ">
-                                    {cmap_headers?.data?.message?.find(
-                                      (items: any) =>
-                                        items?.fieldname ===
-                                        "last_period_of_the_unit"
-                                    )
-                                      ? val?.last_period_of_the_unit
-                                      : "NOT ASSIGNED"}
-                                  </td>
-                                  <td className="w-[200px] border-[1px] flex items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px] p-2   ">
-                                    {cmap_headers?.data?.message?.find(
-                                      (items: any) =>
-                                        items?.fieldname === "textbook"
-                                    )
-                                      ? val?.textbook
-                                      : "NOT ASSIGNED"}
-                                  </td>
-                                  <td className="w-[200px] border-[1px] flex items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px] p-2   ">
-                                    {cmap_headers?.data?.message?.find(
-                                      (items: any) =>
-                                        items?.fieldname === "chapter"
-                                    )
-                                      ? val?.chapter
-                                      : "NOT ASSIGNED"}
-                                  </td>
-                                  <td className="w-[200px] border-[1px] flex items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px] p-2   ">
-                                    {cmap_headers?.data?.message?.find(
-                                      (items: any) =>
-                                        items?.fieldname === "broadcast"
-                                    )
-                                      ? val?.broadcast
-                                      : "NOT ASSIGNED"}
-                                  </td>
-                                  <td className="w-[100px] border-[1px] flex items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px] p-2   ">
-                                    {cmap_headers?.data?.message?.find(
-                                      (items: any) =>
-                                        items?.fieldname === "parent_note"
-                                    )
-                                      ? val?.parent_note
-                                      : "NOT ASSIGNED"}
-                                  </td>
-                                  <td className="w-[100px] border-[1px] flex items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px] p-2   ">
-                                    {cmap_headers?.data?.message?.find(
-                                      (items: any) =>
-                                        items?.fieldname === "home_work"
-                                    )
-                                      ? val?.home_work
-                                      : "NOT ASSIGNED"}
-                                  </td>
-                                  <td className="w-[100px] border-[1px] flex items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px] p-2   ">
-                                    {cmap_headers?.data?.message?.find(
-                                      (items: any) =>
-                                        items?.fieldname === "class_work"
-                                    )
-                                      ? val?.class_work
-                                      : "NOT ASSIGNED"}
-                                  </td>
-                                  <td className="w-[200px] border-[1px] flex items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px] p-2   ">
-                                    {cmap_headers?.data?.message?.find(
-                                      (items: any) =>
-                                        items?.fieldname === "material_required"
-                                    )
-                                      ? val?.material_required
-                                      : "NOT ASSIGNED"}
-                                  </td>
-                                  {Object.keys(groupHash).map((group) => {
-                                    return (
-                                      <AddItemGroupCell
-                                        groupName={groupHash[group]}
-                                        groupFieldName={group}
-                                        row={val}
-                                        insertModalOpen={insertModalOpen}
-                                        handleSelectNames={handleSelectNames}
-                                        setSelectedIDS={setSelectedIDS}
-                                        setSelectedName={setSelectedName}
-                                        setRowField={setRowField}
-                                        setSelectedItem={setSelectedItem}
-                                        fetchData={fetchData}
-                                        openModal={openModal}
-                                        deleteModalOpen={deleteModalOpen}
-                                      />
-                                    );
-                                  })}
-                                  {/* <td
+                                <td className="w-[100px] border-[1px] flex items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px] p-2   ">
+                                  {cmap_headers?.data?.message?.find(
+                                    (items: any) =>
+                                      items?.fieldname ===
+                                      "last_period_of_the_unit"
+                                  )
+                                    ? val?.last_period_of_the_unit
+                                    : "NOT ASSIGNED"}
+                                </td>
+                                <td className="w-[200px] border-[1px] flex items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px] p-2   ">
+                                  {cmap_headers?.data?.message?.find(
+                                    (items: any) =>
+                                      items?.fieldname === "textbook"
+                                  )
+                                    ? val?.textbook
+                                    : "NOT ASSIGNED"}
+                                </td>
+                                <td className="w-[200px] border-[1px] flex items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px] p-2   ">
+                                  {cmap_headers?.data?.message?.find(
+                                    (items: any) =>
+                                      items?.fieldname === "chapter"
+                                  )
+                                    ? val?.chapter
+                                    : "NOT ASSIGNED"}
+                                </td>
+                                <td className="w-[200px] border-[1px] flex items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px] p-2   ">
+                                  {cmap_headers?.data?.message?.find(
+                                    (items: any) =>
+                                      items?.fieldname === "broadcast"
+                                  )
+                                    ? val?.broadcast
+                                    : "NOT ASSIGNED"}
+                                </td>
+                                <td className="w-[100px] border-[1px] flex items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px] p-2   ">
+                                  {cmap_headers?.data?.message?.find(
+                                    (items: any) =>
+                                      items?.fieldname === "parent_note"
+                                  )
+                                    ? val?.parent_note
+                                    : "NOT ASSIGNED"}
+                                </td>
+                                <td className="w-[100px] border-[1px] flex items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px] p-2   ">
+                                  {cmap_headers?.data?.message?.find(
+                                    (items: any) =>
+                                      items?.fieldname === "home_work"
+                                  )
+                                    ? val?.home_work
+                                    : "NOT ASSIGNED"}
+                                </td>
+                                <td className="w-[100px] border-[1px] flex items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px] p-2   ">
+                                  {cmap_headers?.data?.message?.find(
+                                    (items: any) =>
+                                      items?.fieldname === "class_work"
+                                  )
+                                    ? val?.class_work
+                                    : "NOT ASSIGNED"}
+                                </td>
+                                <td className="w-[200px] border-[1px] flex items-center justify-center border-[#aaa] text-center text-[#8b91a0] text-[12px] p-2   ">
+                                  {cmap_headers?.data?.message?.find(
+                                    (items: any) =>
+                                      items?.fieldname === "material_required"
+                                  )
+                                    ? val?.material_required
+                                    : "NOT ASSIGNED"}
+                                </td>
+                                {Object.keys(groupHash).map((group) => {
+                                  return (
+                                    <AddItemGroupCell
+                                      groupName={groupHash[group]}
+                                      groupFieldName={group}
+                                      row={val}
+                                      insertModalOpen={insertModalOpen}
+                                      handleSelectNames={handleSelectNames}
+                                      setSelectedIDS={setSelectedIDS}
+                                      setSelectedName={setSelectedName}
+                                      setRowField={setRowField}
+                                      setSelectedItem={setSelectedItem}
+                                      fetchData={fetchData}
+                                      openModal={openModal}
+                                      deleteModalOpen={deleteModalOpen}
+                                    />
+                                  );
+                                })}
+                                {/* <td
                                     className={`w-[200px] border-[1px] flex flex-col border-[#aaa] text-center text-[#8b91a0] text-[12px]  `}
                                   >
                                     <span
@@ -825,20 +822,20 @@ export const Table = ({
                                         })}
                                     </div>
                                   </td> */}
-                                </tr>
-                              )}
-                            </Draggable>
-                          </>
-                        );
-                      })}
-                      {provided.placeholder}
-                    </tbody>
-                  </table>
-                )}
-              </StrictModeDroppable>
-            </DragDropContext>
-          </section>
-        )}
+                              </tr>
+                            )}
+                          </Draggable>
+                        </>
+                      );
+                    })}
+                    {provided.placeholder}
+                  </tbody>
+                </table>
+              )}
+            </StrictModeDroppable>
+          </DragDropContext>
+        </section>
+      )}
 
       {isButtonClicked &&
         !isLoading &&

@@ -393,40 +393,40 @@ function get_fee_category(){
 }
 
 async function submit_form(){
-	var fin_yr = document.getElementById('ins_rel_head_type_academic_year').value 
-	var fin_yr = document.getElementById('ins_rel_head_type_academic_year').value 
+	var fin_yr = document.getElementById('ins_rel_head_type_academic_year').value
+	var fin_yr = document.getElementById('ins_rel_head_type_academic_year').value
 	if(fin_yr == 'Select Year'){
 		frappe.throw('Please Select Financial Year!')
 	}
-	var class_name = document.getElementById('class_name').value 
+	var class_name = document.getElementById('class_name').value
 	if(class_name==''){
 		frappe.throw('Please Select the Class!')
 	}
-	var fee_type = document.getElementById('fee_head_name1').value  
-	var class_name = document.getElementById('class_name').value 
+	var fee_type = document.getElementById('fee_head_name1').value
+	var class_name = document.getElementById('class_name').value
 	if(class_name==''){
 		frappe.throw('Please Select the Class!')
 	}
-	var fee_type = document.getElementById('fee_head_name1').value  
+	var fee_type = document.getElementById('fee_head_name1').value
 	if(fee_type == ''){
 		frappe.throw('Please Select a Fee Head!')
 	}
-	var amount = document.getElementById('fee_head_amt').value 
+	var amount = document.getElementById('fee_head_amt').value
 	if(amount == ''){
 		frappe.throw('Please Enter an Amount!')
 	}
-	var institution = document.getElementById('yes').value 
+	var institution = document.getElementById('yes').value
 	if(institution){
 	var ins_name = document.getElementById('inst_name').value}
 	else{
 		var ins_name = document.getElementById('school_name').value
 		frappe.throw('Please Select a Fee Head!')
 	}
-	var amount = document.getElementById('fee_head_amt').value 
+	var amount = document.getElementById('fee_head_amt').value
 	if(amount == ''){
 		frappe.throw('Please Enter an Amount!')
 	}
-	var institution = document.getElementById('yes').value 
+	var institution = document.getElementById('yes').value
 	if(institution){
 	var ins_name = document.getElementById('inst_name').value}
 	else{
@@ -467,4 +467,4 @@ function handleRadioClick() {
 	}
   }
 
-  
+

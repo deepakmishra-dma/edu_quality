@@ -151,7 +151,7 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
                 width: 40,
                 borderRadius: 4,
                 backgroundSize: "contain",
-              }}  
+              }}
             />
           </Box>
           <Stack

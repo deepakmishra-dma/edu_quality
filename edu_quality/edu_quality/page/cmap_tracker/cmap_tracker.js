@@ -1,373 +1,418 @@
+let globalTableRef = null;
+let filtersRef = null;
+let cmapData = [];
+let cmapUpdate = {};
+let globalPage = null;
+let saveButtonAdded = false;
+let isAdmin = false;
+let isCmapFetching = false;
 
+frappe.pages["cmap-tracker"].on_page_load = async function (wrapper) {
+  var page = frappe.ui.make_app_page({
+    parent: wrapper,
+    title: "CMAP Tracker",
+    single_column: true,
+  });
+  globalPage = page;
 
-let globalTableRef = null
-let filtersRef = null
-let cmapData = []
-let cmapUpdate = {}
-let globalPage = null
-let saveButtonAdded = false
-let isAdmin = false
-let isCmapFetching = false
-
-frappe.pages['cmap-tracker'].on_page_load = async function (wrapper) {
-
-	var page = frappe.ui.make_app_page({
-		parent: wrapper,
-		title: 'CMAP Tracker',
-		single_column: true
-	});
-	globalPage = page
-
-	onLoad()
-}
-frappe.pages['cmap-tracker'].refresh = async function (wrapper) {
-
-	onLoad()
-}
+  onLoad();
+};
+frappe.pages["cmap-tracker"].refresh = async function (wrapper) {
+  onLoad();
+};
 
 async function onLoad() {
+  frappe.require(["/assets/edu_quality/css/cmap-tracker.css"]);
+  const el = globalPage.wrapper.find(".container.page-body");
 
-	frappe.require(["/assets/edu_quality/css/cmap-tracker.css"])
-	const el = globalPage.wrapper.find('.container.page-body');
+  el.addClass("cmap-tracker");
+  const [teachersData, acadYear, school] = await getTeachers();
+  const data = await frappe.call({
+    method: "frappe.client.get_list",
+    args: {
+      limit: 0,
+      doctype: "Class Type",
 
-	el.addClass("cmap-tracker");
-	const [teachersData, acadYear, school] = await getTeachers()
-	const data = await frappe.call({
-		method: 'frappe.client.get_list',
-		args: {
-			'limit': 0,
-			'doctype': 'Class Type',
+      fields: ["name"],
+    },
+    callback: function (r) {},
+  });
+  if (!data.message || !data.message.length || data.message.length == 0) {
+    frappe.throw(
+      "Something Went wrong fetching classes try refreshing the page "
+    );
+  }
+  const parsedData = data.message.map((el) => el.name).join("\n");
+  isAdmin = !teachersData;
+  const teacherFilter = !teachersData
+    ? [
+        {
+          label: "Teacher",
+          fieldname: "teacher",
+          fieldtype: "Link",
+          options: "Instructor",
+          readonly: teachersData,
 
+          get_query: () => {
+            return {
+              filters: {
+                custom_school: filtersRef.get_value("school"),
+              },
+            };
+          },
+          change: () => filterOnChange(filtersRef.fields_dict.school),
+        },
+      ]
+    : [];
+  // el.innerHTML = ""
+  el.empty();
+  filtersRef = make_fieldgroup(el, [
+    {
+      label: "Academic Year",
+      fieldname: "academic_year",
+      fieldtype: "Link",
+      default: acadYear || "",
+      options: "Academic Year",
+      reqd: 1,
+      // change: () => filterOnChange(filtersRef.fields_dict.academic_year)
+    },
+    {
+      label: "School",
+      fieldname: "school",
+      fieldtype: "Link",
+      default: school || "",
+      reqd: 1,
+      options: "School",
+      readonly: parseInt(!!school),
+      // change: () => filterOnChange(filtersRef.fields_dict.school)
+    },
+    {
+      label: "Class",
+      fieldname: "class",
+      fieldtype: "Select",
+      reqd: 1,
+      options: parsedData,
 
-			'fields': [
-				"name"
-			]
-		},
-		callback: function (r) {
+      // change: () => filterOnChange(filtersRef.fields_dict.class)
+    },
+    {
+      label: "Division",
+      fieldname: "division",
+      fieldtype: "Link",
+      options: "Student Group",
+      get_query: () => {
+        return {
+          filters: {
+            program: filtersRef.get_value("school"),
+            academic_year: filtersRef.get_value("academic_year"),
+            program: `${filtersRef.get_value("class")}-${filtersRef.get_value(
+              "school"
+            )}`,
+          },
+        };
+      },
+      // change: () => filterOnChange(filtersRef.fields_dict.division)
+    },
+    {
+      label: "Subject",
+      fieldname: "subject",
+      fieldtype: "Link",
+      options: "Course",
+      reqd: 1,
+      // change: () => filterOnChange(filtersRef.fields_dict.subject)
+    },
+    ...teacherFilter,
+    {
+      label: "Unit",
+      fieldname: "unit",
+      reqd: 1,
+      fieldtype: "Select",
+      options: ["1", "2", "3", "4"],
+      // change: () => filterOnChange(filtersRef.fields_dict.unit)
+    },
+    {
+      label: "Submit",
+      fieldname: "submitbtn",
+      fieldtype: "Button",
 
-		}
-	});
-	if (!data.message || !data.message.length || data.message.length == 0) {
-		frappe.throw("Something Went wrong fetching classes try refreshing the page ")
-	}
-	const parsedData = data.message.map((el) => el.name).join("\n")
-	isAdmin = !teachersData
-	const teacherFilter = !teachersData ? [{
-		label: 'Teacher',
-		fieldname: 'teacher',
-		fieldtype: 'Link',
-		options: "Instructor",
-		readonly: teachersData,
+      click: () => filterOnChange(),
+    },
+  ]);
 
-		get_query: () => {
-			return {
-				"filters": {
+  const tableContainer = $("<div>").attr("id", "report-table-container");
+  const editContainer = $("<div>").attr("id", "report-edit-container");
 
-					"custom_school": filtersRef.get_value('school'),
-
-				}
-
-			}
-		},
-		change: () => filterOnChange(filtersRef.fields_dict.school)
-	}] : [];
-	// el.innerHTML = ""
-	el.empty();
-	filtersRef = make_fieldgroup(el, [
-		{
-			label: 'Academic Year',
-			fieldname: 'academic_year',
-			fieldtype: 'Link',
-			default: acadYear || '',
-			options: "Academic Year",
-			reqd: 1,
-			// change: () => filterOnChange(filtersRef.fields_dict.academic_year)
-		},
-		{
-			label: 'School',
-			fieldname: 'school',
-			fieldtype: 'Link',
-			default: school || '',
-			reqd: 1,
-			options: "School",
-			readonly: parseInt(!!school),
-			// change: () => filterOnChange(filtersRef.fields_dict.school)
-		},
-		{
-			label: 'Class',
-			fieldname: 'class',
-			fieldtype: 'Select',
-			reqd: 1,
-			options: parsedData,
-
-			// change: () => filterOnChange(filtersRef.fields_dict.class)
-		},
-		{
-			label: 'Division',
-			fieldname: 'division',
-			fieldtype: 'Link',
-			options: "Student Group",
-			get_query: () => {
-				return {
-					"filters": {
-						"program": filtersRef.get_value('school'),
-						"academic_year": filtersRef.get_value('academic_year'),
-						"program": `${filtersRef.get_value('class')}-${filtersRef.get_value('school')}`
-					}
-
-				}
-			},
-			// change: () => filterOnChange(filtersRef.fields_dict.division)
-		},
-		{
-			label: 'Subject',
-			fieldname: 'subject',
-			fieldtype: 'Link',
-			options: "Course", reqd: 1,
-			// change: () => filterOnChange(filtersRef.fields_dict.subject)
-		},
-		...teacherFilter,
-		{
-			label: 'Unit',
-			fieldname: 'unit', reqd: 1,
-			fieldtype: 'Select',
-			options: ["1", "2", "3", "4"],
-			// change: () => filterOnChange(filtersRef.fields_dict.unit)
-		},
-		{
-			label: 'Submit',
-			fieldname: 'submitbtn',
-			fieldtype: 'Button',
-
-			click: () => filterOnChange()
-		},
-	])
-
-	const tableContainer = $('<div>').attr('id', 'report-table-container');
-	const editContainer = $('<div>').attr('id', 'report-edit-container');
-
-	el.append(tableContainer);
-	el.append(editContainer);
-	setupDataTable()
+  el.append(tableContainer);
+  el.append(editContainer);
+  setupDataTable();
 }
 async function reInitCMAP() {
-	if (cmapDataPresent()) {
-		cmapData = []
-		cmapUpdate = {}
-		// removeSaveButton()
-		await setupDataTable()
-	}
+  if (cmapDataPresent()) {
+    cmapData = [];
+    cmapUpdate = {};
+    // removeSaveButton()
+    await setupDataTable();
+  }
 }
 async function filterOnChange(field) {
+  // if (!cmapDataPresent()) return
 
-	// if (!cmapDataPresent()) return
+  // frappe.msgprint({
+  // 	title: "Warning", message: "Changing filter, will remove all the existing data"
+  // })
+  await reInitCMAP();
 
-	// frappe.msgprint({
-	// 	title: "Warning", message: "Changing filter, will remove all the existing data"
-	// })
-	await reInitCMAP()
-
-
-	if (filtersRef.get_value('academic_year') && filtersRef.get_value('class') && filtersRef.get_value('school') && filtersRef.get_value('unit') && filtersRef.get_value('subject')) {
-
-		await getCmap()
-		await setupDataTable()
-	}
+  if (
+    filtersRef.get_value("academic_year") &&
+    filtersRef.get_value("class") &&
+    filtersRef.get_value("school") &&
+    filtersRef.get_value("unit") &&
+    filtersRef.get_value("subject")
+  ) {
+    await getCmap();
+    await setupDataTable();
+  }
 }
 
 function cmapDataPresent() {
-	return cmapData.length !== 0
+  return cmapData.length !== 0;
 }
 
 function updateCmap(cmapName, key, value) {
-	const cmap = cmapUpdate[cmapName]
-	if (cmap) {
-		cmap[key] = !value ? null : value
-	}
-	else {
-		cmapUpdate[cmapName] = { [key]: !value ? null : value }
-	}
+  const cmap = cmapUpdate[cmapName];
+  if (cmap) {
+    cmap[key] = !value ? null : value;
+  } else {
+    cmapUpdate[cmapName] = { [key]: !value ? null : value };
+  }
 }
 function changeRealDateOnSelect(e) {
-	const dataset = e.target.dataset
-	console.log(e.target.dataset, e.target.value,)
-	if (dataset.index && cmapData) {
-		const cmap = cmapData[dataset.index].name
-		cmapData[dataset.index].real_date = e.target.value
-		updateCmap(cmap, "real_date", e.target.value)
-		updateCmap(cmap, "division", cmapData[dataset.index].division)
-		updateCmap(cmap, "teacher", cmapData[dataset.index].teacher)
-	}
-	addSaveButton()
+  const dataset = e.target.dataset;
+  console.log(e.target.dataset, e.target.value);
+  if (dataset.index && cmapData) {
+    const cmap = cmapData[dataset.index].name;
+    cmapData[dataset.index].real_date = e.target.value;
+    updateCmap(cmap, "real_date", e.target.value);
+    updateCmap(cmap, "division", cmapData[dataset.index].division);
+    updateCmap(cmap, "teacher", cmapData[dataset.index].teacher);
+  }
+  addSaveButton();
 }
 function getFilters() {
-	const filters = {}
+  const filters = {};
 
-	if (filtersRef && filtersRef.fields_dict)
-		Object.keys(filtersRef.fields_dict).forEach(key => {
+  if (filtersRef && filtersRef.fields_dict)
+    Object.keys(filtersRef.fields_dict).forEach((key) => {
+      filters[key] = filtersRef.fields_dict[key].value;
+    });
 
-			filters[key] = filtersRef.fields_dict[key].value
-		})
-
-	return filters
+  return filters;
 }
 
 async function getTeachers() {
-	const teacherData = await frappe.call({
-		method: 'edu_quality.edu_quality.page.cmap_tracker.cmap_tracker.get_teacher_details',
-		args: { value_for_admin: "" }
-	})
-	return teacherData?.message
+  const teacherData = await frappe.call({
+    method:
+      "edu_quality.edu_quality.page.cmap_tracker.cmap_tracker.get_teacher_details",
+    args: { value_for_admin: "" },
+  });
+  return teacherData?.message;
 }
 async function getCmap() {
-	const filters = getFilters()
-	if (isCmapFetching) {
-		return
-	}
-	try {
-		isCmapFetching = true
-		setupLoader()
-		tempData = await frappe.call({
-			method: 'edu_quality.edu_quality.page.cmap_tracker.cmap_tracker.get_cmap',
-			args: filters
-		})
-		cmapData = tempData?.message || []
+  const filters = getFilters();
+  if (isCmapFetching) {
+    return;
+  }
+  try {
+    isCmapFetching = true;
+    setupLoader();
+    tempData = await frappe.call({
+      method: "edu_quality.edu_quality.page.cmap_tracker.cmap_tracker.get_cmap",
+      args: filters,
+    });
+    cmapData = tempData?.message || [];
 
-		await setupDataTable()
-	} catch (e) {
-
-	} finally {
-		isCmapFetching = false
-	}
+    await setupDataTable();
+  } catch (e) {
+  } finally {
+    isCmapFetching = false;
+  }
 }
 
-
 function addSaveButton() {
-	if (!cmapDataPresent() || saveButtonAdded) return
-	saveButtonAdded = 1
-	globalPage.set_primary_action('Save', saveTracker)
+  if (!cmapDataPresent() || saveButtonAdded) return;
+  saveButtonAdded = 1;
+  globalPage.set_primary_action("Save", saveTracker);
 }
 
 function removeSaveButton() {
-	if (!saveButtonAdded) return
-	globalPage.clear_primary_action()
+  if (!saveButtonAdded) return;
+  globalPage.clear_primary_action();
 }
 
 async function setupDataTable() {
-	const container = document.getElementById('report-table-container')
-	container.innerHTML = ""
+  const container = document.getElementById("report-table-container");
+  container.innerHTML = "";
 
-	container.appendChild(createTable(cmapData))
-	$(function () {
-		$('[data-toggle="tooltip"]').tooltip({ trigger: 'hover focus click manual' })
-
-	})
-
+  container.appendChild(createTable(cmapData));
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip({
+      trigger: "hover focus click manual",
+    });
+  });
 }
 
 function setupLoader() {
-	const container = document.getElementById('report-table-container')
-	container.innerHTML = "<div style='margin-top:12px;margin-bottom:12px; font-size:18px;font-weight:500; padding-left:18px;'>Loading...</div>"
-
+  const container = document.getElementById("report-table-container");
+  container.innerHTML =
+    "<div style='margin-top:12px;margin-bottom:12px; font-size:18px;font-weight:500; padding-left:18px;'>Loading...</div>";
 }
-
 
 function make_fieldgroup(parent, ddf_list) {
-	fg = new frappe.ui.FieldGroup({
-		"fields": ddf_list,
-		"parent": parent
-	});
-	fg.make();
+  fg = new frappe.ui.FieldGroup({
+    fields: ddf_list,
+    parent: parent,
+  });
+  fg.make();
 
-	return fg
-
+  return fg;
 }
 const headers = [
-	{ textContent: 'Period No.', className: "period-no-header sticky-header period", colSpan: 1 },
-	{ textContent: 'Chapter Name',className:"sticky-header chapter", colSpan: 2 },
-	{ textContent: 'Products',className:"sticky-header product", colSpan: 1 },
-	{ textContent: 'Broadcast', colSpan: 1 },
-	{ textContent: 'Parent Note', colSpan: 1 },
-	{ textContent: 'Classwork', colSpan: 1 },
-	{ textContent: 'Homework', colSpan: 1 },
-	{ textContent: 'Material Required', colSpan: 1 },
+  {
+    textContent: "Period No.",
+    className: "period-no-header sticky-header period",
+    colSpan: 1,
+  },
+  {
+    textContent: "Chapter Name",
+    className: "sticky-header chapter",
+    colSpan: 2,
+  },
+  { textContent: "Products", className: "sticky-header product", colSpan: 1 },
+  { textContent: "Broadcast", colSpan: 1 },
+  { textContent: "Parent Note", colSpan: 1 },
+  { textContent: "Classwork", colSpan: 1 },
+  { textContent: "Homework", colSpan: 1 },
+  { textContent: "Material Required", colSpan: 1 },
 
-
-	{ textContent: 'Plan Date' },
-	{ textContent: 'Real Date' },
-
-
-
+  { textContent: "Plan Date" },
+  { textContent: "Real Date" },
 ];
 
 function createTable(data) {
-	if (!cmapDataPresent()) {
-		const div = document.createElement("div")
-		div.textContent = "No Data/Select The Correct Filters and then press Fetch, to display assignments"
-		div.className = "no-content"
-		return div
-	}
+  if (!cmapDataPresent()) {
+    const div = document.createElement("div");
+    div.textContent =
+      "No Data/Select The Correct Filters and then press Fetch, to display assignments";
+    div.className = "no-content";
+    return div;
+  }
 
-	const table = document.createElement('table');
-	const thead = document.createElement('thead')
-	const tbody = document.createElement('tbody')
-	const headerRow = document.createElement('tr');
-	const teacherHeader = { textContent: 'Teacher' };
-	const divisionHeader = { textContent: 'Division' };
-	const filters = getFilters()
-	let localHeaders = headers
-	if (!filters.teacher) {
-		localHeaders = [...localHeaders, teacherHeader]
-	}
+  const table = document.createElement("table");
+  const thead = document.createElement("thead");
+  const tbody = document.createElement("tbody");
+  const headerRow = document.createElement("tr");
+  const teacherHeader = { textContent: "Teacher" };
+  const divisionHeader = { textContent: "Division" };
+  const filters = getFilters();
+  let localHeaders = headers;
+  if (!filters.teacher) {
+    localHeaders = [...localHeaders, teacherHeader];
+  }
 
-	if (!filters.division) {
-		localHeaders = [...localHeaders, divisionHeader]
-	}
-	localHeaders.forEach(header => {
-		const headerCell = document.createElement('th');
-		headerCell.textContent = header.textContent;
-		if (header.className) {
-			headerCell.className = (header.className);
-		}
-		if (header.colSpan) {
-			headerCell.colSpan = header.colSpan;
-		}
-		headerRow.appendChild(headerCell);
-	});
+  if (!filters.division) {
+    localHeaders = [...localHeaders, divisionHeader];
+  }
+  localHeaders.forEach((header) => {
+    const headerCell = document.createElement("th");
+    headerCell.textContent = header.textContent;
+    if (header.className) {
+      headerCell.className = header.className;
+    }
+    if (header.colSpan) {
+      headerCell.colSpan = header.colSpan;
+    }
+    headerRow.appendChild(headerCell);
+  });
 
-	if (data)
+  if (data)
+    data.forEach((row, index) => {
+      const row_html = createRow(
+        row.period,
+        row.chapter_name,
+        generateProductList(row.products),
+        row.broadcast,
+        row.parent_note,
+        row.class_work,
+        row.home_work,
+        row.material_required,
+        row.division,
+        row.teacher,
+        row.plan_date,
+        row.real_date,
+        index === 0,
+        0,
+        index
+      );
+      tbody.innerHTML += row_html;
+    });
 
-		data.forEach((row, index) => {
-			const row_html = createRow(row.period, row.chapter_name, generateProductList(row.products), row.broadcast, row.parent_note, row.class_work, row.home_work, row.material_required, row.division, row.teacher, row.plan_date, row.real_date, index === 0, 0, index)
-			tbody.innerHTML += (row_html)
-		})
+  tbody.addEventListener("change", changeRealDateOnSelect);
 
+  thead.appendChild(headerRow);
+  table.appendChild(thead);
 
-	tbody.addEventListener('change', changeRealDateOnSelect)
-
-	thead.appendChild(headerRow)
-	table.appendChild(thead);
-
-	table.appendChild(tbody);
-	return table
+  table.appendChild(tbody);
+  return table;
 }
 
 function generateProductList(products) {
-	const generatedProducts = products && products.map(el => `<div style="display:flex;gap:4px;"><a target="__blank" href="${el.custom_product_url}">${el.item_code} </a><a target="__blank" href="/app/item/${el.item_code}"><i class="fa fa-comment" aria-hidden="true"></i></a></div>`).join('')
-	return `<div class="products-list">${generatedProducts}</div>`
+  const generatedProducts =
+    products &&
+    products
+      .map(
+        (el) =>
+          `<div style="display:flex;gap:4px;"><a target="__blank" href="${el.custom_product_url}">${el.item_code} </a><a target="__blank" href="/app/item/${el.item_code}"><i class="fa fa-comment" aria-hidden="true"></i></a></div>`
+      )
+      .join("");
+  return `<div class="products-list">${generatedProducts}</div>`;
 }
-function createRow(period_no, chapter_name, products, broadcast, parent_note, class_work, home_work, material_required, division, teacher, plan_date, real_date, first_row, rowSpan, index) {
-
-	const filters = getFilters()
-	return `<tr>
+function createRow(
+  period_no,
+  chapter_name,
+  products,
+  broadcast,
+  parent_note,
+  class_work,
+  home_work,
+  material_required,
+  division,
+  teacher,
+  plan_date,
+  real_date,
+  first_row,
+  rowSpan,
+  index
+) {
+  const filters = getFilters();
+  return `<tr>
 	<td style="position:sticky;left:0px;background:var(--bg-color);" >${period_no}</td>
 	<td colspan="2" style="position:sticky;left:127px;background:var(--bg-color);">${chapter_name}</td>
 	<td style="position:sticky;left:254px;background:var(--bg-color);">${products}</td>
-	<td  data-toggle="tooltip" data-placement="top"${broadcast ? `style="color: var(--dt-primary-color);"` : ""} title="${broadcast}"><i class="fa fa-file" aria-hidden="true"></i></td>
-	<td data-toggle="tooltip" data-placement="top"${parent_note ? `style="color: var(--dt-primary-color);"` : ""} title="${parent_note}"><i class="fa fa-file" aria-hidden="true"></i></td>
-	<td  data-toggle="tooltip" data-placement="top"${class_work ? `style="color: var(--dt-primary-color);"` : ""} title="${class_work}"><i class="fa fa-file" aria-hidden="true"></i></td>
-	<td  data-toggle="tooltip" data-placement="top"${home_work ? `style="color: var(--dt-primary-color);"` : ""} title="${home_work}"><i class="fa fa-file" aria-hidden="true"></i></td>
-<td data-toggle="tooltip" data-placement="top"${material_required ? `style="color: var(--dt-primary-color);"` : ""} title="${material_required}"><i class="fa fa-file" aria-hidden="true"></i></td>
+	<td  data-toggle="tooltip" data-placement="top"${
+    broadcast ? `style="color: var(--dt-primary-color);"` : ""
+  } title="${broadcast}"><i class="fa fa-file" aria-hidden="true"></i></td>
+	<td data-toggle="tooltip" data-placement="top"${
+    parent_note ? `style="color: var(--dt-primary-color);"` : ""
+  } title="${parent_note}"><i class="fa fa-file" aria-hidden="true"></i></td>
+	<td  data-toggle="tooltip" data-placement="top"${
+    class_work ? `style="color: var(--dt-primary-color);"` : ""
+  } title="${class_work}"><i class="fa fa-file" aria-hidden="true"></i></td>
+	<td  data-toggle="tooltip" data-placement="top"${
+    home_work ? `style="color: var(--dt-primary-color);"` : ""
+  } title="${home_work}"><i class="fa fa-file" aria-hidden="true"></i></td>
+<td data-toggle="tooltip" data-placement="top"${
+    material_required ? `style="color: var(--dt-primary-color);"` : ""
+  } title="${material_required}"><i class="fa fa-file" aria-hidden="true"></i></td>
 
 	<td>${plan_date || "No Date"}</td>
 	<td class="real-date-cell">${createDatePicker(real_date, index)}</td>
@@ -375,38 +420,43 @@ function createRow(period_no, chapter_name, products, broadcast, parent_note, cl
 ${!filters.division ? `<td>${division || "No Division"}</td>` : ""}
 
   </tr >
-	`
-
-
+	`;
 }
 
 function createDatePicker(value, index) {
-	return `<input type="date" ${!isAdmin && value ? "disabled" : ""} value = ${value} data-index="${index}" max="${getMaxDate()}" />`
+  return `<input type="date" ${
+    !isAdmin && value ? "disabled" : ""
+  } value = ${value} data-index="${index}" max="${getMaxDate()}" />`;
 }
 
 async function saveTracker() {
-	const filters = getFilters()
-	await frappe.call({
-		method: 'edu_quality.edu_quality.page.cmap_tracker.cmap_tracker.update',
-		args: {
-			filters: filters,
-			cmap_data: cmapUpdate
-		}
-	})
-	frappe.show_alert({
-		message: __('Saved'),
-		indicator: 'green'
-	}, 5);
-	cmapUpdate = {}
-	await reInitCMAP()
-	await getCmap()
-	await setupDataTable()
+  const filters = getFilters();
+  await frappe.call({
+    method: "edu_quality.edu_quality.page.cmap_tracker.cmap_tracker.update",
+    args: {
+      filters: filters,
+      cmap_data: cmapUpdate,
+    },
+  });
+  frappe.show_alert(
+    {
+      message: __("Saved"),
+      indicator: "green",
+    },
+    5
+  );
+  cmapUpdate = {};
+  await reInitCMAP();
+  await getCmap();
+  await setupDataTable();
 }
 
 function getMaxDate() {
-	const today = new Date();
-	const day = today.getDate();
-	const month = today.getMonth() + 1; // Months are zero-based
-	const year = today.getFullYear();
-	return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`
+  const today = new Date();
+  const day = today.getDate();
+  const month = today.getMonth() + 1; // Months are zero-based
+  const year = today.getFullYear();
+  return `${year}-${month.toString().padStart(2, "0")}-${day
+    .toString()
+    .padStart(2, "0")}`;
 }

@@ -204,7 +204,7 @@ const Chapter = ({
   return (
     <Box pb={8}>
       <Text size={"xs"} py={4}>
-        Chapter: {chapter?.split(" - ")?.at(-1) ||chapter}
+        Chapter: {chapter?.split(" - ")?.at(-1) || chapter}
       </Text>
       <Table
         withColumnBorders

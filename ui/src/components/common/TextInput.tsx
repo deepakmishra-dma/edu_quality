@@ -1,5 +1,5 @@
-import clsx from 'clsx';
-import React from 'react';
+import clsx from "clsx";
+import React from "react";
 
 interface TextInputProps {
   label: string;
@@ -14,7 +14,7 @@ const TextInput = (props: TextInputProps) => {
     <div className="frappe-control input-max-width">
       <div className="form-group">
         <div className="clearfix">
-          <label className={clsx('control-label', required && 'reqd')}>
+          <label className={clsx("control-label", required && "reqd")}>
             {label}
           </label>
         </div>

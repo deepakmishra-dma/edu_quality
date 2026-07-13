@@ -1,6 +1,6 @@
-import SingleSelect from '@/walsh-admin/components/SingleSelect';
-import { useEffect, useState } from 'react';
-import clsx from 'clsx';
+import SingleSelect from "@/walsh-admin/components/SingleSelect";
+import { useEffect, useState } from "react";
+import clsx from "clsx";
 
 interface MultiSelectProps {
   label?: string;
@@ -44,7 +44,7 @@ const MultiSelect = (props: MultiSelectProps) => {
         {label && (
           <div className="clearfix">
             <label
-              className={clsx('control-label', required && 'reqd')}
+              className={clsx("control-label", required && "reqd")}
               style={{ paddingRight: 0 }}
             >
               {label}

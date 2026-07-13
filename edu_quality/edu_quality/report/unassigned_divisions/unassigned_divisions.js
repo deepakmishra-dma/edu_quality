@@ -2,24 +2,24 @@
 // For license information, please see license.txt
 
 frappe.query_reports["Unassigned Divisions"] = {
-	"filters": [
-		{
-			"fieldname": "academic_year",
-			"fieldtype": "Select",
-			"options": ["2023-2024", "2024-2025"],
-			"label": "Academic Year",
-		},
-		{
-			"fieldname": "school",
-			"fieldtype": "Link",
-			"options": "School",
-			"label": "School",
-		},
-		// {
-		// 	"fieldname": "class",
-		// 	"fieldtype": "Link",
-		// 	"options": "Class Type",
-		// 	"label": "Class",
-		// },
-	]
+  filters: [
+    {
+      fieldname: "academic_year",
+      fieldtype: "Select",
+      options: ["2023-2024", "2024-2025"],
+      label: "Academic Year",
+    },
+    {
+      fieldname: "school",
+      fieldtype: "Link",
+      options: "School",
+      label: "School",
+    },
+    // {
+    // 	"fieldname": "class",
+    // 	"fieldtype": "Link",
+    // 	"options": "Class Type",
+    // 	"label": "Class",
+    // },
+  ],
 };

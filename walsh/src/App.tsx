@@ -45,7 +45,7 @@ function App() {
     getLocale: () => i18n.language,
   };
 
-  const cachedData = queryClient.getQueryData('student');
+  const cachedData = queryClient.getQueryData("student");
   console.log(cachedData);
 
   return (

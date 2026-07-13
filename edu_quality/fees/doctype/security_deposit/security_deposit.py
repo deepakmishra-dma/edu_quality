@@ -4,13 +4,15 @@
 import frappe
 from frappe.model.document import Document
 
+
 class SecurityDeposit(Document):
-    def after_insert(self):
-        doc = frappe.get_doc({
-        
-            "doctype": "Fee Category",
-            "category_name": self.name,
-            'type':"Deposit",
-            'custom_company': "Unique Educational and Sports Foundation"
-        })
-        doc.insert()
+	def after_insert(self):
+		doc = frappe.get_doc(
+			{
+				"doctype": "Fee Category",
+				"category_name": self.name,
+				"type": "Deposit",
+				"custom_company": "Unique Educational and Sports Foundation",
+			}
+		)
+		doc.insert()

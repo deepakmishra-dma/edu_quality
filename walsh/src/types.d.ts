@@ -1,1 +1,1 @@
-declare module "@tabler/icons"
+declare module "@tabler/icons";

@@ -1,6 +1,6 @@
-import frappe 
-from frappe import _, scrub
+import frappe
 from erpnext.setup.doctype.employee.employee import Employee
+from frappe import _, scrub
 from frappe.permissions import (
 	add_user_permission,
 	get_doc_permissions,
@@ -8,6 +8,7 @@ from frappe.permissions import (
 	remove_user_permission,
 )
 from frappe.utils.data import cint
+
 
 class customEmployee(Employee):
 	def update_user_permissions(self):

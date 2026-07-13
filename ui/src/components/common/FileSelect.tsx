@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import clsx from 'clsx';
+import React, { useState } from "react";
+import clsx from "clsx";
 
 interface FileSelectProps {
   label?: string;
@@ -12,7 +12,7 @@ interface FileSelectProps {
 }
 
 const FileSelect = (props: FileSelectProps) => {
-  const [value, setValue] = useState('');
+  const [value, setValue] = useState("");
   const { label, onChange, required } = props;
   return (
     <div className="frappe-control input-max-width" data-fieldname="select_csv">
@@ -20,7 +20,7 @@ const FileSelect = (props: FileSelectProps) => {
         {label && (
           <div className="clearfix">
             <label
-              className={clsx('control-label', required && 'reqd')}
+              className={clsx("control-label", required && "reqd")}
               data-style-str="padding-right: 0px;"
             >
               {label}
@@ -39,9 +39,9 @@ const FileSelect = (props: FileSelectProps) => {
             )}
             <input
               style={{
-                display: 'none',
+                display: "none",
               }}
-              value={value ? undefined : ''}
+              value={value ? undefined : ""}
               accept=".csv"
               onChange={(e) => {
                 onChange(e);
@@ -55,7 +55,7 @@ const FileSelect = (props: FileSelectProps) => {
             <button
               className="btn btn-default btn-sm btn-attach bold"
               onClick={() => {
-                setValue('');
+                setValue("");
               }}
             >
               Clear

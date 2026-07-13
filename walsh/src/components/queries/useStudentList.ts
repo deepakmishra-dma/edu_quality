@@ -29,7 +29,7 @@ const useStudentList = ({ enabled }: { enabled?: boolean } = {}) => {
       cacheTime: 1200000,
       refetchOnWindowFocus: true,
       refetchInterval: 600000,
-      enabled
+      enabled,
     },
     config: undefined,
     errorNotification: undefined,

@@ -1,9 +1,8 @@
-import frappe 
-from education.education.doctype.student_group.student_group import (
-	StudentGroup, get_program_enrollment
-)
-from frappe.utils import cint
+import frappe
+from education.education.doctype.student_group.student_group import StudentGroup, get_program_enrollment
 from frappe import _
+from frappe.utils import cint
+
 
 class CustomStudentGroup(StudentGroup):
 	def validate_students(self):

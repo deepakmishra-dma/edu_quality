@@ -6,21 +6,21 @@
   %} {% if guardians.append(temp_guard) %} {% endif %} {% endfor %} {% set
   division_data = frappe.get_doc("Student Group",doc.student_group) %} {% set
   school = frappe.get_doc("School", doc.custom_school) %}
-  
+
   <style>
-  
+
         * {
           margin: 0;
           font-family: Arial, Helvetica, sans-serif !important;
         }
-  
+
         .qr-image-size {
           width: 2.5rem;
           height: 2.5rem;
-  
-  
+
+
         }
-  
+
         .student-image-size {
           display: inline-block;
           width: 6.35rem;
@@ -38,28 +38,28 @@
         .front {
           width: 100%;
           height: 329.21px;
-         
+
           background-repeat: no-repeat;
           padding-bottom: 1em;
           background-size: contain;
         }
-  
+
         .back {
           width: 100%;
           height: 329.21px;
-  
-  
-        
+
+
+
           border: 1px solid #fff;
           font-size: 10px;
           font-weight: bold;
           background-image: url("{{site_url}}{{ school.id_card_template_back}}");
           background-size: contain;
           background-repeat: no-repeat;
-        
+
           transform: rotate(180deg);
         }
-  
+
         .container {
           padding: 5px;
           position: relative;
@@ -67,7 +67,7 @@
         }
         .allergies-container{
           position: absolute;
-  
+
           right:-25%;
           transform: rotate(135deg);
           top:16.85%;
@@ -87,14 +87,14 @@
       color: black;
       top:50%;
       left:75%;
-  
-  
+
+
     }
     .asterisk-container i {
-  
+
       color: black;
       font-size: 16px;
-  
+
     }
         .detail-container {
           margin:-8px;
@@ -104,31 +104,31 @@
           position: relative;
           width: 100%;
         }
-  
+
         .academic-details {
           width: 25%;
           display: flex;
           flex-direction: column;
           justify-content: center;
           align-items: center;
-  
-  
+
+
         }
-  
+
         .academic-details h3 {
           font-size: 12px;
           font-weight: bold;
           line-height: 10px;
           display: flex;
         }
-  
+
         .academic-year {
           display: flex;
           gap: 4px;
           text-align: center;
           white-space: nowrap;
-  
-  
+
+
         }
         .academic-year h3{
           font-size: 8px;
@@ -141,7 +141,7 @@
           gap: 16px;
           padding-left: 25px;
         }
-  
+
         .student-name p {
           width: 100%;
           overflow: hidden;
@@ -149,17 +149,17 @@
           font-weight: 600;
           line-height: 30px;
         }
-  
+
         .custom-border {
           border: 1px solid black;
-  
+
         }
-  
+
         .reference-container {
           display: flex;
           margin-top:-0.8rem;
         }
-  
+
         .ref-col-container {
           flex: 1;
           display: flex;
@@ -167,14 +167,14 @@
           justify-content: center;
           margin: 5px;
         }
-  
+
         .ref-col-container h2 {
           font-size: 18pt;
           font-weight: 700;
           color: red;
           line-height: 50px;
         }
-  
+
         .pickup-bus {
           font-size: 28px;
           font-weight: 900;
@@ -182,7 +182,7 @@
           margin: 1rem auto;
           margin-bottom: 2.25rem;
         }
-  
+
         .student-info {
           display: flex;
           gap: 20px;
@@ -195,7 +195,7 @@
           padding-left: 12px;
           padding-right:12px;
         }
-  
+
         .student-info p {
           width: 180px;
           display: flex;
@@ -203,12 +203,12 @@
           position: relative;
           font-size: 9px;
         }
-  
+
         .address-info {
           display: flex;
           flex-wrap: wrap;
         }
-  
+
         .address {
           margin-top: 100px;
           margin-left: 10px;
@@ -224,11 +224,11 @@
           font-weight: 500;
           width: 90%;
         }
-  
+
         .school-data {
           text-align: center;
-  
-  
+
+
         }
         .info-container{
           position: relative;
@@ -249,9 +249,9 @@
         .tiffin-text {
           transform: rotate(270deg);
           position: absolute;
-  
+
           right:-15.5px;
-  
+
           bottom:60px;
           /* transform: rotate(270deg); */
           font-size: 8pt;
@@ -261,12 +261,12 @@
           font-size: 8pt;
           font-weight: 600;
         }
-  
+
         .student-image {
           margin-top: 91px;
           margin-left:1px;
         }
-  
+
         .student-details {
           margin-left: 24px;
         }
@@ -292,7 +292,7 @@
         .cut-mark-circle{
           height:16px;
           width:16px;
-      
+
           border-radius: 50%;
           border: 1px solid black;
         }
@@ -300,8 +300,8 @@
         .cut-mark-container{
           display: flex;
           justify-content: space-between;
-     
-     
+
+
         }
         .cut-mark-container-two{
           display: flex;
@@ -318,7 +318,7 @@
         }
         .cut-mark-circle{
           position: relative;
-         
+
         }
         .cut-mark-circle>.horizontal{
           position: absolute;
@@ -327,7 +327,7 @@
           background-color: black;
           left:0;
           top:50%;
-        
+
         }
         .cut-mark-circle>.vertical{
           position: absolute;
@@ -419,13 +419,13 @@
         <div class="cut-mark-circle "><div class="horizontal"></div><div class="vertical"></div></div>
         <div class="cut-mark-circle "><div class="horizontal"></div><div class="vertical"></div></div></div>
       </div>
-  
+
       <div class="cut-mark-container-two">
         <div class="right">
         <div class="cut-mark-circle"><div class="horizontal"></div><div class="vertical"></div></div>
         <div class="cut-mark-circle"><div class="horizontal"></div><div class="vertical"></div></div></div>
       </div>
-  
+
     </div>
     <div
       class="back"
@@ -465,4 +465,3 @@
     </div>
     <div class="cut-mark-container" style="padding-top: 5px;" ><div class="left"><div class="cut-mark-circle"><div class="horizontal"></div><div class="vertical"></div></div></div><div class="right"><div class="cut-mark-circle"><div class="horizontal"></div><div class="vertical"></div></div></div></div>
   </div>
-  
