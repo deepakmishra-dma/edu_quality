@@ -8,6 +8,9 @@ from edu_quality.public.py.utils import get_submitted_undertaking, get_undertaki
 
 @frappe.whitelist()
 def manual_payment(fee, term, data, payment_mode):
+	from edu_quality.common.utils.access import assert_admin
+
+	assert_admin()
 	try:
 		data = frappe.parse_json(data)
 		if term == "Deposit":

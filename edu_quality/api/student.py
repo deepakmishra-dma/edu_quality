@@ -6,8 +6,11 @@ import frappe
 import pandas as pd
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist()
 def get_student_data(student):
+	from edu_quality.common.utils.access import assert_student_access
+
+	assert_student_access(student)
 	student = frappe.get_doc("Student", student)
 	data = student.as_dict()
 	data["guardians"] = []

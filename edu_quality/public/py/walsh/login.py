@@ -36,11 +36,7 @@ def create_otp(wa_phone_no, custom_key=None, for_appstore_test=False):
 	# frappe.cache.delete_value(key)
 	if for_appstore_test:
 		otp = "1234"
-	frappe.logger("otp").exception("generate-" + key)
-	frappe.logger("otp").exception(otp)
 	cache.set_value(key, otp)
-	val = cache.get_value(key)
-	frappe.logger("otp").exception("get-" + val)
 	return otp
 
 
@@ -48,10 +44,6 @@ def match_otp(wa_phone_no, otp, custom_key=None):
 	cache = frappe.cache()
 	key = custom_key or ("wo" + wa_phone_no)
 	cache_otp = cache.get_value(key)
-	frappe.logger("otp").exception("verify-" + key)
-	frappe.logger("otp").exception(cache_otp)
-
-	# print(wa_phone_no, "otp", otp, "cache_otp", cache_otp)
 	return otp == cache_otp
 
 

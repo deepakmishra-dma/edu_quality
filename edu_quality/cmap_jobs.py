@@ -145,8 +145,11 @@ def get_datetime_from_time_slot(date, time_slot):
 		return datetime_obj
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist()
 def get_upcoming_online_ptm_links(student_id):
+	from edu_quality.common.utils.access import assert_student_access
+
+	assert_student_access(student_id)
 	student_division_data = get_division_name_and_student_group_by_student_id(student_id)
 	if not student_division_data:
 		frappe.throw(f"For Student {student_id} Division is not found in system")

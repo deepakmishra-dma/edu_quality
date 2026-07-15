@@ -124,8 +124,11 @@ def get_adv_fees(student, acad_year):
 	return all_adv_fees.run(as_dict=True)
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist()
 def get_student_fees(student, academic_year):
+	from edu_quality.common.utils.access import assert_student_access
+
+	assert_student_access(student)
 	fees = get_fees(student, academic_year)
 	adv_fees = get_adv_fees(student, academic_year)
 

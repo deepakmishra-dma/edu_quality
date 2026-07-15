@@ -2,6 +2,7 @@ import json
 import pickle
 
 import frappe
+from frappe import _
 from frappe.utils.data import flt
 from frappe.utils.print_format import download_pdf
 
@@ -196,8 +197,8 @@ def get_payment_details(**kwargs):
 		"payment_url": payment_url(payment_request, payment_method="UPI"),
 		"status": payment_request.status,
 		"receipt_url": frappe.utils.get_url()
-		+ "/api/method/edu_quality.fees.page.payment_redirect.payment_receipt?payment_request="
-		+ payment_request.name,
+		+ "/api/method/edu_quality.fees.page.payment_redirect.payment_receipt?payment_hash="
+		+ (payment_request.payment_hash or ""),
 		"breakup": breakup,
 		"discounts": get_discounts(fees),
 		"term": payment_request.payment_term or "Deposit",
@@ -253,8 +254,14 @@ def payment_charge(**kwargs):
 
 
 @frappe.whitelist(allow_guest=True)
-def payment_receipt(payment_request, category):
+def payment_receipt(payment_hash, category):
 	try:
+		# Resolve via the unguessable payment_hash (capability token) rather than
+		# the enumerable Payment Request name, to prevent receipt enumeration (IDOR).
+		payment_request = frappe.get_value("Payment Request", {"payment_hash": payment_hash}, "name")
+		if not payment_request:
+			frappe.throw(_("Invalid or expired receipt link."), frappe.PermissionError)
+
 		company = get_company(payment_request, category)
 
 		payment_entry = frappe.get_value(

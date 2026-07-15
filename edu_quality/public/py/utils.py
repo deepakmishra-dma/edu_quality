@@ -7,6 +7,7 @@ from typing import Union
 import frappe
 import qrcode
 import requests
+from frappe import _
 from PIL import Image
 
 
@@ -145,8 +146,9 @@ def email_otp(email, otp, undertaking, cc_email=None):
 		frappe.logger("email_otp").exception(e)
 
 
-@frappe.whitelist(allow_guest=True)
 def sms_otp(number, otp):
+	# Internal helper only — never expose over HTTP. Callers generate the OTP
+	# server-side (see undertaking.py / get_mobile_number flow) and pass it in.
 	api_key = frappe.conf.get("sms_api_key")
 	message = f"{otp} is OTP for updating child details initiated by you."
 	template_id = frappe.conf.get("sms_update_child_template_id")
@@ -307,6 +309,10 @@ def handle_undertaking_submission(**kwargs):
 		school,
 		"custom_otp_for_every_installment_showing_rules_and_regulations",
 	):
+		# The OTP (sent to the guardian) is the capability proof for this
+		# legally-binding acceptance record — reject forged/missing OTPs.
+		if not verify_otp(docname, kwargs.get("otp")):
+			frappe.throw(_("Invalid or missing OTP."), frappe.PermissionError)
 		if not frappe.db.exists(
 			"Rules and Regulation Submission",
 			{

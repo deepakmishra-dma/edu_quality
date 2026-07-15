@@ -28,6 +28,9 @@ def get_deposit_amount(fees):
 
 @frappe.whitelist()
 def change_payment_plan(payment_plan, doctype, fee_name):
+	from edu_quality.common.utils.access import assert_admin
+
+	assert_admin()
 	try:
 		if doctype == "Fees":
 			doc = frappe.get_doc("Fees", fee_name)

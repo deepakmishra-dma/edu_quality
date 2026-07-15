@@ -189,8 +189,11 @@ def get_unique_cmap_assignees(data_list):
 	return unique_items
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist()
 def get_cmap_assignees_report(**filters):
+	from edu_quality.common.utils.access import assert_staff
+
+	assert_staff()
 	cmap_table = frappe.qb.DocType("CMAP")
 	instructor_log_table = frappe.qb.DocType("Instructor Log")
 	instructor_table = frappe.qb.DocType("Instructor")

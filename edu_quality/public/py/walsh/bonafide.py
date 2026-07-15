@@ -5,8 +5,11 @@ from frappe.utils.file_manager import save_file
 from edu_quality.edu_quality.server_scripts.utils import current_academic_year
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist()
 def send_bonafide(student_id):
+	from edu_quality.common.utils.access import assert_student_access
+
+	assert_student_access(student_id)
 	try:
 		academic_year = current_academic_year()
 		if frappe.db.exists(
@@ -81,9 +84,12 @@ def get_pdf_content(student_id):
 	current_user = frappe.session.user
 	login_manager = LoginManager()
 	login_manager.login_as("Administrator")
-	pdf_content = frappe.get_print("Student", student_id, print_format="Bonafide Certificate", as_pdf=True)
-	login_manager.login_as(current_user)
-	return pdf_content
+	try:
+		return frappe.get_print("Student", student_id, print_format="Bonafide Certificate", as_pdf=True)
+	finally:
+		# Always restore the caller's session, even if rendering raises,
+		# so a failure can never leave the request authenticated as Administrator.
+		login_manager.login_as(current_user)
 
 
 def save_bonafide_pdf(student_id, bonafide_name):
