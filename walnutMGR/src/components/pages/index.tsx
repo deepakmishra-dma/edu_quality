@@ -249,7 +249,7 @@ export const Index = () => {
     }
   }, [setDraggedList, draggedList, cmap_table]);
   const unitValues = selectedvalues?.unit?.map?.((i: any) => i?.value);
-  let printBtn = `https://uat.walnutedu.in/app/query-report/CMAP%20Print?academic_year=${selectedYear}&class=${selectedClass}&subject=%5B"${selectedvalues.subjects}"%5D&unit=%5B%22${unitValues}%22%5D`;
+  let printBtn = `${window.location.origin}/app/query-report/CMAP%20Print?academic_year=${selectedYear}&class=${selectedClass}&subject=%5B"${selectedvalues.subjects}"%5D&unit=%5B%22${unitValues}%22%5D`;
 
   const handleChange = (selectedOption: any) => {
     setSelectedOption(selectedOption);

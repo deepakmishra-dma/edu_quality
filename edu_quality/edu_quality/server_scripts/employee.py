@@ -387,7 +387,7 @@ def employee_query(doctype, txt, searchfield, start, page_len, filters):
 	school = filters.get("school")
 	if not school:
 		frappe.throw("Instructor or School is not present for the Employee")
-	query = f"""
+	query = """
             SELECT
                 emp.name, emp.employee_name
             FROM
@@ -399,10 +399,10 @@ def employee_query(doctype, txt, searchfield, start, page_len, filters):
                         instructor.employee
                     FROM
                         `tabInstructor` instructor
-                    WHERE instructor.custom_school = '{school}'
+                    WHERE instructor.custom_school = %(school)s
                 )
-            AND emp.name LIKE %(txt)s OR emp.employee_name LIKE %(txt)s
+            AND (emp.name LIKE %(txt)s OR emp.employee_name LIKE %(txt)s)
             ORDER BY
                 emp.name
         """
-	return frappe.db.sql(query, {"txt": f"%{txt}%"})
+	return frappe.db.sql(query, {"txt": f"%{txt}%", "school": school})

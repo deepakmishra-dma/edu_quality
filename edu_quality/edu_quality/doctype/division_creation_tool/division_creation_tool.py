@@ -86,9 +86,10 @@ class DivisionCreationTool(Document):
 								select sg.student_group_name, sg.max_strength, sg.batch, sg.program,p.sequence
 								from `tabStudent Group` as sg
 								left join `tabProgram` as p on sg.program=p.name
-								where sg.academic_year='{}' and sg.custom_school='{}'
+								where sg.academic_year=%(academic_year)s and sg.custom_school=%(school)s
 								order by p.sequence, sg.student_group_name
-								  """.format(self.academic_year, self.school),
+								  """,
+			{"academic_year": self.academic_year, "school": self.school},
 			as_dict=1,
 		)
 		if len(self.existing_groups):

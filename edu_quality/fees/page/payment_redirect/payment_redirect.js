@@ -33,7 +33,7 @@ function get_student_data() {
         `<div class="container mt-4 mb-4 p-3 d-flex justify-content-center">
     <div class="card p-4">
         <div class=" image d-flex flex-column justify-content-center align-items-center"> <button
-                class="btn btn-secondary"> <img src="https://fees.walnutedu.in/bootstrap/images/walnut_icon.png" height="100"
+                class="btn btn-secondary"> <img src="/assets/edu_quality/images/logo.png" height="100"
                     width="100" /></button> <span class="name mt-3">` +
         r.message.student_name +
         `</span> <span
@@ -94,7 +94,7 @@ function get_student_data() {
 	<div class=" d-flex mt-2"> <a id="url" href="` +
         r.message.payment_url +
         `"><button class="btn1 btn-dark">Proceed To Pay</button></a> </div>
-	<div class="text mt-3"> <span>Note : If the receipt is not generated, but the amount is deducted from your account then please send an email with transaction details to 'feedback@walnutedu.in'. </span> </div>
+	<div class="text mt-3"> <span>Note : If the receipt is not generated, but the amount is deducted from your account then please contact your school office with the transaction details. </span> </div>
 	</div>
 </div>
 	</div>

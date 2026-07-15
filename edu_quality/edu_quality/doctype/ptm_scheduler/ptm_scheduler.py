@@ -252,7 +252,7 @@ def generate_meeeting(summary, description, start_time, imporsonate_user):
 @frappe.whitelist()
 def generate_meeting_function(items, summary, imporsonate_user, regenerate=False):
 	try:
-		items = eval(items)
+		items = frappe.parse_json(items) if isinstance(items, str) else items
 		filters = [["name", "in", items]]
 
 		if not regenerate:

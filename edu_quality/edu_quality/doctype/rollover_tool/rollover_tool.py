@@ -190,16 +190,16 @@ class RolloverTool(Document):
 		self.save()
 
 	def get_program_students(self, program):
-		query = f"""
+		query = """
 					SELECT pe.student, pe.student_name,  pe.student_group, pe.program,`tabStudent`.possible_dropout from
 						`tabProgram Enrollment` as pe
 					LEFT JOIN `tabProgram` ON pe.program = `tabProgram`.name
 					LEFT JOIN `tabStudent` ON pe.student = `tabStudent`.name
-					WHERE pe.program="{program}" AND pe.academic_year="{self.academic_year}"
+					WHERE pe.program=%(program)s AND pe.academic_year=%(academic_year)s
 					AND `tabStudent`.enabled = 1 AND confirm_for_next_year = "Yes"
 					ORDER BY `tabProgram`.sequence
 				"""
-		result = frappe.db.sql(query, as_dict=1)
+		result = frappe.db.sql(query, {"program": program, "academic_year": self.academic_year}, as_dict=1)
 		return result
 
 	def get_division(self, student, next_class):

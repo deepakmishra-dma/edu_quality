@@ -209,12 +209,6 @@ def send_otp(phone_no=None, email=None):
 		else:
 			otp = create_otp(wa_phone_no)
 
-		if "1234567890" in str(wa_phone_no):
-			otp = create_otp(wa_phone_no, for_appstore_test=True)
-			return {
-				"success": True,
-				"message": "Otp Sent To +" + str(wa_phone_no or email),
-			}
 		if wa_phone_no:
 			send_otp_to_whatsapp(wa_phone_no, otp)
 			send_otp_to_sms(phone_with_country_code, otp)

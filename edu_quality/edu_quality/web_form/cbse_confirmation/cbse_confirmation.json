@@ -11,7 +11,7 @@
  "amount_based_on_field": 0,
  "anonymous": 0,
  "apply_document_permissions": 1,
- "banner_image": "https://fees.walnutedu.in/bootstrap/images/walnut_icon.png",
+ "banner_image": "/assets/edu_quality/images/logo.png",
  "button_label": "Submit",
  "condition_json": "[]",
  "creation": "2024-07-08 14:26:53.217602",
