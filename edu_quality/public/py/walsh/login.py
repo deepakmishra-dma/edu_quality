@@ -41,10 +41,16 @@ def create_otp(wa_phone_no, custom_key=None, for_appstore_test=False):
 
 
 def match_otp(wa_phone_no, otp, custom_key=None):
+	from edu_quality.common.utils.access import clear_otp_attempts, enforce_otp_attempts
+
 	cache = frappe.cache()
 	key = custom_key or ("wo" + wa_phone_no)
+	enforce_otp_attempts(key)
 	cache_otp = cache.get_value(key)
-	return otp == cache_otp
+	if otp == cache_otp:
+		clear_otp_attempts(key)
+		return True
+	return False
 
 
 def create_or_get_contact(wa_phone_number, contact_name):

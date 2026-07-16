@@ -455,9 +455,8 @@ def mark_payment_term_paid(fees, term, paid_amount):
 				frappe.db.set_value("Payment Schedule", schedule.name, "paid_date", nowdate())
 
 
-@frappe.whitelist(allow_guest=True)
 def make_payment_request(**args):
-	"""Make payment request"""
+	"""Make payment request (internal helper — not exposed over HTTP)."""
 
 	args = frappe._dict(args)
 	ref_doc = frappe.get_doc(args.dt, args.dn)

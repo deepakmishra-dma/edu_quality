@@ -162,11 +162,17 @@ def sms_otp(number, otp):
 
 @frappe.whitelist()
 def verify_otp(fee, otp):
+	from edu_quality.common.utils.access import clear_otp_attempts, enforce_otp_attempts
+
 	try:
+		enforce_otp_attempts(fee)
 		rs = frappe.cache()
 		if rs.get_value(fee) == otp:
+			clear_otp_attempts(fee)
 			return True
 		return False
+	except frappe.ValidationError:
+		raise
 	except Exception as e:
 		frappe.logger("OTP").exception(e)
 		return False

@@ -128,22 +128,29 @@ def save_push_notification_token(push_token, user_id=None):
 
 
 def match_otp(email, otp):
+	from edu_quality.common.utils.access import clear_otp_attempts, enforce_otp_attempts
+
 	cache = frappe.cache()
 	key = "otp_" + email
+	enforce_otp_attempts(key)
 	cache_otp = cache.get_value(key)
-
-	return otp == cache_otp
+	if otp == cache_otp:
+		clear_otp_attempts(key)
+		return True
+	return False
 
 
 def match_otp_mobile(mobile_number, otp):
+	from edu_quality.common.utils.access import clear_otp_attempts, enforce_otp_attempts
+
 	cache = frappe.cache()
 	key = "wo" + mobile_number
+	enforce_otp_attempts(key)
 	cache_otp = cache.get_value(key)
-	frappe.logger("otp").exception("verify-" + key)
-	frappe.logger("otp").exception(cache_otp)
-
-	# print(wa_phone_no, "otp", otp, "cache_otp", cache_otp)
-	return otp == cache_otp
+	if otp == cache_otp:
+		clear_otp_attempts(key)
+		return True
+	return False
 
 
 def generate__phone_otp(phone_no):

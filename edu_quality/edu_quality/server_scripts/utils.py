@@ -1,6 +1,7 @@
 import json
 
 import frappe
+from frappe import _
 from frappe.auth import LoginManager
 from frappe.utils import today
 
@@ -222,8 +223,18 @@ def batch_filter(doctype, txt, searchfield, start, page_len, filters):
 
 @frappe.whitelist(allow_guest=True)
 def settlement_hook(**kwargs):
+	import hmac
+
+	# Verify a shared secret before trusting the (guest-posted) payload.
+	# Configure `easebuzz_webhook_secret` in site_config and register the same
+	# value with the gateway; the endpoint fails closed if it is unset.
+	expected = frappe.conf.get("easebuzz_webhook_secret")
+	provided = kwargs.pop("secret", None)
+	if frappe.local.request:
+		provided = provided or frappe.local.request.headers.get("X-Webhook-Secret")
+	if not expected or not provided or not hmac.compare_digest(str(provided), str(expected)):
+		frappe.throw(_("Unauthorized"), frappe.PermissionError)
 	try:
-		frappe.logger("settlement").exception("called")
 		data = frappe.parse_json(kwargs)
 		doc = frappe.get_doc({"doctype": "Easebuzz Settlement Log", "data": data})
 		doc.insert(ignore_permissions=True)

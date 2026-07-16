@@ -62,3 +62,24 @@ def assert_admin():
 	"""Restrict to school-administration roles."""
 	if not _has_role(ADMIN_ROLES):
 		frappe.throw(_("You are not permitted to perform this action."), frappe.PermissionError)
+
+
+def enforce_otp_attempts(key, limit=5, window=600):
+	"""Throttle OTP verification to defeat brute-forcing of short numeric OTPs.
+
+	Increments a per-key attempt counter; raises once `limit` is exceeded within
+	`window` seconds. Call clear_otp_attempts(key) after a successful match.
+	"""
+	cache_key = f"otp_attempts:{key}"
+	rs = frappe.cache()
+	attempts = int(rs.get_value(cache_key) or 0)
+	if attempts >= limit:
+		frappe.throw(
+			_("Too many incorrect attempts. Please request a new OTP."),
+			frappe.ValidationError,
+		)
+	rs.set_value(cache_key, attempts + 1, expires_in_sec=window)
+
+
+def clear_otp_attempts(key):
+	frappe.cache().delete_value(f"otp_attempts:{key}")
