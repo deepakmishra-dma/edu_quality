@@ -36,19 +36,22 @@ class CustomPaymentRequest(PaymentRequest):
 		doc = frappe.get_doc(self.reference_doctype, self.reference_name)
 		paid_to = self.bank_account.split()[0]
 		paid_to = frappe.db.get_value("Account", {"account_name": paid_to})
+		company = doc.get("company") or frappe.db.get_default("company")
+		cost_center = frappe.get_cached_value("Company", company, "cost_center")
+		paid_from = frappe.db.get_single_value("Fees Settings", "refund_paid_from_account")
 		payment_entry = frappe.get_doc(
 			{
 				"doctype": "Payment Entry",
 				"payment_type": "Pay",
-				"company": "Unique Educational and Sports Foundation",
-				"cost_center": "Main - UESF",
+				"company": company,
+				"cost_center": cost_center,
 				"posting_date": nowdate(),
 				"reference_date": nowdate(),
 				"mode_of_payment": "Bank Draft",
 				"party_type": "Student",
 				"party": self.party,
 				"party_name": frappe.get_value("Student", self.party, "first_name"),
-				"paid_from": "Refundable Deposit - UESF",
+				"paid_from": paid_from,
 				"paid_to": paid_to,
 				"paid_amount": self.grand_total,
 				"received_amount": self.grand_total,

@@ -78,7 +78,7 @@ def create_payment_plans(**kwargs):
 
 		return True
 	except Exception as e:
-		frappe.logger("walnut").exception(e)
+		frappe.logger("edu_quality").exception(e)
 		frappe.log_error(str(e))
 		frappe.db.rollback()
 		return False

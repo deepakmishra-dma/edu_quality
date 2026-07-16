@@ -9,7 +9,7 @@ from edu_quality import __version__ as version
 setup(
 	name="edu_quality",
 	version=version,
-	description="Walnut App",
+	description="Edu Quality",
 	author="Hybrowlabs Technologies",
 	author_email="contact@hybrowlabs.com",
 	packages=find_packages(),

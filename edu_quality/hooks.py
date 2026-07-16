@@ -3,7 +3,7 @@ from . import __version__ as app_version
 app_name = "edu_quality"
 app_title = "Edu Quality"
 app_publisher = "Hybrowlabs Technologies"
-app_description = "Walnut App"
+app_description = "Edu Quality"
 app_email = "contact@hybrowlabs.com"
 app_license = "MIT"
 

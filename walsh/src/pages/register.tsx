@@ -80,7 +80,7 @@ export const Register = () => {
       .then((result) => {
         if (result.message) {
           setSuccessMessage(
-            "You have requested registration successfully. TGAA team will contact you shortly."
+            "You have requested registration successfully. Our team will contact you shortly."
           );
           setErrorMessage("");
           setIsRegistered(true);
@@ -110,7 +110,7 @@ export const Register = () => {
             <Image
               radius={"lg"}
               width={160}
-              src="/assets/edu_quality/walsh/images/tgaa_logo.jpg"
+              src="/assets/edu_quality/walsh/images/logo.png"
             />
           </Flex>
 

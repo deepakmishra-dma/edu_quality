@@ -76,7 +76,7 @@
    "fieldname": "school",
    "fieldtype": "Select",
    "label": "School",
-   "options": "Walnut School at Shivane\nWalnut School at Fursungi\nWalnut School at Wakad\nBaby Walnut Fursungi\nBaby Walnut Shivane\nBaby Walnut Wakad"
+   "options": ""
   },
   {
    "fetch_from": "student.program",

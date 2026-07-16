@@ -60,7 +60,7 @@ frappe.pages["fee-workflow"].on_page_load = function (wrapper) {
   imp.id = "table";
   imp.className = "table bg-white";
   imp.innerHTML =
-    "<tr> <th>Class Name</th> <th>Fee Head Name</th> <th>Fee Head Type</th> <th>Fee Head Account</th> <th>Fee Head Institution/School</th> <th>Financial Year</th> </tr> <tr> <td>Class 1</td> <td>Tuition Fee</td> <td>Fee</td> <td>10000</td> <td>Walnut School</td> <td>2023-2024</td> </tr> <tr> <td>Class 1</td> <td>Tuition Fee</td> <td>Fee</td> <td>10000</td> <td>Walnut School</td> <td>2023-2024</td> </tr> <tr> <td>Class 1</td> <td>Tuition Fee</td> <td>Fee</td> <td>10000</td> <td>Walnut School</td> <td>2023-2024</td> </tr>";
+    "<tr> <th>Class Name</th> <th>Fee Head Name</th> <th>Fee Head Type</th> <th>Fee Head Account</th> <th>Fee Head Institution/School</th> <th>Financial Year</th> </tr> <tr> <td>Class 1</td> <td>Tuition Fee</td> <td>Fee</td> <td>10000</td> <td>Example School</td> <td>2023-2024</td> </tr> <tr> <td>Class 1</td> <td>Tuition Fee</td> <td>Fee</td> <td>10000</td> <td>Example School</td> <td>2023-2024</td> </tr> <tr> <td>Class 1</td> <td>Tuition Fee</td> <td>Fee</td> <td>10000</td> <td>Example School</td> <td>2023-2024</td> </tr>";
   wrapper = document.createElement("div");
   wrapper.className = "text-center m-5";
   console.log(imp);

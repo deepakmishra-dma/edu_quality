@@ -112,7 +112,7 @@ export const Login = () => {
             <Image
               radius={"lg"}
               width={160}
-              src="/assets/edu_quality/walsh/images/tgaa_logo.jpg"
+              src="/assets/edu_quality/walsh/images/logo.png"
             />
           </Flex>
           <Stack spacing={2} mt={12} mb={8} align="center">
@@ -138,7 +138,7 @@ export const Login = () => {
                   }}
                   align="center"
                 >
-                  If you are already a parent of Green Acres <br /> Log in below
+                  If you are already a parent <br /> Log in below
                 </Text>
                 <SegmentedControl
                   value={loginType}

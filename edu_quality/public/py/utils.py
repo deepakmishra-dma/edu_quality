@@ -132,7 +132,7 @@ def email_otp(email, otp, undertaking, cc_email=None):
 				now=True,
 			)
 			return
-		template = frappe.get_doc("Email Template", "Walnut - Undertaking OTP")
+		template = frappe.get_doc("Email Template", "Undertaking OTP")
 		context = dict(otp=otp)
 		frappe.sendmail(
 			cc=cc_email,

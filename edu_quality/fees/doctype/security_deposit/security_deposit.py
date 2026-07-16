@@ -12,7 +12,7 @@ class SecurityDeposit(Document):
 				"doctype": "Fee Category",
 				"category_name": self.name,
 				"type": "Deposit",
-				"custom_company": "Unique Educational and Sports Foundation",
+				"custom_company": self.get("company") or frappe.db.get_default("company"),
 			}
 		)
 		doc.insert()

@@ -537,7 +537,7 @@ def serialize_lead_to_application(doc: dict):
 	append_mother_guardian(doc, guardians)
 
 	siblings = []
-	if doc.get("is_sibling_already_at_walnut"):
+	if doc.get("is_sibling_already_in_school"):
 		sibling_id = doc.get("custom_if_yes_reference_number_of_child")
 		siblings = [{"student": sibling_id}] or []
 
@@ -568,7 +568,7 @@ def serialize_lead_to_application(doc: dict):
 		"mother_mobile_number": doc.get("mothers_phone"),
 		"father_mobile_no": doc.get("fathers_phone"),
 		"bus_service_required": doc.get("bus_service_required"),
-		"is_sibling_in_school": doc.get("is_sibling_already_at_walnut"),
+		"is_sibling_in_school": doc.get("is_sibling_already_in_school"),
 		"rte_student": doc.get("stud_rte"),
 		"is_rte": doc.get("stud_rte"),
 		"stud_rte": doc.get("rte_student"),

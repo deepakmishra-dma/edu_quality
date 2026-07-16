@@ -146,7 +146,7 @@ const Navbar: React.FC<NavbarProps> = ({ setIsOpen, isOpen }) => {
             <Box
               sx={{
                 backgroundImage:
-                  "url(/assets/edu_quality/walsh/images/tgaa1024.jpg)",
+                  "url(/assets/edu_quality/walsh/images/logo.png)",
                 height: 40,
                 width: 40,
                 borderRadius: 4,

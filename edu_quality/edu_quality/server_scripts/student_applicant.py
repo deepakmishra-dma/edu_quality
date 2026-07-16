@@ -28,9 +28,7 @@ def get_web_form(hash):
 			)
 			login_manager = LoginManager()
 			login_manager.login_as(user)
-			return (
-				frappe.utils.get_url() + "/walnut-school-student-application/" + student_applicant + "/edit"
-			)
+			return frappe.utils.get_url() + "/student-application/" + student_applicant + "/edit"
 		frappe.throw("User Not set for this Application!")
 	frappe.throw("Application Not Found!")
 

@@ -6,7 +6,6 @@ function changePrintCMAPReportData(value, id, rowIndex) {
 }
 
 function calculateTotalQty(rowIndex) {
-  // const totalQty = frappe.query_report.data[rowIndex]["qty_for_shivane"] + frappe.query_report.data[rowIndex]["qty_for_wakad"] + frappe.query_report.data[rowIndex]["qty_for_fursungi"] + frappe.query_report.data[rowIndex]["extra_qty_per_school"]
   let totalQty = 0;
   Object.keys(frappe.query_report.data[rowIndex]).forEach((key) => {
     if (key.includes("qty_for_") && !key.includes("extra")) {

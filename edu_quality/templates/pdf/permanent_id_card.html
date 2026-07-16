@@ -1,4 +1,4 @@
-{% set letter_head = frappe.get_doc("Letter Head","Walnut School") %} {% set
+{% set letter_head = frappe.get_doc("Letter Head", {"is_default": 1}) %} {% set
   student_data = frappe.get_doc("Student",doc.student) %} {% set id_card_data =
   frappe.get_doc("Student ID Card",doc.custom_id_card) %} {% set guardians = [] %}
   {% for guardian in student_data.guardians %} {% set temp_guard =

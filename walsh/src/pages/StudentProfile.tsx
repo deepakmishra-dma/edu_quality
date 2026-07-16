@@ -266,7 +266,7 @@ export const StudentProfle = () => {
             }}
           >
             <Image
-              src={"/assets/edu_quality/walsh/images/walnut-bg-transparent.png"}
+              src={"/assets/edu_quality/walsh/images/logo.png"}
               w={"100%"}
             />
           </Box>

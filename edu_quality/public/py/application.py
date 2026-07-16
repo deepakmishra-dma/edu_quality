@@ -137,7 +137,7 @@ def get_deposits(doc):
 
 
 def baby_school(student_applicant):
-	# Pre-primary ("Baby Walnut") redirection is currently disabled.
+	# Pre-primary redirection is currently disabled.
 	return
 
 

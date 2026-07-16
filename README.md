@@ -20,7 +20,7 @@ teacher, admin, and scheduling workflows built on top of the Frappe backend.
 |-----|------|---------|
 | `walsh/` | `/walsh/` | Admin / management portal (Refine + Mantine) |
 | `ui/` | `/ui/` | Teacher / principal / student dashboard (React + shadcn/ui) |
-| `walnutMGR/` | `/cmap-tool/` | CMAP scheduling tool (legacy) |
+| `cmap_mgr/` | `/cmap-tool/` | CMAP scheduling tool (legacy) |
 
 ## Installation
 
