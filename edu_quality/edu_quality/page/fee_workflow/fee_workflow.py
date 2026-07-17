@@ -35,7 +35,7 @@ def create_fee_structure(data):
 		doc.submit()
 		return doc.name
 	except Exception as e:
-		frappe.logger("edu_quality").exception(e)
+		frappe.log_error(title="EduQuality Error", message=frappe.get_traceback())
 		frappe.throw("+++")
 
 
@@ -58,5 +58,5 @@ def create_fee_schedule(fee_structure, data):
 		fee_schedule_doc.create_fees()
 		return fee_schedule_doc.name
 	except Exception as e:
-		frappe.logger("edu_quality").exception(e)
+		frappe.log_error(title="EduQuality Error", message=frappe.get_traceback())
 		frappe.throw("+++")

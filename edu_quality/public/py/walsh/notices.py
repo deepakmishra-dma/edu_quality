@@ -285,7 +285,7 @@ def get_user_notices(cursor_creation, cursor_name, limit, stared_only, archived_
 					notice["is_stared"] = notice_status.is_stared
 					break
 	except Exception as e:
-		frappe.logger("notice").exception(e)
+		frappe.log_error(title="Notice Error", message=frappe.get_traceback())
 	filtered_notices = [
 		notice
 		for notice in final_notices

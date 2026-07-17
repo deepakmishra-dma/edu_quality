@@ -35,7 +35,7 @@ def create_users(guardians):
 					print(e)
 		frappe.flags.in_import = False
 	except Exception as e:
-		frappe.logger("guardian_user").exception(e)
+		frappe.log_error(title="GuardianUser Error", message=frappe.get_traceback())
 
 
 def before_insert(doc, method=None):
@@ -84,7 +84,7 @@ def create_user(doc, patch=0):
 			user_doc.insert(ignore_permissions=True)
 			doc.user = user_doc.name
 		except Exception as e:
-			frappe.logger("guardian_user").exception(e)
+			frappe.log_error(title="GuardianUser Error", message=frappe.get_traceback())
 	if patch:
 		doc.save(ignore_permissions=True)
 

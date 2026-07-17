@@ -150,7 +150,7 @@ def add_discount(fee_name, discount, fees=None, doctype="Fees", term=None):
 			fees.save(ignore_permissions=True)
 			update_payment_request_after_discount(fees)
 	except Exception as e:
-		frappe.logger("add_discount").exception(e)
+		frappe.log_error(title="AddDiscount Error", message=frappe.get_traceback())
 
 
 @frappe.whitelist()
@@ -231,7 +231,7 @@ def remove_discount(fee_name, discount, update_payment_request=True, doctype="Fe
 			if update_payment_request:
 				update_payment_request_after_discount(fees)
 	except Exception as e:
-		frappe.logger("remove_dis").exception(e)
+		frappe.log_error(title="RemoveDis Error", message=frappe.get_traceback())
 
 
 def update_total_discount_in_fees(fees):
@@ -239,7 +239,7 @@ def update_total_discount_in_fees(fees):
 	try:
 		frappe.db.set_value("Fees", fees.name, "total_discount", get_all_discounts(fees))
 	except Exception as e:
-		frappe.logger("custom").exception(e)
+		frappe.log_error(title="Custom Error", message=frappe.get_traceback())
 
 
 def get_all_discounts(doc, method=None):
@@ -420,7 +420,6 @@ def payment_plan(doc, method=None):
 		doc.payment_plan = fee_advance.payment_plan
 	doc.save()
 	doc.reload()
-	frappe.logger("log_p").exception(doc.payment_plan)
 	if doc.payment_plan:
 		pp = frappe.get_doc("Payment Plan", doc.payment_plan)
 		doc.payment_schedule = []
@@ -699,7 +698,7 @@ def update_payment_schedule(doc, payment_plan=None):
 		#         return discount_amount
 		return 0
 	except Exception as e:
-		frappe.logger("pp_discount").exception(e)
+		frappe.log_error(title="PpDiscount Error", message=frappe.get_traceback())
 		return 0
 
 
@@ -779,7 +778,6 @@ def update_breakups(dis, component, fees, term="All", update=0, remove=0, custom
 					dis.name,
 					remove,
 				)
-				# frappe.logger('breakup').exception(discount_amount)
 				if remove:
 					discount_amount = 0 - discount_amount
 				if not update:
@@ -798,7 +796,7 @@ def update_breakups(dis, component, fees, term="All", update=0, remove=0, custom
 					)
 		fees.reload()
 	except Exception as e:
-		frappe.logger("breakup").exception(e)
+		frappe.log_error(title="Breakup Error", message=frappe.get_traceback())
 
 
 def update_discount_breakup(

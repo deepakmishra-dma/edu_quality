@@ -50,7 +50,7 @@ class StudentExit(Document):
 			self.get_attendance_details()
 			# self.save()
 		except Exception as e:
-			frappe.logger("dep").exception(e)
+			frappe.log_error(title="Dep Error", message=frappe.get_traceback())
 			self.deposit_amount = 0
 			self.refund_amount = 0
 

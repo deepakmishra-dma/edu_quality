@@ -23,7 +23,7 @@ def time_based_discount():
 							fee = frappe.get_doc("Fees", f.name)
 							remove_discount(fee)
 	except Exception as e:
-		frappe.logger("edu_quality").exception(e)
+		frappe.log_error(title="EduQuality Error", message=frappe.get_traceback())
 
 
 def apply_discount(doc):

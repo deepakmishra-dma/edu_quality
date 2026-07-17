@@ -64,7 +64,7 @@ def generate_otp(fee, undertaking=0):
 		rs.set_value(key, OTP, expires_in_sec=600)
 		return send_otp(fee, OTP, undertaking)
 	except Exception as e:
-		frappe.logger("otp").exception(e)
+		frappe.log_error(title="Otp Error", message=frappe.get_traceback())
 
 
 def get_mobile_number(student):
@@ -143,7 +143,7 @@ def email_otp(email, otp, undertaking, cc_email=None):
 			now=True,
 		)
 	except Exception as e:
-		frappe.logger("email_otp").exception(e)
+		frappe.log_error(title="EmailOtp Error", message=frappe.get_traceback())
 
 
 def sms_otp(number, otp):
@@ -174,7 +174,7 @@ def verify_otp(fee, otp):
 	except frappe.ValidationError:
 		raise
 	except Exception as e:
-		frappe.logger("OTP").exception(e)
+		frappe.log_error(title="Otp Error", message=frappe.get_traceback())
 		return False
 
 
@@ -618,7 +618,7 @@ def render_template_with_exception(template, data):
 		return frappe.render_template(template, data)
 	except Exception as e:
 		frappe.log_error("Error rendering template for data", frappe.get_traceback())
-		frappe.logger("Error Rendering Template").exception(e)
+		frappe.log_error(title="ErrorRenderingTemplate Error", message=frappe.get_traceback())
 
 		patch_logger.info(
 			f"Failed rendering id card for data {data}",

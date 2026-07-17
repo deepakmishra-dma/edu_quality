@@ -241,7 +241,7 @@ def settlement_hook(**kwargs):
 		frappe.db.commit()
 		return 1
 	except Exception as e:
-		frappe.logger("settlement").exception(e)
+		frappe.log_error(title="Settlement Error", message=frappe.get_traceback())
 
 
 @frappe.whitelist()

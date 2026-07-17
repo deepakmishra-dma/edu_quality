@@ -81,7 +81,7 @@ def send_otp(doctype, docname, otp):
 
 		return True
 	except Exception as e:
-		frappe.logger("OTP").exception(e)
+		frappe.log_error(title="Otp Error", message=frappe.get_traceback())
 		return False
 
 

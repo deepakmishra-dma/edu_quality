@@ -174,11 +174,9 @@ def create__phone_otp(wa_phone_no):
 	cache = frappe.cache()
 	key = "wo" + wa_phone_no
 	# frappe.cache.delete_value(key)
-	frappe.logger("otp").exception("generate-" + key)
-	frappe.logger("otp").exception(otp)
+	frappe.log_error(title="Otp Error", message=frappe.get_traceback())
 	cache.set_value(key, otp)
 	val = cache.get_value(key)
-	frappe.logger("otp").exception("get-" + val)
 	return otp
 
 

@@ -182,7 +182,7 @@ class RolloverTool(Document):
 				if error_data:
 					self.add_to_table(error_data)
 		except Exception as e:
-			frappe.logger("enrollment").exception(e)
+			frappe.log_error(title="Enrollment Error", message=frappe.get_traceback())
 
 	def add_to_table(self, data):
 		for i in data:

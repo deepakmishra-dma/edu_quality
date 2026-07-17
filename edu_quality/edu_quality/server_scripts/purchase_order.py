@@ -8,7 +8,7 @@ def on_submit(doc, method=None):
 		doc.db_set("custom_sent_by", frappe.session.user)
 		doc.db_set("sent_by", frappe.session.user)
 	except Exception as e:
-		frappe.logger("purchase").exception(e)
+		frappe.log_error(title="Purchase Error", message=frappe.get_traceback())
 
 
 def mark_id_card_sent_to_print(self, method=None):

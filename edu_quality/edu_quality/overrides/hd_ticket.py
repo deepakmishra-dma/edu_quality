@@ -42,9 +42,9 @@ class CustomHDTicket(HDTicket):
 				content=self.description,
 				communication_type="Communication",
 			)
-		except Exception as e:
-			frappe.logger("hd").exception(e)
-			frappe.throw(e)
+		except Exception:
+			# Enrichment is best-effort — never let it break ticket creation.
+			frappe.log_error(title="HD Ticket Enrichment Error", message=frappe.get_traceback())
 
 	def find_student_by_email(self):
 		if frappe.db.exists("Student", {"user": self.raised_by}):

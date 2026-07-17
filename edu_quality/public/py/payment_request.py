@@ -185,7 +185,6 @@ def payment_request_paid(doc, fees, paid_filter, previous_payment_term):
 # update payment request after applying or removing discount
 def update_payment_request_after_discount(doc):
 	try:
-		frappe.logger("p_req").exception("update_pr" + str(doc.name))
 		# filter for not paid payment request
 		not_paid_filter = {
 			"reference_name": doc.name,
@@ -196,30 +195,28 @@ def update_payment_request_after_discount(doc):
 		if frappe.db.exists("Payment Request", not_paid_filter):
 			update_not_paid_payment_request(doc, not_paid_filter)
 		if doc.doctype == "Fees":
+			before_days = frappe.db.get_value(
+				"Fee Schedule", doc.fee_schedule, "create_payment_request_before"
+			)
+			today = datetime.today().date()
+			student_email = frappe.get_value("Student", doc.student, "student_email_id")
 			for schedule in doc.payment_schedule:
-				before_days = frappe.db.get_value(
-					"Fee Schedule", doc.fee_schedule, "create_payment_request_before"
-				)
-				today = datetime.today().date()
 				difference = schedule.due_date - today
-				if difference.days <= before_days:
-					student_email = frappe.get_value("Student", doc.student, "student_email_id")
-					if not frappe.db.exists(
-						"Payment Request", {"reference_name": doc.name, "payment_term": schedule.payment_term}
-					):
-						make_payment_request(
-							party_type="Student",
-							party=doc.student,
-							dt=doc.doctype,
-							dn=doc.name,
-							payment_term=schedule.payment_term,
-							recipient_id=student_email,
-							submit_doc=True,
-						)
-				return
+				if difference.days <= before_days and not frappe.db.exists(
+					"Payment Request", {"reference_name": doc.name, "payment_term": schedule.payment_term}
+				):
+					make_payment_request(
+						party_type="Student",
+						party=doc.student,
+						dt=doc.doctype,
+						dn=doc.name,
+						payment_term=schedule.payment_term,
+						recipient_id=student_email,
+						submit_doc=True,
+					)
 
-	except Exception as e:
-		frappe.logger("p_req").exception(e)
+	except Exception:
+		frappe.log_error(title="Update Payment Request After Discount Error", message=frappe.get_traceback())
 
 
 # create new payment request if previous payment request is not paid
@@ -243,7 +240,7 @@ def on_submit(doc, method):
 	try:
 		frappe.enqueue(email_trigger, pr=doc.name, queue="long")
 	except Exception as e:
-		frappe.logger("payment_link").exception(e)
+		frappe.log_error(title="PaymentLink Error", message=frappe.get_traceback())
 
 
 def email_trigger(pr):

@@ -232,7 +232,7 @@ def process_attachment(doctype, docname, file_url, field_name, field_label, old_
 			for file in files:
 				frappe.delete_doc("File", file.name)
 	except Exception as e:
-		frappe.log_error(f"Error while renaming file: {str(e)}", frappe.get_traceback())
+		frappe.log_error(title="Event Participant File Rename Error", message=frappe.get_traceback())
 		return False
 
 

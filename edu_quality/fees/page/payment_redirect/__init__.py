@@ -239,7 +239,7 @@ def payment_url(payment_request, payment_method="UPI"):
 	try:
 		return payment_request.get_payment_url(payment_method=payment_method)
 	except Exception as e:
-		frappe.logger("payment_er").exception(e)
+		frappe.log_error(title="PaymentEr Error", message=frappe.get_traceback())
 
 
 @frappe.whitelist(allow_guest=True)
@@ -280,7 +280,7 @@ def payment_receipt(payment_hash, category):
 			pdf = download_pdf("Payment Entry", payment_entry, format=print_format, letterhead=letter_head)
 		return pdf
 	except Exception as e:
-		frappe.logger("download").exception(e)
+		frappe.log_error(title="Download Error", message=frappe.get_traceback())
 		return e
 
 

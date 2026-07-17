@@ -383,7 +383,7 @@ def create_fee_receipt(fees, payment_term=None, transaction_id=None):
 			categories, due_date = get_categories(fees, payment_term)
 		company_wise_split(fees, categories, due_date, payment_term, transaction_id)
 	except Exception as e:
-		frappe.logger("fee_receipt").exception(e)
+		frappe.log_error(title="FeeReceipt Error", message=frappe.get_traceback())
 		return e
 
 

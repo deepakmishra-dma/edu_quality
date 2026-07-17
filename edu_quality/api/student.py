@@ -36,7 +36,6 @@ def get_student_details(program):
 		)
 		# get all students in the program
 		students = get_students(program, academic_year)
-		frappe.logger("div_1").exception(len(students))
 
 		# Group students by batch, house, and gender
 		student_groups = defaultdict(lambda: defaultdict(list))

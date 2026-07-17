@@ -39,16 +39,21 @@ def event_reminder():
 
 def create_payment_request_before_due_date():
 	today = datetime.today().date()
-	fee_schedules = frappe.get_all("Fee Schedule")
+	fee_schedules = frappe.get_all("Fee Schedule", fields=["name", "create_payment_request_before"])
 	for fee_schedule in fee_schedules:
-		before_days = frappe.get_value("Fee Schedule", fee_schedule.name, "create_payment_request_before")
-		fee_list = frappe.get_all("Fees", {"fee_schedule": fee_schedule.name, "workflow_state": "Approved"})
+		before_days = fee_schedule.create_payment_request_before
+		fee_list = frappe.get_all(
+			"Fees",
+			{"fee_schedule": fee_schedule.name, "workflow_state": "Approved"},
+			["name", "student"],
+		)
 		for fee in fee_list:
+			# Skip cancelled students, but keep processing the rest of the batch.
+			if frappe.db.get_value("Student", fee.student, "student_status") == "Cancelled":
+				continue
 			fee_doc = frappe.get_doc("Fees", fee.name)
 			for schedule in fee_doc.payment_schedule:
 				if (schedule.due_date - today).days == before_days:
-					if frappe.db.get_value("Student", fee.student, "student_status") == "Cancelled":
-						return
 					frappe.enqueue(
 						"edu_quality.public.py.student.create_payment_request",
 						fee=fee_doc,
@@ -66,8 +71,9 @@ def create_payment_request_before_due_date_fee_advance():
 		fee_advance_doc = frappe.get_doc("Fee Advance", fee_advance.name)
 		due_date = fee_advance_doc.due_date
 		if (due_date - today_date).days < 30:
+			# Skip cancelled students, but keep processing the rest of the batch.
 			if frappe.db.get_value("Student", fee_advance_doc.student, "student_status") == "Cancelled":
-				return
+				continue
 			schedule_payment_request(fee_advance_doc, fee_advance_doc.payment_term)
 
 
@@ -307,5 +313,5 @@ WHERE
 				trigger_event(doc=birthday_doc, event_name="birthday_greeting")
 
 		except Exception as e:
-			frappe.logger("Birthday Card").exception(e)
+			frappe.log_error(title="BirthdayCard Error", message=frappe.get_traceback())
 			frappe.log_error("Error Scheduling", str(e))

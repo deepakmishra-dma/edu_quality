@@ -42,7 +42,7 @@ class FeeAdvance(AccountsController):
 			for component in components:
 				self.append("components", component)
 		except Exception as e:
-			frappe.logger("fee_advance").exception(e)
+			frappe.log_error(title="FeeAdvance Error", message=frappe.get_traceback())
 
 	def before_save(self):
 		if self.referral_amount:
@@ -71,7 +71,7 @@ class FeeAdvance(AccountsController):
 				payment_plan(self)
 			self.generate_split()
 		except Exception as e:
-			frappe.logger("pay_change").exception(e)
+			frappe.log_error(title="PayChange Error", message=frappe.get_traceback())
 
 	def validate(self):
 		self.set_missing_accounts_and_fields()
@@ -267,7 +267,7 @@ class FeeAdvance(AccountsController):
 			entries = list(student_entries.values()) + list(fee_entries.values())
 			return entries
 		except Exception as e:
-			frappe.logger("fee").exception(e)
+			frappe.log_error(title="Fee Error", message=frappe.get_traceback())
 
 	def remove_discount_entry(self, company, amount):
 		liability_account, discount_account = frappe.db.get_value(
@@ -496,9 +496,6 @@ def create_fee_advance(student, program_enrollment, all_len=None, index=None):
 		next_academic_year = frappe.get_value("Academic Year", {"custom_next_academic_year": 1})
 		fee_structure = get_fee_structure(next_academic_year, school, next_program, student_category)
 		payment_plan = get_payment_plan(fee_structure, program_enrollment)
-		frappe.logger("fee_advance").exception(
-			f"Student: {student}, Program: {next_program}, Fee Structure: {fee_structure}, Payment Plan: {payment_plan} Academic Year: {next_academic_year}, Student Category: {student_category}"
-		)
 		term, due_date = get_first_payment_term(payment_plan)
 
 		fee_advance = frappe.new_doc("Fee Advance")

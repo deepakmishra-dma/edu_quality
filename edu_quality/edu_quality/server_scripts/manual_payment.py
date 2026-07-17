@@ -21,14 +21,14 @@ def manual_payment(fee, term, data, payment_mode):
 			]
 		else:
 			filters = {"reference_name": fee, "payment_term": term, "docstatus": 1}
-		frappe.logger("man1").exception(filters)
+		frappe.log_error(title="Man1 Error", message=frappe.get_traceback())
 		if frappe.db.exists("Payment Request", filters):
 			frappe.enqueue(set_as_paid, queue="short", filters=filters, data=data, payment_mode=payment_mode)
 			frappe.response["message"] = "Manual Payment Received Successfully"
 			return
 		frappe.response["message"] = "Error Occured"
 	except Exception as e:
-		frappe.logger("manual").exception(e)
+		frappe.log_error(title="Manual Error", message=frappe.get_traceback())
 		frappe.response["message"] = "Error Occured"
 		return e
 
@@ -66,7 +66,7 @@ def get_payment_details(fee, doctype, term):
 			data.append({"company": i, "amount": flt(company_wise[i]["amount"], 2), "reference": ""})
 		return data
 	except Exception as e:
-		frappe.logger("manual").exception(e)
+		frappe.log_error(title="Manual Error", message=frappe.get_traceback())
 
 
 def company_wise(data, component):

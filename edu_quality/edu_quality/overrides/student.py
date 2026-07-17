@@ -177,7 +177,7 @@ class CustomStudent(Student):
 					return frappe.msgprint("Fee Already collected! You can proceed with deposit refund!")
 
 		except Exception as e:
-			frappe.logger("Cancel").exception(e)
+			frappe.log_error(title="Cancel Error", message=frappe.get_traceback())
 			frappe.throw(e)
 
 	def check_pending_fee(self):
@@ -394,7 +394,7 @@ class CustomStudent(Student):
 				entry.insert(ignore_permissions=True)
 			return True
 		except Exception as e:
-			frappe.logger("entry").exception(e)
+			frappe.log_error(title="Entry Error", message=frappe.get_traceback())
 			return False
 
 	@frappe.whitelist()

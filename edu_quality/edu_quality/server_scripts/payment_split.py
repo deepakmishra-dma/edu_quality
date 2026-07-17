@@ -144,7 +144,7 @@ def get_split(fees, schedule, case=0, apply_deposit=0):
 				company_wise[component.custom_company]["fee_categories"] = [fee_catogory]
 		return split, company_wise, component_wise
 	except Exception as e:
-		frappe.logger("split").exception(e)
+		frappe.log_error(title="Split Error", message=frappe.get_traceback())
 
 
 def check_deposit_combination(fees):
@@ -202,4 +202,4 @@ def get_split_fee_advance(fees):
 				company_wise[component.custom_company]["fee_categories"] = [fee_catogory]
 		return split, company_wise, component_wise
 	except Exception as e:
-		frappe.logger("split").exception(e)
+		frappe.log_error(title="Split Error", message=frappe.get_traceback())

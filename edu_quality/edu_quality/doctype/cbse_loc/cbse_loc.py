@@ -287,7 +287,7 @@ class CBSELOC(Document):
 				guardian.save(ignore_permissions=True)
 				student_guardian.save(ignore_permissions=True)
 		except Exception as e:
-			frappe.log_error(f"CBSE LOC: {self.name}", frappe.get_traceback())
+			frappe.log_error(title="CBSE LOC Error", message=f"{self.name}\n{frappe.get_traceback()}")
 
 
 @frappe.whitelist(allow_guest=True)
@@ -348,4 +348,6 @@ def student_confirmation_generation(program, status="Current student"):
 				doc.student = student.student
 				doc.save(ignore_permissions=True)
 		except Exception as e:
-			frappe.log_error(f"CBSE - {student.student}", frappe.get_traceback())
+			frappe.log_error(
+				title="CBSE LOC Student Error", message=f"{student.student}\n{frappe.get_traceback()}"
+			)

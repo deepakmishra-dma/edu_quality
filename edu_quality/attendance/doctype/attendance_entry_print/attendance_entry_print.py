@@ -12,7 +12,7 @@ class AttendanceEntryPrint(Document):
 		try:
 			self.get_students()
 		except Exception as e:
-			frappe.logger("attendance_entry_print").exception(e)
+			frappe.log_error(title="AttendanceEntryPrint Error", message=frappe.get_traceback())
 
 	def get_students(self):
 		students = frappe.db.get_list(

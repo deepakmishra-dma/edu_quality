@@ -184,7 +184,7 @@ def custom_payment_plan(doc):
 		update_breakup_after_pp_change(doc)
 		update_payment_request_after_discount(doc)
 	except Exception as e:
-		frappe.logger("custom").exception(e)
+		frappe.log_error(title="Custom Error", message=frappe.get_traceback())
 
 
 def after_save(doc, method=None):
@@ -197,7 +197,6 @@ def after_save(doc, method=None):
 def on_update(doc, method=None):
 	old_doc = doc.get_doc_before_save()
 	if old_doc.payment_plan != doc.payment_plan:
-		frappe.logger("PP").exception("pp modify")
 		return
 
 	if doc.parent_otp == 0 and old_doc.payment_schedule != doc.payment_schedule:
@@ -398,7 +397,7 @@ def create_fees(doc, method=None):
 		student.save()
 		update_lead_status(doc)
 	except Exception as e:
-		frappe.logger("fee").exception(e)
+		frappe.log_error(title="Fee Error", message=frappe.get_traceback())
 		frappe.throw(str(e))
 
 
@@ -575,7 +574,7 @@ def update_splits(
 			return split_payments, company_wise_split, component_wise_split
 
 	except Exception as e:
-		frappe.logger("update_splits").exception(e)
+		frappe.log_error(title="UpdateSplits Error", message=frappe.get_traceback())
 		return split_payments, company_wise_split, component_wise_split
 
 
@@ -841,4 +840,4 @@ def collect_birthday_details_on_submit(self, method=None):
 		birthday_card = create_birthday_card(self, None)
 		trigger_event(doc=birthday_card, event_name="collect_birthday_details")
 	except Exception as e:
-		frappe.logger("Collect Birthday Card Details Email").exception(e)
+		frappe.log_error(title="CollectBirthdayCardDetailsEmail Error", message=frappe.get_traceback())

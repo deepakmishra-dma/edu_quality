@@ -99,7 +99,7 @@ def before_save(doc, method=None):
 		comment_on_possible_dropout(doc, prev_doc)
 	except Exception as e:
 		frappe.log_error("Error in before save of Student", frappe.get_traceback())
-		frappe.logger("google_user").exception(e)
+		frappe.log_error(title="GoogleUser Error", message=frappe.get_traceback())
 
 
 def comment_on_possible_dropout(doc, old_doc):
@@ -178,7 +178,7 @@ def create_payment_request(fee, term=None):
 				use_dummy_message=True,
 			)
 	except Exception as e:
-		frappe.logger("edu_quality").exception(e)
+		frappe.log_error(title="EduQuality Error", message=frappe.get_traceback())
 
 
 def update_student(data):
@@ -295,7 +295,7 @@ def get_guardian(data):
 				guardians.append(guardian)
 		return guardians
 	except Exception as e:
-		frappe.logger("enrollment").exception(e)
+		frappe.log_error(title="Enrollment Error", message=frappe.get_traceback())
 
 
 def create_guardian(relation, **kwargs):
@@ -303,7 +303,7 @@ def create_guardian(relation, **kwargs):
 		if not kwargs.get("f_name", ""):
 			return None
 		first_name = kwargs.get("f_name", "").capitalize()
-		frappe.logger("enrollment").exception(first_name)
+		frappe.log_error(title="Enrollment Error", message=frappe.get_traceback())
 		middle_name = kwargs.get("m_name", "").capitalize() if kwargs.get("m_name") else None
 		last_name = kwargs.get("s_name", "").capitalize() if kwargs.get("s_name") else None
 		guardian_name = f"{first_name} {last_name or ''}"
@@ -339,4 +339,4 @@ def create_guardian(relation, **kwargs):
 			"relation": relation,
 		}
 	except Exception as e:
-		frappe.logger("enrollment").exception(e)
+		frappe.log_error(title="Enrollment Error", message=frappe.get_traceback())

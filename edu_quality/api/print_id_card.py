@@ -217,7 +217,7 @@ def generate_permanent_id_cards_async(**kwargs):
 		doc.save(ignore_permissions=True)
 
 	except Exception as e:
-		frappe.logger("permanent_id_card").exception(e)
+		frappe.log_error(title="PermanentIdCard Error", message=frappe.get_traceback())
 		frappe.log_error("Permanent Id Card Generation Failed", str(frappe.get_traceback()))
 
 
@@ -233,5 +233,5 @@ def send_id_card_mail(**kwargs):
 		)
 	except Exception as e:
 		frappe.log_error("Sending Id Card Mail", str(e))
-		frappe.logger("sending purchase order").exception(e)
+		frappe.log_error(title="SendingPurchaseOrder Error", message=frappe.get_traceback())
 		raise e

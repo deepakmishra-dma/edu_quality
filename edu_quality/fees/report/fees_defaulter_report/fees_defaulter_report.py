@@ -223,7 +223,7 @@ def payment_reminder(data):
 			)
 			trigger_event(doc=payment_request, event_name="payment_link_remainder")
 	except Exception as e:
-		frappe.logger("payment_reminder").exception(e)
+		frappe.log_error(title="PaymentReminder Error", message=frappe.get_traceback())
 
 
 @frappe.whitelist()
@@ -236,7 +236,7 @@ def send_payment_reminder(data):
 			"msg": "Payment reminders sent successfully",
 		}
 	except Exception as e:
-		frappe.logger("payment_reminder").exception(e)
+		frappe.log_error(title="PaymentReminder Error", message=frappe.get_traceback())
 		frappe.response["message"] = {
 			"title": "Error",
 			"msg": "Something went wrong",
@@ -277,11 +277,11 @@ def mark_student_as_defaulter(data):
 
 			except Exception as e:
 				frappe.log_error("Google Mark as Defaulter Failure", frappe.get_traceback())
-				frappe.logger("mark_student_as_defaulter").exception(e)
+				frappe.log_error(title="MarkStudentAsDefaulter Error", message=frappe.get_traceback())
 
 	except Exception as e:
 		frappe.log_error("Google Mark as Defaulter Failure", frappe.get_traceback())
-		frappe.logger("mark_student_as_defaulter").exception(e)
+		frappe.log_error(title="MarkStudentAsDefaulter Error", message=frappe.get_traceback())
 
 
 @frappe.whitelist()
@@ -299,7 +299,7 @@ def mark_as_defaulter(data):
 			"msg": "Student Marked As Defaulter Successfully",
 		}
 	except Exception as e:
-		frappe.logger("mark_student_as_defaulter").exception(e)
+		frappe.log_error(title="MarkStudentAsDefaulter Error", message=frappe.get_traceback())
 		frappe.response["message"] = {
 			"title": "Error",
 			"msg": "Something went wrong",

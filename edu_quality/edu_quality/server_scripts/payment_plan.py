@@ -80,7 +80,7 @@ def change_payment_plan(payment_plan, doctype, fee_name):
 			frappe.response["message"] = "Payment Plan Updated Successfully!"
 			create_payment_request(doc)
 	except Exception as e:
-		frappe.logger("pay_change").exception(e)
+		frappe.log_error(title="PayChange Error", message=frappe.get_traceback())
 
 
 def remove_payment_plan_discount(doc, custom_payment_plan=0):

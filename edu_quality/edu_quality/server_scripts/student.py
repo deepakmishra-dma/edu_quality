@@ -44,7 +44,7 @@ def cancel_student(student, academic_year, fee_collection):
 				refund_deposit(student, fee.name, deposit)
 		return 1
 	except Exception as e:
-		frappe.logger("Cancel").exception(e)
+		frappe.log_error(title="Cancel Error", message=frappe.get_traceback())
 		return 0
 
 
@@ -129,7 +129,7 @@ def mark_entry(student, status, reason=None, date=None, time=None):
 			entry.insert(ignore_permissions=True)
 		return True
 	except Exception as e:
-		frappe.logger("entry").exception(e)
+		frappe.log_error(title="Entry Error", message=frappe.get_traceback())
 		return False
 
 

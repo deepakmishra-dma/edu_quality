@@ -31,4 +31,4 @@ def update_links():
 			d.run_method("save_customization")
 			frappe.clear_cache()
 		except Exception as e:
-			frappe.logger("migrate").exception(e)
+			frappe.log_error(title="Migrate Error", message=frappe.get_traceback())

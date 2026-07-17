@@ -128,7 +128,7 @@ def add_user_to_group(email, group_email):
 		user_service = get_google_admin_object()
 		user_service.members().insert(groupKey=group_email, body={"email": email, "role": "MEMBER"}).execute()
 	except Exception as e:
-		frappe.logger("google_groups").exception(e)
+		frappe.log_error(title="GoogleGroups Error", message=frappe.get_traceback())
 
 
 def remove_user_from_group(email, group_email):
@@ -136,7 +136,7 @@ def remove_user_from_group(email, group_email):
 		user_service = get_google_admin_object()
 		user_service.members().delete(groupKey=group_email, memberKey=email)
 	except Exception as e:
-		frappe.logger("google_groups").exception(e)
+		frappe.log_error(title="GoogleGroups Error", message=frappe.get_traceback())
 
 
 def suspend_google_user(email):
@@ -147,7 +147,7 @@ def suspend_google_user(email):
 			body={"suspended": True},
 		).execute()
 	except:
-		frappe.log_error(f"suspend_google_user failed: {email}", frappe.get_traceback())
+		frappe.log_error(title="Suspend Google User Failed", message=f"{email}\n{frappe.get_traceback()}")
 
 
 def unsuspend_google_user(email):
@@ -158,4 +158,4 @@ def unsuspend_google_user(email):
 			body={"suspended": False},
 		).execute()
 	except:
-		frappe.log_error(f"unsuspend_google_user failed: {email}", frappe.get_traceback())
+		frappe.log_error(title="Unsuspend Google User Failed", message=f"{email}\n{frappe.get_traceback()}")

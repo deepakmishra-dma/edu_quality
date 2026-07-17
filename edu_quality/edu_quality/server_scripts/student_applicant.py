@@ -57,7 +57,7 @@ def after_insert(doc, method=None):
 
 		trigger_event(doc=doc, event_name="student_applicant_created")
 	except ImportError as e:
-		frappe.logger("student_applicant_creation").exception(e)
+		frappe.log_error(title="StudentApplicantCreation Error", message=frappe.get_traceback())
 
 
 def update_guardian_details(doc):
@@ -207,7 +207,7 @@ def update_guardian_details(doc):
 			)
 			doc.save(ignore_permissions=True)
 	except Exception as e:
-		frappe.logger("update").exception(e)
+		frappe.log_error(title="Update Error", message=frappe.get_traceback())
 
 
 def on_update(doc, method=None):
@@ -253,7 +253,7 @@ def add_referral_discount(referred_by, student_applicant=None):
 		return 1
 
 	except Exception as e:
-		frappe.logger("referral").exception(e)
+		frappe.log_error(title="Referral Error", message=frappe.get_traceback())
 		return 0
 
 
@@ -357,7 +357,7 @@ def update_referral_discount(doc, discount_amount, is_paid=False):
 
 		apply_referral_discount(doc, discount_amount, is_paid)
 	except Exception as e:
-		frappe.logger("referral").exception(e)
+		frappe.log_error(title="Referral Error", message=frappe.get_traceback())
 
 
 def apply_referral_discount(doc, referral_amount, is_paid=False):
@@ -421,7 +421,7 @@ def apply_referral_discount(doc, referral_amount, is_paid=False):
 				doc.update_split()
 				return
 	except Exception as e:
-		frappe.logger("referral").exception(e)
+		frappe.log_error(title="Referral Error", message=frappe.get_traceback())
 
 
 def referal_discount(doc, method=None):

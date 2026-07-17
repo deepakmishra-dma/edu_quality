@@ -121,7 +121,7 @@ def create_purchase_order(name):
 			f"Error Creating Purchase Order for Permanent ID Card {name}",
 			frappe.get_traceback(),
 		)
-		frappe.logger("Permanent ID Card").exception(e)
+		frappe.log_error(title="PermanentIdCard Error", message=frappe.get_traceback())
 		frappe.throw(str(e))
 
 

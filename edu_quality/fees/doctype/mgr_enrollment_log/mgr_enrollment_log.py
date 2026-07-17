@@ -50,7 +50,7 @@ class MGREnrollmentLog(Document):
 		except Exception as e:
 			self.enrollment__status = "Failed"
 			self.erp_responce = frappe.get_traceback()
-			frappe.logger("enrollment").exception(e)
+			frappe.log_error(title="Enrollment Error", message=frappe.get_traceback())
 
 	def after_insert(self):
 		if self.enrollment__status == "Failed":
@@ -73,4 +73,4 @@ def re_enroll_student(id):
 		doc.enrollment__status = "Failed"
 		doc.erp_responce = frappe.get_traceback()
 		doc.save(ignore_permissions=True)
-		frappe.logger("enrollment").exception(e)
+		frappe.log_error(title="Enrollment Error", message=frappe.get_traceback())

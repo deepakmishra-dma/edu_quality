@@ -900,7 +900,6 @@ export const StudentProfleFOrm = ({
                 </>
               )}
           </div>
-          {/* avantee.joshi@yopmail.com */}
           <div
             style={{
               borderBottom: `1px solid ${studentProfileColor}`,

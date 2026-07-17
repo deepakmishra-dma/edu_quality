@@ -189,7 +189,6 @@ def send_otp(phone_no=None, email=None):
 				"error_type": "guardian_not_found",
 				"error_message": "Guardian Not Found",
 			}
-		frappe.logger("otp").exception(is_disabled(guardian.name))
 		if is_disabled(guardian.name):
 			return {
 				"error": True,
@@ -210,7 +209,6 @@ def send_otp(phone_no=None, email=None):
 		if wa_phone_no:
 			send_otp_to_whatsapp(wa_phone_no, otp)
 			send_otp_to_sms(phone_with_country_code, otp)
-		frappe.logger("otp").exception("sms sent")
 		send_otp_to_email(guardian.email_address, otp)
 
 		return {
@@ -218,7 +216,7 @@ def send_otp(phone_no=None, email=None):
 			"message": "Otp Sent To +" + str(wa_phone_no or email),
 		}
 	except Exception as e:
-		frappe.logger("otp").exception(e)
+		frappe.log_error(title="Otp Error", message=frappe.get_traceback())
 		return {
 			"error": True,
 			"error_type": "Something Went Wrong",

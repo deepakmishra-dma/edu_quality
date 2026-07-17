@@ -52,7 +52,7 @@ def separate_deposits(fees):
 				return True
 			break
 	except Exception as e:
-		frappe.logger("separation").exception(e)
+		frappe.log_error(title="Separation Error", message=frappe.get_traceback())
 		return False
 
 

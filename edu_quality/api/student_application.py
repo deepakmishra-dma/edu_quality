@@ -451,9 +451,6 @@ def create_student_application(**args):
 #         #     father.save(ignore_permissions=True)
 #         # if(other_in_doc):
 #         #     other.save(ignore_permissions=True)
-#         frappe.logger("Student Debug").exception(data)
-#         frappe.logger("Student Debug").exception(ref_no)
-#         frappe.logger("Student Debug").exception(school_id)
 
 #         return existing_student_doc
 #     except Exception:
@@ -919,7 +916,7 @@ def handle_school_visit(**kwargs):
 
 	except Exception as e:
 		frappe.errprint(e)
-		frappe.logger("Handle_School_Visit").exception(e)
+		frappe.log_error(title="HandleSchoolVisit Error", message=frappe.get_traceback())
 
 
 @frappe.whitelist(allow_guest=True)
@@ -972,7 +969,7 @@ def get_and_schedule_pending_walkouts():
 
 		return "Queuing"
 	except Exception as e:
-		frappe.logger("scheduling pending workflow for walkin").exception(e)
+		frappe.log_error(title="SchedulingPendingWorkflowForWalkin Error", message=frappe.get_traceback())
 
 
 @frappe.whitelist(allow_guest=True)

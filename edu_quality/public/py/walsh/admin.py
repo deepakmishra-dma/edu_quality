@@ -835,5 +835,5 @@ def create_notice_from_email_template(data, email_template, send_notif=False):
 		)
 
 	except Exception as e:
-		frappe.logger("Notice Email").exception(e)
+		frappe.log_error(title="NoticeEmail Error", message=frappe.get_traceback())
 		raise e

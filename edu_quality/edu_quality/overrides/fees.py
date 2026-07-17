@@ -64,7 +64,7 @@ class CustomFees(Fees):
 			update_payment_request_after_discount(self)
 			return 1
 		except Exception as e:
-			frappe.logger("partial_payment").exception(e)
+			frappe.log_error(title="PartialPayment Error", message=frappe.get_traceback())
 			return frappe.throw(e)
 
 	def get_deposit_amount(self):
@@ -646,7 +646,7 @@ class CustomFees(Fees):
 			entries.extend(fee_advance_entries if fee_advance_entries else [])
 			return entries
 		except Exception as e:
-			frappe.logger("fee").exception(e)
+			frappe.log_error(title="Fee Error", message=frappe.get_traceback())
 
 
 def before_save(doc, method=None):

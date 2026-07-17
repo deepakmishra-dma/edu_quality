@@ -26,7 +26,7 @@ class BirthdayCard(Document):
 			for trait in trait_select:
 				self.append("traits", {"trait_type": trait})
 		except Exception as e:
-			frappe.logger("Birthday Card").exception(e)
+			frappe.log_error(title="BirthdayCard Error", message=frappe.get_traceback())
 
 	def after_insert(self, method=None):
 		self.form_hash = generate_hash(self.name)
