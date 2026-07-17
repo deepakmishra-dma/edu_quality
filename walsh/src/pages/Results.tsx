@@ -349,11 +349,11 @@ export const Results = () => {
     assessmentGroupFilter(e, classDetails?.data?.message?.division?.program);
   };
 
-  let html = printFormat?.html;
+  const html = printFormat?.html;
 
-  let style = printFormat.style;
+  const style = printFormat.style;
 
-  let combinedHtml = `
+  const combinedHtml = `
     <style>${style}</style>
     ${html}
   `;

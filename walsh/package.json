@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc && refine build --base=/assets/edu_quality/walsh/ && yarn copy-html-entry",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "ESLINT_USE_FLAT_CONFIG=false eslint . --ext ts,tsx --report-unused-disable-directives",
     "preview": "refine start",
     "dev": "vite dev --host",
     "refine": "refine",

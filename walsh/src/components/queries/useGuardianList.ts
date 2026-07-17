@@ -124,7 +124,7 @@ interface UpdateAnnualIncomeProps {
   annual_income: string;
 }
 
-export const guardin_email_update = () => {
+export const useGuardianEmailUpdate = () => {
   const { mutate, mutateAsync, ...mutationObjs } = useCustomMutation({
     mutationOptions: {},
   });
@@ -154,7 +154,7 @@ export const guardin_email_update = () => {
     mutateAsync: mutationAsyncFunction,
   };
 };
-export const guardin_number_update = () => {
+export const useGuardianNumberUpdate = () => {
   const { mutate, mutateAsync, ...mutationObjs } = useCustomMutation({
     mutationOptions: {},
   });
@@ -185,7 +185,7 @@ export const guardin_number_update = () => {
   };
 };
 
-export const guardin_father_number_update = ({
+export const useGuardianFatherNumberUpdate = ({
   FatherGuardian,
 }: FatherDetailsProps) => {
   const urls = `/api/resource/Guardian/${FatherGuardian}`;
@@ -219,7 +219,7 @@ export const guardin_father_number_update = ({
     mutateAsync: mutationAsyncFunction,
   };
 };
-export const guardin_address = () => {
+export const useGuardianAddress = () => {
   const { mutate, mutateAsync, ...mutationObjs } = useCustomMutation({
     mutationOptions: {},
   });
@@ -249,7 +249,7 @@ export const guardin_address = () => {
     mutateAsync: mutationAsyncFunction,
   };
 };
-export const guardin_address2 = () => {
+export const useGuardianAddress2 = () => {
   const { mutate, mutateAsync, ...mutationObjs } = useCustomMutation({
     mutationOptions: {},
   });
@@ -279,7 +279,7 @@ export const guardin_address2 = () => {
     mutateAsync: mutationAsyncFunction,
   };
 };
-export const updateBloodGroup = () => {
+export const useUpdateBloodGroup = () => {
   const { mutate, mutateAsync, ...mutationObjs } = useCustomMutation({
     mutationOptions: {},
   });
@@ -310,7 +310,7 @@ export const updateBloodGroup = () => {
   };
 };
 
-export const updateAnnualIncome = () => {
+export const useUpdateAnnualIncome = () => {
   const { mutate, mutateAsync, ...mutationObjs } = useCustomMutation({
     mutationOptions: {},
   });

@@ -7,12 +7,14 @@ import useClassDetails from "../components/queries/useClassDetails.ts";
 import useStudentProfileColor from "../components/hooks/useStudentProfileColor.ts";
 import {
   usePTMLinksQuery,
-  useofflinePTMLinksQuery,
+  useOfflinePTMLinksQuery,
 } from "../components/queries/usePTMLinksQuery.tsx";
 
 function timeToMinutes(timeStr: any) {
   const [time, period] = timeStr.split(" ");
-  let [hours, minutes] = time.split(":").map(Number);
+  const parts = time.split(":").map(Number);
+  let hours = parts[0];
+  const minutes = parts[1];
 
   if (period === "PM" && hours !== 12) {
     hours += 12;
@@ -135,7 +137,7 @@ export const PtmLinks = () => {
     data: offlinePTM,
     refetch: offlineRefetch,
     isLoading: offlinePtmLoading,
-  } = useofflinePTMLinksQuery(custom_school);
+  } = useOfflinePTMLinksQuery(custom_school);
 
   const past_ptms = onlinePTM?.data?.message?.past_ptms;
 

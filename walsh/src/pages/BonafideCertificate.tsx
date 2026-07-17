@@ -51,14 +51,7 @@ export const BonafideCertificate = () => {
       .then((result) => result.message)
       .then((message) => {
         if (message) {
-          console.log("success ", message);
-
           refetch();
-        } else if (message) {
-          console.log("error-message ", message);
-          // Handle error message
-        } else {
-          console.log("Unexpected response format:", message);
         }
       })
       .catch((error) => console.log("error", error))
@@ -81,14 +74,8 @@ export const BonafideCertificate = () => {
       .then((result) => result.message)
       .then((message) => {
         if (message) {
-          console.log("success ", message);
           setDownloadFile(true);
           refetch();
-        } else if (message) {
-          console.log("error-message ", message);
-          // Handle error message
-        } else {
-          console.log("Unexpected response format:", message);
         }
       })
       .catch((error) => console.log("error", error))

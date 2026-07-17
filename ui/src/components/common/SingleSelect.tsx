@@ -27,7 +27,7 @@ const SingleSelect = (props: SingleSelectProps) => {
     required,
     docType = "",
   } = props;
-  const { data, isLoading, isValidating } = useFrappeGetDocList(
+  const { data, isLoading } = useFrappeGetDocList(
     docType,
     {
       limit: 0,

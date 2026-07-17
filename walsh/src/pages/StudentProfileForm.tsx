@@ -1,12 +1,12 @@
 import { useMemo, useState } from "react";
 import {
-  guardin_address,
-  guardin_address2,
-  guardin_email_update,
-  guardin_father_number_update,
-  guardin_number_update,
-  updateAnnualIncome,
-  updateBloodGroup,
+  useGuardianAddress,
+  useGuardianAddress2,
+  useGuardianEmailUpdate,
+  useGuardianFatherNumberUpdate,
+  useGuardianNumberUpdate,
+  useUpdateAnnualIncome,
+  useUpdateBloodGroup,
   useDetailsList,
 } from "../components/queries/useGuardianList";
 import { Box, Text, Button } from "@mantine/core";
@@ -30,10 +30,10 @@ export const StudentProfleFOrm = ({
 }: StudentProfileProps) => {
   const { data: details_list, refetch: detailsRefetch } =
     useDetailsList(selectedStudent);
-  const { mutateAsync: mutateAddress2 } = guardin_address2();
-  const { mutateAsync: mutateAsyncAnnualIncome } = updateAnnualIncome();
+  const { mutateAsync: mutateAddress2 } = useGuardianAddress2();
+  const { mutateAsync: mutateAsyncAnnualIncome } = useUpdateAnnualIncome();
 
-  const { mutateAsync: mutateAsyncBloodGroup } = updateBloodGroup();
+  const { mutateAsync: mutateAsyncBloodGroup } = useUpdateBloodGroup();
 
   const [statusColor, setStatusColor] = useState("");
 
@@ -98,11 +98,11 @@ export const StudentProfleFOrm = ({
     details_list?.data?.message?.guardians?.find?.(
       (i: any) => i?.relation === "Mother"
     )?.guardian || "";
-  const { mutateAsync: mutateAsyncNumber } = guardin_number_update();
+  const { mutateAsync: mutateAsyncNumber } = useGuardianNumberUpdate();
   const { mutateAsync: mutateAsyncFatherNumbers } =
-    guardin_father_number_update(FatherGuardian);
-  const { mutateAsync } = guardin_email_update();
-  const { mutateAsync: mutateAddress } = guardin_address();
+    useGuardianFatherNumberUpdate(FatherGuardian);
+  const { mutateAsync } = useGuardianEmailUpdate();
+  const { mutateAsync: mutateAddress } = useGuardianAddress();
 
   const MotherEmail =
     details_list?.data?.message?.guardians?.find?.(

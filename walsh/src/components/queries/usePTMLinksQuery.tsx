@@ -22,7 +22,7 @@ export const usePTMLinksQuery = (selectedStudent: string) => {
   };
 };
 
-export const useofflinePTMLinksQuery = (custom_school: string | undefined) => {
+export const useOfflinePTMLinksQuery = (custom_school: string | undefined) => {
   const { data, error, ...rest } = useCustom({
     config: {
       query: {

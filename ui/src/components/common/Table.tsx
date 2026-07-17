@@ -1,9 +1,7 @@
 import {
-  ColumnDef,
   flexRender,
   getCoreRowModel,
   getSortedRowModel,
-  SortingFn,
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";

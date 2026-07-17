@@ -1,9 +1,7 @@
 import { useMemo } from "react";
-import SingleSelect from "../../components/common/SingleSelect";
 
 import Table from "../../components/common/Table";
-import { UseExamGroup } from "../../queries/useExamGroup";
-import { useFrappeGetCall, useFrappeGetDoc } from "frappe-react-sdk";
+import { useFrappeGetCall } from "frappe-react-sdk";
 import TextInput from "../../components/common/TextInput";
 
 const initialColumns = [
@@ -28,21 +26,21 @@ const MarksEntry = () => {
       {
         label: "English",
         accessorKey: "english",
-        cell: (value) => {
+        cell: () => {
           return <TextInput type="number" />;
         },
       },
       {
         label: "Social Studies",
         accessorKey: "social_studies",
-        cell: (value) => {
+        cell: () => {
           return <TextInput type="number" />;
         },
       },
       {
         label: "Computer",
         accessorKey: "computer",
-        cell: (value) => {
+        cell: () => {
           return <TextInput type="number" />;
         },
       },
