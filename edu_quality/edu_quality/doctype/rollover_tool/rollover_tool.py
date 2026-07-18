@@ -57,10 +57,10 @@ class RolloverTool(Document):
 
 				student_list = [d.student for d in students]
 				if student_list:
+					placeholders = ", ".join(["%s"] * len(student_list))
 					inactive_students = frappe.db.sql(
-						"""
-						select name as student, student_name from `tabStudent` where name in (%s) and enabled = 0"""
-						% ", ".join(["%s"] * len(student_list)),
+						f"""select name as student, student_name from `tabStudent`
+						where name in ({placeholders}) and enabled = 0""",
 						tuple(student_list),
 						as_dict=1,
 					)

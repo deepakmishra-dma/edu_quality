@@ -1,18 +1,19 @@
-frappe.pages['fees-structure'].on_page_load = function(wrapper) {
-	var page = frappe.ui.make_app_page({
-		parent: wrapper,
-		title: 'Fee Structure',
-		single_column: true
-	});fee_type_form(wrapper);
-}
+frappe.pages["fees-structure"].on_page_load = function (wrapper) {
+  var page = frappe.ui.make_app_page({
+    parent: wrapper,
+    title: "Fee Structure",
+    single_column: true,
+  });
+  fee_type_form(wrapper);
+};
 
-async function fee_type_form(wrapper){
-	$(`<div class="dashboard" style="overflow-y: hidden">
+async function fee_type_form(wrapper) {
+  $(`<div class="dashboard" style="overflow-y: hidden">
 		<div class="dashboard-graph"></div>
 		</div>`).appendTo($(wrapper).find(".page-content").empty());
-	container = $(wrapper).find(".dashboard-graph");
-	page = wrapper.page;
-	form1 = `<table class="table1" style="margin:20px 20px 0;">
+  container = $(wrapper).find(".dashboard-graph");
+  page = wrapper.page;
+  form1 = `<table class="table1" style="margin:20px 20px 0;">
 	<tbody><tr>
 	<td><label  for="textinput">Financial Year : <span style="font-weight:bold; color:#F00;"> *</span></label></td>
 	<td><label class="select">
@@ -70,9 +71,9 @@ async function fee_type_form(wrapper){
 	<tr>
 	  <td><input type="hidden" name="academic_year_selected" id="academic_year_selected"></td>
 	</tr>
-  	</tbody></table>`
-	container.append(form1)
-	form2 = `<table class="table1" style="margin:10px 10px 0;" id="dataTable" name="dataTable">
+  	</tbody></table>`;
+  container.append(form1);
+  form2 = `<table class="table1" style="margin:10px 10px 0;" id="dataTable" name="dataTable">
 	<tbody><tr>
 	  <td><input type="checkbox" name="chk" style="display:none"></td>
 	  <td><input type="checkbox" name="chk" style="display:none"></td>
@@ -101,9 +102,9 @@ async function fee_type_form(wrapper){
 	  <tr id="new_data">
 	  <td> </td>
 	</tr>
-  	</tbody></table>`
-	container.append(form2)
-	form3 = `<table class="table1" style="margin:5px 5px 0;">
+  	</tbody></table>`;
+  container.append(form2);
+  form3 = `<table class="table1" style="margin:5px 5px 0;">
 	<tbody><tr style="display:none;">
 	<tbody><tr style="display:none;">
 	  <td>
@@ -145,18 +146,18 @@ async function fee_type_form(wrapper){
 	  </td>
 	  <td><span id="last_receipt"></span></td>
 	</tr>
-  	</tbody></table>`
-	container.append(form3)
-	get_fin_yr()
-	get_class()
-	get_fee_category()
-	get_institution()
-	get_school()
-	get_class()
-	get_fee_category()
-	get_institution()
-	get_school()
-	table = `
+  	</tbody></table>`;
+  container.append(form3);
+  get_fin_yr();
+  get_class();
+  get_fee_category();
+  get_institution();
+  get_school();
+  get_class();
+  get_fee_category();
+  get_institution();
+  get_school();
+  table = `
 	<div style='height:50px'></div>
 	<style>
 	.table3 th{
@@ -180,43 +181,36 @@ async function fee_type_form(wrapper){
 	}
 	</style>
 	<table cellpadding="0" cellspacing="0" id='table3' class="table3" style="width:100%; margin:0 auto;">
-	</table>`
-	container.append(table)
-	get_table()
-	const radioButtons = document.querySelectorAll('input[name="fee_refer"]');
-	radioButtons.forEach(radio => {
-		radio.addEventListener('click', handleRadioClick);
-	});
-	const radioButtons = document.querySelectorAll('input[name="fee_refer"]');
-	radioButtons.forEach(radio => {
-		radio.addEventListener('click', handleRadioClick);
-	});
+	</table>`;
+  container.append(table);
+  get_table();
+  const radioButtons = document.querySelectorAll('input[name="fee_refer"]');
+  radioButtons.forEach((radio) => {
+    radio.addEventListener("click", handleRadioClick);
+  });
 }
 
-
-function delete_item(item){
-	frappe.call({
-		method: 'delete_fee_structure',
-		method: 'delete_fee_structure',
-		type: "POST",
-		args: {
-			'fee_structure': item
-			'fee_structure': item
-		},
-	callback: function(r){
-		row = document.getElementById("row-"+item).remove()
-	}
-})
+function delete_item(item) {
+  frappe.call({
+    method: "delete_fee_structure",
+    type: "POST",
+    args: {
+      fee_structure: item,
+    },
+    callback: function (r) {
+      row = document.getElementById("row-" + item).remove();
+    },
+  });
 }
 
-async function get_table(){
-	frappe.call({
-		method: 'get_fee_structure',
-		type: "GET",
-	callback: function(r){
-		var table = document.getElementById('table3')
-		table.innerHTML = ''
-		var html = `<tbody><tr>
+async function get_table() {
+  frappe.call({
+    method: "get_fee_structure",
+    type: "GET",
+    callback: function (r) {
+      var table = document.getElementById("table3");
+      table.innerHTML = "";
+      var html = `<tbody><tr>
 		<th>Class Name</th>
 		<th>Fee Head Name</th>
 		<th>Fee Head Type</th>
@@ -225,246 +219,204 @@ async function get_table(){
 		<th>Financial Year</th>
 		<th style="">Del</th>
 		</tr>
-		<tr>`
-		r.message.forEach(fs =>{
-					html = html + `<tr id="row-`+ fs.name + `"><td>`+ fs.program + "</td>"
-					html = html +  "<td>"+ fs.category + "</td>"
-					html = html +  "<td>"+ fs.type + "</td>"
-					html = html +  "<td>"+ fs.amount + "</td>"
-					html = html +  "<td>"+ fs.school + "</td>"
-					html = html +  "<td>"+ fs.fin_yr + "</td>"
-					html = html + `<td><img id='`+ fs.name + `' width="18" height="18" src="/files/remove.png" title="Remove this" onclick=delete_item(this.id)></td></tr>`
-				})
-	frappe.call({
-		method: 'get_fee_structure',
-		type: "GET",
-	callback: function(r){
-		var table = document.getElementById('table3')
-		table.innerHTML = ''
-		var html = `<tbody><tr>
-		<th>Class Name</th>
-		<th>Fee Head Name</th>
-		<th>Fee Head Type</th>
-		<th>Fee Head Amount</th>
-		<th>Institute/School Name</th>
-		<th>Financial Year</th>
-		<th style="">Del</th>
-		</tr>
-		<tr>`
-		r.message.forEach(fs =>{
-					html = html + `<tr id="row-`+ fs.name + `"><td>`+ fs.program + "</td>"
-					html = html +  "<td>"+ fs.category + "</td>"
-					html = html +  "<td>"+ fs.type + "</td>"
-					html = html +  "<td>"+ fs.amount + "</td>"
-					html = html +  "<td>"+ fs.school + "</td>"
-					html = html +  "<td>"+ fs.fin_yr + "</td>"
-					html = html + `<td><img id='`+ fs.name + `' width="18" height="18" src="/files/remove.png" title="Remove this" onclick=delete_item(this.id)></td></tr>`
-				})
-			html = html + '</tbody>'
-			table.innerHTML = html
-		}
-	})
-	})
+		<tr>`;
+      r.message.forEach((fs) => {
+        html =
+          html + `<tr id="row-` + fs.name + `"><td>` + fs.program + "</td>";
+        html = html + "<td>" + fs.category + "</td>";
+        html = html + "<td>" + fs.type + "</td>";
+        html = html + "<td>" + fs.amount + "</td>";
+        html = html + "<td>" + fs.school + "</td>";
+        html = html + "<td>" + fs.fin_yr + "</td>";
+        html =
+          html +
+          `<td><img id='` +
+          fs.name +
+          `' width="18" height="18" src="/files/remove.png" title="Remove this" onclick=delete_item(this.id)></td></tr>`;
+      });
+      html = html + "</tbody>";
+      table.innerHTML = html;
+    },
+  });
 }
 
-function get_fin_yr(){
-	frappe.db.get_list('Financial Year').then(
-		res =>{
-			let select = document.getElementById('ins_rel_head_type_academic_year')
-			res.forEach(yr =>{
-				let option = document.createElement('option')
-				option.value = yr.name
-				option.innerHTML = yr.name
-				select.appendChild(option)
-			})
-		}
-	)
+function get_fin_yr() {
+  frappe.db.get_list("Financial Year").then((res) => {
+    let select = document.getElementById("ins_rel_head_type_academic_year");
+    res.forEach((yr) => {
+      let option = document.createElement("option");
+      option.value = yr.name;
+      option.innerHTML = yr.name;
+      select.appendChild(option);
+    });
+  });
 }
 
-function get_class(){
-	frappe.db.get_list('Program').then(
-		res =>{
-			let select = document.getElementById('class_name')
-			res.forEach(yr =>{
-				let option = document.createElement('option')
-				option.value = yr.name
-				option.innerHTML = yr.name
-				select.appendChild(option)
-			})
-		}
-	)
+function get_class() {
+  frappe.db.get_list("Program").then((res) => {
+    let select = document.getElementById("class_name");
+    res.forEach((yr) => {
+      let option = document.createElement("option");
+      option.value = yr.name;
+      option.innerHTML = yr.name;
+      select.appendChild(option);
+    });
+  });
 }
-function get_school(){
-	frappe.db.get_list('School').then(
-		res =>{
-			let select = document.getElementById('school_name')
-			res.forEach(yr =>{
-				let option = document.createElement('option')
-				option.value = yr.name
-				option.innerHTML = yr.name
-				select.appendChild(option)
-			})
-		}
-	)
+function get_school() {
+  frappe.db.get_list("School").then((res) => {
+    let select = document.getElementById("school_name");
+    res.forEach((yr) => {
+      let option = document.createElement("option");
+      option.value = yr.name;
+      option.innerHTML = yr.name;
+      select.appendChild(option);
+    });
+  });
 }
 
-function get_institution(){
-	frappe.db.get_list('Institution').then(
-		res =>{
-			let select = document.getElementById('inst_name')
-			let select = document.getElementById('ins_rel_head_type_academic_year')
-			res.forEach(yr =>{
-				let option = document.createElement('option')
-				option.value = yr.name
-				option.innerHTML = yr.name
-				select.appendChild(option)
-			})
-		}
-	)
+function get_institution() {
+  frappe.db.get_list("Institution").then((res) => {
+    let select = document.getElementById("inst_name");
+    res.forEach((yr) => {
+      let option = document.createElement("option");
+      option.value = yr.name;
+      option.innerHTML = yr.name;
+      select.appendChild(option);
+    });
+  });
 }
 
-function get_class(){
-	frappe.db.get_list('Program').then(
-		res =>{
-			let select = document.getElementById('class_name')
-			res.forEach(yr =>{
-				let option = document.createElement('option')
-				option.value = yr.name
-				option.innerHTML = yr.name
-				select.appendChild(option)
-			})
-		}
-	)
+function get_class() {
+  frappe.db.get_list("Program").then((res) => {
+    let select = document.getElementById("class_name");
+    res.forEach((yr) => {
+      let option = document.createElement("option");
+      option.value = yr.name;
+      option.innerHTML = yr.name;
+      select.appendChild(option);
+    });
+  });
 }
-function get_school(){
-	frappe.db.get_list('School').then(
-		res =>{
-			let select = document.getElementById('school_name')
-			res.forEach(yr =>{
-				let option = document.createElement('option')
-				option.value = yr.name
-				option.innerHTML = yr.name
-				select.appendChild(option)
-			})
-		}
-	)
+function get_school() {
+  frappe.db.get_list("School").then((res) => {
+    let select = document.getElementById("school_name");
+    res.forEach((yr) => {
+      let option = document.createElement("option");
+      option.value = yr.name;
+      option.innerHTML = yr.name;
+      select.appendChild(option);
+    });
+  });
 }
 
-function get_institution(){
-	frappe.db.get_list('Institution').then(
-		res =>{
-			let select = document.getElementById('inst_name')
-			res.forEach(yr =>{
-				let option = document.createElement('option')
-				option.value = yr.name
-				option.innerHTML = yr.name
-				select.appendChild(option)
-			})
-		}
-	)
+function get_institution() {
+  frappe.db.get_list("Institution").then((res) => {
+    let select = document.getElementById("inst_name");
+    res.forEach((yr) => {
+      let option = document.createElement("option");
+      option.value = yr.name;
+      option.innerHTML = yr.name;
+      select.appendChild(option);
+    });
+  });
 }
 
-function get_fee_category(){
-	frappe.db.get_list('Fee Category').then(
-		res =>{
-			let select = document.getElementById('fee_head_name1')
-			res.forEach(ft =>{
-				let option = document.createElement('option')
-				option.value = ft.name
-				option.innerHTML = ft.name
-				select.appendChild(option)
-			})
-		}
-	)
+function get_fee_category() {
+  frappe.db.get_list("Fee Category").then((res) => {
+    let select = document.getElementById("fee_head_name1");
+    res.forEach((ft) => {
+      let option = document.createElement("option");
+      option.value = ft.name;
+      option.innerHTML = ft.name;
+      select.appendChild(option);
+    });
+  });
 }
 
-function get_fee_category(){
-	frappe.db.get_list('Fee Category').then(
-		res =>{
-			let select = document.getElementById('fee_head_name1')
-			res.forEach(ft =>{
-				let option = document.createElement('option')
-				option.value = ft.name
-				option.innerHTML = ft.name
-				select.appendChild(option)
-			})
-		}
-	)
+function get_fee_category() {
+  frappe.db.get_list("Fee Category").then((res) => {
+    let select = document.getElementById("fee_head_name1");
+    res.forEach((ft) => {
+      let option = document.createElement("option");
+      option.value = ft.name;
+      option.innerHTML = ft.name;
+      select.appendChild(option);
+    });
+  });
 }
 
-async function submit_form(){
-	var fin_yr = document.getElementById('ins_rel_head_type_academic_year').value
-	var fin_yr = document.getElementById('ins_rel_head_type_academic_year').value
-	if(fin_yr == 'Select Year'){
-		frappe.throw('Please Select Financial Year!')
-	}
-	var class_name = document.getElementById('class_name').value
-	if(class_name==''){
-		frappe.throw('Please Select the Class!')
-	}
-	var fee_type = document.getElementById('fee_head_name1').value
-	var class_name = document.getElementById('class_name').value
-	if(class_name==''){
-		frappe.throw('Please Select the Class!')
-	}
-	var fee_type = document.getElementById('fee_head_name1').value
-	if(fee_type == ''){
-		frappe.throw('Please Select a Fee Head!')
-	}
-	var amount = document.getElementById('fee_head_amt').value
-	if(amount == ''){
-		frappe.throw('Please Enter an Amount!')
-	}
-	var institution = document.getElementById('yes').value
-	if(institution){
-	var ins_name = document.getElementById('inst_name').value}
-	else{
-		var ins_name = document.getElementById('school_name').value
-		frappe.throw('Please Select a Fee Head!')
-	}
-	var amount = document.getElementById('fee_head_amt').value
-	if(amount == ''){
-		frappe.throw('Please Enter an Amount!')
-	}
-	var institution = document.getElementById('yes').value
-	if(institution){
-	var ins_name = document.getElementById('inst_name').value}
-	else{
-		var ins_name = document.getElementById('school_name').value
-	}
-	frappe.call({
-		method: 'insert_fee_structure',
-		method: 'insert_fee_structure',
-		type: "POST",
-		args: {
-			'fin_yr': fin_yr,
-			'class_name': class_name,
-			'fee_type': fee_type,
-			'amount':amount,
-			'is_ins':institution,
-			'ins_name': ins_name,
-			'class_name': class_name,
-			'fee_type': fee_type,
-			'amount':amount,
-			'is_ins':institution,
-			'ins_name': ins_name
-		},
-	callback: function(r){
-		get_table()
-	}
-})
+async function submit_form() {
+  var fin_yr = document.getElementById("ins_rel_head_type_academic_year").value;
+  var fin_yr = document.getElementById("ins_rel_head_type_academic_year").value;
+  if (fin_yr == "Select Year") {
+    frappe.throw("Please Select Financial Year!");
+  }
+  var class_name = document.getElementById("class_name").value;
+  if (class_name == "") {
+    frappe.throw("Please Select the Class!");
+  }
+  var fee_type = document.getElementById("fee_head_name1").value;
+  var class_name = document.getElementById("class_name").value;
+  if (class_name == "") {
+    frappe.throw("Please Select the Class!");
+  }
+  var fee_type = document.getElementById("fee_head_name1").value;
+  if (fee_type == "") {
+    frappe.throw("Please Select a Fee Head!");
+  }
+  var amount = document.getElementById("fee_head_amt").value;
+  if (amount == "") {
+    frappe.throw("Please Enter an Amount!");
+  }
+  var institution = document.getElementById("yes").value;
+  if (institution) {
+    var ins_name = document.getElementById("inst_name").value;
+  } else {
+    var ins_name = document.getElementById("school_name").value;
+    frappe.throw("Please Select a Fee Head!");
+  }
+  var amount = document.getElementById("fee_head_amt").value;
+  if (amount == "") {
+    frappe.throw("Please Enter an Amount!");
+  }
+  var institution = document.getElementById("yes").value;
+  if (institution) {
+    var ins_name = document.getElementById("inst_name").value;
+  } else {
+    var ins_name = document.getElementById("school_name").value;
+  }
+  frappe.call({
+    method: "insert_fee_structure",
+    method: "insert_fee_structure",
+    type: "POST",
+    args: {
+      fin_yr: fin_yr,
+      class_name: class_name,
+      fee_type: fee_type,
+      amount: amount,
+      is_ins: institution,
+      ins_name: ins_name,
+      class_name: class_name,
+      fee_type: fee_type,
+      amount: amount,
+      is_ins: institution,
+      ins_name: ins_name,
+    },
+    callback: function (r) {
+      get_table();
+    },
+  });
 }
 
 function handleRadioClick() {
-	ins = document.getElementById('inst')
-	sch = document.getElementById('school')
-	if (document.getElementById('yes').checked) {
-	  ins.style.display = 'block';
-	  sch.style.display = 'none';
-	} else {
-	  ins.style.display = 'none';
-	  sch.style.display = 'block';
-	}
+  ins = document.getElementById("inst");
+  sch = document.getElementById("school");
+  if (document.getElementById("yes").checked) {
+    ins.style.display = "block";
+    sch.style.display = "none";
+  } else {
+    ins.style.display = "none";
+    sch.style.display = "block";
   }
-
-
+}
