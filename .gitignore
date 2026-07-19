@@ -9,3 +9,4 @@ node_modules/
 openspec/
 .claude/
 __pycache__/
+*.pdf
