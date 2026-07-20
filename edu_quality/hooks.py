@@ -5,7 +5,7 @@ app_title = "Edu Quality"
 app_publisher = "Hybrowlabs Technologies"
 app_description = "Edu Quality"
 app_email = "contact@hybrowlabs.com"
-app_license = "MIT"
+app_license = "AGPL-3.0"
 
 # Includes in <head>
 # ------------------

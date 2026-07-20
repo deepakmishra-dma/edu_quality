@@ -6,6 +6,10 @@ authors = [
 description = "Education management app for Frappe (admissions, fees, attendance, assessments)"
 requires-python = ">=3.10"
 readme = "README.md"
+license = { file = "LICENSE" }
+classifiers = [
+    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+]
 dynamic = ["version"]
 dependencies = [
     # frappe -- https://github.com/frappe/frappe is installed via 'bench init'
