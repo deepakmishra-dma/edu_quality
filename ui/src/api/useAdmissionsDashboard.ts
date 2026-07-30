@@ -107,6 +107,7 @@ export const useDashboardMeta = () =>
     queryKey: ["admissions-dashboard", "meta"],
     queryFn: () => callDashboard<DashboardMeta>("get_dashboard_meta"),
     staleTime: STALE_TIME,
+    retry: 1,
   });
 
 export const useStrengthAnalysis = (academicYear?: string) =>
@@ -118,6 +119,7 @@ export const useStrengthAnalysis = (academicYear?: string) =>
       }),
     enabled: Boolean(academicYear),
     staleTime: STALE_TIME,
+    retry: 1,
   });
 
 export const useClassDistribution = (academicYear?: string) =>
@@ -129,6 +131,7 @@ export const useClassDistribution = (academicYear?: string) =>
       }),
     enabled: Boolean(academicYear),
     staleTime: STALE_TIME,
+    retry: 1,
   });
 
 export const useBranchReport = (academicYear?: string) =>
@@ -140,6 +143,7 @@ export const useBranchReport = (academicYear?: string) =>
       }),
     enabled: Boolean(academicYear),
     staleTime: STALE_TIME,
+    retry: 1,
   });
 
 export const useAdmissionDetail = (academicYear?: string, location?: string) =>
@@ -152,4 +156,5 @@ export const useAdmissionDetail = (academicYear?: string, location?: string) =>
       }),
     enabled: Boolean(academicYear),
     staleTime: STALE_TIME,
+    retry: 1,
   });

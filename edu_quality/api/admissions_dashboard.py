@@ -84,6 +84,22 @@ def _can_read(doctype):
 		return False
 
 
+def _user_permission_docs(doctype):
+	"""Records the user is restricted to for a doctype, or None if unrestricted.
+
+	Doctype-level read access is not enough here: raw SQL and ``frappe.get_all``
+	apply neither User Permissions nor permission query conditions, so a user
+	restricted to one school would otherwise see every school's figures.
+	"""
+	try:
+		permissions = frappe.defaults.get_user_permissions() or {}
+	except Exception:
+		return None
+
+	allowed = {entry.get("doc") for entry in (permissions.get(doctype) or []) if entry.get("doc")}
+	return allowed or None
+
+
 def _check_permission():
 	if frappe.session.user == "Guest":
 		frappe.throw(_("Please log in to view the admissions dashboard."), frappe.PermissionError)
@@ -181,12 +197,22 @@ def _school_index():
 	records serving one campus report as a single branch. Sites that leave the
 	field empty fall back to one branch per School, which keeps the dashboard
 	populated instead of blank.
+
+	This is the single choke point for branch-level access. Every aggregate
+	resolves its rows to a branch through the map returned here (directly, or
+	via ``_program_index``, which is built from it), and rows that resolve to no
+	branch are dropped. Restricting the map to the schools a user is permitted
+	to therefore restricts every figure on the dashboard.
 	"""
 	fields = ["name"]
 	if _has_field("School", "location"):
 		fields.append("location")
 
 	schools = frappe.get_all("School", fields=fields, limit_page_length=0)
+
+	permitted = _user_permission_docs("School")
+	if permitted is not None:
+		schools = [school for school in schools if school.name in permitted]
 
 	school_to_location = {}
 	for school in schools:
@@ -967,10 +993,16 @@ def get_admission_detail(academic_year=None, location=None):
 	previous_year = _previous_academic_year(academic_year)
 
 	school_to_location, locations = _school_index()
+	if not locations:
+		frappe.throw(_("No School records exist, so branches cannot be listed."))
+
 	if not location:
-		if not locations:
-			frappe.throw(_("No School records exist, so branches cannot be listed."))
 		location = locations[0]
+	elif location not in locations:
+		# `locations` is already narrowed to what this user may see.
+		frappe.throw(
+			_("You do not have permission to view {0}.").format(location), frappe.PermissionError
+		)
 
 	program_index = _program_index(school_to_location)
 	classes = _class_columns(program_index)

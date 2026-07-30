@@ -10,3 +10,8 @@ openspec/
 .claude/
 __pycache__/
 *.pdf
+
+# Playwright e2e artefacts
+ui/dist-e2e/
+ui/test-results/
+ui/playwright-report/

@@ -35,6 +35,7 @@ const ClassDivisionGrid: React.FC<ClassDivisionGridProps> = ({
   academicYear,
 }) => {
   const { data, isLoading, error } = useClassDistribution(academicYear);
+  const isPending = isLoading || !academicYear;
 
   const columns = data?.classes ?? [];
   const rows = data?.rows ?? [];
@@ -63,7 +64,7 @@ const ClassDivisionGrid: React.FC<ClassDivisionGridProps> = ({
 
       <CardContent>
         <PanelState
-          isLoading={isLoading}
+          isLoading={isPending}
           error={error}
           isEmpty={!rows.length}
           emptyMessage="No branches have a location set on their School record."

@@ -52,15 +52,19 @@ function Home() {
           </Select>
         </div>
 
-        {error && (
+        {/* Without the year the panels cannot query, so show the failure once
+            here rather than three spinners that never resolve. */}
+        {error ? (
           <div className="w-[98%] rounded-md border border-red-200 bg-red-50 p-4 text-red-700">
             Could not load the dashboard. {error.message}
           </div>
+        ) : (
+          <>
+            <DataDisplay academicYear={academicYear} />
+            <CombinedDataDisplay academicYear={academicYear} />
+            <AcademicDataComponent academicYear={academicYear} />
+          </>
         )}
-
-        <DataDisplay academicYear={academicYear} />
-        <CombinedDataDisplay academicYear={academicYear} />
-        <AcademicDataComponent academicYear={academicYear} />
       </div>
     </div>
   );

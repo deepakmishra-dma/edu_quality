@@ -9,17 +9,17 @@ const getUserFriendlyErrorMessage = (error: AxiosError): string => {
   if (error.code === 'ERR_NETWORK' || error.message.includes('Network Error')) {
     return 'No internet connection. Please check your network and try again.';
   }
-  
+
   // DNS resolution issues
   if (error.code === 'ENOTFOUND' || error.message.includes('ENOTFOUND')) {
     return 'Unable to connect to the server. Please check your internet connection.';
   }
-  
+
   // Connection refused/timeout
   if (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT') {
     return 'Connection failed. Please try again later.';
   }
-  
+
   // Server errors
   if (error.response) {
     switch (error.response.status) {
@@ -36,7 +36,7 @@ const getUserFriendlyErrorMessage = (error: AxiosError): string => {
         return `Server error (${error.response.status}). Please try again.`;
     }
   }
-  
+
   // Generic fallback
   return 'Something went wrong. Please check your connection and try again.';
 };
@@ -47,10 +47,10 @@ axiosInstance.interceptors.response.use(
   (error: AxiosError) => {
     // Get user-friendly error message
     const userFriendlyMessage = getUserFriendlyErrorMessage(error);
-    
+
     // Attach the user-friendly message to the error
     error.message = userFriendlyMessage;
-    
+
     // Log the original error for debugging
     console.error('API Error:', {
       code: error.code,

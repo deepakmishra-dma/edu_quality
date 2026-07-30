@@ -47,6 +47,9 @@ const OptionalCell: React.FC<{ value: number | null }> = ({ value }) =>
 
 const StrengthGrid: React.FC<StrengthGridProps> = ({ academicYear }) => {
   const { data, isLoading, error } = useStrengthAnalysis(academicYear);
+  // Until the year is known the query has not run, so this is still loading --
+  // showing the empty state here would blame configuration for a pending fetch.
+  const isPending = isLoading || !academicYear;
 
   const currentYear = data?.academic_year ?? "Current";
   const previousYear = data?.previous_academic_year ?? "Previous";
@@ -86,7 +89,7 @@ const StrengthGrid: React.FC<StrengthGridProps> = ({ academicYear }) => {
       </CardHeader>
       <CardContent>
         <PanelState
-          isLoading={isLoading}
+          isLoading={isPending}
           error={error}
           isEmpty={!rows.length}
           emptyMessage="No branches have a location set on their School record."

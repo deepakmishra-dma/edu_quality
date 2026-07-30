@@ -102,6 +102,7 @@ const BranchSection = ({
 
 const BranchReport = ({ academicYear }: BranchReportProps) => {
   const { data, isLoading, error } = useBranchReport(academicYear);
+  const isPending = isLoading || !academicYear;
   const branches = data?.branches ?? [];
 
   return (
@@ -111,7 +112,7 @@ const BranchReport = ({ academicYear }: BranchReportProps) => {
       </CardHeader>
       <CardContent>
         <PanelState
-          isLoading={isLoading}
+          isLoading={isPending}
           error={error}
           isEmpty={!branches.length}
           emptyMessage="No branches have a location set on their School record."
